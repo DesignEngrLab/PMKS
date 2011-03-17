@@ -106,7 +106,7 @@ namespace PlanarMechanismSimulator
         #region Function: Find Linear Velocities
         //this code works for normal, sliderv,slider h, pis
         //also for those pivots connected to sliders, we need to add velocities - but this point is taken into account. So that's good
-        private void findLinearVelocities(circleDiagramItem[] circleDiagram, List<node> pivots, int timeRow, double newt)
+        private void findLinearVelocities(circleDiagramItem[] circleDiagram, List<node> pivots, int timeRow)
         {
             double ICx = 0.0, ICy = 0.0, omega = 0.0;
             for (int i = 0; i != p; i++)
@@ -249,16 +249,17 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// find angular velocities (relative to gnd)   - updated 9/1/08
         /// </summary>
-        /// <param name="circleDiagram"></param>
-        /// <param name="sizeofCDI"></param>
-        private void findAngularVelocities(circleDiagramItem[] circleDiagram, int timeRow, List<node> links, double newt)
+        /// <param name="circleDiagram">The circle diagram.</param>
+        /// <param name="timeRow">The time row.</param>
+        /// <param name="links">The links.</param>
+        private void findAngularVelocities(circleDiagramItem[] circleDiagram, int timeRow, List<node> links)
         {
             //angular velocity with respect to the position of the instant center
             //concept is to include the direction as well as magnitude of the velocities
             //22 July 2008
-
+            int inputSpeedIndex;
             for (inputSpeedIndex = 0; inputSpeedIndex < sizeofCDI; inputSpeedIndex++)
-                if (!double.IsNaN(circleDiagram[inputSpeedIndex].speed) && circleDiagram[inputSpeedIndex].speed == iOmega
+                if (!double.IsNaN(circleDiagram[inputSpeedIndex].speed) && circleDiagram[inputSpeedIndex].speed == inputSpeed
                     && circleDiagram[inputSpeedIndex].link1.localLabels.Contains("ground"))
                 {
                     break;
@@ -297,7 +298,7 @@ namespace PlanarMechanismSimulator
             {
                 if (inputSpeedIndex != newInc)
                 {
-                    circleDiagram[newInc].speed = iOmega * findDistance(circleDiagram, inputSpeedIndex, newInc)
+                    circleDiagram[newInc].speed = inputSpeed * findDistance(circleDiagram, inputSpeedIndex, newInc)
                         /*findDirectionSign(circleDiagram, inputSpeedIndex, newInc, groundLink)*/;
 
                 }
@@ -348,9 +349,9 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// find the tough IC's
         /// </summary>
-        /// <param name="circleDiagram"></param>
-        /// <param name="cDLength"></param>
-        private void findSecondaryICs(circleDiagramItem[] circleDiagram, candidate c, double NaNtracker)
+        /// <param name="circleDiagram">The circle diagram.</param>
+        /// <param name="NaNtracker">The na ntracker.</param>
+        private void findSecondaryICs(circleDiagramItem[] circleDiagram, double NaNtracker)
         {
             
 
@@ -593,7 +594,7 @@ namespace PlanarMechanismSimulator
                             
                             {
                                 double[] ic = new double[2];
-                                ic = findInstantCenter(CDIRows, list1.ToArray(), list2.ToArray(), circleDiagram, c,link1,link2);
+                                ic = findInstantCenter(CDIRows, list1.ToArray(), list2.ToArray(), circleDiagram, link1,link2);
                                 circleDiagram[m].x = ic[0];
                                 circleDiagram[m].y = ic[1];
                             }
@@ -661,7 +662,7 @@ namespace PlanarMechanismSimulator
                             if (k == 2) /* only when k=2 will we have found a set of four rows to extract an intstant center from. */
                             {
                                 double[] ic = new double[2];
-                                ic = findInstantCenter(CDIRows, list1.ToArray(), list2.ToArray(), circleDiagram, c, link1,link2);
+                                ic = findInstantCenter(CDIRows, list1.ToArray(), list2.ToArray(), circleDiagram,  link1,link2);
                                 circleDiagram[m].x = ic[0];
                                 circleDiagram[m].y = ic[1];
                             }
@@ -709,7 +710,7 @@ namespace PlanarMechanismSimulator
                                 // row.speed = row.pivot.localVariables[0];
                                 //row.alpha = row.pivot.localVariables[1];
 
-                                row.speed = iOmega;
+                                row.speed = inputSpeed;
                                 row.alpha = 0.0;
                             }
 
@@ -852,7 +853,7 @@ namespace PlanarMechanismSimulator
         }
         #endregion
         #region Function: Find instant Center
-        private double[] findInstantCenter(int[,] CDIRows, circleDiagramItem[] list1, circleDiagramItem[] list2, circleDiagramItem[] circleDiagram, candidate c, node link1, node link2)
+        private double[] findInstantCenter(int[,] CDIRows, circleDiagramItem[] list1, circleDiagramItem[] list2, circleDiagramItem[] circleDiagram,  node link1, node link2)
         {
             // !!!!!!!!!!!!!!!!!!!!!
             //
@@ -1465,7 +1466,7 @@ namespace PlanarMechanismSimulator
         #endregion
         #region Function: New IC Found In Last Pass
         //this has been taken from Position
-        List<Boolean> ICsFound = new List<Boolean>(); // this is only used in function below. Can it be made a local variable?
+        List<Boolean> ICsFound = new List<Boolean>(); // Campbell: this is only used in function below. Can it be made a local variable?
         private bool NewICFoundInLastPass(circleDiagramItem[] circleDiagram)
         {
             /* assume, at first, that no change has occured (result = false),

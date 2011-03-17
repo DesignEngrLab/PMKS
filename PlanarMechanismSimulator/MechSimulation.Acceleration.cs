@@ -14,7 +14,8 @@ namespace PlanarMechanismSimulator
     public partial class MechSimulation : IDependentAnalysis
     {
         #region New Acceleration Determination
-        private void findAccelerationNew(List<node> pivots, int timeRow, circleDiagramItem[] circleDiagram, List<node> links, DynamicMatrixTerm[] coriolis1, double[, ,] coriolis, DynamicMatrixTerm[] unknowns, DynamicMatrixTerm[] Omeg, double[, ,] slipacceleration, double iAlpha, double iOmega, double newt)
+        private void findAccelerationNew(List<node> pivots, int timeRow, circleDiagramItem[] circleDiagram, List<node> links, 
+            DynamicMatrixTerm[] coriolis1, double[, ,] coriolis, DynamicMatrixTerm[] unknowns, DynamicMatrixTerm[] Omeg, double[, ,] slipacceleration, double iAlpha, double iOmega)
         {
            
             

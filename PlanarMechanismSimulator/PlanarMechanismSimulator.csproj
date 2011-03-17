@@ -32,16 +32,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GraphSynth.FundamentalClassesAndInterfaces">
-      <HintPath>..\MechSynthPlugins\Resources\x86\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
+      <HintPath>..\Resources\x86\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="GraphSynth.Representation">
-      <HintPath>..\MechSynthPlugins\Resources\x86\GraphSynth.Representation.dll</HintPath>
+      <HintPath>..\Resources\x86\GraphSynth.Representation.dll</HintPath>
     </Reference>
     <Reference Include="OptimizationToolbox">
-      <HintPath>..\MechSynthPlugins\Resources\x86\OptimizationToolbox.dll</HintPath>
+      <HintPath>..\Resources\x86\OptimizationToolbox.dll</HintPath>
     </Reference>
     <Reference Include="StarMath">
-      <HintPath>..\MechSynthPlugins\Resources\x86\StarMath.dll</HintPath>
+      <HintPath>..\Resources\x86\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

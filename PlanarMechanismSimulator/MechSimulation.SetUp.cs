@@ -17,12 +17,12 @@ namespace PlanarMechanismSimulator
         /// </summary>
         /// <param name="inputSweepAngle">The input sweep angle.</param>
         /// <param name="numSteps">The number of steps.</param>
-        /// <param name="c">The candidate.</param>
-        public MechSimulation(double inputSweepAngle = 2 * Math.PI, int numSteps = 100, designGraph graph =null)
+        /// <param name="graph">The graph.</param>
+        public MechSimulation(double inputSweepAngle = 2 * Math.PI, int numSteps = 100, designGraph graph = null)
         {
             this.inputSweepAngle = inputSweepAngle;
             this.numSteps = numSteps;
-        if (graph!=null) Graph = graph;
+            if (graph != null) Graph = graph;
         }
 
         #endregion
@@ -43,6 +43,7 @@ namespace PlanarMechanismSimulator
         /// The (minimum) number of steps between startAngle and endAngle.
         /// </summary>
         private readonly int numSteps;
+
         #endregion
 
         #region Given by the Configuration (these are set in updateInternalParameters)
@@ -317,6 +318,15 @@ namespace PlanarMechanismSimulator
         }
         #endregion
 
+        private double inputSpeed = 1;
+        public double InputSpeed
+        {
+            get
+            {
+                return inputSpeed;
+            }
+            set { inputSpeed = value; }
+        }
         #endregion
 
 
@@ -350,36 +360,28 @@ namespace PlanarMechanismSimulator
             double NaNtracker = 0.0;
 
             findImmediatePivots(circleDiagram);
-            //  int timeRow = 0;
-            //for (double time = 0; time <= timeMax; time += timeStep) //will timeMax come into the for-loop or is it angle?
-            double sa = startAngle, ea = endAngle;
-            double timet = 2 * Math.PI / (numTimeSteps * iOmega);
-            // double timet = 0.05;
-            double newt = iOmega * timet;
-            double sampt;
-            sampt = timet;
 
             #region For loop functions
             //            for (sa = 0; sa <= endAngle; sa += ((endAngle) / numTimeSteps))
-            for (int timeRow = 0; timeRow < numTimeSteps; timeRow++)
+            for (int timeRow = 0; timeRow < numSteps; timeRow++)
             {
                 findImmediateICs(circleDiagram);
-                findSecondaryICs(circleDiagram, C, NaNtracker);
+                findSecondaryICs(circleDiagram, NaNtracker);
                 if (NaNtracker == 2.0) SearchIO.output("Instant Centers could not be found");
                 else
                 {
-                    findAngularVelocities(circleDiagram, timeRow, links, newt);
-                    findLinearVelocities(circleDiagram, pivots, timeRow, newt);
+                    findAngularVelocities(circleDiagram, timeRow, links);
+                    findLinearVelocities(circleDiagram, pivots, timeRow);
                     //check slip velocities
                     findLinearSlipVelocities(circleDiagram, pivots, timeRow, links, coriolis, slipvelocity);
                     //find slip velocities and update
                     //acceleration determination: only when input acceleration is given
                     //findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
-                    findAccelerationNew(pivots, timeRow, circleDiagram, links, coriolis_1, coriolis, unknowns, omeg_1, slipacceleration, iAlpha, iOmega, newt);
+                    findAccelerationNew(pivots, timeRow, circleDiagram, links, coriolis_1, coriolis, unknowns, omeg_1, slipacceleration, iAlpha, inputSpeed);
                     if (timeRow > 3)
-                        findNewPositions(pivots, timeRow, sa, endAngle, newt, pivotLengths, numTimeSteps, NaNtracker);
-                    else
-                        findNewPositions(pivots, timeRow, sa, endAngle, newt, pivotLengths, numTimeSteps, NaNtracker);
+                        findNewPositions(pivots, timeRow, pivotLengths, numSteps, NaNtracker);
+                    else // Campbell: why is this if-else here?
+                        findNewPositions(pivots, timeRow, pivotLengths, numSteps, NaNtracker);
 
                     //Find new position and update Path matrix of the output pivot too
                     SearchIO.output(timeRow);
