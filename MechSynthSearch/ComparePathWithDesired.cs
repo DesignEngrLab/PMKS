@@ -12,6 +12,7 @@ namespace MechSynth
       private readonly MechSimulation sim;
       private readonly double[,] desiredPath;
       private readonly candidate c;
+
       public ComparePathWithDesired(candidate c, double[,] desiredPath, MechSimulation sim)
       {
           this.c = c;

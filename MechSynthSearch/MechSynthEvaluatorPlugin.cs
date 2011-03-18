@@ -31,7 +31,7 @@ namespace MechSynth
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
-            MechSimulation ev = new MechSimulation(startAngle, endAngle, iOmega);
+            MechSimulation ev = new MechSimulation();
             ev.C = new candidate(testGraph, 0);
             //ev.saveParameterData(settings.outputDirectory + "outputPathC1");
             SearchIO.output("***Completed!***");

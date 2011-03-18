@@ -25,17 +25,17 @@ namespace MechSynth
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
-            MechSimulation ev = new MechSimulation();
-            ev.Graph = seedGraph;
+            MechSimulation sim = new MechSimulation();
+            sim.Graph = seedGraph;
           //  designGraph testGraph = this.seedGraph;
          //   ev.c = new candidate(testGraph, 0);
           //  ev.c = this.seedGraph;
-            BoundingBox bb = new BoundingBox(ev, 200, 200);
+            BoundingBox bb = new BoundingBox(sim, 200, 200);
 
 
 
             NelderMead NMOpt = new NelderMead();
-            NMOpt.Add(ev);
+            NMOpt.Add(sim);
             //gbu.Add(new GoldenSection(.001, 20));
             //gbu.Add(new BFGSDirection());
             NMOpt.Add(new MaxIterationsConvergence(400));

@@ -81,7 +81,7 @@ namespace PlanarMechanismSimulator
         }
         #endregion
         #region Function: Find New Positions
-        private void findNewPositions(List<node> pivots11, int timeRow, double[,] pivotLengths, int numTimeSteps, double NaNtracker)
+        private void findNewPositions(int timeRow, double NaNtracker)
         {
             #region Perform Numerical integration
             //int i;
@@ -105,9 +105,8 @@ namespace PlanarMechanismSimulator
 
 
 
-            List<node> pivots1 = new List<node>();
+            List<node> pivots1 = new List<node>(pivots11);
 
-            pivots1 = pivots11;
             //now adding pivots
 
             //need to copy the pivots position to a matrix [p,2]

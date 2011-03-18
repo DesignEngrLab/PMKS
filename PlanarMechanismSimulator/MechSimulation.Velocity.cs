@@ -252,7 +252,7 @@ namespace PlanarMechanismSimulator
         /// <param name="circleDiagram">The circle diagram.</param>
         /// <param name="timeRow">The time row.</param>
         /// <param name="links">The links.</param>
-        private void findAngularVelocities(circleDiagramItem[] circleDiagram, int timeRow, List<node> links)
+        private void findAngularVelocities(int timeRow)
         {
             //angular velocity with respect to the position of the instant center
             //concept is to include the direction as well as magnitude of the velocities
@@ -351,7 +351,7 @@ namespace PlanarMechanismSimulator
         /// </summary>
         /// <param name="circleDiagram">The circle diagram.</param>
         /// <param name="NaNtracker">The na ntracker.</param>
-        private void findSecondaryICs(circleDiagramItem[] circleDiagram, double NaNtracker)
+        private void findSecondaryICs(double NaNtracker)
         {
             
 
@@ -681,7 +681,7 @@ namespace PlanarMechanismSimulator
         /// find immediate pivots and their positions (IC's) 
         /// </summary>
         /// <param name="circleDiagram"></param>
-        private void findImmediatePivots(circleDiagramItem[] circleDiagram)
+        private void findImmediatePivots()
         {
             /* ok, now the rows of the circleDiagram have been given the unique pairings of
                      * links (link1 and link2). next go through each row of circle diagram, and find
@@ -725,7 +725,7 @@ namespace PlanarMechanismSimulator
         /// find immediate pivots and their positions (IC's)  
         /// </summary>
         /// <param name="circleDiagram"></param>
-        private void findImmediateICs(circleDiagramItem[] circleDiagram)
+        private void findImmediateICs()
         {
             foreach (circleDiagramItem row in circleDiagram)
 

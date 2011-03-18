@@ -54,7 +54,7 @@ namespace PlanarMechanismSimulator
             {
                 if (g.Equals(value)) return;
                 g = value;
-                SetUpFieldsForCandidate();
+                SetUpFieldsForNewGraph();
             }
         }
         int n, p, numEqs;//no. of links, pivots, and equations needed
@@ -70,7 +70,7 @@ namespace PlanarMechanismSimulator
         DynamicMatrixTerm[] unknowns;
         DynamicMatrixTerm[] coriolis_1;
         DynamicMatrixTerm[] omeg_1;
-        private void SetUpFieldsForCandidate()
+        private void SetUpFieldsForNewGraph()
         {
             #region Setup
             links = new List<node>(); //create a list of LINKS
@@ -330,18 +330,21 @@ namespace PlanarMechanismSimulator
         #endregion
 
 
-
+        // this is the required overload for IDependentAnalysis. This is used in an
+        // optimization when new values for the pivot locations are being generated.
         public void calculate(double[] x)
         {
             int k = 0;
             for (int ii = 0; ii < p; ii++)
             {
-                pivots[ii].X = x[k++];
-                pivots[ii].Y = x[k++];
+                PivotParameters[ii, 0, 0] = pivots[ii].X = x[k++];
+                PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k++];
             }
-            calculate();
+            simulate();
         }
 
+        // If you are just simulating a given graph, you can skip right to here, 
+        // and use the pivot positions that already exist.
         public void calculate()
         {
             #region Assign Pivot X and Y to the matrix pivotParameters
@@ -351,37 +354,41 @@ namespace PlanarMechanismSimulator
                 PivotParameters[ii, 0, 0] = pivots[ii].X;
                 PivotParameters[ii, 0, 1] = pivots[ii].Y;
             }
+        }
 
             #endregion
 
+
+        private void simulate()
+        {
 
             double[,] pivotLengths = findlinkLengths();
 
             double NaNtracker = 0.0;
 
-            findImmediatePivots(circleDiagram);
+            findImmediatePivots();
 
             #region For loop functions
             //            for (sa = 0; sa <= endAngle; sa += ((endAngle) / numTimeSteps))
             for (int timeRow = 0; timeRow < numSteps; timeRow++)
             {
-                findImmediateICs(circleDiagram);
-                findSecondaryICs(circleDiagram, NaNtracker);
+                findImmediateICs();
+                findSecondaryICs(NaNtracker);
                 if (NaNtracker == 2.0) SearchIO.output("Instant Centers could not be found");
                 else
                 {
-                    findAngularVelocities(circleDiagram, timeRow, links);
-                    findLinearVelocities(circleDiagram, pivots, timeRow);
+                    findAngularVelocities( timeRow);
+                    findLinearVelocities(  timeRow);
                     //check slip velocities
-                    findLinearSlipVelocities(circleDiagram, pivots, timeRow, links, coriolis, slipvelocity);
+                    findLinearSlipVelocities(  timeRow);
                     //find slip velocities and update
                     //acceleration determination: only when input acceleration is given
                     //findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
-                    findAccelerationNew(pivots, timeRow, circleDiagram, links, coriolis_1, coriolis, unknowns, omeg_1, slipacceleration, iAlpha, inputSpeed);
+                    findAccelerationNew( timeRow,        iAlpha);
                     if (timeRow > 3)
-                        findNewPositions(pivots, timeRow, pivotLengths, numSteps, NaNtracker);
+                        findNewPositions( timeRow, pivotLengths,  NaNtracker);
                     else // Campbell: why is this if-else here?
-                        findNewPositions(pivots, timeRow, pivotLengths, numSteps, NaNtracker);
+                        findNewPositions( timeRow, pivotLengths,  NaNtracker);
 
                     //Find new position and update Path matrix of the output pivot too
                     SearchIO.output(timeRow);
