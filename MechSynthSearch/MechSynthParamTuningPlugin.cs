@@ -25,8 +25,9 @@ namespace MechSynth
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
+            double iAlpha = 0; 
             MechSimulation sim = new MechSimulation();
-            sim.Graph = seedGraph;
+            sim.c = seedGraph;
           //  designGraph testGraph = this.seedGraph;
          //   ev.c = new candidate(testGraph, 0);
           //  ev.c = this.seedGraph;
@@ -56,8 +57,9 @@ namespace MechSynth
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
-            MechSimulation ev = new MechSimulation(startAngle, endAngle, iOmega);
-            BoundingBox bb = new BoundingBox(ev, 200, 200);
+            double iAlpha = 0; 
+            MechSimulation sim = new MechSimulation();
+            BoundingBox bb = new BoundingBox(sim, 200, 200);
 
             List<candidate> candidates = new List<candidate>();
             while (true) //notConverged())
@@ -69,9 +71,9 @@ namespace MechSynth
                 {
                     if (double.IsNaN(c.f0))
                     {
-                        ev.C = c;
+                        sim.c = c;
                         NelderMead NMOpt = new NelderMead();
-                        NMOpt.Add(ev);
+                        NMOpt.Add(sim);
                         //gbu.Add(new GoldenSection(.001, 20));
                         //gbu.Add(new BFGSDirection());
                         NMOpt.Add(new MaxIterationsConvergence(100));

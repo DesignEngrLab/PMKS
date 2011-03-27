@@ -59,6 +59,7 @@ namespace PlanarMechanismSimulator
         }
         int n, p, numEqs;//no. of links, pivots, and equations needed
         int sizeofCDI;
+        
         private List<node> links;
         private List<node> pivots;
         node groundLink;
@@ -377,18 +378,18 @@ namespace PlanarMechanismSimulator
                 if (NaNtracker == 2.0) SearchIO.output("Instant Centers could not be found");
                 else
                 {
-                    findAngularVelocities( timeRow);
-                    findLinearVelocities(  timeRow);
+                    findAngularVelocities(timeRow);
+                    findLinearVelocities(timeRow);
                     //check slip velocities
-                    findLinearSlipVelocities(  timeRow);
+                    findLinearSlipVelocities(timeRow);
                     //find slip velocities and update
                     //acceleration determination: only when input acceleration is given
                     //findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
-                    findAccelerationNew( timeRow,        iAlpha);
+                    findAccelerationNew(timeRow, coriolis, coriolis_1, unknowns, omeg_1, slipacceleration);
                     if (timeRow > 3)
-                        findNewPositions( timeRow, pivotLengths,  NaNtracker);
+                        findNewPositions(timeRow,pivotLengths,NaNtracker);
                     else // Campbell: why is this if-else here?
-                        findNewPositions( timeRow, pivotLengths,  NaNtracker);
+                        findNewPositions(timeRow,pivotLengths,NaNtracker);
 
                     //Find new position and update Path matrix of the output pivot too
                     SearchIO.output(timeRow);

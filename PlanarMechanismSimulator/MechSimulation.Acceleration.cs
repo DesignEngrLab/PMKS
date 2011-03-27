@@ -14,11 +14,13 @@ namespace PlanarMechanismSimulator
     public partial class MechSimulation : IDependentAnalysis
     {
         #region New Acceleration Determination
-        private void findAccelerationNew(List<node> pivots, int timeRow, circleDiagramItem[] circleDiagram, List<node> links, 
-            DynamicMatrixTerm[] coriolis1, double[, ,] coriolis, DynamicMatrixTerm[] unknowns, DynamicMatrixTerm[] Omeg, double[, ,] slipacceleration, double iAlpha, double iOmega)
+        private void findAccelerationNew(int timeRow,
+            double[, ,] coriolis, DynamicMatrixTerm[] coriolis1, DynamicMatrixTerm[] unknowns, DynamicMatrixTerm[] Omeg, double[, ,] slipacceleration)
         {
-           
-            
+
+            double iOmega = inputSpeed;
+                double iAlpha=0;
+
             
             
             #region Filling up values in the different rows
@@ -582,7 +584,7 @@ namespace PlanarMechanismSimulator
         #endregion
         #region Function: Slip Velocities & Coriolis Component and update the respective velocities - completely horizontal/vertical PIS/slideronalink
 
-        private void findLinearSlipVelocities(circleDiagramItem[] circleDiagram, List<node> pivots, int timeRow, List<node> links,  double[, ,] coriolis, double[, ,] slipvelocity)
+        private void findLinearSlipVelocities(int timeRow)
         {
             double slipvelocityx = 0.0, slipvelocityy = 0.0;
             node n1 = null, n2 = null, n3 = null;

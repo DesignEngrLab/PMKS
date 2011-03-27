@@ -106,7 +106,7 @@ namespace PlanarMechanismSimulator
         #region Function: Find Linear Velocities
         //this code works for normal, sliderv,slider h, pis
         //also for those pivots connected to sliders, we need to add velocities - but this point is taken into account. So that's good
-        private void findLinearVelocities(circleDiagramItem[] circleDiagram, List<node> pivots, int timeRow)
+        private void findLinearVelocities(int timeRow)
         {
             double ICx = 0.0, ICy = 0.0, omega = 0.0;
             for (int i = 0; i != p; i++)

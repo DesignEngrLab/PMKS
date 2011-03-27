@@ -81,7 +81,7 @@ namespace PlanarMechanismSimulator
         }
         #endregion
         #region Function: Find New Positions
-        private void findNewPositions(int timeRow, double NaNtracker)
+        private void findNewPositions(int timeRow,  double[,] pivotLengths, double NaNtracker)
         {
             #region Perform Numerical integration
             //int i;
@@ -105,7 +105,7 @@ namespace PlanarMechanismSimulator
 
 
 
-            List<node> pivots1 = new List<node>(pivots11);
+            List<node> pivots1 = new List<node>(pivots);
 
             //now adding pivots
 
@@ -126,20 +126,20 @@ namespace PlanarMechanismSimulator
 
             #region Input Link New Position
             for (int x = 0; x < p; x++)
-                if (pivots11[x].localLabels.Contains("ground") && pivots11[x].localLabels.Contains("input"))
+                if (pivots[x].localLabels.Contains("ground") && pivots[x].localLabels.Contains("input"))
                 {
-                    foreach (arc cc in pivots11[x].arcs)
+                    foreach (arc cc in pivots[x].arcs)
                         if (cc.localLabels.Contains("pivotarc"))
                         {
-                            if (!(cc.otherNode(pivots11[x]).localLabels.Contains("ground")) && !(cc.otherNode(pivots11[x]).localLabels.Contains("slider")))
+                            if (!(cc.otherNode(pivots[x]).localLabels.Contains("ground")) && !(cc.otherNode(pivots[x]).localLabels.Contains("slider")))
                             {
                                 node qw = null;
-                                qw = cc.otherNode(pivots11[x]);
+                                qw = cc.otherNode(pivots[x]);
                                 //determine the index of qw as well as 
                                 //pass pivotlengths to inputlink_newposition function
                                 int v = 0;
                                 for (v = 0; v < p; v++)
-                                    if (pivots11[v] == qw)
+                                    if (pivots[v] == qw)
                                         break;
 
 
@@ -319,11 +319,11 @@ namespace PlanarMechanismSimulator
                             //find where exactly lies point lies in pivots
 
                             for (no1 = 0; no1 < p; no1++)
-                                if (pivots11[no1] == c1)
+                                if (pivots[no1] == c1)
                                     break;
 
                             for (no12 = 0; no12 < p; no12++)
-                                if (pivots11[no12] == cc)
+                                if (pivots[no12] == cc)
                                     break;
 
                             //get the length
@@ -393,11 +393,11 @@ namespace PlanarMechanismSimulator
 
                                 int no1, no2;
                                 for (no1 = 0; no1 < p; no1++)
-                                    if (pivots11[no1] == N_for_intersection[0])
+                                    if (pivots[no1] == N_for_intersection[0])
                                         break;
 
                                 for (no2 = 0; no2 < p; no2++)
-                                    if (pivots11[no2] == N_for_intersection[1])
+                                    if (pivots[no2] == N_for_intersection[1])
                                         break;
 
                                 double length1, length2;
@@ -600,7 +600,7 @@ namespace PlanarMechanismSimulator
 
             for (int t = 0; t < p; t++)
             {
-                if (timeRow != numTimeSteps - 1)
+                if (timeRow != numSteps - 1)
                 {
                     if (!double.IsNaN(pivots1[t].X))
                     {
@@ -611,8 +611,8 @@ namespace PlanarMechanismSimulator
 
                     }
 
-                    pivots11[t].X = PivotParameters[t, timeRow + 1, 0];
-                    pivots11[t].Y = PivotParameters[t, timeRow + 1, 1];
+                    pivots[t].X = PivotParameters[t, timeRow + 1, 0];
+                    pivots[t].Y = PivotParameters[t, timeRow + 1, 1];
                 }
             }
 
