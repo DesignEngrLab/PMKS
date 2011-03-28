@@ -52,14 +52,14 @@ namespace PlanarMechanismSimulator
         {
             set
             {
-                if (g.Equals(value)) return;
+                if ((g != null) && (g.Equals(value))) return;
                 g = value;
                 SetUpFieldsForNewGraph();
             }
         }
         int n, p, numEqs;//no. of links, pivots, and equations needed
         int sizeofCDI;
-        
+
         private List<node> links;
         private List<node> pivots;
         node groundLink;
@@ -99,7 +99,8 @@ namespace PlanarMechanismSimulator
 
 
             #region fill up link spots in CircleDiagram
-            circleDiagram = new circleDiagramItem[(n * (n - 1) / 2)];//size is equal to no of instant centers
+            sizeofCDI = (n * (n - 1) / 2);
+            circleDiagram = new circleDiagramItem[sizeofCDI];//size is equal to no of instant centers
             //code below gives the link indices for each circleDiagram Item and is assigning the instant 
             //center pairs - these may not be necessarily starting from input - but in the way the graph
             //and the particular linkage is created
@@ -126,7 +127,6 @@ namespace PlanarMechanismSimulator
                 }
             }
 
-            sizeofCDI = circleDiagram.GetLength(0);
             #endregion
 
             /*Declaring pivotParameters - containing X,Y,Vx,Vy,Ax,Ay
@@ -355,6 +355,7 @@ namespace PlanarMechanismSimulator
                 PivotParameters[ii, 0, 0] = pivots[ii].X;
                 PivotParameters[ii, 0, 1] = pivots[ii].Y;
             }
+            simulate();
         }
 
             #endregion
@@ -364,8 +365,7 @@ namespace PlanarMechanismSimulator
         {
 
             double[,] pivotLengths = findlinkLengths();
-
-            double NaNtracker = 0.0;
+            Boolean success = true;
 
             findImmediatePivots();
 
@@ -374,26 +374,29 @@ namespace PlanarMechanismSimulator
             for (int timeRow = 0; timeRow < numSteps; timeRow++)
             {
                 findImmediateICs();
-                findSecondaryICs(NaNtracker);
-                if (NaNtracker == 2.0) SearchIO.output("Instant Centers could not be found");
-                else
+                success = findSecondaryICs();
+                if (success)
                 {
                     findAngularVelocities(timeRow);
                     findLinearVelocities(timeRow);
                     //check slip velocities
                     findLinearSlipVelocities(timeRow);
                     //find slip velocities and update
-                    //acceleration determination: only when input acceleration is given
-                    //findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
-                    findAccelerationNew(timeRow, coriolis, coriolis_1, unknowns, omeg_1, slipacceleration);
-                    if (timeRow > 3)
-                        findNewPositions(timeRow,pivotLengths,NaNtracker);
-                    else // Campbell: why is this if-else here?
-                        findNewPositions(timeRow,pivotLengths,NaNtracker);
-
-                    //Find new position and update Path matrix of the output pivot too
-                    SearchIO.output(timeRow);
                 }
+                else
+                {
+                    SearchIO.output("Instant Centers could not be found");
+                    break;
+                    // instead of breaking, we will introduce an approach like we solve for accelerations.
+                }
+                //acceleration determination: only when input acceleration is given
+                //findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
+                findAccelerationNew(timeRow, coriolis, coriolis_1, unknowns, omeg_1, slipacceleration);
+                success = findNewPositions(timeRow, pivotLengths);
+                if (!success) {SearchIO.output("Rotatability not satisfied");break;}
+
+                //Find new position and update Path matrix of the output pivot too
+                SearchIO.output(timeRow);
             }
 
             #endregion
@@ -401,15 +404,15 @@ namespace PlanarMechanismSimulator
 
             //NumericalAcceleration(pivots, linkParameters, pivots, circleDiagram, numTimeSteps, pivotParameters, timet, newt);
             //  NumericalPosition(pivots, linkParameters, pivots, circleDiagram, numTimeSteps, pivotParameters, timet, newt);
-
-            if (NaNtracker == 0.0) { }//PrintDetails(pivotParameters, linkParameters);
-            else if (NaNtracker == 1.0) SearchIO.output("Rotatability not satisfied");
-            else if (NaNtracker == 2.0) SearchIO.output("Instant Centers could not be found");
-            //nothing is printed now - how to avoid this candidate - require Dr.Campbell's help
-
         }
 
-
+        private enum status
+        {
+            normal,
+            ICsNotFound,
+            PositionNotDyadic,
+            PositionRotabilityViolated
+        } ;
         //#region Save Output Parameter Data
         //public void saveParameterData(string filename)
         //{

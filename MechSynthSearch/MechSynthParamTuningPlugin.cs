@@ -27,7 +27,7 @@ namespace MechSynth
             double iOmega = 2;
             double iAlpha = 0; 
             MechSimulation sim = new MechSimulation();
-            sim.c = seedGraph;
+            sim.Graph = seedGraph;
           //  designGraph testGraph = this.seedGraph;
          //   ev.c = new candidate(testGraph, 0);
           //  ev.c = this.seedGraph;
@@ -71,7 +71,7 @@ namespace MechSynth
                 {
                     if (double.IsNaN(c.f0))
                     {
-                        sim.c = c;
+                        sim.Graph = c.graph;
                         NelderMead NMOpt = new NelderMead();
                         NMOpt.Add(sim);
                         //gbu.Add(new GoldenSection(.001, 20));

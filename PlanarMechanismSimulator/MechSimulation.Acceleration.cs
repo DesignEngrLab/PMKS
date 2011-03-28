@@ -313,11 +313,11 @@ namespace PlanarMechanismSimulator
                 double[,] inversematrix = StarMath.inverse(accelerationMatrix_New);
                 double[,] A =StarMath.multiply(accelerationMatrix_New, inversematrix) ;
                 double error = StarMath.norm2(StarMath.subtract(A , StarMath.makeIdentity(A.GetLength(0))));
+               // if (double.IsNaN(error) || error> epsilon) Campbell: add something like this
                 result = StarMath.multiply(inversematrix, New_wsquareMatrix);
 
 
-
-            #endregion
+                #endregion
 
 
             }

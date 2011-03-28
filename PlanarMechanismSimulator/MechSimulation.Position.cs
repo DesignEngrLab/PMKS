@@ -81,7 +81,7 @@ namespace PlanarMechanismSimulator
         }
         #endregion
         #region Function: Find New Positions
-        private void findNewPositions(int timeRow,  double[,] pivotLengths, double NaNtracker)
+        private status findNewPositions(int timeRow,  double[,] pivotLengths)
         {
             #region Perform Numerical integration
             //int i;
@@ -585,7 +585,7 @@ namespace PlanarMechanismSimulator
                 if (pivots1[tempi].X == double.NaN || pivots1[tempi].Y == double.NaN)
                 {
                     SearchIO.output("Failed Candidate - Rotatability not satisfied");
-                    NaNtracker = 1.0;
+                    return status.PositionRotabilityViolated;
 
 
                     //how to exit this particular candidate????
@@ -625,7 +625,7 @@ namespace PlanarMechanismSimulator
             // make sure to put positions both in pivotparameters as well as back into the graph (just in pivots list)
             #endregion
 
-
+            return status.normal;
         }
 
         #endregion

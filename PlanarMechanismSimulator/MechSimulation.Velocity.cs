@@ -351,7 +351,7 @@ namespace PlanarMechanismSimulator
         /// </summary>
         /// <param name="circleDiagram">The circle diagram.</param>
         /// <param name="NaNtracker">The na ntracker.</param>
-        private void findSecondaryICs(double NaNtracker)
+        private Boolean findSecondaryICs()
         {
             
 
@@ -672,8 +672,7 @@ namespace PlanarMechanismSimulator
             } while (unknownInstantCenters(circleDiagram) && NewICFoundInLastPass(circleDiagram));
 
             //the statement below is used to check 
-            if (NewICFoundInLastPass(circleDiagram) == false)
-                NaNtracker = 2.0;
+            return NewICFoundInLastPass(circleDiagram);
         }
         #endregion
         #region Function: Find Immediate Pivots

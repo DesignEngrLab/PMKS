@@ -1,0 +1,1084 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>GraphSynth.FundamentalClassesAndInterfaces</name>
+    </assembly>
+    <members>
+        <member name="T:GraphSynth.IMainWindow">
+            <summary>
+            Interface for the main window of GraphSynth.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.IMainWindow.SetSelectedAddItem(System.Int32)">
+            <summary>
+            Sets the selected add item.
+            </summary>
+            <param name="i">The i.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.IMainWindow.FocusOnLabelEntry(System.Object)">
+            <summary>
+            Focuses on the label field for easy entry.
+            </summary>
+            <param name="o">The o.</param>
+        </member>
+        <member name="M:GraphSynth.IMainWindow.propertyUpdate(System.Object)">
+            <summary>
+            Properties the update.
+            </summary>
+            <param name="o">The o.</param>
+        </member>
+        <member name="M:GraphSynth.IMainWindow.SetCanvasPropertyScaleFactor(System.Double,System.Nullable{System.Boolean})">
+            <summary>
+            Sets the canvas property scale factor. This is needed since the
+            GraphGUI needs to inform the main window what its scale is. The
+            reason it is defined here, is because GraphGUI is defined in the
+            CustomControls.dll and MainWindow is in the main EXE. Thus, we
+            can make a call up from a dependent library to the main EXE.
+            </summary>
+            <param name="scale">The scale.</param>
+            <param name="zoomToFit">The zoom to fit.</param>
+        </member>
+        <member name="M:GraphSynth.IMainWindow.addAndShowGraphWindow(System.Object,System.String)">
+            <summary>
+            Adds and shows a graph window.
+            </summary>
+            <param name="obj">The obj.</param>
+            <param name="title">The title.</param>
+        </member>
+        <member name="M:GraphSynth.IMainWindow.addAndShowRuleWindow(System.Object,System.String)">
+            <summary>
+            Adds and shows a rule window.
+            </summary>
+            <param name="obj">The obj.</param>
+            <param name="title">The title.</param>
+        </member>
+        <member name="P:GraphSynth.IMainWindow.SelectedAddItem">
+            <summary>
+            Gets the selected add item.
+            </summary>
+            <value>The selected add item.</value>
+        </member>
+        <member name="P:GraphSynth.IMainWindow.shortCutKeys">
+            <summary>
+            Gets the short cut keys.
+            </summary>
+            <value>The short cut keys.</value>
+        </member>
+        <member name="P:GraphSynth.IMainWindow.stayOn">
+            <summary>
+            Gets a value indicating whether the selected item should [stay on].
+            </summary>
+            <value><c>true</c> if [stay on]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:GraphSynth.IMainWindow.Dispatcher">
+            <summary>
+            Gets the dispatcher.
+            </summary>
+            <value>The dispatcher.</value>
+        </member>
+        <member name="T:GraphSynth.DoubleCollectionConverter">
+            <summary>
+              A converter class for changing a collection of doubles into a string and vice-versa.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+              Returns whether this converter can convert an object of the given type to the type of this converter, using the specified context.
+            </summary>
+            <param name = "context">An <see cref = "T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+            <param name = "sourceType">A <see cref = "T:System.Type" /> that represents the type you want to convert from.</param>
+            <returns>
+              true if this converter can perform the conversion; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)">
+            <summary>
+              Converts the given object to the type of this converter, using the specified context and culture information.
+            </summary>
+            <param name = "context">An <see cref = "T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+            <param name = "culture">The <see cref = "T:System.Globalization.CultureInfo" /> to use as the current culture.</param>
+            <param name = "value">The <see cref = "T:System.Object" /> to convert.</param>
+            <returns>
+              An <see cref = "T:System.Object" /> that represents the converted value.
+            </returns>
+            <exception cref = "T:System.NotSupportedException">The conversion cannot be performed. </exception>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+              Determines whether this instance [can convert to] the specified context.
+            </summary>
+            <param name = "context">The context.</param>
+            <param name = "sourceType">Type of the source.</param>
+            <returns>
+              <c>true</c> if this instance [can convert to] the specified context; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object,System.Type)">
+            <summary>
+              Converts to.
+            </summary>
+            <param name = "context">The context.</param>
+            <param name = "culture">The culture.</param>
+            <param name = "value">The value.</param>
+            <param name = "s">The s.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.convert(System.String)">
+            <summary>
+              Converts the for a string of comma-separated-values to a List of doubles.
+            </summary>
+            <param name = "value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.convert(System.Collections.Generic.List{System.Double})">
+            <summary>
+              Converts the specified values from a List of doubles to a comma-separated string.
+            </summary>
+            <param name = "values">The values.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.DoubleCollectionConverter.convert(System.Double[])">
+            <summary>
+              Converts the specified values from an array of doubles to a comma-separated string.
+            </summary>
+            <param name = "values">The values.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GraphSynth.choiceMethods">
+            <summary>
+            Defines whether the choice method of a particular ruleset is done
+            by some design agent (human or computer) or is automatic - meaning 
+            once a rule is found to be recognized on a host, it is invoked.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.choiceMethods.Design">
+            <summary>
+            A set of options are first defined by an exhaustive recognition
+            of all rules in the ruleset. The decision of which option to 
+            choose is left to some design agent.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.choiceMethods.Automatic">
+            <summary>
+            Whenever a rule is recognized it is invoked. Rules invoked in 
+            the order presented in the ruleset.
+            </summary>
+        </member>
+        <member name="T:GraphSynth.feasibilityState">
+            <summary>
+            Defines whether the candidates created by a particular ruleset 
+            are feasible candidates and hence ready for evaluation, or
+            developing candidates which are yet to completed.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.feasibilityState.Unspecified">
+            <summary/>
+        </member>
+        <member name="F:GraphSynth.feasibilityState.Developing">
+            <summary>
+            Candidates are not yet complete, they are still 
+            developing; not ready for evaluation.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.feasibilityState.Feasible">
+            <summary>
+            Candidates are feasible and ready for evaluation.
+            </summary>
+        </member>
+        <member name="T:GraphSynth.nextGenerationSteps">
+            <summary>
+            Defines how the generation process is to continue.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.Unspecified">
+            <summary />
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.Stop">
+            <summary>
+            stop the generation process
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.Loop">
+            <summary>
+            loop within current ruleset
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToPrevious">
+            <summary>
+            go to the previous ruleset
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToNext">
+            <summary>
+            go to the next ruleset
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet0">
+            <summary>
+            go to ruleset #0
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet1">
+            <summary>
+            go to ruleset #1
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet2">
+            <summary>
+            go to ruleset #2
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet3">
+            <summary>
+            go to ruleset #3
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet4">
+            <summary>
+            go to ruleset #4
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet5">
+            <summary>
+            go to ruleset #5
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet6">
+            <summary>
+            go to ruleset #6
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet7">
+            <summary>
+            go to ruleset #7
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet8">
+            <summary>
+            go to ruleset #8
+            </summary>
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet9">
+            <summary>
+            go to ruleset #9
+            </summary> 
+        </member>
+        <member name="F:GraphSynth.nextGenerationSteps.GoToRuleSet10">
+            <summary>
+            go to ruleset #10
+            </summary>
+        </member>
+        <member name="T:GraphSynth.GenerationStatuses">
+            <summary>
+            Enumerator Declaration for How Generation Ended, GenerationStatus 
+            </summary>
+        </member>
+        <member name="F:GraphSynth.GenerationStatuses.Unspecified">
+            <summary />
+        </member>
+        <member name="F:GraphSynth.GenerationStatuses.Normal">
+            <summary>
+            Following a normal cycle through the RCA loop.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.GenerationStatuses.Choice">
+            <summary>
+            Following the choosing step of the RCA loop.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.GenerationStatuses.CycleLimit">
+            <summary>
+            Following the a maximum number of cycle through the RCA loop.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.GenerationStatuses.NoRules">
+            <summary>
+            Following no rules having been recognized.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.GenerationStatuses.TriggerRule">
+            <summary>
+            Following the application of a trigger rule.
+            </summary>
+        </member>
+        <member name="T:GraphSynth.optimize">
+            <summary>
+             Enumerator for Search functions that have generality
+             to either minimize or maximize (e.g. PNPPS, stochasticChoose). */
+            </summary>
+        </member>
+        <member name="F:GraphSynth.optimize.minimize">
+            <summary>
+            Minimize in the search - smaller is better.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.optimize.maximize">
+            <summary>
+            Maximize in the search - bigger is better.
+            </summary>
+        </member>
+        <member name="T:GraphSynth.OptimizeSort">
+            <summary>
+            A comparer for optimization that can be used for either 
+            minimization or maximization.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.OptimizeSort.#ctor(GraphSynth.optimize)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GraphSynth.OptimizeSort"/> class.
+            </summary>
+            <param name="direction">The direction.</param>
+        </member>
+        <member name="M:GraphSynth.OptimizeSort.Compare(System.Double,System.Double)">
+            <summary>
+            Compares two objects and returns a value indicating whether the 
+            first one is better than the second one. "Better than" is defined
+            by the optimize direction provided in the constructor. In order to
+            avoid errors in the sorting, we make sure that only -1 or 1 is 
+            returned. If they are equal, we return 1. This makes newer items to
+            the list appear before older items. It is slightly more efficient than 
+            returning -1 and conforms with the philosophy of always exploring or
+            preferring new concepts. See: SA's Metropolis Criteria.
+            </summary>
+            <returns>
+            A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero<paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than <paramref name="y"/>.
+            </returns>
+            <param name="x">The first object to compare.</param><param name="y">The second object to compare.</param>
+        </member>
+        <member name="T:GraphSynth.transfromType">
+            <summary>
+            Defines the constraint on how shapes/coordinates are transformed. 
+            </summary>
+        </member>
+        <member name="F:GraphSynth.transfromType.Prohibited">
+            <summary>
+            This type of transform is not recognized/performed.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.transfromType.OnlyX">
+            <summary>
+            This type of transform is recognized/performed only in the X-direction.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.transfromType.OnlyY">
+            <summary>
+            This type of transform is recognized/performed only in the Y-direction.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.transfromType.BothUniform">
+            <summary>
+            This type of transform is recognized/performed uniformly in both X and Y.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.transfromType.BothIndependent">
+            <summary>
+            This type of transform is recognized/performed in both X and Y independently.
+            </summary>
+        </member>
+        <member name="T:GraphSynth.MyIOPath">
+            <summary>
+              A simple static class created within a single function - to create relative paths.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.MyIOPath.GetRelativePath(System.String,System.String)">
+            <summary>
+              Gets the relative path to the target path starting at the "with Respect to" directory.
+              The method will add the necessary "..\" to get back to the common directory.
+            </summary>
+            <param name = "target">The target path.</param>
+            <param name = "withRespectTo">The "with respect to" directory.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GraphSynth.SearchIO">
+            <summary>
+              The static class that handles input and output statements from a
+              Search Process.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.SearchIO.getIteration(System.String)">
+            <summary>
+              Gets the iteration.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.getMiscObject(System.String)">
+            <summary>
+              Gets the misc object.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.GetTerminateRequest(System.String)">
+            <summary>
+            Gets the Boolean indicating whether a termination request has been sent.
+            </summary>
+            <param name="searchThreadName">Name of the search thread.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.setTerminationRequest(System.String)">
+            <summary>
+              Sets the termination request.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+        </member>
+        <member name="M:GraphSynth.SearchIO.setTimeInterval(System.String,System.TimeSpan)">
+            <summary>
+              Sets the time interval.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+            <param name = "value">The value.</param>
+        </member>
+        <member name="M:GraphSynth.SearchIO.getTimeInterval(System.String)">
+            <summary>
+              Gets the time interval.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+            <returns></returns>
+        </member>
+        <member name="F:GraphSynth.SearchIO.defaultVerbosity">
+            <summary>
+              Defines the default verbosity of all search threads.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.SearchIO.setVerbosity(System.String,System.Int32)">
+            <summary>
+              Sets the verbosity.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+            <param name = "value">The value.</param>
+        </member>
+        <member name="M:GraphSynth.SearchIO.getVerbosity(System.String)">
+            <summary>
+              Gets the verbosity.
+            </summary>
+            <param name = "threadName">Name of the thread.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.output(System.Object,System.Int32)">
+            <summary>
+              Calling SearchIO.output will output the string, message, to the 
+              text display on the right of GraphSynth, but ONLY if the verbosity (see
+              below) is greater than or equal to your specified limit for this message.
+              the verbosity limit must be 0, 1, 2, 3, or 4.
+            </summary>
+            <param name = "message">The message.</param>
+            <param name = "verbosityLimit">The verbosity limit.</param>
+        </member>
+        <member name="M:GraphSynth.SearchIO.output(System.Object[])">
+            <summary>
+              Outputs the specified message to the output textbox -
+              one for each verbosity level.
+            </summary>
+            <param name = "list">The list.</param>
+        </member>
+        <member name="M:GraphSynth.SearchIO.MessageBoxShow(System.String)">
+            <summary>
+              Shows a messagebox (pop-up or dialog) - redirects to System.Windows.MessageBox.Show().
+            </summary>
+            <param name = "messageBoxText">The message box text.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.MessageBoxShow(System.String,System.String)">
+            <summary>
+              Shows a messagebox (pop-up or dialog) - redirects to System.Windows.MessageBox.Show().
+            </summary>
+            <param name = "messageBoxText">The message box text.</param>
+            <param name = "caption">The caption.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.MessageBoxShow(System.String,System.String,System.Windows.MessageBoxButton)">
+            <summary>
+              Shows a messagebox (pop-up or dialog) - redirects to System.Windows.MessageBox.Show().
+            </summary>
+            <param name = "messageBoxText">The message box text.</param>
+            <param name = "caption">The caption.</param>
+            <param name = "button">The buttons to show.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.MessageBoxShow(System.String,System.String,System.Windows.MessageBoxButton,System.Windows.MessageBoxImage)">
+            <summary>
+              Shows a messagebox (pop-up or dialog) - redirects to System.Windows.MessageBox.Show().
+            </summary>
+            <param name = "messageBoxText">The message box text.</param>
+            <param name = "caption">The caption.</param>
+            <param name = "button">The buttons to show.</param>
+            <param name = "icon">The icon.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.MessageBoxShow(System.String,System.String,System.Windows.MessageBoxButton,System.Windows.MessageBoxImage,System.Windows.MessageBoxResult)">
+            <summary>
+              Shows a messagebox (pop-up or dialog) - redirects to System.Windows.MessageBox.Show().
+            </summary>
+            <param name = "messageBoxText">The message box text.</param>
+            <param name = "caption">The caption.</param>
+            <param name = "button">The buttons to show.</param>
+            <param name = "icon">The icon.</param>
+            <param name = "defaultResult">The default result.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.SearchIO.MessageBoxShow(System.String,System.String,System.Windows.MessageBoxButton,System.Windows.MessageBoxImage,System.Windows.MessageBoxResult,System.Windows.MessageBoxOptions)">
+            <summary>
+              Shows a messagebox (pop-up or dialog) - redirects to System.Windows.MessageBox.Show().
+            </summary>
+            <param name = "messageBoxText">The message box text.</param>
+            <param name = "caption">The caption.</param>
+            <param name = "button">The buttons to show.</param>
+            <param name = "icon">The icon.</param>
+            <param name = "defaultResult">The default result.</param>
+            <param name = "options">The options.</param>
+            <returns></returns>
+        </member>
+        <member name="F:GraphSynth.SearchIO.main">
+            <summary>
+              A reference to the main window
+            </summary>
+        </member>
+        <member name="M:GraphSynth.SearchIO.addAndShowGraphWindow(System.Object,System.String)">
+            <summary>
+              Adds and shows a graph window.
+            </summary>
+            <param name = "graphObjects">The graph objects.</param>
+            <param name = "title">The title.</param>
+        </member>
+        <member name="M:GraphSynth.SearchIO.addAndShowRuleWindow(System.Object,System.String)">
+            <summary>
+              Adds and shows a rule window.
+            </summary>
+            <param name = "ruleObjects">The rule objects.</param>
+            <param name = "title">The title.</param>
+        </member>
+        <member name="P:GraphSynth.SearchIO.processNum">
+            <summary>
+              Gets the process number.
+            </summary>
+            <value>The process number.</value>
+        </member>
+        <member name="P:GraphSynth.SearchIO.iteration">
+            <summary>
+              Gets or sets the iteration.
+            </summary>
+            <value>The iteration.</value>
+        </member>
+        <member name="P:GraphSynth.SearchIO.miscObject">
+            <summary>
+              Gets or sets the misc object.
+            </summary>
+            <value>The misc object.</value>
+        </member>
+        <member name="P:GraphSynth.SearchIO.terminateRequest">
+            <summary>
+              Gets a value indicating whether [terminate request].
+            </summary>
+            <value><c>true</c> if [terminate request]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:GraphSynth.SearchIO.timeInterval">
+            <summary>
+              Gets the time interval.
+            </summary>
+            <value>The time interval.</value>
+        </member>
+        <member name="P:GraphSynth.SearchIO.verbosity">
+            <summary>
+              Gets the verbosity.
+            </summary>
+            <value>The verbosity.</value>
+        </member>
+        <member name="T:GraphSynth.SearchIOToTextWriter">
+            <summary>
+              this class simply helps SearchIO get its output to the sidebar in GraphSynth.
+              It does this by inheriting from the TextWriter class. Borrowed from ? on CodeProject.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.SearchIOToTextWriter.outputBox">
+            <summary>
+              The output box where text is presented to the user.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.SearchIOToTextWriter.WriteLine(System.String)">
+            <summary>
+              Writes the line.
+            </summary>
+            <param name = "str">The STR.</param>
+        </member>
+        <member name="P:GraphSynth.SearchIOToTextWriter.Encoding">
+            <summary>
+              When overridden in a derived class, returns the <see cref = "T:System.Text.Encoding" /> in which the output is written.
+            </summary>
+            <value></value>
+            <returns>The Encoding in which the output is written.</returns>
+        </member>
+        <member name="T:GraphSynth.ISettings">
+            <summary>
+            The interface of properties defined in the settings file.
+            </summary>
+        </member>
+        <member name="P:GraphSynth.ISettings.maxRulesToDisplay">
+            <summary>
+            Gets or sets the max rules to display.
+            </summary>
+            <value>The max rules to display.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.maxRulesToApply">
+            <summary>
+            Gets or sets the max rules to apply.
+            </summary>
+            <value>The max rules to apply.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.numOfRuleSets">
+            <summary>
+            Gets or sets the number of rule sets.
+            </summary>
+            <value>The num of rule sets.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.compiledparamRules">
+            <summary>
+            Gets or sets the compiledparam rules.
+            </summary>
+            <value>The compiledparam rules.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.defaultSeedFileName">
+            <summary>
+            Gets or sets the default name of the seed file.
+            </summary>
+            <value>The default name of the seed file.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.filer">
+            <summary>
+            Gets or sets the filer instance that controls the opening and saving of files.
+            </summary>
+            <value>The filer.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.seed">
+            <summary>
+            Gets or sets the seed graph (the top of the search tree) is stored in seed.
+            </summary>
+            <value>The seed.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.rulesets">
+            <summary>
+            Gets or sets the rulesets, which is an array of length Program.settings.numOfRuleSet
+            these can be sets in App.gsconfig or through the options at the top of the Design
+            pulldown menu.
+            </summary>
+            <value>The rulesets.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.recompileRules">
+            <summary>
+            Gets or sets a value indicating whether [recompile rules].
+            </summary>
+            <value><c>true</c> if [recompile rules]; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.defaultVerbosity">
+            <summary>
+            Gets or sets the default verbosity.
+            </summary>
+            <value>The default verbosity.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.workingDirectory">
+            <summary>
+            Gets the working directory.
+            </summary>
+            <value>The working directory.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.inputDirectory">
+            <summary>
+            Gets the input directory.
+            </summary>
+            <value>The input directory.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.outputDirectory">
+            <summary>
+            Gets the output directory.
+            </summary>
+            <value>The output directory.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.rulesDirectory">
+            <summary>
+            Gets the rules directory.
+            </summary>
+            <value>The rules directory.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.helpDirectory">
+            <summary>
+            Gets the help directory.
+            </summary>
+            <value>The help directory.</value>
+        </member>
+        <member name="P:GraphSynth.ISettings.execDir">
+            <summary>
+            Gets the start dir.
+            </summary>
+            <value>The start dir.</value>
+        </member>
+        <member name="T:GraphSynth.ShapeKey">
+            <summary>
+            Nodes and arcs include a reference to how they are diplayed. Currently these
+            are WPF shapes. In order to avoid tying the Representation class to closely
+            with WPF we included this simple base class. It couldn't be an interface because
+            for the need for a constructor. The copy function is also required by the
+            Representation project. The copy method is needed to copy nodes and arcs to apply a
+            rule and save a candidate state. For Layout Algorithms, some properties may be added
+            to help the Layout Algorithms, which are currently envisioned as being WPF free. The
+            one other method that is included is UpdateShapeString this is filled in - in the
+            GraphSynth.exe but will likely be important in other APIs.
+            </summary>
+        </member>
+        <member name="T:GraphSynth.IDisplayShape">
+            <summary>
+            The interface for the shape that a graph element creates on the screen. The
+            goal is not to be too tied to WPF/XAML to ease the transition to other 
+            platforms. 
+            </summary>
+        </member>
+        <member name="M:GraphSynth.IDisplayShape.Copy">
+            <summary>
+            Copies this instance.
+            </summary>
+            <returns>a copy</returns>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.Shape">
+            <summary>
+            Gets the shape as an object.
+            </summary>
+            <value>The shape.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.Tag">
+            <summary>
+            Gets or sets the tag.
+            </summary>
+            <value>The tag.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.Height">
+            <summary>
+            Gets or sets the height.
+            </summary>
+            <value>The height.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+            <value>The width.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.ScreenX">
+            <summary>
+            Gets or sets the X position on the screen.
+            </summary>
+            <value>The X position.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.ScreenY">
+            <summary>
+            Gets or sets the Y position on the screen.
+            </summary>
+            <value>The Y position.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.StrokeThickness">
+            <summary>
+            Gets or sets the stroke thickness.
+            </summary>
+            <value>The stroke thickness.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.Stroke">
+            <summary>
+            Gets or sets the description of the stroke of the shape.
+            </summary>
+            <value>The stroke description.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.Fill">
+            <summary>
+            Gets or sets the description of how the shape is filled.
+            </summary>
+            <value>The fill description.</value>
+        </member>
+        <member name="P:GraphSynth.IDisplayShape.TransformMatrix">
+            <summary>
+            Gets or sets the 3x3 transform matrix.
+            </summary>
+            <value>The transform matrix.</value>
+        </member>
+        <member name="M:GraphSynth.ShapeKey.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GraphSynth.ShapeKey"/> class.
+            </summary>
+            <param name="s">The s.</param>
+        </member>
+        <member name="M:GraphSynth.ShapeKey.Copy">
+            <summary>
+            Copies this instance.
+            </summary>
+            <returns>a copy</returns>
+        </member>
+        <member name="M:GraphSynth.ShapeKey.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.Shape">
+            <summary>
+            Gets the shape as an object.
+            </summary>
+            <value>The shape.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.Tag">
+            <summary>
+            Gets or sets the tag.
+            </summary>
+            <value>The tag.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.ScreenX">
+            <summary>
+            Gets or sets the X position on the screen.
+            </summary>
+            <value>The X position.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.ScreenY">
+            <summary>
+            Gets or sets the Y position on the screen.
+            </summary>
+            <value>The Y position.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.Height">
+            <summary>
+            Gets or sets the height.
+            </summary>
+            <value>The height.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+            <value>The width.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.StrokeThickness">
+            <summary>
+            Gets or sets the stroke thickness.
+            </summary>
+            <value>The stroke thickness.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.Stroke">
+            <summary>
+            Gets or sets the description of the stroke of the shape.
+            </summary>
+            <value>The stroke description.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.Fill">
+            <summary>
+            Gets or sets the description of how the shape is filled.
+            </summary>
+            <value>The fill description.</value>
+        </member>
+        <member name="P:GraphSynth.ShapeKey.TransformMatrix">
+            <summary>
+            Gets or sets the 3x3 transform matrix.
+            </summary>
+            <value>The transform matrix.</value>
+        </member>
+        <member name="T:GraphSynth.ErrorLogger">
+            <summary>
+              A class that allows us to dump errors to a txt file in the executable directory.
+            </summary>
+        </member>
+        <member name="F:GraphSynth.ErrorLogger.ErrorLogFile">
+            <summary>
+              The contents of the Error log
+            </summary>
+        </member>
+        <member name="M:GraphSynth.ErrorLogger.Catch(System.Exception)">
+            <summary>
+              Catches the specified exception.
+            </summary>
+            <param name = "Exc">The exc.</param>
+        </member>
+        <member name="M:GraphSynth.ErrorLogger.MakeErrorString(System.Exception,System.Boolean)">
+            <summary>
+              Makes the error string.
+            </summary>
+            <param name = "Exc">The exc.</param>
+            <param name = "includeComputerData">if set to <c>true</c> [include computer data].</param>
+            <returns></returns>
+        </member>
+        <member name="T:GraphSynth.IFiler">
+            <summary>
+            The interface for the filer class. A class for opening and saving files.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.IFiler.Save(System.String,System.Object,System.Boolean)">
+            <summary>
+            Saves the specified filename.
+            </summary>
+            <param name="filename">The filename.</param>
+            <param name="o">The o.</param>
+            <param name="SuppressWarnings">if set to <c>true</c> [suppress warnings].</param>
+        </member>
+        <member name="M:GraphSynth.IFiler.SaveCandidates(System.String,System.Collections.IList,System.Boolean,System.Boolean)">
+            <summary>
+            Saves the candidates.
+            </summary>
+            <param name="filename">The filename base, a unique number is added for each
+            candidate (plus the timestamp, if true).</param>
+            <param name="candidates">The candidates.</param>
+            <param name="SaveToOutputDir">if set to <c>true</c> [save to output dir].</param>
+            <param name="timeStamp">if set to <c>true</c> [time stamp].</param>
+        </member>
+        <member name="M:GraphSynth.IFiler.Open(System.String,System.Boolean)">
+            <summary>
+            Opens the specified filename.
+            </summary>
+            <param name="filename">The filename.</param>
+            <param name="SuppressWarnings">if set to <c>true</c> [suppress warnings].</param>
+            <returns></returns>
+        </member>
+        <member name="P:GraphSynth.IFiler.inputDirectory">
+            <summary>
+            Gets or sets the input directory.
+            </summary>
+            <value>The input directory.</value>
+        </member>
+        <member name="P:GraphSynth.IFiler.outputDirectory">
+            <summary>
+            Gets or sets the output directory.
+            </summary>
+            <value>The output directory.</value>
+        </member>
+        <member name="P:GraphSynth.IFiler.rulesDirectory">
+            <summary>
+            Gets or sets the rules directory.
+            </summary>
+            <value>The rules directory.</value>
+        </member>
+        <member name="T:GraphSynth.IntCollectionConverter">
+            <summary>
+              A converter class for changing a collection of ints into a string and vice-versa.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+              Returns whether this converter can convert an object of the given type to the type of this converter, using the specified context.
+            </summary>
+            <param name = "context">An <see cref = "T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+            <param name = "sourceType">A <see cref = "T:System.Type" /> that represents the type you want to convert from.</param>
+            <returns>
+              true if this converter can perform the conversion; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)">
+            <summary>
+              Converts the given object to the type of this converter, using the specified context and culture information.
+            </summary>
+            <param name = "context">An <see cref = "T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+            <param name = "culture">The <see cref = "T:System.Globalization.CultureInfo" /> to use as the current culture.</param>
+            <param name = "value">The <see cref = "T:System.Object" /> to convert.</param>
+            <returns>
+              An <see cref = "T:System.Object" /> that represents the converted value.
+            </returns>
+            <exception cref = "T:System.NotSupportedException">The conversion cannot be performed. </exception>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+              Determines whether this instance [can convert to] the specified context.
+            </summary>
+            <param name = "context">The context.</param>
+            <param name = "sourceType">Type of the source.</param>
+            <returns>
+              <c>true</c> if this instance [can convert to] the specified context; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object,System.Type)">
+            <summary>
+              Converts to.
+            </summary>
+            <param name = "context">The context.</param>
+            <param name = "culture">The culture.</param>
+            <param name = "value">The value.</param>
+            <param name = "s">The s.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.convert(System.String)">
+            <summary>
+              Converts the for a string of comma-separated-values to a List of ints.
+            </summary>
+            <param name = "value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.convert(System.Collections.Generic.List{System.Int32})">
+            <summary>
+              Converts the specified values from a List of ints to a comma-separated string.
+            </summary>
+            <param name = "values">The values.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.IntCollectionConverter.convert(System.Int32[])">
+            <summary>
+              Converts the specified values from an array of ints to a comma-separated string.
+            </summary>
+            <param name = "values">The values.</param>
+            <returns></returns>
+        </member>
+        <member name="T:GraphSynth.StringCollectionConverter">
+            <summary>
+              Used to convert a single string into a list of strings and vice-versa.
+            </summary>
+        </member>
+        <member name="M:GraphSynth.StringCollectionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+              Returns whether this converter can convert an object of the given type to the type of this converter, using the specified context.
+            </summary>
+            <param name = "context">An <see cref = "T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+            <param name = "sourceType">A <see cref = "T:System.Type" /> that represents the type you want to convert from.</param>
+            <returns>
+              true if this converter can perform the conversion; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:GraphSynth.StringCollectionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object)">
+            <summary>
+              Converts the given object to the type of this converter, using the specified context and culture information.
+            </summary>
+            <param name = "context">An <see cref = "T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+            <param name = "culture">The <see cref = "T:System.Globalization.CultureInfo" /> to use as the current culture.</param>
+            <param name = "value">The <see cref = "T:System.Object" /> to convert.</param>
+            <returns>
+              An <see cref = "T:System.Object" /> that represents the converted value.
+            </returns>
+            <exception cref = "T:System.NotSupportedException">The conversion cannot be performed. </exception>
+        </member>
+        <member name="M:GraphSynth.StringCollectionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+              Determines whether this instance [can convert to] the specified context.
+            </summary>
+            <param name = "context">The context.</param>
+            <param name = "sourceType">Type of the source.</param>
+            <returns>
+              <c>true</c> if this instance [can convert to] the specified context; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:GraphSynth.StringCollectionConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object,System.Type)">
+            <summary>
+              Converts to.
+            </summary>
+            <param name = "context">The context.</param>
+            <param name = "culture">The culture.</param>
+            <param name = "value">The value.</param>
+            <param name = "s">The s.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.StringCollectionConverter.convert(System.String)">
+            <summary>
+              Converts the comma-separated-values into a List of strings.
+            </summary>
+            <param name = "value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GraphSynth.StringCollectionConverter.convert(System.Collections.Generic.List{System.String})">
+            <summary>
+              Converts the specified List of strings into a comma separated single string.
+            </summary>
+            <param name = "values">The values.</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

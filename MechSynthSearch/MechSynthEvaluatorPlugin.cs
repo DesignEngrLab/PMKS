@@ -11,6 +11,7 @@ namespace MechSynth
         public MechSynthEvaluatorPlugin(ISettings settings)
             : base(settings)
         {
+            this.AutoPlay = true;
             this.RequiredNumRuleSets = 0;
         }
         public override string text
@@ -32,7 +33,8 @@ namespace MechSynth
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
             MechSimulation ev = new MechSimulation();
-            ev.c = new candidate(testGraph, 0);
+            ev.Graph = testGraph;
+            ev.calculate(new[]{0.0,0.0, 0.0,1.0, 3.0,4.0,2.0,0.0});
             //ev.saveParameterData(settings.outputDirectory + "outputPathC1");
             SearchIO.output("***Completed!***");
             //

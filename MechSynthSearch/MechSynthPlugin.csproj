@@ -43,9 +43,6 @@
     <Reference Include="GraphSynth.Representation">
       <HintPath>..\Resources\x86\GraphSynth.Representation.dll</HintPath>
     </Reference>
-    <Reference Include="OptimizationToolbox">
-      <HintPath>..\Resources\x86\OptimizationToolbox.dll</HintPath>
-    </Reference>
     <Reference Include="StarMath">
       <HintPath>..\Resources\x86\StarMath.dll</HintPath>
     </Reference>
@@ -67,9 +64,15 @@
     <Compile Include="MechSynthEvaluatorPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\OOOT\OptimizationToolbox\OptimizationToolbox.csproj">
+      <Project>{02218BAA-F410-4B89-96C9-9CE2A0F7FC8A}</Project>
+      <Name>OptimizationToolbox</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismSimulator.csproj">
       <Project>{6FCC60C6-E639-4DD8-B8A1-F096CED5BA8F}</Project>
       <Name>PlanarMechanismSimulator</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
