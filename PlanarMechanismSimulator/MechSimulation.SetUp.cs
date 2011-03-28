@@ -18,7 +18,7 @@ namespace PlanarMechanismSimulator
         /// <param name="inputSweepAngle">The input sweep angle.</param>
         /// <param name="numSteps">The number of steps.</param>
         /// <param name="graph">The graph.</param>
-        public MechSimulation(double inputSweepAngle = 2 * Math.PI, int numSteps = 100, designGraph graph = null)
+        public MechSimulation(double inputSweepAngle = 2 * Math.PI, int numSteps = 12, designGraph graph = null)
         {
             this.inputSweepAngle = inputSweepAngle;
             this.numSteps = numSteps;
