@@ -20,8 +20,8 @@ namespace MechSynth
         {
             Random r = new Random();
 
-            double[,] desiredPath ={{60,50},{58,48},{52,47},
-                                       {54,49},{56,51},{57,53},{58,55},{59,57},{62,53},{60,50}};
+            double[,] desiredPath ={{1.87,8},{2.93,8.46},{2.80,8.41},
+                                       {1.99,8.06},{0.96,7.46},{0,6.71},{-0.77,5.93},{-1.3,5.26},{-1.60,4.81},{-1.65,4.75},{-1.25,5.33},{0,6.71}};
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
@@ -52,8 +52,8 @@ namespace MechSynth
         {
             Random r = new Random();
 
-            double[,] desiredPath ={{60,50},{58,48},{52,47},
-                                       {54,49},{56,51},{57,53},{58,55},{59,57},{62,53},{60,50}};
+            double[,] desiredPath ={{1.87,8},{2.93,8.46},{2.80,8.41},
+                                       {1.99,8.06},{0.96,7.46},{0,6.71},{-0.77,5.93},{-1.3,5.26},{-1.60,4.81},{-1.65,4.75},{-1.25,5.33},{0,6.71}};
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
