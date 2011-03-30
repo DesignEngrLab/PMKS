@@ -81,7 +81,7 @@ namespace PlanarMechanismSimulator
         }
         #endregion
         #region Function: Find New Positions
-        private status findNewPositions(int timeRow,  double[,] pivotLengths)
+        private Boolean findNewPositions(int timeRow,  double[,] pivotLengths)
         {
             #region Perform Numerical integration
             //int i;
@@ -578,23 +578,7 @@ namespace PlanarMechanismSimulator
             PositionsFound.Clear();
             #endregion
 
-            #region Check if there is any NAN in the pivots
-            //if there is any NAN for any pivots.x / pivots.y , then system.output and also exit this candidate
-
-            for (int tempi = 0; tempi < p; tempi++)
-                if (pivots1[tempi].X == double.NaN || pivots1[tempi].Y == double.NaN)
-                {
-                    SearchIO.output("Failed Candidate - Rotatability not satisfied");
-                    return status.PositionRotabilityViolated;
-
-
-                    //how to exit this particular candidate????
-                    //can I have a variable which is defined in setup and which will track this condition?
-                    //which can be used even for circle diagram too. 
-                    //if NaNtracker is 1.0; then there is NaN and the system is no good.
-                }
-
-            #endregion
+          
 
             #region Copy values to Pivots X and Y
 
@@ -625,8 +609,33 @@ namespace PlanarMechanismSimulator
             // make sure to put positions both in pivotparameters as well as back into the graph (just in pivots list)
             #endregion
 
-            return status.normal;
+            return checkrotatability(pivots1);
         }
+
+        #region Check if there is any NAN in the pivots
+        private bool checkrotatability(List<node> pivots1)
+        {
+            
+            //if there is any NAN for any pivots.x / pivots.y , then system.output and also exit this candidate
+            Boolean result = true;
+            for (int tempi = 0; tempi < p; tempi++)
+                if (pivots1[tempi].X == double.NaN || pivots1[tempi].Y == double.NaN)
+                {
+                    SearchIO.output("Failed Candidate - Rotatability not satisfied");
+                    result = false;
+                    return result;
+
+
+                    //how to exit this particular candidate????
+                    //can I have a variable which is defined in setup and which will track this condition?
+                    //which can be used even for circle diagram too. 
+                    //if NaNtracker is 1.0; then there is NaN and the system is no good.
+                }
+            return result;
+
+            
+        }
+        #endregion
 
         #endregion
         #region Circle - Line Intersection for Sliders

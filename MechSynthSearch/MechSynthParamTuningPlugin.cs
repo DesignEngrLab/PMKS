@@ -40,9 +40,15 @@ namespace MechSynth
             //gbu.Add(new GoldenSection(.001, 20));
             //gbu.Add(new BFGSDirection());
             NMOpt.Add(new MaxIterationsConvergence(400));
+            double[] x0 = new double[8];
+            for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
+                x0[i] = r.NextDouble();
+            sim.calculate(x0);
 
             double[] xStar;
-            double fStar = NMOpt.Run(out xStar,10);
+            double fStar = NMOpt.Run(out xStar, x0);
+         //   double fStar = NMOpt.Run(out xStar,8);
+            
 
             SearchIO.output("***Completed!***");
 
@@ -60,7 +66,7 @@ namespace MechSynth
             double iAlpha = 0; 
             MechSimulation sim = new MechSimulation();
             BoundingBox bb = new BoundingBox(sim, 200, 200);
-
+            
             List<candidate> candidates = new List<candidate>();
             while (true) //notConverged())
             {
@@ -77,10 +83,13 @@ namespace MechSynth
                         //gbu.Add(new GoldenSection(.001, 20));
                         //gbu.Add(new BFGSDirection());
                         NMOpt.Add(new MaxIterationsConvergence(100));
-
+                        double[] x0 = new double[8];
+                        for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
+                            x0[i] = r.NextDouble();
 
                         double[] xStar;
-                        double fStar = NMOpt.Run(out xStar,10);
+                        double fStar = NMOpt.Run(out xStar, x0);
+                        //   double fStar = NMOpt.Run(out xStar,8);
                         c.f0 = fStar;
                     }
                 }

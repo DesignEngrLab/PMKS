@@ -338,8 +338,22 @@ namespace PlanarMechanismSimulator
             int k = 0;
             for (int ii = 0; ii < p; ii++)
             {
-                PivotParameters[ii, 0, 0] = pivots[ii].X = x[k++];
-                PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k++];
+                if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("input"))
+                {
+                    PivotParameters[ii, 0, 0] = 0.0;
+                    PivotParameters[ii, 0, 0] = 0.0;
+                }
+                else if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("ip"))
+                {
+                    PivotParameters[ii, 0, 0] = 6.0;
+                    PivotParameters[ii, 0, 0] = 0.0;
+
+                }
+                else
+                {
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = x[k++];
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k++];
+                }
             }
             simulate();
         }
@@ -398,7 +412,7 @@ namespace PlanarMechanismSimulator
                 //Find new position and update Path matrix of the output pivot too
                 SearchIO.output(timeRow);
             }
-
+            
             #endregion
 
 
@@ -406,13 +420,13 @@ namespace PlanarMechanismSimulator
             //  NumericalPosition(pivots, linkParameters, pivots, circleDiagram, numTimeSteps, pivotParameters, timet, newt);
         }
 
-        private enum status
-        {
-            normal,
-            ICsNotFound,
-            PositionNotDyadic,
-            PositionRotabilityViolated
-        } ;
+        //private enum status
+        //{
+        //    normal,
+        //    ICsNotFound,
+        //    PositionNotDyadic,
+        //    PositionRotabilityViolated
+        //} ;
         //#region Save Output Parameter Data
         //public void saveParameterData(string filename)
         //{
