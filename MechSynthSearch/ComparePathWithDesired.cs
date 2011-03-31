@@ -20,8 +20,7 @@ namespace MechSynth
           this.sim = sim;
       }
       public double calculate(double[] x)
-      {
-          
+      {          
           //the code below will work for Single output conditions
           //now store the pivot parameters into an array or we could directly manipulate it
           //the program is going to directly compare from index 0 to the last without trying to identify the closest one

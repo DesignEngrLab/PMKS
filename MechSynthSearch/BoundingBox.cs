@@ -39,5 +39,6 @@ namespace MechSynth
             return Math.Max((maxX - minX - maxWidth), (maxY - minY - maxHeight));
 
         }
+
     }
 }
