@@ -58,6 +58,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ComparePathWithDesired.cs" />
+    <Compile Include="GrashofCriteria.cs" />
     <Compile Include="MechSynthParamTuningPlugin.cs" />
     <Compile Include="DepthFirstSearch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -67,7 +68,6 @@
     <ProjectReference Include="..\..\OOOT\OptimizationToolbox\OptimizationToolbox.csproj">
       <Project>{02218BAA-F410-4B89-96C9-9CE2A0F7FC8A}</Project>
       <Name>OptimizationToolbox</Name>
-      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismSimulator.csproj">
       <Project>{6FCC60C6-E639-4DD8-B8A1-F096CED5BA8F}</Project>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using GraphSynth.Representation;
 using OptimizationToolbox;
 using PlanarMechanismSimulator;
+using System.IO;
 
 namespace MechSynth
 {
@@ -28,6 +29,7 @@ namespace MechSynth
           //distance function required
           //that could be incorporated into the Math library
           double[,] output = new double[12, 2];
+          double[,] otherpivot = new double[12, 2];
 
           //store pivots separately
 
@@ -41,6 +43,19 @@ namespace MechSynth
               if (pivot_compare[i].localLabels.Contains("output"))
                   outputpivotindex = i;
 
+          //trying to find the other pivot connected to the input
+
+          int otherpivotindex = 0;
+
+          for(int i=0; i<pivot_compare.Count;i++)
+              if(!pivot_compare[i].localLabels.Contains("ground") && !pivot_compare[i].localLabels.Contains("output") && !pivot_compare[i].localLabels.Contains("input"))
+                  otherpivotindex=i;
+
+          for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
+          {
+              otherpivot[i, 0] = sim.PivotParameters[outputpivotindex, i, 0];
+              otherpivot[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
+          }
 
           for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
           {
@@ -48,7 +63,39 @@ namespace MechSynth
               output[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
 
           }
-          return rmsdistance(output);
+          double rm_s = rmsdistance(output);
+
+          //printing pivot positions for each cycle: 
+
+          if (rm_s < 1.0)
+          {
+
+              FileStream fs = new FileStream("4bar_2pivots.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+              using (StreamWriter sw = new StreamWriter(fs))
+              {
+                  sw.Write("Output X" + "\t");
+                  sw.Write("Output Y" + "\t");
+                  sw.Write("Other Pivot X" + "\t");
+                  sw.Write("Other Pivot Y" + "\t");
+                  sw.Write("RMS" + "\t");
+                  sw.WriteLine();
+                  for (int i = 0; i < 12; i++)
+                  {
+
+                      sw.Write(output[i, 0] + "\t");
+                      sw.Write(output[i, 1] + "\t");
+                      sw.Write(otherpivot[i, 0] + "\t");
+                      sw.Write(otherpivot[i, 0] + "\t");
+                      sw.Write(rm_s + "\t");
+
+                  }
+
+
+              }
+          }
+          
+          return rm_s;
       }
 
       private double rmsdistance(double[,] output)
@@ -65,6 +112,9 @@ namespace MechSynth
           }
 
           rms /= desiredPath.GetLength(0);
+
+
+          SearchIO.output(rms, 0);
 
           return Math.Sqrt(rms);
       }

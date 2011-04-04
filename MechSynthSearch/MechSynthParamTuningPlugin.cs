@@ -7,6 +7,7 @@ using OptimizationToolbox;
 using PlanarMechanismSimulator;
 using SearchIO = GraphSynth.SearchIO;
 
+
 namespace MechSynth
 {
     public class MechSynthParamTuningPlugin : SearchProcess
@@ -27,6 +28,7 @@ namespace MechSynth
             double iOmega = 2;
             double iAlpha = 0; 
             MechSimulation sim = new MechSimulation();
+         
 
             sim.Graph = seedGraph;
           //  designGraph testGraph = this.seedGraph;
@@ -39,14 +41,20 @@ namespace MechSynth
             //adding a new objective function which can be taken by the optimization program
             var pathObjFun = new ComparePathWithDesired(seedCandidate, desiredPath, sim);  
             
+            
             //initializing the optimization program 
             NelderMead NMOpt = new NelderMead();
+            var PowellsOpt = new GradientBasedOptimization();
+            PowellsOpt.Add(new PowellMethod());
+            PowellsOpt.Add(new DSCPowell(0.00001, .5, 200));
 
             //adding simulation
             NMOpt.Add(sim);
+            PowellsOpt.Add(sim);
 
             //adding objective function to this optimization routine
             NMOpt.Add(pathObjFun);
+            PowellsOpt.Add(pathObjFun);
 
             //we are removing this since we do not have a merit function defined
             //NMOpt.Add(bb);
@@ -55,20 +63,20 @@ namespace MechSynth
             //gbu.Add(new BFGSDirection());
 
             //max convergence 
-            NMOpt.Add(new MaxIterationsConvergence(400));
-
+            NMOpt.Add(new MaxIterationsConvergence(2000));
+            PowellsOpt.Add(new DeltaXConvergence(0.01));
             //generating random x,y values
             double[] x0 = new double[4];
             for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
-                x0[i] = r.NextDouble();
+                x0[i] = 10*r.NextDouble();
 
             //sim.calculate(x0);
 
             double[] xStar;
-            double fStar = NMOpt.Run(out xStar, x0);
+          //  double fStar = NMOpt.Run(out xStar, x0);
+            double fStar = PowellsOpt.Run(out xStar, x0);
          //   double fStar = NMOpt.Run(out xStar,8);
             
-
             SearchIO.output("***Completed!***");
 
 
