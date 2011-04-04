@@ -50,6 +50,18 @@
             <param name = "B">The double vector to be multiplied with</param>
             <returns>A 1D double array that contains the product</returns>
         </member>
+        <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Collections.Generic.IList{System.Double},System.Int32)">
+            <summary>
+            Multiplies all elements of a 1D double array with the double value.
+            </summary>
+            <param name="a">The double value to be multiplied</param>
+            <param name="B">The double vector to be multiplied with</param>
+            <param name="length">The length of the vector B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 1D double array that contains the product
+            </returns>
+        </member>
         <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Collections.Generic.IList{System.Int32})">
             <summary>
               Multiplies all elements of a 1D integer array with the double value.
@@ -57,6 +69,18 @@
             <param name = "a">The double value to be multiplied</param>
             <param name = "B">The integer vector to be multiplied with</param>
             <returns>A 1D double array that contains the product</returns>
+        </member>
+        <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Collections.Generic.IList{System.Int32},System.Int32)">
+            <summary>
+            Multiplies all elements of a 1D integer array with the double value.
+            </summary>
+            <param name="a">The double value to be multiplied</param>
+            <param name="B">The integer vector to be multiplied with</param>
+            <param name="length">The length of the vector B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 1D double array that contains the product
+            </returns>
         </member>
         <member name="M:StarMathLib.StarMath.divide(System.Collections.Generic.IList{System.Double},System.Double)">
             <summary>
@@ -66,6 +90,18 @@
             <param name = "a">The double value to be divided by, the divisor.</param>
             <returns>A 1D double array that contains the product</returns>
         </member>
+        <member name="M:StarMathLib.StarMath.divide(System.Collections.Generic.IList{System.Double},System.Double,System.Int32)">
+            <summary>
+            Divides all elements of a 1D double array by the double value.
+            </summary>
+            <param name="B">The vector to be divided</param>
+            <param name="a">The double value to be divided by, the divisor.</param>
+            <param name="length">The length of the vector B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 1D double array that contains the product
+            </returns>
+        </member>
         <member name="M:StarMathLib.StarMath.divide(System.Collections.Generic.IList{System.Int32},System.Double)">
             <summary>
               Divides all elements of a 1D integer array by the double value.
@@ -73,6 +109,18 @@
             <param name = "B">The vector to be divided</param>
             <param name = "a">The double value to be divided by, the divisor.</param>
             <returns>A 1D double array that contains the product</returns>
+        </member>
+        <member name="M:StarMathLib.StarMath.divide(System.Collections.Generic.IList{System.Int32},System.Double,System.Int32)">
+            <summary>
+            Divides all elements of a 1D integer array by the double value.
+            </summary>
+            <param name="B">The vector to be divided</param>
+            <param name="a">The double value to be divided by, the divisor.</param>
+            <param name="length">The length of the vector B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 1D double array that contains the product
+            </returns>
         </member>
         <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Double[0:,0:])">
             <summary>
@@ -82,6 +130,20 @@
             <param name = "B">The matrix to be multiplied with</param>
             <returns>A 2D double array that contains the product</returns>
         </member>
+        <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Double[0:,0:],System.Int32,System.Int32)">
+            <summary>
+            Multiplies all elements of a 2D double array with a double value.
+            </summary>
+            <param name="a">The double value to be multiplied</param>
+            <param name="B">The matrix to be multiplied with</param>
+            <param name="numRows">The number of rows. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <param name="numCols">The number of cols. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 2D double array that contains the product
+            </returns>
+        </member>
         <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Int32[0:,0:])">
             <summary>
               Multiplies all elements of a 2D int array with a double value.
@@ -89,6 +151,20 @@
             <param name = "a">The double value to be multiplied</param>
             <param name = "B">The matrix to be multiplied with</param>
             <returns>A 2D double array that contains the product</returns>
+        </member>
+        <member name="M:StarMathLib.StarMath.multiply(System.Double,System.Int32[0:,0:],System.Int32,System.Int32)">
+            <summary>
+            Multiplies all elements of a 2D int array with a double value.
+            </summary>
+            <param name="a">The double value to be multiplied</param>
+            <param name="B">The matrix to be multiplied with</param>
+            <param name="numRows">The number of rows. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <param name="numCols">The number of cols. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 2D double array that contains the product
+            </returns>
         </member>
         <member name="M:StarMathLib.StarMath.divide(System.Double[0:,0:],System.Double)">
             <summary>
@@ -98,6 +174,20 @@
             <param name = "a">The double value to be divided by, the divisor.</param>
             <returns>A 2D double array that contains the product</returns>
         </member>
+        <member name="M:StarMathLib.StarMath.divide(System.Double[0:,0:],System.Double,System.Int32,System.Int32)">
+            <summary>
+            Divides all elements of a 2D double array by the double value.
+            </summary>
+            <param name="B">The matrix to be divided</param>
+            <param name="a">The double value to be divided by, the divisor.</param>
+            <param name="numRows">The number of rows. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <param name="numCols">The number of cols. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 2D double array that contains the product
+            </returns>
+        </member>
         <member name="M:StarMathLib.StarMath.divide(System.Int32[0:,0:],System.Double)">
             <summary>
               Divides all elements of a 2D integer array by the double value.
@@ -105,6 +195,20 @@
             <param name = "B">The matrix to be divided</param>
             <param name = "a">The double value to be divided by, the divisor.</param>
             <returns>A 2D double array that contains the product</returns>
+        </member>
+        <member name="M:StarMathLib.StarMath.divide(System.Int32[0:,0:],System.Double,System.Int32,System.Int32)">
+            <summary>
+            Divides all elements of a 2D integer array by the double value.
+            </summary>
+            <param name="B">The matrix to be divided</param>
+            <param name="a">The double value to be divided by, the divisor.</param>
+            <param name="numRows">The number of rows. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <param name="numCols">The number of cols. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A 2D double array that contains the product
+            </returns>
         </member>
         <member name="M:StarMathLib.StarMath.multiplyDot(System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double})">
             <summary>
@@ -114,6 +218,18 @@
             <param name = "B">1D double Array 2</param>
             <returns>A double value that contains the dot product</returns>
         </member>
+        <member name="M:StarMathLib.StarMath.multiplyDot(System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double},System.Int32)">
+            <summary>
+            The dot product of the two 1D double vectors A and B
+            </summary>
+            <param name="A">1D double Array 1</param>
+            <param name="B">1D double Array 2</param>
+            <param name="length">The length of both vectors A and B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A double value that contains the dot product
+            </returns>
+        </member>
         <member name="M:StarMathLib.StarMath.multiplyDot(System.Collections.Generic.IList{System.Int32},System.Collections.Generic.IList{System.Double})">
             <summary>
               The dot product of the one 1D int vector and one 1D double vector
@@ -122,6 +238,18 @@
             <param name = "B">1D double Array 2</param>
             <returns>A double value that contains the dot product</returns>
         </member>
+        <member name="M:StarMathLib.StarMath.multiplyDot(System.Collections.Generic.IList{System.Int32},System.Collections.Generic.IList{System.Double},System.Int32)">
+            <summary>
+            The dot product of the one 1D int vector and one 1D double vector
+            </summary>
+            <param name="A">1D int Array 1</param>
+            <param name="B">1D double Array 2</param>
+            <param name="length">The length of both vectors A and B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A double value that contains the dot product
+            </returns>
+        </member>
         <member name="M:StarMathLib.StarMath.multiplyDot(System.Collections.Generic.IList{System.Int32},System.Collections.Generic.IList{System.Int32})">
             <summary>
               The dot product of the two 1D int vectors A and B
@@ -129,6 +257,18 @@
             <param name = "A">1D int Array 1</param>
             <param name = "B">1D int Array 2</param>
             <returns>A double value that contains the dot product</returns>
+        </member>
+        <member name="M:StarMathLib.StarMath.multiplyDot(System.Collections.Generic.IList{System.Int32},System.Collections.Generic.IList{System.Int32},System.Int32)">
+            <summary>
+            The dot product of the two 1D int vectors A and B
+            </summary>
+            <param name="A">1D int Array 1</param>
+            <param name="B">1D int Array 2</param>
+            <param name="length">The length of both vectors A and B. This is an optional argument, but if it is already known 
+            - there is a slight speed advantage to providing it.</param>
+            <returns>
+            A double value that contains the dot product
+            </returns>
         </member>
         <member name="M:StarMathLib.StarMath.multiplyCross(System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double})">
             <summary>

@@ -340,13 +340,13 @@ namespace PlanarMechanismSimulator
             {
                 if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("input"))
                 {
-                    PivotParameters[ii, 0, 0] = 0.0;
-                    PivotParameters[ii, 0, 0] = 0.0;
+                    PivotParameters[ii, 0, 0] = pivots[ii].X= 0.0;
+                    PivotParameters[ii, 0, 0] = pivots[ii].Y=0.0;
                 }
                 else if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("ip"))
                 {
-                    PivotParameters[ii, 0, 0] = 6.0;
-                    PivotParameters[ii, 0, 0] = 0.0;
+                    PivotParameters[ii, 0, 0] = pivots[ii].X=6.0;
+                    PivotParameters[ii, 0, 0] = pivots[ii].Y=0.0;
 
                 }
                 else
@@ -387,25 +387,25 @@ namespace PlanarMechanismSimulator
             //            for (sa = 0; sa <= endAngle; sa += ((endAngle) / numTimeSteps))
             for (int timeRow = 0; timeRow < numSteps; timeRow++)
             {
-                findImmediateICs();
-                success = findSecondaryICs();
-                if (success)
-                {
-                    findAngularVelocities(timeRow);
-                    findLinearVelocities(timeRow);
-                    //check slip velocities
-                    findLinearSlipVelocities(timeRow);
-                    //find slip velocities and update
-                }
-                else
-                {
-                    SearchIO.output("Instant Centers could not be found");
-                    break;
-                    // instead of breaking, we will introduce an approach like we solve for accelerations.
-                }
-                //acceleration determination: only when input acceleration is given
-                //findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
-                findAccelerationNew(timeRow, coriolis, coriolis_1, unknowns, omeg_1, slipacceleration);
+                //findImmediateICs();
+                //success = findSecondaryICs();
+                //if (success)
+                //{
+                //    findAngularVelocities(timeRow);
+                //    findLinearVelocities(timeRow);
+                //    //check slip velocities
+                //    findLinearSlipVelocities(timeRow);
+                //    //find slip velocities and update
+                //}
+                //else
+                //{
+                //    SearchIO.output("Instant Centers could not be found");
+                //    break;
+                //    // instead of breaking, we will introduce an approach like we solve for accelerations.
+                //}
+                ////acceleration determination: only when input acceleration is given
+                ////findAccelerationMIC(pivots, linkParameters, pivotParameters, timeRow, circleDiagram, links, coriolis, slipacceleration);
+                //findAccelerationNew(timeRow, coriolis, coriolis_1, unknowns, omeg_1, slipacceleration);
                 success = findNewPositions(timeRow, pivotLengths);
                 if (!success) {SearchIO.output("Rotatability not satisfied");break;}
 
@@ -522,10 +522,10 @@ namespace PlanarMechanismSimulator
                     // file.Write(pivots[i].localLabels + "\t");
                     file.Write(PivotParameters[i, timeRow, 0] + "\t");
                     file.Write(PivotParameters[i, timeRow, 1] + "\t");
-                    file.Write(PivotParameters[i, timeRow, 2] + "\t");
-                    file.Write(PivotParameters[i, timeRow, 3] + "\t");
-                    file.Write(PivotParameters[i, timeRow, 4] + "\t");
-                    file.Write(PivotParameters[i, timeRow, 5] + "\t");
+                    //file.Write(PivotParameters[i, timeRow, 2] + "\t");
+                    //file.Write(PivotParameters[i, timeRow, 3] + "\t");
+                    //file.Write(PivotParameters[i, timeRow, 4] + "\t");
+                    //file.Write(PivotParameters[i, timeRow, 5] + "\t");
                     file.WriteLine();
                 }
             }

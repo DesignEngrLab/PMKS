@@ -34,8 +34,8 @@ namespace MechSynth
             double iOmega = 2;
             MechSimulation ev = new MechSimulation();
             ev.Graph = testGraph;
-            
-            ev.calculate(new[]{0.0,0.0, 6.0,0.0, 3.0,4.0,2.0,0.0});
+
+            ev.calculate(new[] { 0.0, 0.0, 6.0, 0.0, 1.874099, 7.998559, 1.73, 1 });
             //ev.saveParameterData(settings.outputDirectory + "outputPathC1");
             SearchIO.output("***Completed!***");
             //
