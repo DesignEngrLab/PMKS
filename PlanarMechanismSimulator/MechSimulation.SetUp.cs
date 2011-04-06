@@ -338,24 +338,24 @@ namespace PlanarMechanismSimulator
             int k = 0;
             for (int ii = 0; ii < p; ii++)
             {
-                if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("input"))
-                {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = 0.0;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
-                }
-                else if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("ip"))
-                {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = 6.0;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
+                //if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("input"))
+                //{
+                //    PivotParameters[ii, 0, 0] = pivots[ii].X = 0.0;
+                //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
+                //}
+                //else if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("ip"))
+                //{
+                //    PivotParameters[ii, 0, 0] = pivots[ii].X = 6.0;
+                //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
 
-                }
-                ////else if (pivots[ii].localLabels.Contains("output"))
-                ////{
-                ////    PivotParameters[ii, 0, 0] = pivots[ii].X = 1.874099;
-                ////    PivotParameters[ii, 0, 1] = pivots[ii].Y = 7.998559;
+                //}
+                //////else if (pivots[ii].localLabels.Contains("output"))
+                //////{
+                //////    PivotParameters[ii, 0, 0] = pivots[ii].X = 1.874099;
+                //////    PivotParameters[ii, 0, 1] = pivots[ii].Y = 7.998559;
 
-                ////}
-                else
+                //////}
+                //else
                {
                     PivotParameters[ii, 0, 0] = pivots[ii].X = x[k++] ;
                     PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k++];
