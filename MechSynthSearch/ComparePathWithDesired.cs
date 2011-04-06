@@ -68,7 +68,7 @@ namespace MechSynth
           double rm_s = rmsdistance(output);
 
           //printing pivot positions for each cycle: 
-           if (rm_s < 0.1)
+           if (rm_s < 4)
          
          
           {

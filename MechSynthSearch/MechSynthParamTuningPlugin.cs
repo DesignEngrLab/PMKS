@@ -20,7 +20,7 @@ namespace MechSynth
         }
         protected override void Run()
         {
-            Random r = new Random();
+            Random r = new Random(1);
 
            
 
@@ -67,7 +67,7 @@ namespace MechSynth
             //gbu.Add(new BFGSDirection());
 
             //max convergence 
-            NMOpt.Add(new MaxIterationsConvergence(500));
+            NMOpt.Add(new MaxIterationsConvergence(100));
             PowellsOpt.Add(new DeltaXConvergence(0.01));
             //generating random x,y values
             double[] x0 = new double[4];
@@ -78,8 +78,8 @@ namespace MechSynth
             //sim.calculate(x0);
 
             double[] xStar;
-           double fStar = NMOpt.Run(out xStar, x0);
-          //  double fStar = PowellsOpt.Run(out xStar, x0);
+          // double fStar = NMOpt.Run(out xStar, x0);
+            double fStar = PowellsOpt.Run(out xStar, x0);
          //   double fStar = NMOpt.Run(out xStar,8);
             
             SearchIO.output("***Completed!***");
@@ -97,7 +97,8 @@ namespace MechSynth
             double iOmega = 2;
             double iAlpha = 0; 
             MechSimulation sim = new MechSimulation();
-            BoundingBox bb = new BoundingBox(sim, 200, 200);
+            BoundingBox bb = new BoundingBox(sim, 10, 10);
+            GrashofCriteria cc = new GrashofCriteria(sim, 0);
             
             List<candidate> candidates = new List<candidate>();
             while (true) //notConverged())
