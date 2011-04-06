@@ -13,12 +13,14 @@ namespace MechSynth
       private readonly MechSimulation sim;
       private readonly double[,] desiredPath;
       private readonly candidate c;
+      
 
       public ComparePathWithDesired(candidate c, double[,] desiredPath, MechSimulation sim)
       {
           this.c = c;
           this.desiredPath = desiredPath;
           this.sim = sim;
+          
       }
       public double calculate(double[] x)
       {          
@@ -66,12 +68,11 @@ namespace MechSynth
           double rm_s = rmsdistance(output);
 
           //printing pivot positions for each cycle: 
-
-          if (rm_s < 1.0)
+           if (rm_s < 0.1)
+         
+         
           {
-
-              FileStream fs = new FileStream("4bar_2pivots.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-
+              FileStream fs = new FileStream(rm_s + ".txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
               using (StreamWriter sw = new StreamWriter(fs))
               {
                   sw.Write("Output X" + "\t");
@@ -88,12 +89,10 @@ namespace MechSynth
                       sw.Write(otherpivot[i, 0] + "\t");
                       sw.Write(otherpivot[i, 0] + "\t");
                       sw.Write(rm_s + "\t");
-
                   }
-
-
               }
           }
+          
           
           return rm_s;
       }
@@ -115,6 +114,8 @@ namespace MechSynth
 
 
           SearchIO.output(rms, 0);
+
+          
 
           return Math.Sqrt(rms);
       }

@@ -9,14 +9,14 @@ namespace MechSynth
     class GrashofCriteria : IInequality
     {
         MechSimulation sim;
-        double[] x;
+        int i;
 
 
         //constructor
-        public GrashofCriteria(MechSimulation ev, double[] x)
+        public GrashofCriteria(MechSimulation ev, int i)
         {
             this.sim = ev;
-            this.x = x;
+            this.i = i;
         }
 
         public double calculate(double[] x)
@@ -64,7 +64,7 @@ namespace MechSynth
             //        if (sim.PivotParameters[i, j, 1] > maxY) maxY = sim.PivotParameters[i, j, 1];
             //    }
             //}
-            return Math.Sqrt(1);
+            return (maxlength+minlength-(other1+other2));
 
         }
 

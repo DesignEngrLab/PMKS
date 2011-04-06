@@ -6,6 +6,7 @@ using GraphSynth.Search;
 using OptimizationToolbox;
 using PlanarMechanismSimulator;
 using SearchIO = GraphSynth.SearchIO;
+using System.IO;
 
 
 namespace MechSynth
@@ -20,6 +21,8 @@ namespace MechSynth
         protected override void Run()
         {
             Random r = new Random();
+
+           
 
             double[,] desiredPath ={{1.87,8},{2.93,8.46},{2.80,8.41},
                                        {1.99,8.06},{0.96,7.46},{0,6.71},{-0.77,5.93},{-1.3,5.26},{-1.60,4.81},{-1.65,4.75},{-1.25,5.33},{0,6.71}};
@@ -36,7 +39,8 @@ namespace MechSynth
           //  ev.c = this.seedGraph;
 
             //bounding box - trying to contain the solutions within a particular box
-            BoundingBox bb = new BoundingBox(sim, 200, 200);
+            BoundingBox bb = new BoundingBox(sim, 10 , 10);
+            GrashofCriteria cc = new GrashofCriteria(sim, 0);
 
             //adding a new objective function which can be taken by the optimization program
             var pathObjFun = new ComparePathWithDesired(seedCandidate, desiredPath, sim);  
@@ -63,18 +67,19 @@ namespace MechSynth
             //gbu.Add(new BFGSDirection());
 
             //max convergence 
-            NMOpt.Add(new MaxIterationsConvergence(2000));
+            NMOpt.Add(new MaxIterationsConvergence(500));
             PowellsOpt.Add(new DeltaXConvergence(0.01));
             //generating random x,y values
             double[] x0 = new double[4];
             for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
                 x0[i] = 10*r.NextDouble();
+                
 
             //sim.calculate(x0);
 
             double[] xStar;
-          //  double fStar = NMOpt.Run(out xStar, x0);
-            double fStar = PowellsOpt.Run(out xStar, x0);
+           double fStar = NMOpt.Run(out xStar, x0);
+          //  double fStar = PowellsOpt.Run(out xStar, x0);
          //   double fStar = NMOpt.Run(out xStar,8);
             
             SearchIO.output("***Completed!***");
