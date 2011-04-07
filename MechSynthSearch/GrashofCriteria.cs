@@ -31,12 +31,15 @@ namespace MechSynth
            //l[2]= Math.Sqrt(Math.Pow(0.0- x[2], 2) + Math.Pow(0.0 - x[3], 2));
            //l[3] = Math.Sqrt(Math.Pow(x[2] - x[0], 2) + Math.Pow(x[3] - x[1], 2));
 
-            l[0] = Math.Sqrt(Math.Pow(x[2] - x[6], 2) + Math.Pow(x[3] - x[7], 2));
+            //l[0] = Math.Sqrt(Math.Pow(x[2] - x[6], 2) + Math.Pow(x[3] - x[7], 2));
+            //l[1] = Math.Sqrt(Math.Pow(x[2] - x[0], 2) + Math.Pow(x[3] - x[1], 2));
+            //l[2] = Math.Sqrt(Math.Pow(x[4] - x[0], 2) + Math.Pow(x[5] - x[1], 2));
+            //l[3] = Math.Sqrt(Math.Pow(x[4] - x[6], 2) + Math.Pow(x[5] - x[7], 2));
+
+            l[0] = Math.Sqrt(Math.Pow(x[2] - x[4], 2) + Math.Pow(x[3] - x[5], 2));
             l[1] = Math.Sqrt(Math.Pow(x[2] - x[0], 2) + Math.Pow(x[3] - x[1], 2));
-            l[2] = Math.Sqrt(Math.Pow(x[4] - x[0], 2) + Math.Pow(x[5] - x[1], 2));
-            l[3] = Math.Sqrt(Math.Pow(x[4] - x[6], 2) + Math.Pow(x[5] - x[7], 2));
-
-
+            l[2] = Math.Sqrt(Math.Pow(1.87 - x[0], 2) + Math.Pow(8.00 - x[1], 2));
+            l[3] = Math.Sqrt(Math.Pow(1.87 - x[4], 2) + Math.Pow(8.00 - x[5], 2));
             maxlength = StarMath.Max(l);
             minlength = StarMath.Min(l);
 

@@ -68,7 +68,7 @@ namespace MechSynth
             double rm_s = rmsdistance(output);
 
             //printing pivot positions for each cycle: 
-            if (rm_s < 4)
+            if (rm_s < 0.1)
             {
                 FileStream fs = new FileStream(rm_s + ".txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
                 using (StreamWriter sw = new StreamWriter(fs))

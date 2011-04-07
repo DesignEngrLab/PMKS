@@ -356,6 +356,12 @@ namespace PlanarMechanismSimulator
 
                 //////}
                 //else
+                if (pivots[ii].localLabels.Contains("output"))
+                {
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = 1.87;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 8;
+                }
+                else
                {
                     PivotParameters[ii, 0, 0] = pivots[ii].X = x[k++] ;
                     PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k++];
@@ -416,7 +422,7 @@ namespace PlanarMechanismSimulator
                 if (!success) {SearchIO.output("Rotatability not satisfied");break;}
 
                 //Find new position and update Path matrix of the output pivot too
-                SearchIO.output(timeRow);
+                SearchIO.output("timestep="+timeRow,0);
                 //PrintDetails();
             }
             

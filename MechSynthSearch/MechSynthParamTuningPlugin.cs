@@ -7,6 +7,7 @@ using OptimizationToolbox;
 using PlanarMechanismSimulator;
 using SearchIO = GraphSynth.SearchIO;
 using System.IO;
+using StarMathLib;
 
 
 namespace MechSynth
@@ -33,13 +34,23 @@ namespace MechSynth
             MechSimulation sim = new MechSimulation();
 
 
+            //Below is a relation for bounding box and also the first point 
+            double bb_min, bb_max;
+
+            bb_min = StarMath.Min(desiredPath);
+            bb_max = StarMath.Max(desiredPath);
+
+            //now that min and max are obtained - we will form a bounding box using these max and min values
+
+            
+
             sim.Graph = seedGraph;
             //  designGraph testGraph = this.seedGraph;
             //   ev.c = new candidate(testGraph, 0);
             //  ev.c = this.seedGraph;
 
             //bounding box - trying to contain the solutions within a particular box
-            BoundingBox bb = new BoundingBox(sim, 10, 10);
+            BoundingBox bb = new BoundingBox(sim, bb_max-bb_min, bb_max-bb_min);
             GrashofCriteria cc = new GrashofCriteria(sim, 0);
 
             //adding a new objective function which can be taken by the optimization program
@@ -68,19 +79,20 @@ namespace MechSynth
             // convergence 
             optMethod.Add(new MaxFnEvalsConvergence(10000));
             //optMethod.Add(new DeltaXConvergence(0.01));
-            optMethod.Add(new ToKnownBestFConvergence(0.0, 0.5));
+            optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
 
             //generating random x,y values
-            double[] x0 = new double[8];
+            double[] x0 = new double[6];
             for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
-                x0[i] = 10 * r.NextDouble();
+                x0[i] =  10*r.NextDouble();
 
 
             //sim.calculate(x0);
 
             double[] xStar;
-            //double fStar = optMethod.Run(out xStar, x0);
-            double fStar = optMethod.Run(out xStar, 8);
+            double fStar = optMethod.Run(out xStar, x0);
+           // double fStar = optMethod.Run(out xStar, 8);
+            
 
             SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
 
