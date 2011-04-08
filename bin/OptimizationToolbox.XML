@@ -61,6 +61,334 @@
             </summary>
             <value>The max iterations.</value>
         </member>
+        <member name="P:OptimizationToolbox.VariableDescriptor.Discrete">
+            <summary>
+              Gets or sets a value indicating whether this <see cref="T:OptimizationToolbox.VariableDescriptor"/> is discrete.
+            </summary>
+            <value><c>true</c> if discrete; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:OptimizationToolbox.abstractSearchDirection">
+            <summary>
+            The class that all search direction methods must inherit from. By search direction, we mean
+            the vector, d that the numerical method must search in. The simplest example being SteepestDescent - 
+            in the opposite direction of the gradient.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.abstractSearchDirection.find(System.Double[],System.Double[],System.Double,System.Double@,System.Boolean)">
+            <summary>
+            Finds the direction for the specified x.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="gradf">The gradf.</param>
+            <param name="f">The f.</param>
+            <param name="initAlpha">The init alpha.</param>
+            <param name="reset">if set to <c>true</c> [reset].</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.abstractSearchDirection.find(System.Double[],System.Double[],System.Double,System.Boolean)">
+            <summary>
+            Finds the direction for the specified x.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="gradf">The gradf.</param>
+            <param name="f">The f.</param>
+            <param name="reset">if set to <c>true</c> [reset].</param>
+            <returns></returns>
+        </member>
+        <member name="T:OptimizationToolbox.abstractLineSearch">
+            <summary>
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractLineSearch.epsilon">
+            <summary>
+            the tolerance value, epsilon is used to distinguish values of alpha. It is part
+            of the convergence for the line search.
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractLineSearch.k">
+            <summary>
+            the iterations are counted with k
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractLineSearch.kMax">
+            <summary>
+            Kmax is the maximum iterations to convergence.
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractLineSearch.stepSize">
+            <summary>
+            stepSize is the discretization step taken between values of alpha
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.abstractLineSearch.#ctor(System.Double,System.Double,System.Int32,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractLineSearch"/> class.
+            </summary>
+            <param name="epsilon">The epsilon.</param>
+            <param name="stepSize">Size of the step.</param>
+            <param name="kMax">The k max.</param>
+            <param name="trackFeasibility">if set to <c>true</c> [track feasibility].</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[])">
+            <summary>
+            Finds the alpha star.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="dir">The dir.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[],System.Boolean)">
+            <summary>
+            Finds the alpha star.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="dir">The dir.</param>
+            <param name="allowNegAlpha">if set to <c>true</c> [allow neg alpha].</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[],System.Double)">
+            <summary>
+            Finds the alpha star.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="dir">The dir.</param>
+            <param name="initAlpha">The init alpha.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[],System.Boolean,System.Double)">
+            <summary>
+            Finds the alpha star.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="dir">The dir.</param>
+            <param name="allowNegAlpha">if set to <c>true</c> [allow neg alpha].</param>
+            <param name="initAlpha">The init alpha.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.abstractLineSearch.calcF(System.Double[],System.Double,System.Double[])">
+            <summary>
+            Calcs the objective function value.
+            </summary>
+            <param name="start">The start.</param>
+            <param name="alpha">The alpha.</param>
+            <param name="dir">The dir.</param>
+            <returns></returns>
+        </member>
+        <member name="T:OptimizationToolbox.abstractMOSelector">
+            <summary>
+            The class that all selector classes must inherit from. 
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractMOSelector.optDirections">
+            <summary>
+            the direction of the search: maximizing or minimizing
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.abstractMOSelector.#ctor(System.Int32,OptimizationToolbox.optimize[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractSelector"/> class.
+            </summary>
+            <param name="direction">The direction.</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractMOSelector.selectCandidates(System.Collections.Generic.List{OptimizationToolbox.Candidate}@,System.Double)">
+            <summary>
+            Selects the candidates.
+            </summary>
+            <param name="candidates">The candidates.</param>
+            <param name="control">The control.</param>
+        </member>
+        <member name="T:OptimizationToolbox.SamplingGenerator">
+            <summary>
+            The Sampling Generator abstract class is used to indicate which generators are used for initial creation of points.
+            These could also be used for simple design space exploration as in design of experiments. One may consider writing
+            additional types like OFAT (one factor at a time), Full-Factorial, Fractional-Factorial, Box-Bencken, etc.
+            </summary>
+        </member>
+        <member name="T:OptimizationToolbox.abstractGenerator">
+            <summary>
+            The abstract generator class is used for all discrete problems. The generator
+            creates new solutions. Either by adding to the input list or by simply writing over
+            it.
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractGenerator.discreteSpaceDescriptor">
+            <summary>
+            The discreteSpaceDescriptor is of type DesignSpaceDescription and includes the
+            details (VariableDescriptors) for all variables in the system.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.abstractGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
+            <summary>
+              Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractGenerator"/> class.
+            </summary>
+            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractGenerator.GenerateCandidates(System.Collections.Generic.List{OptimizationToolbox.Candidate}@,System.Int32)">
+            <summary>
+            Generates the candidates.
+            </summary>
+            <param name="candidates">The candidates.</param>
+            <param name="control">The control.</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractGenerator.GenerateCandidates(System.Double[],System.Int32)">
+            <summary>
+            Generates the candidates.
+            </summary>
+            <param name="candidate">The candidate.</param>
+            <param name="control">The control.</param>
+            <returns></returns>
+        </member>
+        <member name="P:OptimizationToolbox.abstractGenerator.n">
+            <summary>
+            Gets the number of dimensions (length of the decision vector, x).
+            </summary>
+            <value>The n.</value>
+        </member>
+        <member name="P:OptimizationToolbox.abstractGenerator.DiscreteVarIndices">
+            <summary>
+            Gets the indices for the discrete variables in x.
+            </summary>
+            <value>The discrete var indices.</value>
+        </member>
+        <member name="P:OptimizationToolbox.abstractGenerator.MaxVariableSizes">
+            <summary>
+            Gets the maximum variable sizes.
+            </summary>
+            <value>The max variable sizes.</value>
+        </member>
+        <member name="M:OptimizationToolbox.SamplingGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.SamplingGenerator"/> class.
+            </summary>
+            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
+        </member>
+        <member name="M:OptimizationToolbox.VariableDescriptorEnum.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="T:OptimizationToolbox.abstractMeritFunction">
+            <summary>
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractMeritFunction.optMethod">
+            <summary>
+            references back to the optimization method
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.abstractMeritFunction.#ctor(OptimizationToolbox.abstractOptMethod,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractMeritFunction"/> class.
+            </summary>
+            <param name="optMethod">The opt method.</param>
+            <param name="penaltyWeight">The penalty weight.</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractMeritFunction.calcGradientOfPenalty(System.Double[])">
+            <summary>
+            Calcs the gradient of penalty.
+            </summary>
+            <param name="point">The point.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.abstractMeritFunction.calcPenalty(System.Double[])">
+            <summary>
+            Calcs the penalty.
+            </summary>
+            <param name="point">The point.</param>
+            <returns></returns>
+        </member>
+        <member name="P:OptimizationToolbox.abstractMeritFunction.penaltyWeight">
+            <summary>
+            Gets or sets the penalty weight.
+            </summary>
+            <value>The penalty weight.</value>
+        </member>
+        <member name="T:OptimizationToolbox.ArithmeticMean">
+            <summary>
+            Arithmetic Mean 1-D search as described by ? Rao(?)
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.ArithmeticMean.#ctor(System.Double,System.Double,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.ArithmeticMean"/> class.
+            </summary>
+            <param name="epsilon">The epsilon.</param>
+            <param name="stepSize">Size of the step.</param>
+            <param name="kMax">The k max.</param>
+        </member>
+        <member name="M:OptimizationToolbox.ArithmeticMean.findAlphaStar(System.Double[],System.Double[])">
+            <summary>
+            Finds the alpha star.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="dir">The dir.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.DeltaGradFConvergence.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaGradFConvergence"/> class.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.DeltaGradFConvergence.#ctor(System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaGradFConvergence"/> class.
+            </summary>
+            <param name="minDifference">The min difference.</param>
+        </member>
+        <member name="M:OptimizationToolbox.DeltaGradFConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Given a value D (minimum difference), this criteria will return true, if the norm 
+            (1-norm sum of absolute values) of the gradient less than or equal to D.
+            </summary>
+            <param name="iteration">The number of iterations (not used).</param>
+            <param name="numFnEvals">The number of function evaluations (not used).</param>
+            <param name="fBest">The best f (not used).</param>
+            <param name="xBest">The best x (not used).</param>
+            <param name="population">The population of candidates (not used).</param>
+            <param name="gradF">The gradient of F.</param>
+            <returns>
+            true or false - has the process converged?
+            </returns>
+        </member>
+        <member name="P:OptimizationToolbox.DeltaGradFConvergence.minDifference">
+            <summary>
+            Gets or sets the min difference.
+            </summary>
+            <value>The min difference.</value>
+        </member>
+        <member name="T:OptimizationToolbox.abstractSelector">
+            <summary>
+            The class that all selector classes must inherit from. 
+            </summary>
+        </member>
+        <member name="F:OptimizationToolbox.abstractSelector.direction">
+            <summary>
+            the direction of the search: maximizing or minimizing
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.abstractSelector.#ctor(OptimizationToolbox.optimize)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractSelector"/> class.
+            </summary>
+            <param name="direction">The direction.</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractSelector.selectCandidates(System.Collections.Generic.List{OptimizationToolbox.Candidate}@,System.Double)">
+            <summary>
+            Selects the candidates.
+            </summary>
+            <param name="candidates">The candidates.</param>
+            <param name="control">The control.</param>
+        </member>
+        <member name="M:OptimizationToolbox.abstractSelector.betterThan(System.Double,System.Double)">
+            <summary>
+            if x betters the than y given the direction of the search
+            maximizing or minimizing.
+            </summary>
+            <param name="x">The x.</param>
+            <param name="y">The y.</param>
+            <returns></returns>
+        </member>
         <member name="T:OptimizationToolbox.abstractOptMethod">
             <summary>
             The main class that all optimization methods inherit from.
@@ -473,323 +801,28 @@
             </summary>
             <value>The convergence declared by type string.</value>
         </member>
-        <member name="M:OptimizationToolbox.sameCandidate.Equals(System.Double[],System.Double[])">
+        <member name="M:OptimizationToolbox.equalToValue.GetSchema">
             <summary>
-            Determines whether the specified objects are equal.
-            </summary>
-            <param name="x">The first candidate x array to compare.</param>
-            <param name="y">The second candidate x array to compare.</param>
-            <returns>
-            true if the specified objects are equal; otherwise, false.
-            </returns>
-        </member>
-        <member name="M:OptimizationToolbox.sameCandidate.GetHashCode(System.Double[])">
-            <summary>
-            Returns a hash code for the specified object.
+            This method is reserved and should not be used. When implementing the IXmlSerializable interface, you should return null (Nothing in Visual Basic)
+             from this method, and instead, if specifying a custom schema is required, apply the <see cref="T:System.Xml.Serialization.XmlSchemaProviderAttribute"/> to the class.
             </summary>
             <returns>
-            A hash code for the specified object.
-            </returns>
-            <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.
-                            </param><exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and <paramref name="obj"/> is null.
-                            </exception>
-        </member>
-        <member name="M:OptimizationToolbox.ToKnownBestFConvergence.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.ToKnownBestFConvergence"/> class.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.ToKnownBestFConvergence.#ctor(System.Double,System.Double,System.Double)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.ToKnownBestFConvergence"/> class.
-            </summary>
-            <param name="fAtOptimal">The f at optimal.</param>
-            <param name="positiveTolerance">The positive tolerance.</param>
-            <param name="negativeTolerance">The negative tolerance.</param>
-        </member>
-        <member name="M:OptimizationToolbox.ToKnownBestFConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
-            <summary>
-            Given a value for fAtOptimal and a tolerance on either side. The criteria returns
-            true when the value of fBest is within the range of fAtOptimal +/- tolerance. One
-            is welcome to set the tolerance to 0. The default of infinity is fine if it is on
-            the opposite side of the optimization direction.
-            </summary>
-            <param name="iteration">The number of iterations (not used).</param>
-            <param name="numFnEvals">The number of function evaluations (not used).</param>
-            <param name="fBest">The best f.</param>
-            <param name="xBest">The best x (not used).</param>
-            <param name="population">The population of candidates (not used).</param>
-            <param name="gradF">The gradient of F (not used).</param>
-            <returns>
-            true or false - has the process converged?
+            An <see cref="T:System.Xml.Schema.XmlSchema"/> that describes the XML representation of the object that is produced by the <see cref="M:System.Xml.Serialization.IXmlSerializable.WriteXml(System.Xml.XmlWriter)"/> method and consumed by the <see cref="M:System.Xml.Serialization.IXmlSerializable.ReadXml(System.Xml.XmlReader)"/> method.
             </returns>
         </member>
-        <member name="P:OptimizationToolbox.ToKnownBestFConvergence.fAtOptimal">
+        <member name="M:OptimizationToolbox.equalToValue.ReadXml(System.Xml.XmlReader)">
             <summary>
-            Gets or sets the optimal f which the process should stop after reaching.
+            Generates an object from its XML representation.
             </summary>
-            <value>The f at optimal.</value>
+            <param name="reader">The <see cref="T:System.Xml.XmlReader"/> stream from which the object is deserialized. 
+                            </param>
         </member>
-        <member name="P:OptimizationToolbox.ToKnownBestFConvergence.positiveTolerance">
+        <member name="M:OptimizationToolbox.equalToValue.WriteXml(System.Xml.XmlWriter)">
             <summary>
-            Gets or sets the tolerance negative on the positive side of fAtOptimal.
+            Converts an object into its XML representation.
             </summary>
-            <value>The positive tolerance.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ToKnownBestFConvergence.negativeTolerance">
-            <summary>
-            Gets or sets the tolerance negative on the negative side of fAtOptimal.
-            It should be stored as a positive number, but either way the absolute value
-            is taken to make the range about fAtOptimal.
-            </summary>
-            <value>The negative tolerance.</value>
-        </member>
-        <member name="T:OptimizationToolbox.ArithmeticMean">
-            <summary>
-            Arithmetic Mean 1-D search as described by ? Rao(?)
-            </summary>
-        </member>
-        <member name="T:OptimizationToolbox.abstractLineSearch">
-            <summary>
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractLineSearch.epsilon">
-            <summary>
-            the tolerance value, epsilon is used to distinguish values of alpha. It is part
-            of the convergence for the line search.
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractLineSearch.k">
-            <summary>
-            the iterations are counted with k
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractLineSearch.kMax">
-            <summary>
-            Kmax is the maximum iterations to convergence.
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractLineSearch.stepSize">
-            <summary>
-            stepSize is the discretization step taken between values of alpha
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractLineSearch.#ctor(System.Double,System.Double,System.Int32,System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractLineSearch"/> class.
-            </summary>
-            <param name="epsilon">The epsilon.</param>
-            <param name="stepSize">Size of the step.</param>
-            <param name="kMax">The k max.</param>
-            <param name="trackFeasibility">if set to <c>true</c> [track feasibility].</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[])">
-            <summary>
-            Finds the alpha star.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="dir">The dir.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[],System.Boolean)">
-            <summary>
-            Finds the alpha star.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="dir">The dir.</param>
-            <param name="allowNegAlpha">if set to <c>true</c> [allow neg alpha].</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[],System.Double)">
-            <summary>
-            Finds the alpha star.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="dir">The dir.</param>
-            <param name="initAlpha">The init alpha.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.abstractLineSearch.findAlphaStar(System.Double[],System.Double[],System.Boolean,System.Double)">
-            <summary>
-            Finds the alpha star.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="dir">The dir.</param>
-            <param name="allowNegAlpha">if set to <c>true</c> [allow neg alpha].</param>
-            <param name="initAlpha">The init alpha.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.abstractLineSearch.calcF(System.Double[],System.Double,System.Double[])">
-            <summary>
-            Calcs the objective function value.
-            </summary>
-            <param name="start">The start.</param>
-            <param name="alpha">The alpha.</param>
-            <param name="dir">The dir.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.ArithmeticMean.#ctor(System.Double,System.Double,System.Int32)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.ArithmeticMean"/> class.
-            </summary>
-            <param name="epsilon">The epsilon.</param>
-            <param name="stepSize">Size of the step.</param>
-            <param name="kMax">The k max.</param>
-        </member>
-        <member name="M:OptimizationToolbox.ArithmeticMean.findAlphaStar(System.Double[],System.Double[])">
-            <summary>
-            Finds the alpha star.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="dir">The dir.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.MaxSpanInPopulationConvergence.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxSpanInPopulationConvergence"/> class.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.MaxSpanInPopulationConvergence.#ctor(System.Double)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxSpanInPopulationConvergence"/> class.
-            </summary>
-            <param name="MinimumSideLength">Minimum length of the side.</param>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:OptimizationToolbox.MaxSpanInPopulationConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})" -->
-        <member name="P:OptimizationToolbox.MaxSpanInPopulationConvergence.MinimumSpan">
-            <summary>
-            Gets or sets the minimum span of the set of solutions found in the population.
-            The span is the farthest euclidian distance between any two solutions.
-            </summary>
-            <value>The minimum span.</value>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaXConvergence.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaXConvergence"/> class.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaXConvergence.#ctor(System.Double)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaXConvergence"/> class.
-            </summary>
-            <param name="minDifference">The min difference.</param>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaXConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
-            <summary>
-            Given a value D (minimum difference), this criteria will return true, if the norm of 
-            the difference between xBest and xlast is less than or equal to D.
-            </summary>
-            <param name="iteration">The number of iterations (not used).</param>
-            <param name="numFnEvals">The number of function evaluations (not used).</param>
-            <param name="fBest">The best f (not used).</param>
-            <param name="xBest">The best x.</param>
-            <param name="population">The population of candidates (not used).</param>
-            <param name="gradF">The gradient of F (not used).</param>
-            <returns>
-            true or false - has the process converged?
-            </returns>
-        </member>
-        <member name="P:OptimizationToolbox.DeltaXConvergence.minDifference">
-            <summary>
-            Gets or sets the min difference, D.
-            </summary>
-            <value>The min difference.</value>
-        </member>
-        <member name="T:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule">
-            <summary>
-            the class that all simulated annealing cooling schedules must inherit from.
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.samplesInGeneration">
-            <summary>
-            the number of samples to take in determining the temperature.
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.optMethod">
-            <summary>
-            the reference back to the entire simulated annealing optimization method.
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.samplesThusFar">
-            <summary>
-            number of samples taken thus far
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.#ctor(System.Int32)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule"/> class.
-            </summary>
-            <param name="samplesInGeneration">The samples in generation.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.SetOptimizationDetails(OptimizationToolbox.abstractOptMethod)">
-            <summary>
-            Sets the optimization details.
-            </summary>
-            <param name="optMethod">The opt method.</param>
-        </member>
-        <member name="T:OptimizationToolbox.abstractSearchDirection">
-            <summary>
-            The class that all search direction methods must inherit from. By search direction, we mean
-            the vector, d that the numerical method must search in. The simplest example being SteepestDescent - 
-            in the opposite direction of the gradient.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSearchDirection.find(System.Double[],System.Double[],System.Double,System.Double@,System.Boolean)">
-            <summary>
-            Finds the direction for the specified x.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="gradf">The gradf.</param>
-            <param name="f">The f.</param>
-            <param name="initAlpha">The init alpha.</param>
-            <param name="reset">if set to <c>true</c> [reset].</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSearchDirection.find(System.Double[],System.Double[],System.Double,System.Boolean)">
-            <summary>
-            Finds the direction for the specified x.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="gradf">The gradf.</param>
-            <param name="f">The f.</param>
-            <param name="reset">if set to <c>true</c> [reset].</param>
-            <returns></returns>
-        </member>
-        <member name="T:OptimizationToolbox.abstractMeritFunction">
-            <summary>
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractMeritFunction.optMethod">
-            <summary>
-            references back to the optimization method
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractMeritFunction.#ctor(OptimizationToolbox.abstractOptMethod,System.Double)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractMeritFunction"/> class.
-            </summary>
-            <param name="optMethod">The opt method.</param>
-            <param name="penaltyWeight">The penalty weight.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractMeritFunction.calcGradientOfPenalty(System.Double[])">
-            <summary>
-            Calcs the gradient of penalty.
-            </summary>
-            <param name="point">The point.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.abstractMeritFunction.calcPenalty(System.Double[])">
-            <summary>
-            Calcs the penalty.
-            </summary>
-            <param name="point">The point.</param>
-            <returns></returns>
-        </member>
-        <member name="P:OptimizationToolbox.abstractMeritFunction.penaltyWeight">
-            <summary>
-            Gets or sets the penalty weight.
-            </summary>
-            <value>The penalty weight.</value>
+            <param name="writer">The <see cref="T:System.Xml.XmlWriter"/> stream to which the object is serialized. 
+                            </param>
         </member>
         <member name="T:OptimizationToolbox.MaxTimeConvergence">
             <summary>
@@ -834,358 +867,6 @@
             Gets or sets the maximum time span for the process.
             </summary>
             <value>The max time.</value>
-        </member>
-        <member name="P:OptimizationToolbox.VariableDescriptor.Discrete">
-            <summary>
-              Gets or sets a value indicating whether this <see cref="T:OptimizationToolbox.VariableDescriptor"/> is discrete.
-            </summary>
-            <value><c>true</c> if discrete; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaFConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
-            <summary>
-            Given a value D (minimum difference), this criteria will return true, if the distance (absolute value of the difference) 
-            between fBest and flast is less than or equal to D.
-            </summary>
-            <param name="iteration">The number of iterations (not used).</param>
-            <param name="numFnEvals">The number of function evaluations (not used).</param>
-            <param name="fBest">The best f.</param>
-            <param name="xBest">The best x (used to check if candidate is the same).</param>
-            <param name="population">The population of candidates (not used).</param>
-            <param name="gradF">The gradient of F (not used).</param>
-            <returns>
-            true or false - has the process converged?
-            </returns>
-        </member>
-        <member name="P:OptimizationToolbox.DeltaFConvergence.minDifference">
-            <summary>
-            Gets or sets the minimum difference.
-            </summary>
-            <value>The min difference.</value>
-        </member>
-        <member name="P:OptimizationToolbox.DeltaFConvergence.toleranceForSame">
-            <summary>
-            Gets or sets the tolerance for same x. If the x is the same as the last the condition is NOT checked (returns false).
-            If this is not a desirable catch, then leave as the default (negative infinity). In fact any negative value for
-            toleranceForSame will cause it to be ignored since the distance between any two points can at best be 0.
-            </summary>
-            <value>The tolerance for same.</value>
-        </member>
-        <member name="T:OptimizationToolbox.abstractGenerator">
-            <summary>
-            The abstract generator class is used for all discrete problems. The generator
-            creates new solutions. Either by adding to the input list or by simply writing over
-            it.
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractGenerator.discreteSpaceDescriptor">
-            <summary>
-            The discreteSpaceDescriptor is of type DesignSpaceDescription and includes the
-            details (VariableDescriptors) for all variables in the system.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
-            <summary>
-              Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractGenerator"/> class.
-            </summary>
-            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractGenerator.GenerateCandidates(System.Collections.Generic.List{OptimizationToolbox.Candidate}@,System.Int32)">
-            <summary>
-            Generates the candidates.
-            </summary>
-            <param name="candidates">The candidates.</param>
-            <param name="control">The control.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractGenerator.GenerateCandidates(System.Double[],System.Int32)">
-            <summary>
-            Generates the candidates.
-            </summary>
-            <param name="candidate">The candidate.</param>
-            <param name="control">The control.</param>
-            <returns></returns>
-        </member>
-        <member name="P:OptimizationToolbox.abstractGenerator.n">
-            <summary>
-            Gets the number of dimensions (length of the decision vector, x).
-            </summary>
-            <value>The n.</value>
-        </member>
-        <member name="P:OptimizationToolbox.abstractGenerator.DiscreteVarIndices">
-            <summary>
-            Gets the indices for the discrete variables in x.
-            </summary>
-            <value>The discrete var indices.</value>
-        </member>
-        <member name="P:OptimizationToolbox.abstractGenerator.MaxVariableSizes">
-            <summary>
-            Gets the maximum variable sizes.
-            </summary>
-            <value>The max variable sizes.</value>
-        </member>
-        <member name="T:OptimizationToolbox.SamplingGenerator">
-            <summary>
-            The Sampling Generator abstract class is used to indicate which generators are used for initial creation of points.
-            These could also be used for simple design space exploration as in design of experiments. One may consider writing
-            additional types like OFAT (one factor at a time), Full-Factorial, Fractional-Factorial, Box-Bencken, etc.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.SamplingGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.SamplingGenerator"/> class.
-            </summary>
-            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
-        </member>
-        <member name="T:OptimizationToolbox.GeneticCrossoverGenerator">
-            <summary>
-            The crossover abstract class is simply used by the genetic algorithm to recognize which generators are to be
-            used for crossover (as opposed to for initial sampling or mutation).
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.GeneticCrossoverGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.GeneticCrossoverGenerator"/> class.
-            </summary>
-            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
-        </member>
-        <member name="T:OptimizationToolbox.GeneticMutationGenerator">
-            <summary>
-            The mutation abstract class is simply used by the genetic algorithm to recognize which generators are to be
-            used for mutation (as opposed to for initial sampling or crossover). 
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.GeneticMutationGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.GeneticMutationGenerator"/> class.
-            </summary>
-            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
-        </member>
-        <member name="T:OptimizationToolbox.Candidate">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.Candidate.#ctor(System.Double[],OptimizationToolbox.abstractOptMethod)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.Candidate"/> class.
-            </summary>
-            <param name="x">The x.</param>
-        </member>
-        <member name="P:OptimizationToolbox.Candidate.fValues">
-            <summary>
-            Gets or sets the f values.
-            </summary>
-            <value>
-            The f values.
-            </value>
-        </member>
-        <member name="P:OptimizationToolbox.Candidate.gValues">
-            <summary>
-            Gets or sets the g values.
-            </summary>
-            <value>
-            The g values.
-            </value>
-        </member>
-        <member name="P:OptimizationToolbox.Candidate.hValues">
-            <summary>
-            Gets or sets the h values.
-            </summary>
-            <value>
-            The h values.
-            </value>
-        </member>
-        <member name="P:OptimizationToolbox.Candidate.x">
-            <summary>
-            Gets or sets the x vector - the vector of design variables.
-            </summary>
-            <value>
-            The x.
-            </value>
-        </member>
-        <member name="T:OptimizationToolbox.SequentialQuadraticProgramming">
-            <summary>
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.SequentialQuadraticProgramming.formulateActiveSetAndGradients(System.Double[])">
-            <summary>
-              Formulates the active set and gradients.
-            </summary>
-            <param name = "xk">The xk.</param>
-            <returns>the gradient of the active constraints as an m by n matrix.</returns>
-        </member>
-        <member name="M:OptimizationToolbox.SequentialQuadraticProgramming.calculateSQPSearchDirection(System.Double[],System.Double@)">
-            <summary>
-              Calculates the SQP search direction.
-            </summary>
-            <param name = "xk">The xk.</param>
-            <param name = "initAlpha">The init alpha.</param>
-            <returns></returns>
-        </member>
-        <member name="T:OptimizationToolbox.abstractSelector">
-            <summary>
-            The class that all selector classes must inherit from. 
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractSelector.direction">
-            <summary>
-            the direction of the search: maximizing or minimizing
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSelector.#ctor(OptimizationToolbox.optimize)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractSelector"/> class.
-            </summary>
-            <param name="direction">The direction.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSelector.selectCandidates(System.Collections.Generic.List{OptimizationToolbox.Candidate}@,System.Double)">
-            <summary>
-            Selects the candidates.
-            </summary>
-            <param name="candidates">The candidates.</param>
-            <param name="control">The control.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractSelector.betterThan(System.Double,System.Double)">
-            <summary>
-            if x betters the than y given the direction of the search
-            maximizing or minimizing.
-            </summary>
-            <param name="x">The x.</param>
-            <param name="y">The y.</param>
-            <returns></returns>
-        </member>
-        <member name="F:OptimizationToolbox.PNormProportionalSelection.v">
-            <summary>
-              v is the power that q is raised to convert it to p.
-            </summary>
-        </member>
-        <member name="T:OptimizationToolbox.abstractMOSelector">
-            <summary>
-            The class that all selector classes must inherit from. 
-            </summary>
-        </member>
-        <member name="F:OptimizationToolbox.abstractMOSelector.optDirections">
-            <summary>
-            the direction of the search: maximizing or minimizing
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.abstractMOSelector.#ctor(System.Int32,OptimizationToolbox.optimize[])">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractSelector"/> class.
-            </summary>
-            <param name="direction">The direction.</param>
-        </member>
-        <member name="M:OptimizationToolbox.abstractMOSelector.selectCandidates(System.Collections.Generic.List{OptimizationToolbox.Candidate}@,System.Double)">
-            <summary>
-            Selects the candidates.
-            </summary>
-            <param name="candidates">The candidates.</param>
-            <param name="control">The control.</param>
-        </member>
-        <member name="M:OptimizationToolbox.CuboidParetoSelector.dominates(OptimizationToolbox.Candidate,OptimizationToolbox.Candidate)">
-            <summary>
-            Does c1 dominate c2?
-            </summary>
-            <param name="c1">the subject candidate, c1 (does this dominate...).</param>
-            <param name="c2">the object candidate, c2 (is dominated by).</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.RandomPairwiseCompare.randomizeList(System.Collections.Generic.List{OptimizationToolbox.Candidate}@)">
-            <summary>
-            Randomizes the list.
-            </summary>
-            <param name="candidates">The candidates.</param>
-        </member>
-        <member name="M:OptimizationToolbox.VariableDescriptorEnum.Dispose">
-            <summary>
-            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-            </summary>
-            <filterpriority>2</filterpriority>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaGradFConvergence.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaGradFConvergence"/> class.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaGradFConvergence.#ctor(System.Double)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaGradFConvergence"/> class.
-            </summary>
-            <param name="minDifference">The min difference.</param>
-        </member>
-        <member name="M:OptimizationToolbox.DeltaGradFConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
-            <summary>
-            Given a value D (minimum difference), this criteria will return true, if the norm 
-            (1-norm sum of absolute values) of the gradient less than or equal to D.
-            </summary>
-            <param name="iteration">The number of iterations (not used).</param>
-            <param name="numFnEvals">The number of function evaluations (not used).</param>
-            <param name="fBest">The best f (not used).</param>
-            <param name="xBest">The best x (not used).</param>
-            <param name="population">The population of candidates (not used).</param>
-            <param name="gradF">The gradient of F.</param>
-            <returns>
-            true or false - has the process converged?
-            </returns>
-        </member>
-        <member name="P:OptimizationToolbox.DeltaGradFConvergence.minDifference">
-            <summary>
-            Gets or sets the min difference.
-            </summary>
-            <value>The min difference.</value>
-        </member>
-        <member name="M:OptimizationToolbox.WeightedCuboidParetoSelector.dominatesWithWeights(OptimizationToolbox.Candidate,OptimizationToolbox.Candidate)">
-            <summary>
-            Does c1 dominate c2?
-            </summary>
-            <param name="c1">the subject candidate, c1 (does this dominate...).</param>
-            <param name="c2">the object candidate, c2 (is dominated by).</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimizationToolbox.Elitism.sort(System.Collections.Generic.List{OptimizationToolbox.Candidate}@)">
-            <summary>
-            Sorts the specified candidates.
-            </summary>
-            <param name="candidates">The candidates.</param>
-        </member>
-        <member name="M:OptimizationToolbox.MaxAgeConvergence.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxAgeConvergence"/> class.
-            </summary>
-        </member>
-        <member name="M:OptimizationToolbox.MaxAgeConvergence.#ctor(System.Int32,System.Double)">
-            <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxAgeConvergence"/> class.
-            </summary>
-            <param name="maxAge">The max age.</param>
-            <param name="toleranceForSame">The tolerance for same.</param>
-        </member>
-        <member name="M:OptimizationToolbox.MaxAgeConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
-            <summary>
-            Internally keeps track of the age of the best candidate. If it exceeds the given MaxAge value, 
-            the criteria will return true. This is to say, if no better candidate is found in MaxAge 
-            iterations, return true.
-            </summary>
-            <param name="iteration">The number of iterations (not used).</param>
-            <param name="numFnEvals">The number of function evaluations (not used).</param>
-            <param name="fBest">The best f (not used).</param>
-            <param name="xBest">The best x.</param>
-            <param name="population">The population of candidates (not used).</param>
-            <param name="gradF">The gradient of F (not used).</param>
-            <returns>
-            true or false - has the process converged?
-            </returns>
-        </member>
-        <member name="P:OptimizationToolbox.MaxAgeConvergence.toleranceForSame">
-            <summary>
-            Gets or sets the tolerance for same candidate (used to increment the internal age of best).
-            </summary>
-            <value>The tolerance for same.</value>
-        </member>
-        <member name="P:OptimizationToolbox.MaxAgeConvergence.maxAge">
-            <summary>
-            Gets or sets the max age.
-            </summary>
-            <value>The max age.</value>
         </member>
         <member name="M:OptimizationToolbox.optFunctionData.GetEnumerator">
             <summary>
@@ -1280,156 +961,107 @@
             An <see cref="T:System.Collections.Generic.ICollection`1"/> containing the values in the object that implements <see cref="T:System.Collections.Generic.IDictionary`2"/>.
             </returns>
         </member>
-        <member name="T:OptimizationToolbox.ProblemDefinition">
+        <member name="T:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule">
             <summary>
-            This class is used only for the XML serialization and deserialization of 
-            optimization problems. The saving and opening of problems allows one to 
-            compare the performance across multiple techniques without have to re-
-            write a bunch of code. Note that types of elements stored in this file.
-            The representation of the problem is captured by the SpaceDescriptor:
-               how many variables and what are there ranges (if specified) and which
-               are discrete, and which are continuous. Additionally, a starting
-               point, xStart, can also be provided s.t. the optimization methods
-               start at the same location.
-            The evaluation of the problem is essentially described by the f's, g's and h's
-               functions (note that these employ a special class simply for proper
-               XML serialization, ListforIOptFunctions).
-            Convergence methods are really a part of the optimization method, but these
-               can stored within the problem definition so that one can compare different
-               methods operating under the same convergence criteria.
+            the class that all simulated annealing cooling schedules must inherit from.
             </summary>
         </member>
-        <member name="M:OptimizationToolbox.ProblemDefinition.#ctor">
+        <member name="F:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.samplesInGeneration">
             <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.ProblemDefinition"/> class.
+            the number of samples to take in determining the temperature.
             </summary>
         </member>
-        <member name="M:OptimizationToolbox.ProblemDefinition.Add(System.Object)">
+        <member name="F:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.optMethod">
             <summary>
-            Adds the specified object to the problem definition as is similiarly done 
-            for abstractOptMethod.
-            </summary>
-            <param name="function">The function.</param>
-        </member>
-        <member name="M:OptimizationToolbox.ProblemDefinition.saveProbToXml(System.String)">
-            <summary>
-            Saves the problem definition to XML.
-            </summary>
-            <param name="filename">The filename.</param>
-        </member>
-        <member name="M:OptimizationToolbox.ProblemDefinition.openprobFromXml(System.String)">
-            <summary>
-            Open the problem definition from XML.
-            </summary>
-            <param name="filename">The filename.</param>
-            <returns></returns>
-        </member>
-        <!-- Badly formed XML comment ignored for member "P:OptimizationToolbox.ProblemDefinition.name" -->
-        <member name="P:OptimizationToolbox.ProblemDefinition.xStart">
-            <summary>
-            Gets or sets the x start.
-            </summary>
-            <value>The x start.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.ConvergenceMethods">
-            <summary>
-            Gets or sets the convergence methods.
-            </summary>
-            <value>The convergence methods.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.NumConvergeCriteriaNeeded">
-            <summary>
-            Gets or sets the num convergence criteria needed to stop the process.
-            </summary>
-            <value>The num converge criteria needed.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.SpaceDescriptor">
-            <summary>
-            Gets or sets the space descriptor.
-            </summary>
-            <value>The space descriptor.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.f">
-            <summary>
-            Gets or sets the f.
-            </summary>
-            <value>The f.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.g">
-            <summary>
-            Gets or sets the g.
-            </summary>
-            <value>The g.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.h">
-            <summary>
-            Gets or sets the h.
-            </summary>
-            <value>The h.</value>
-        </member>
-        <member name="P:OptimizationToolbox.ProblemDefinition.FunctionList">
-            <summary>
-            Gets or sets the function list.
-            </summary>
-            <value>The function list.</value>
-        </member>
-        <member name="T:OptimizationToolbox.ListforIOptFunctions">
-            <summary>
-            This little class is a necessary evil once I removed the abstract classes. The reason being that
-            interfaces are not (directly) serializable as abstract classes are. The problem definition
-            class avoids any "discussion" of interfaces so that we can easily use the XmlSerializer
-            automatically. However, for the list of functions (objective functions, inequalities and equalities)
-            we use this, which overrides (thanks to the IXmlSerializable Members) how the lists are 
-            serialized.
+            the reference back to the entire simulated annealing optimization method.
             </summary>
         </member>
-        <member name="M:OptimizationToolbox.ListforIOptFunctions.#ctor(System.Collections.Generic.List{OptimizationToolbox.IObjectiveFunction},System.Collections.Generic.List{OptimizationToolbox.IInequality},System.Collections.Generic.List{OptimizationToolbox.IEquality})">
+        <member name="F:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.samplesThusFar">
             <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.ListforIOptFunctions"/> class.
+            number of samples taken thus far
             </summary>
         </member>
-        <member name="M:OptimizationToolbox.ListforIOptFunctions.GetSchema">
+        <member name="M:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.#ctor(System.Int32)">
             <summary>
-              This method is reserved and should not be used. When implementing the IXmlSerializable interface, you should return null (Nothing in Visual Basic) from this method, and instead, if specifying a custom schema is required, apply the <see cref = "T:System.Xml.Serialization.XmlSchemaProviderAttribute" /> to the class.
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule"/> class.
             </summary>
-            <returns>
-              An <see cref = "T:System.Xml.Schema.XmlSchema" /> that describes the XML representation of the object that is produced by the <see cref = "M:System.Xml.Serialization.IXmlSerializable.WriteXml(System.Xml.XmlWriter)" /> method and consumed by the <see cref = "M:System.Xml.Serialization.IXmlSerializable.ReadXml(System.Xml.XmlReader)" /> method.
-            </returns>
+            <param name="samplesInGeneration">The samples in generation.</param>
         </member>
-        <member name="P:OptimizationToolbox.HillClimbing.neighborGenerator">
+        <member name="M:OptimizationToolbox.abstractSimulatedAnnealingCoolingSchedule.SetOptimizationDetails(OptimizationToolbox.abstractOptMethod)">
             <summary>
-            Gets the neighbor generator.
+            Sets the optimization details.
+            </summary>
+            <param name="optMethod">The opt method.</param>
+        </member>
+        <member name="T:OptimizationToolbox.ImplicitEnueration">
+            <summary>
+            Implicit Enumeration is a catch-all for Composite Decision Process (as
+            deemed by Kanal and Kumar, 1988) for methods like Branch-and-Bound, 
+            best first search, and A*.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.ImplicitEnueration.#ctor(OptimizationToolbox.DesignSpaceDescription,OptimizationToolbox.optimize)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.ImplicitEnueration"/> class.
+            </summary>
+            <param name="SpaceDescription">The space description.</param>
+            <param name="direction">The direction.</param>
+        </member>
+        <member name="P:OptimizationToolbox.ImplicitEnueration.neighborGenerator">
+            <summary>
+            Gets the neighbor generator method class.
             </summary>
             <value>The neighbor generator.</value>
         </member>
-        <member name="P:OptimizationToolbox.HillClimbing.selector">
+        <member name="M:OptimizationToolbox.DeltaXConvergence.#ctor">
             <summary>
-            Gets the selector.
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaXConvergence"/> class.
             </summary>
-            <value>The selector.</value>
         </member>
-        <member name="M:OptimizationToolbox.equalToValue.GetSchema">
+        <member name="M:OptimizationToolbox.DeltaXConvergence.#ctor(System.Double)">
             <summary>
-            This method is reserved and should not be used. When implementing the IXmlSerializable interface, you should return null (Nothing in Visual Basic)
-             from this method, and instead, if specifying a custom schema is required, apply the <see cref="T:System.Xml.Serialization.XmlSchemaProviderAttribute"/> to the class.
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.DeltaXConvergence"/> class.
             </summary>
+            <param name="minDifference">The min difference.</param>
+        </member>
+        <member name="M:OptimizationToolbox.DeltaXConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Given a value D (minimum difference), this criteria will return true, if the norm of 
+            the difference between xBest and xlast is less than or equal to D.
+            </summary>
+            <param name="iteration">The number of iterations (not used).</param>
+            <param name="numFnEvals">The number of function evaluations (not used).</param>
+            <param name="fBest">The best f (not used).</param>
+            <param name="xBest">The best x.</param>
+            <param name="population">The population of candidates (not used).</param>
+            <param name="gradF">The gradient of F (not used).</param>
             <returns>
-            An <see cref="T:System.Xml.Schema.XmlSchema"/> that describes the XML representation of the object that is produced by the <see cref="M:System.Xml.Serialization.IXmlSerializable.WriteXml(System.Xml.XmlWriter)"/> method and consumed by the <see cref="M:System.Xml.Serialization.IXmlSerializable.ReadXml(System.Xml.XmlReader)"/> method.
+            true or false - has the process converged?
             </returns>
         </member>
-        <member name="M:OptimizationToolbox.equalToValue.ReadXml(System.Xml.XmlReader)">
+        <member name="P:OptimizationToolbox.DeltaXConvergence.minDifference">
             <summary>
-            Generates an object from its XML representation.
+            Gets or sets the min difference, D.
             </summary>
-            <param name="reader">The <see cref="T:System.Xml.XmlReader"/> stream from which the object is deserialized. 
-                            </param>
+            <value>The min difference.</value>
         </member>
-        <member name="M:OptimizationToolbox.equalToValue.WriteXml(System.Xml.XmlWriter)">
+        <member name="T:OptimizationToolbox.GeneticCrossoverGenerator">
             <summary>
-            Converts an object into its XML representation.
+            The crossover abstract class is simply used by the genetic algorithm to recognize which generators are to be
+            used for crossover (as opposed to for initial sampling or mutation).
             </summary>
-            <param name="writer">The <see cref="T:System.Xml.XmlWriter"/> stream to which the object is serialized. 
-                            </param>
+        </member>
+        <member name="M:OptimizationToolbox.GeneticCrossoverGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.GeneticCrossoverGenerator"/> class.
+            </summary>
+            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
+        </member>
+        <member name="M:OptimizationToolbox.RandomPairwiseCompare.randomizeList(System.Collections.Generic.List{OptimizationToolbox.Candidate}@)">
+            <summary>
+            Randomizes the list.
+            </summary>
+            <param name="candidates">The candidates.</param>
         </member>
         <member name="T:OptimizationToolbox.MaxFnEvalsConvergence">
             <summary>
@@ -1648,6 +1280,88 @@
                             </exception><exception cref="T:System.NotSupportedException">The property is set and the <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
                             </exception>
         </member>
+        <member name="M:OptimizationToolbox.MaxSpanInPopulationConvergence.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxSpanInPopulationConvergence"/> class.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.MaxSpanInPopulationConvergence.#ctor(System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxSpanInPopulationConvergence"/> class.
+            </summary>
+            <param name="MinimumSideLength">Minimum length of the side.</param>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:OptimizationToolbox.MaxSpanInPopulationConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})" -->
+        <member name="P:OptimizationToolbox.MaxSpanInPopulationConvergence.MinimumSpan">
+            <summary>
+            Gets or sets the minimum span of the set of solutions found in the population.
+            The span is the farthest euclidian distance between any two solutions.
+            </summary>
+            <value>The minimum span.</value>
+        </member>
+        <member name="M:OptimizationToolbox.DeltaFConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Given a value D (minimum difference), this criteria will return true, if the distance (absolute value of the difference) 
+            between fBest and flast is less than or equal to D.
+            </summary>
+            <param name="iteration">The number of iterations (not used).</param>
+            <param name="numFnEvals">The number of function evaluations (not used).</param>
+            <param name="fBest">The best f.</param>
+            <param name="xBest">The best x (used to check if candidate is the same).</param>
+            <param name="population">The population of candidates (not used).</param>
+            <param name="gradF">The gradient of F (not used).</param>
+            <returns>
+            true or false - has the process converged?
+            </returns>
+        </member>
+        <member name="P:OptimizationToolbox.DeltaFConvergence.minDifference">
+            <summary>
+            Gets or sets the minimum difference.
+            </summary>
+            <value>The min difference.</value>
+        </member>
+        <member name="P:OptimizationToolbox.DeltaFConvergence.toleranceForSame">
+            <summary>
+            Gets or sets the tolerance for same x. If the x is the same as the last the condition is NOT checked (returns false).
+            If this is not a desirable catch, then leave as the default (negative infinity). In fact any negative value for
+            toleranceForSame will cause it to be ignored since the distance between any two points can at best be 0.
+            </summary>
+            <value>The tolerance for same.</value>
+        </member>
+        <member name="M:OptimizationToolbox.GoldenSection.#ctor(System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.GoldenSection"/> class.
+            Unlike other line search methods, there is no need to provide a kmax. 
+            This is determined directly from the epsilon in the body of the code
+            </summary>
+            <param name="epsilon">The epsilon.</param>
+            <param name="stepSize">Size of the step.</param>
+        </member>
+        <member name="F:OptimizationToolbox.PNormProportionalSelection.v">
+            <summary>
+              v is the power that q is raised to convert it to p.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.CuboidParetoSelector.dominates(OptimizationToolbox.Candidate,OptimizationToolbox.Candidate)">
+            <summary>
+            Does c1 dominate c2?
+            </summary>
+            <param name="c1">the subject candidate, c1 (does this dominate...).</param>
+            <param name="c2">the object candidate, c2 (is dominated by).</param>
+            <returns></returns>
+        </member>
+        <member name="T:OptimizationToolbox.GeneticMutationGenerator">
+            <summary>
+            The mutation abstract class is simply used by the genetic algorithm to recognize which generators are to be
+            used for mutation (as opposed to for initial sampling or crossover). 
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.GeneticMutationGenerator.#ctor(OptimizationToolbox.DesignSpaceDescription)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.GeneticMutationGenerator"/> class.
+            </summary>
+            <param name="discreteSpaceDescriptor">The discrete space descriptor.</param>
+        </member>
         <member name="M:OptimizationToolbox.ToKnownBestXConvergence.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:OptimizationToolbox.ToKnownBestXConvergence"/> class.
@@ -1688,25 +1402,320 @@
             </summary>
             <value>The x at optimal.</value>
         </member>
-        <member name="T:OptimizationToolbox.ImplicitEnueration">
+        <member name="T:OptimizationToolbox.ProblemDefinition">
             <summary>
-            Implicit Enumeration is a catch-all for Composite Decision Process (as
-            deemed by Kanal and Kumar, 1988) for methods like Branch-and-Bound, 
-            best first search, and A*.
+            This class is used only for the XML serialization and deserialization of 
+            optimization problems. The saving and opening of problems allows one to 
+            compare the performance across multiple techniques without have to re-
+            write a bunch of code. Note that types of elements stored in this file.
+            The representation of the problem is captured by the SpaceDescriptor:
+               how many variables and what are there ranges (if specified) and which
+               are discrete, and which are continuous. Additionally, a starting
+               point, xStart, can also be provided s.t. the optimization methods
+               start at the same location.
+            The evaluation of the problem is essentially described by the f's, g's and h's
+               functions (note that these employ a special class simply for proper
+               XML serialization, ListforIOptFunctions).
+            Convergence methods are really a part of the optimization method, but these
+               can stored within the problem definition so that one can compare different
+               methods operating under the same convergence criteria.
             </summary>
         </member>
-        <member name="M:OptimizationToolbox.ImplicitEnueration.#ctor(OptimizationToolbox.DesignSpaceDescription,OptimizationToolbox.optimize)">
+        <member name="M:OptimizationToolbox.ProblemDefinition.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="T:OptimizationToolbox.ImplicitEnueration"/> class.
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.ProblemDefinition"/> class.
             </summary>
-            <param name="SpaceDescription">The space description.</param>
-            <param name="direction">The direction.</param>
         </member>
-        <member name="P:OptimizationToolbox.ImplicitEnueration.neighborGenerator">
+        <member name="M:OptimizationToolbox.ProblemDefinition.Add(System.Object)">
             <summary>
-            Gets the neighbor generator method class.
+            Adds the specified object to the problem definition as is similiarly done 
+            for abstractOptMethod.
+            </summary>
+            <param name="function">The function.</param>
+        </member>
+        <member name="M:OptimizationToolbox.ProblemDefinition.saveProbToXml(System.String)">
+            <summary>
+            Saves the problem definition to XML.
+            </summary>
+            <param name="filename">The filename.</param>
+        </member>
+        <member name="M:OptimizationToolbox.ProblemDefinition.openprobFromXml(System.String)">
+            <summary>
+            Open the problem definition from XML.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns></returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:OptimizationToolbox.ProblemDefinition.name" -->
+        <member name="P:OptimizationToolbox.ProblemDefinition.xStart">
+            <summary>
+            Gets or sets the x start.
+            </summary>
+            <value>The x start.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.ConvergenceMethods">
+            <summary>
+            Gets or sets the convergence methods.
+            </summary>
+            <value>The convergence methods.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.NumConvergeCriteriaNeeded">
+            <summary>
+            Gets or sets the num convergence criteria needed to stop the process.
+            </summary>
+            <value>The num converge criteria needed.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.SpaceDescriptor">
+            <summary>
+            Gets or sets the space descriptor.
+            </summary>
+            <value>The space descriptor.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.f">
+            <summary>
+            Gets or sets the f.
+            </summary>
+            <value>The f.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.g">
+            <summary>
+            Gets or sets the g.
+            </summary>
+            <value>The g.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.h">
+            <summary>
+            Gets or sets the h.
+            </summary>
+            <value>The h.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ProblemDefinition.FunctionList">
+            <summary>
+            Gets or sets the function list.
+            </summary>
+            <value>The function list.</value>
+        </member>
+        <member name="T:OptimizationToolbox.ListforIOptFunctions">
+            <summary>
+            This little class is a necessary evil once I removed the abstract classes. The reason being that
+            interfaces are not (directly) serializable as abstract classes are. The problem definition
+            class avoids any "discussion" of interfaces so that we can easily use the XmlSerializer
+            automatically. However, for the list of functions (objective functions, inequalities and equalities)
+            we use this, which overrides (thanks to the IXmlSerializable Members) how the lists are 
+            serialized.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.ListforIOptFunctions.#ctor(System.Collections.Generic.List{OptimizationToolbox.IObjectiveFunction},System.Collections.Generic.List{OptimizationToolbox.IInequality},System.Collections.Generic.List{OptimizationToolbox.IEquality})">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.ListforIOptFunctions"/> class.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.ListforIOptFunctions.GetSchema">
+            <summary>
+              This method is reserved and should not be used. When implementing the IXmlSerializable interface, you should return null (Nothing in Visual Basic) from this method, and instead, if specifying a custom schema is required, apply the <see cref = "T:System.Xml.Serialization.XmlSchemaProviderAttribute" /> to the class.
+            </summary>
+            <returns>
+              An <see cref = "T:System.Xml.Schema.XmlSchema" /> that describes the XML representation of the object that is produced by the <see cref = "M:System.Xml.Serialization.IXmlSerializable.WriteXml(System.Xml.XmlWriter)" /> method and consumed by the <see cref = "M:System.Xml.Serialization.IXmlSerializable.ReadXml(System.Xml.XmlReader)" /> method.
+            </returns>
+        </member>
+        <member name="M:OptimizationToolbox.Elitism.sort(System.Collections.Generic.List{OptimizationToolbox.Candidate}@)">
+            <summary>
+            Sorts the specified candidates.
+            </summary>
+            <param name="candidates">The candidates.</param>
+        </member>
+        <member name="P:OptimizationToolbox.HillClimbing.neighborGenerator">
+            <summary>
+            Gets the neighbor generator.
             </summary>
             <value>The neighbor generator.</value>
+        </member>
+        <member name="P:OptimizationToolbox.HillClimbing.selector">
+            <summary>
+            Gets the selector.
+            </summary>
+            <value>The selector.</value>
+        </member>
+        <member name="M:OptimizationToolbox.MaxAgeConvergence.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxAgeConvergence"/> class.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.MaxAgeConvergence.#ctor(System.Int32,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.MaxAgeConvergence"/> class.
+            </summary>
+            <param name="maxAge">The max age.</param>
+            <param name="toleranceForSame">The tolerance for same.</param>
+        </member>
+        <member name="M:OptimizationToolbox.MaxAgeConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Internally keeps track of the age of the best candidate. If it exceeds the given MaxAge value, 
+            the criteria will return true. This is to say, if no better candidate is found in MaxAge 
+            iterations, return true.
+            </summary>
+            <param name="iteration">The number of iterations (not used).</param>
+            <param name="numFnEvals">The number of function evaluations (not used).</param>
+            <param name="fBest">The best f (not used).</param>
+            <param name="xBest">The best x.</param>
+            <param name="population">The population of candidates (not used).</param>
+            <param name="gradF">The gradient of F (not used).</param>
+            <returns>
+            true or false - has the process converged?
+            </returns>
+        </member>
+        <member name="P:OptimizationToolbox.MaxAgeConvergence.toleranceForSame">
+            <summary>
+            Gets or sets the tolerance for same candidate (used to increment the internal age of best).
+            </summary>
+            <value>The tolerance for same.</value>
+        </member>
+        <member name="P:OptimizationToolbox.MaxAgeConvergence.maxAge">
+            <summary>
+            Gets or sets the max age.
+            </summary>
+            <value>The max age.</value>
+        </member>
+        <member name="M:OptimizationToolbox.WeightedCuboidParetoSelector.dominatesWithWeights(OptimizationToolbox.Candidate,OptimizationToolbox.Candidate)">
+            <summary>
+            Does c1 dominate c2?
+            </summary>
+            <param name="c1">the subject candidate, c1 (does this dominate...).</param>
+            <param name="c2">the object candidate, c2 (is dominated by).</param>
+            <returns></returns>
+        </member>
+        <member name="T:OptimizationToolbox.Candidate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.Candidate.#ctor(System.Double[],OptimizationToolbox.abstractOptMethod)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.Candidate"/> class.
+            </summary>
+            <param name="x">The x.</param>
+        </member>
+        <member name="P:OptimizationToolbox.Candidate.fValues">
+            <summary>
+            Gets or sets the f values.
+            </summary>
+            <value>
+            The f values.
+            </value>
+        </member>
+        <member name="P:OptimizationToolbox.Candidate.gValues">
+            <summary>
+            Gets or sets the g values.
+            </summary>
+            <value>
+            The g values.
+            </value>
+        </member>
+        <member name="P:OptimizationToolbox.Candidate.hValues">
+            <summary>
+            Gets or sets the h values.
+            </summary>
+            <value>
+            The h values.
+            </value>
+        </member>
+        <member name="P:OptimizationToolbox.Candidate.x">
+            <summary>
+            Gets or sets the x vector - the vector of design variables.
+            </summary>
+            <value>
+            The x.
+            </value>
+        </member>
+        <member name="M:OptimizationToolbox.ToKnownBestFConvergence.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.ToKnownBestFConvergence"/> class.
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.ToKnownBestFConvergence.#ctor(System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.ToKnownBestFConvergence"/> class.
+            </summary>
+            <param name="fAtOptimal">The f at optimal.</param>
+            <param name="positiveTolerance">The positive tolerance.</param>
+            <param name="negativeTolerance">The negative tolerance.</param>
+        </member>
+        <member name="M:OptimizationToolbox.ToKnownBestFConvergence.converged(System.Int64,System.Int64,System.Double,System.Collections.Generic.IList{System.Double},System.Collections.Generic.IList{System.Double[]},System.Collections.Generic.IList{System.Double})">
+            <summary>
+            Given a value for fAtOptimal and a tolerance on either side. The criteria returns
+            true when the value of fBest is within the range of fAtOptimal +/- tolerance. One
+            is welcome to set the tolerance to 0. The default of infinity is fine if it is on
+            the opposite side of the optimization direction.
+            </summary>
+            <param name="iteration">The number of iterations (not used).</param>
+            <param name="numFnEvals">The number of function evaluations (not used).</param>
+            <param name="fBest">The best f.</param>
+            <param name="xBest">The best x (not used).</param>
+            <param name="population">The population of candidates (not used).</param>
+            <param name="gradF">The gradient of F (not used).</param>
+            <returns>
+            true or false - has the process converged?
+            </returns>
+        </member>
+        <member name="P:OptimizationToolbox.ToKnownBestFConvergence.fAtOptimal">
+            <summary>
+            Gets or sets the optimal f which the process should stop after reaching.
+            </summary>
+            <value>The f at optimal.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ToKnownBestFConvergence.positiveTolerance">
+            <summary>
+            Gets or sets the tolerance negative on the positive side of fAtOptimal.
+            </summary>
+            <value>The positive tolerance.</value>
+        </member>
+        <member name="P:OptimizationToolbox.ToKnownBestFConvergence.negativeTolerance">
+            <summary>
+            Gets or sets the tolerance negative on the negative side of fAtOptimal.
+            It should be stored as a positive number, but either way the absolute value
+            is taken to make the range about fAtOptimal.
+            </summary>
+            <value>The negative tolerance.</value>
+        </member>
+        <member name="T:OptimizationToolbox.SequentialQuadraticProgramming">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:OptimizationToolbox.SequentialQuadraticProgramming.formulateActiveSetAndGradients(System.Double[])">
+            <summary>
+              Formulates the active set and gradients.
+            </summary>
+            <param name = "xk">The xk.</param>
+            <returns>the gradient of the active constraints as an m by n matrix.</returns>
+        </member>
+        <member name="M:OptimizationToolbox.SequentialQuadraticProgramming.calculateSQPSearchDirection(System.Double[],System.Double@)">
+            <summary>
+              Calculates the SQP search direction.
+            </summary>
+            <param name = "xk">The xk.</param>
+            <param name = "initAlpha">The init alpha.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimizationToolbox.sameCandidate.Equals(System.Double[],System.Double[])">
+            <summary>
+            Determines whether the specified objects are equal.
+            </summary>
+            <param name="x">The first candidate x array to compare.</param>
+            <param name="y">The second candidate x array to compare.</param>
+            <returns>
+            true if the specified objects are equal; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:OptimizationToolbox.sameCandidate.GetHashCode(System.Double[])">
+            <summary>
+            Returns a hash code for the specified object.
+            </summary>
+            <returns>
+            A hash code for the specified object.
+            </returns>
+            <param name="obj">The <see cref="T:System.Object"/> for which a hash code is to be returned.
+                            </param><exception cref="T:System.ArgumentNullException">The type of <paramref name="obj"/> is a reference type and <paramref name="obj"/> is null.
+                            </exception>
         </member>
     </members>
 </doc>

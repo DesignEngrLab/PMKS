@@ -63,7 +63,7 @@ namespace MechSynth
 
             optMethod.Add(new PowellMethod());
             //PowellsOpt.Add(new DSCPowell(0.00001, .5, 200));
-            optMethod.Add(new GoldenSection(0.001, 1.0, 100));
+        //    optMethod.Add(new GoldenSection(0.001, 1.0, 100));
 
             //adding simulation
             optMethod.Add(sim);
@@ -72,7 +72,7 @@ namespace MechSynth
             optMethod.Add(pathObjFun);
 
             //we are removing this since we do not have a merit function defined
-            optMethod.Add(new squaredExteriorPenalty(optMethod, 2.0));
+            optMethod.Add(new squaredExteriorPenalty(optMethod, 1.0));
             optMethod.Add(bb);
             optMethod.Add(cc);
 
