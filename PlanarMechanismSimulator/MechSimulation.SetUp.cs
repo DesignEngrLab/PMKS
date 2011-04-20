@@ -18,7 +18,7 @@ namespace PlanarMechanismSimulator
         /// <param name="inputSweepAngle">The input sweep angle.</param>
         /// <param name="numSteps">The number of steps.</param>
         /// <param name="graph">The graph.</param>
-        public MechSimulation(double inputSweepAngle = 2 * Math.PI, int numSteps = 12, designGraph graph = null)
+        public MechSimulation(double inputSweepAngle = 2 * Math.PI, int numSteps = 15, designGraph graph = null)
         {
             this.inputSweepAngle = inputSweepAngle;
             this.numSteps = numSteps;
@@ -343,6 +343,18 @@ namespace PlanarMechanismSimulator
                 //    PivotParameters[ii, 0, 0] = pivots[ii].X = 0.0;
                 //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
                 //}
+                if (pivots[ii].localLabels.Contains("trial"))
+                {
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = 0;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 100;
+
+                }
+                else if (pivots[ii].localLabels.Contains("trial2"))
+                {
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = 250;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 180;
+
+                }
                 //else if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("ip"))
                 //{
                 //    PivotParameters[ii, 0, 0] = pivots[ii].X = 6.0;
@@ -356,16 +368,20 @@ namespace PlanarMechanismSimulator
 
                 //////}
                 //else
-                if (pivots[ii].localLabels.Contains("output"))
+                else if (pivots[ii].localLabels.Contains("output"))
                 {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = 1.87;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 8;
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = 125;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 225;
                 }
+
                 else
-               {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = x[k++] ;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k++];
-               }
+                {
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = x[k];
+                    k = k + 1;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k];
+                    k = k + 1;
+                    
+                }
             }
             simulate();
         }
@@ -422,7 +438,7 @@ namespace PlanarMechanismSimulator
                 if (!success) {SearchIO.output("Rotatability not satisfied");break;}
 
                 //Find new position and update Path matrix of the output pivot too
-                SearchIO.output("timestep="+timeRow,0);
+             //   SearchIO.output("timestep="+timeRow,0);
                 //PrintDetails();
             }
             

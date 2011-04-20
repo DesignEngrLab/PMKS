@@ -30,8 +30,8 @@ namespace MechSynth
             //will this strategy work?
             //distance function required
             //that could be incorporated into the Math library
-            double[,] output = new double[12, 2];
-            double[,] otherpivot = new double[12, 2];
+            double[,] output = new double[15, 2];
+            double[,] otherpivot = new double[15, 2];
 
             //store pivots separately
 
