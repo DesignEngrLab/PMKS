@@ -52,16 +52,16 @@ namespace MechSynth
             //  ev.c = this.seedGraph;
 
             //bounding box - trying to contain the solutions within a particular box
-            BoundingBox bb = new BoundingBox(sim, bb_max-bb_min, bb_max-bb_min);
-            GrashofCriteria cc = new GrashofCriteria(sim, 0);
+           // BoundingBox bb = new BoundingBox(sim, bb_max-bb_min, bb_max-bb_min);
+         //   GrashofCriteria cc = new GrashofCriteria(sim, 0);
 
             //adding a new objective function which can be taken by the optimization program
             var pathObjFun = new ComparePathWithDesired(seedCandidate, desiredPath, sim);
 
 
             //initializing the optimization program 
-          //  var optMethod = new NelderMead();
-         var optMethod = new GradientBasedOptimization();
+            var optMethod = new NelderMead();
+     //    var optMethod = new GradientBasedOptimization();
 
             optMethod.Add(new PowellMethod());
             optMethod.Add(new DSCPowell(0.00001, .5, 1000));
@@ -77,7 +77,7 @@ namespace MechSynth
 
             //we are removing this since we do not have a merit function defined
             optMethod.Add(new squaredExteriorPenalty(optMethod, 1.0));
-            optMethod.Add(bb);
+         //   optMethod.Add(bb);
         //    optMethod.Add(cc);
 
             // convergence 
