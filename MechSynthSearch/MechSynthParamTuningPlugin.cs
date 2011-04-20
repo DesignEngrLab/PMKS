@@ -60,8 +60,8 @@ namespace MechSynth
 
 
             //initializing the optimization program 
-            var optMethod = new NelderMead();
-     //    var optMethod = new GradientBasedOptimization();
+            //var optMethod = new NelderMead();
+        var optMethod = new GradientBasedOptimization();
 
             optMethod.Add(new PowellMethod());
             optMethod.Add(new DSCPowell(0.00001, .5, 1000));

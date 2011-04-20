@@ -1053,6 +1053,15 @@
             <param name="y">The y.</param>
             <returns></returns>
         </member>
+        <member name="M:OptimizationToolbox.GoldenSection.#ctor(System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OptimizationToolbox.GoldenSection"/> class.
+            Unlike other line search methods, there is no need to provide a kmax. 
+            This is determined directly from the epsilon in the body of the code
+            </summary>
+            <param name="epsilon">The epsilon.</param>
+            <param name="stepSize">Size of the step.</param>
+        </member>
         <member name="F:OptimizationToolbox.PNormProportionalSelection.v">
             <summary>
               v is the power that q is raised to convert it to p.

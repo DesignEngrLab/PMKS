@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using GraphSynth.Representation;
 using OptimizationToolbox;
 using PlanarMechanismSimulator;
@@ -24,6 +25,8 @@ namespace MechSynth
         }
         public double calculate(double[] x)
         {
+            //double checkSum = x[0] + x[1]*10 + x[2]*100 + x[3]*1000;
+            //SearchIO.output(checkSum, 0);
             //the code below will work for Single output conditions
             //now store the pivot parameters into an array or we could directly manipulate it
             //the program is going to directly compare from index 0 to the last without trying to identify the closest one
@@ -116,6 +119,62 @@ namespace MechSynth
 
             return rms;
         }
+
+        private double rmsdistance2(double[,] output)
+        {
+            //now that there are two arrays of the same size, we shall determine the straightline distance between two points
+
+            double rms = 0.0;
+            int numOutRows = output.GetLength(0);
+            for (int i = 0; i < desiredPath.GetLength(0); i++)
+            {
+                var desiredPt = new Point(desiredPath[i, 0], desiredPath[i, 1]);
+                var pt1 = new Point(output[numOutRows - 1, 0], output[numOutRows - 1, 1]);
+                var pt2 = new Point(output[0, 0], output[0, 1]);
+                double MinDx = getShortestDistance(pt1, pt2, desiredPt);
+                for (int j = 1; j < numOutRows; j++)
+                {
+                    pt1 = new Point(output[j - 1, 0], output[j - 1, 1]);
+                    pt2 = new Point(output[j, 0], output[j, 1]);
+                    double tempMin = getShortestDistance(pt1, pt2, desiredPt);
+                    if (tempMin < MinDx) MinDx = tempMin;
+                }
+                rms += MinDx;
+            }
+            rms /= desiredPath.GetLength(0);
+            rms = Math.Sqrt(rms);
+
+            SearchIO.output("rms = " + rms, 0);
+
+
+            return rms;
+        }
+
+        private double getShortestDistance(Point pt1, Point pt2, Point desiredPt)
+        {
+            double minLength = (pt1 - desiredPt).LengthSquared;
+            minLength = Math.Min(minLength, (pt2 - desiredPt).LengthSquared);
+
+            Vector unitLeft = (desiredPt - pt1);
+            unitLeft.Normalize();
+            Vector unitRight = (pt2 - pt1);
+            unitRight.Normalize();
+            double theta = Math.Acos(unitLeft * unitRight);
+            if (theta > Math.PI / 2) return minLength;
+
+            unitLeft = (pt1 - pt2);
+            unitLeft.Normalize();
+            unitRight = (desiredPt - pt2);
+            unitRight.Normalize();
+            theta = Math.Acos(unitLeft * unitRight);
+            if (theta > Math.PI / 2) return minLength;
+
+
+            // then compare with the intermediate point
+            // make sure that return length-squared not length
+            return minLength;
+        }
+
         //public double[,] returnPath()
         //{
         //    var path = new double[numTimeSteps, 2];
