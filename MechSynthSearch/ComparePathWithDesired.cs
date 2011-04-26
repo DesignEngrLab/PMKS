@@ -33,10 +33,13 @@ namespace MechSynth
             //will this strategy work?
             //distance function required
             //that could be incorporated into the Math library
-            double[,] output = new double[15, 2];
+            double[,] output = new double[1000, 2];
             double[,] otherpivot = new double[15, 2];
-
+            double[,] actualoutput = new double[15, 2];
             //store pivots separately
+
+            //compare each desired point in the given order with the output obtained
+            //15 points to be compared with 1000 points
 
             List<node> pivot_compare = new List<node>();
 
@@ -48,27 +51,72 @@ namespace MechSynth
                 if (pivot_compare[i].localLabels.Contains("output"))
                     outputpivotindex = i;
 
-            //trying to find the other pivot connected to the input
-
-            int otherpivotindex = 0;
-
-            for (int i = 0; i < pivot_compare.Count; i++)
-                if (!pivot_compare[i].localLabels.Contains("ground") && !pivot_compare[i].localLabels.Contains("output") && !pivot_compare[i].localLabels.Contains("input"))
-                    otherpivotindex = i;
-
-            for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
-            {
-                otherpivot[i, 0] = sim.PivotParameters[outputpivotindex, i, 0];
-                otherpivot[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
-            }
-
             for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
             {
                 output[i, 0] = sim.PivotParameters[outputpivotindex, i, 0];
                 output[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
 
             }
-            double rm_s = rmsdistance(output);
+
+            //now we have the output pivot index
+            //we also have the sim.PivotParameters from where we would be able to obtain the 1000 points
+
+            //take the first point, search through the list of 1000 points, find whichever is closest -say within a particular tolerance
+            //make a note of the point..say i
+            //coz next desired path point will be searched from i
+
+
+
+            int number = 0;
+            int getnostoredinoutput = 0;
+            
+
+            for (int i = 0; i < desiredPath.GetLength(0); i++)
+            {
+                for (int j = number; j < output.GetLength(0); j++)
+                {
+                    
+                    if (desiredPath[i, 0] / output[j, 0] <= 1.2 && desiredPath[i, 1] / output[j, 1] <= 1.2)
+                    {
+                        actualoutput[i, 0] = output[j, 0];
+                        actualoutput[i, 1] = output[j, 1];
+                        number = j++;
+                        getnostoredinoutput += 1;
+                        break;
+                    }
+
+                }
+
+            }
+
+            //even if we get 15 or less, we can compute RMS Number
+
+            double rm_s = rmsdistance(actualoutput);
+
+            #region old code
+            
+
+            //trying to find the other pivot connected to the input
+
+            //int otherpivotindex = 0;
+
+            //for (int i = 0; i < pivot_compare.Count; i++)
+            //    if (!pivot_compare[i].localLabels.Contains("ground") && !pivot_compare[i].localLabels.Contains("output") && !pivot_compare[i].localLabels.Contains("input"))
+            //        otherpivotindex = i;
+
+            //for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
+            //{
+            //    otherpivot[i, 0] = sim.PivotParameters[outputpivotindex, i, 0];
+            //    otherpivot[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
+            //}
+
+            //for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
+            //{
+            //    output[i, 0] = sim.PivotParameters[outputpivotindex, i, 0];
+            //    output[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
+
+            //}
+           
 
             //printing pivot positions for each cycle: 
             if (rm_s < 0.1)
@@ -94,7 +142,7 @@ namespace MechSynth
                 }
             }
 
-
+            #endregion 
             return rm_s;
         }
 
@@ -120,35 +168,35 @@ namespace MechSynth
             return rms;
         }
 
-        private double rmsdistance2(double[,] output)
-        {
-            //now that there are two arrays of the same size, we shall determine the straightline distance between two points
+        //private double rmsdistance2(double[,] output)
+        //{
+        //    //now that there are two arrays of the same size, we shall determine the straightline distance between two points
 
-            double rms = 0.0;
-            int numOutRows = output.GetLength(0);
-            for (int i = 0; i < desiredPath.GetLength(0); i++)
-            {
-                var desiredPt = new Point(desiredPath[i, 0], desiredPath[i, 1]);
-                var pt1 = new Point(output[numOutRows - 1, 0], output[numOutRows - 1, 1]);
-                var pt2 = new Point(output[0, 0], output[0, 1]);
-                double MinDx = getShortestDistance(pt1, pt2, desiredPt);
-                for (int j = 1; j < numOutRows; j++)
-                {
-                    pt1 = new Point(output[j - 1, 0], output[j - 1, 1]);
-                    pt2 = new Point(output[j, 0], output[j, 1]);
-                    double tempMin = getShortestDistance(pt1, pt2, desiredPt);
-                    if (tempMin < MinDx) MinDx = tempMin;
-                }
-                rms += MinDx;
-            }
-            rms /= desiredPath.GetLength(0);
-            rms = Math.Sqrt(rms);
+        //    double rms = 0.0;
+        //    int numOutRows = output.GetLength(0);
+        //    for (int i = 0; i < desiredPath.GetLength(0); i++)
+        //    {
+        //        var desiredPt = new Point(desiredPath[i, 0], desiredPath[i, 1]);
+        //        var pt1 = new Point(output[numOutRows - 1, 0], output[numOutRows - 1, 1]);
+        //        var pt2 = new Point(output[0, 0], output[0, 1]);
+        //        double MinDx = getShortestDistance(pt1, pt2, desiredPt);
+        //        for (int j = 1; j < numOutRows; j++)
+        //        {
+        //            pt1 = new Point(output[j - 1, 0], output[j - 1, 1]);
+        //            pt2 = new Point(output[j, 0], output[j, 1]);
+        //            double tempMin = getShortestDistance(pt1, pt2, desiredPt);
+        //            if (tempMin < MinDx) MinDx = tempMin;
+        //        }
+        //        rms += MinDx;
+        //    }
+        //    rms /= desiredPath.GetLength(0);
+        //    rms = Math.Sqrt(rms);
 
-            SearchIO.output("rms = " + rms, 0);
+        //    SearchIO.output("rms = " + rms, 0);
 
 
-            return rms;
-        }
+        //    return rms;
+        //}
 
         private double getShortestDistance(Point pt1, Point pt2, Point desiredPt)
         {
