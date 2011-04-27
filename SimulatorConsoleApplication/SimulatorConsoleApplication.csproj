@@ -54,12 +54,6 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OptimizationToolbox">
-      <HintPath>..\Resources\x86\OptimizationToolbox.dll</HintPath>
-    </Reference>
-    <Reference Include="StarMath">
-      <HintPath>..\Resources\x86\StarMath.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

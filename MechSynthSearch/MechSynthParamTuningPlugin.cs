@@ -61,7 +61,7 @@ namespace MechSynth
 
             //initializing the optimization program 
             var optMethod = new NelderMead();
-        //var optMethod = new GradientBasedOptimization();
+          //var optMethod = new GradientBasedOptimization();
 
             optMethod.Add(new PowellMethod());
             optMethod.Add(new DSCPowell(0.00001, .5, 1000));
@@ -81,9 +81,17 @@ namespace MechSynth
         //    optMethod.Add(cc);
 
             // convergence 
-            optMethod.Add(new MaxFnEvalsConvergence(5000));
+            optMethod.Add(new MaxIterationsConvergence(1000));
          //   optMethod.Add(new DeltaXConvergence(0.01));
             optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
+            optMethod.Add(new MaxSpanInPopulationConvergence(0.01));
+
+            var n = 8;
+            var dsd = new DesignSpaceDescription();
+            for (int i = 0; i < n; i++)
+            dsd.Add(new VariableDescriptor(0,300));
+            var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
+          var initPoints=  LHC.GenerateCandidates(null, 100);
 
             //generating random x,y values
             double[] x0 = new double[8];

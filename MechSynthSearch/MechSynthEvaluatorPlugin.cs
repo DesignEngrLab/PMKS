@@ -43,9 +43,9 @@ namespace MechSynth
 
             ev.calculate(); //new[] { 0.0, 0.0, 6.0, 0.0, 1.874099, 7.998559, 1.73, 1 });
             var CPWD = new ComparePathWithDesired(seedCandidate, desiredPath, ev);
-            CPWD.calculate(new double[1]);
+           var rms= CPWD.calculate(new double[1]);
             //ev.saveParameterData(settings.outputDirectory + "outputPathC1");
-            SearchIO.output("***Completed!***");
+            SearchIO.output("***Completed!*** RMS = "+rms,0);
             //
             // c now needs values for the positions of the pivots unless of course it's set in the xml
             // otherwise you could set by calling calc(x).
