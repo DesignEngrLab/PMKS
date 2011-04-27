@@ -36,6 +36,10 @@ namespace MechSynth
             double[,] output = new double[1000, 2];
             double[,] otherpivot = new double[15, 2];
             double[,] actualoutput = new double[15, 2];
+            double[,] InputGround = new double[15, 2];
+            double[,] OtherGround = new double[15, 2];
+            double[,] Trial = new double[15, 2];
+            double[,] Trial2 = new double[15, 2];
             //store pivots separately
 
             //compare each desired point in the given order with the output obtained
@@ -47,9 +51,22 @@ namespace MechSynth
                 if (n.localLabels.Contains("pivot"))
                     pivot_compare.Add(n);
             int outputpivotindex = 0;
+            int inputground = 0, otherground = 0, trial = 0, trial2 = 0;
             for (int i = 0; i < pivot_compare.Count; i++)
                 if (pivot_compare[i].localLabels.Contains("output"))
                     outputpivotindex = i;
+            for (int i = 0; i < pivot_compare.Count; i++)
+                if (pivot_compare[i].localLabels.Contains("input") && pivot_compare[i].localLabels.Contains("ground"))
+                    inputground = i;
+            for (int i = 0; i < pivot_compare.Count; i++)
+                if (!pivot_compare[i].localLabels.Contains("input") && pivot_compare[i].localLabels.Contains("ground"))
+                    otherground = i;
+            for (int i = 0; i < pivot_compare.Count; i++)
+                if (pivot_compare[i].localLabels.Contains("trial"))
+                    trial = i;
+            for (int i = 0; i < pivot_compare.Count; i++)
+                if (pivot_compare[i].localLabels.Contains("trial2"))
+                    trial2 = i;
 
             for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
             {
@@ -57,6 +74,7 @@ namespace MechSynth
                 output[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
 
             }
+
 
             //now we have the output pivot index
             //we also have the sim.PivotParameters from where we would be able to obtain the 1000 points
@@ -76,16 +94,25 @@ namespace MechSynth
                 for (int j = number; j < output.GetLength(0); j++)
                 {
                     
-                    if (desiredPath[i, 0] / output[j, 0] <= 1.2 && desiredPath[i, 1] / output[j, 1] <= 1.2)
+                    if ((desiredPath[i,0]/output[j,0]>=0.8 || desiredPath[i, 0] / output[j, 0] <= 1.3) && (desiredPath[i,1]/output[j,1]>=0.8 || desiredPath[i, 1] / output[j, 1] <= 1.3))
                     {
                         actualoutput[i, 0] = output[j, 0];
                         actualoutput[i, 1] = output[j, 1];
-                        number = j++;
+                        number = j+1;
                         getnostoredinoutput += 1;
                         break;
                     }
 
                 }
+
+                InputGround[i, 0] = sim.PivotParameters[inputground, number - 1, 0];
+                InputGround[i, 1] = sim.PivotParameters[inputground, number - 1, 1];
+                Trial[i, 0] = sim.PivotParameters[trial, number - 1, 0];
+                Trial[i, 1] = sim.PivotParameters[trial, number - 1, 1];
+                Trial2[i, 0] = sim.PivotParameters[trial2, number - 1, 0];
+                Trial2[i, 1] = sim.PivotParameters[trial2, number - 1, 1];
+                OtherGround[i, 0] = sim.PivotParameters[otherground, number - 1, 0];
+                OtherGround[i, 1] = sim.PivotParameters[otherground, number - 1, 1];
 
             }
 
@@ -119,27 +146,45 @@ namespace MechSynth
            
 
             //printing pivot positions for each cycle: 
-            if (rm_s < 0.1)
+            if (rm_s < 100)
             {
                 FileStream fs = new FileStream(rm_s + ".txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
                 using (StreamWriter sw = new StreamWriter(fs))
                 {
                     sw.Write("Output X" + "\t");
                     sw.Write("Output Y" + "\t");
-                    sw.Write("Other Pivot X" + "\t");
-                    sw.Write("Other Pivot Y" + "\t");
-                    sw.Write("RMS" + "\t");
+                    sw.Write("InputGround X" + "\t");
+                    sw.Write("InputGround Y" + "\t");
+                    sw.Write("OtherGround X" + "\t");
+                    sw.Write("OtherGround Y" + "\t");
+                    sw.Write("Trial X" + "\t");
+                    sw.Write("Trial Y" + "\t");
+                    sw.Write("Trial2 X" + "\t");
+                    sw.Write("Trial2 Y" + "\t");
+
+                  //  sw.Write("Other Pivot X" + "\t");
+                  //  sw.Write("Other Pivot Y" + "\t");
+                 //   sw.Write("RMS" + "\t");
                     sw.WriteLine();
-                    for (int i = 0; i < 12; i++)
+                    for (int i = 0; i < actualoutput.GetLength(0); i++)
                     {
 
-                        sw.Write(output[i, 0] + "\t");
-                        sw.Write(output[i, 1] + "\t");
-                        sw.Write(otherpivot[i, 0] + "\t");
-                        sw.Write(otherpivot[i, 0] + "\t");
-                        sw.Write(rm_s + "\t");
+                        sw.Write(actualoutput[i, 0] + "\t");
+                        sw.Write(actualoutput[i, 1] + "\t");
+                        sw.Write(InputGround[i, 0] + "\t");
+                        sw.Write(InputGround[i, 1] + "\t");
+                        sw.Write(OtherGround[i, 0] + "\t");
+                        sw.Write(OtherGround[i, 1] + "\t");
+                        sw.Write(Trial[i, 0] + "\t");
+                        sw.Write(Trial[i, 1] + "\t");
+                        sw.Write(Trial2[i, 0] + "\t");
+                        sw.Write(Trial2[i, 1] + "\t");
+                    //    sw.Write(otherpivot[i, 0] + "\t");
+                    //    sw.Write(otherpivot[i, 0] + "\t");
+                  //      sw.Write(rm_s + "\t");
                     }
                 }
+                
             }
 
             #endregion 

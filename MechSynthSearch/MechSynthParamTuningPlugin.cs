@@ -27,7 +27,7 @@ namespace MechSynth
 
           //  double[,] desiredPath ={{1.87,8},{2.93,8.46},{2.80,8.41},
           //                             {1.99,8.06},{0.96,7.46},{0,6.71},{-0.77,5.93},{-1.3,5.26},{-1.60,4.81},{-1.65,4.75},{-1.25,5.33},{0,6.71}};
-            double[,] desiredPath ={{158.65,161.92},{109.38,135.30},{57.997,101.69},{24.59,82.07},{0.33,76.90},{-17.03,91.46},{-13.92,129.10},{-0.74,155.01},{20.73,180.91},{53.78,205.65},{88.17,219.90},{125,225},{165.44,217.76},{189.57,200.42},{185.89,178.49}};
+            double[,] desiredPath ={{125,225},{165.44,217.76},{189.57,200.42},{185.89,178.49},{158.65,161.92},{109.38,135.30},{57.997,101.69},{24.59,82.07},{0.33,76.90},{-17.03,91.46},{-13.92,129.10},{-0.74,155.01},{20.73,180.91},{53.78,205.65},{88.17,219.90}};
            
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
@@ -60,8 +60,8 @@ namespace MechSynth
 
 
             //initializing the optimization program 
-            //var optMethod = new NelderMead();
-        var optMethod = new GradientBasedOptimization();
+            var optMethod = new NelderMead();
+        //var optMethod = new GradientBasedOptimization();
 
             optMethod.Add(new PowellMethod());
             optMethod.Add(new DSCPowell(0.00001, .5, 1000));
@@ -81,12 +81,12 @@ namespace MechSynth
         //    optMethod.Add(cc);
 
             // convergence 
-            optMethod.Add(new MaxFnEvalsConvergence(1000));
+            optMethod.Add(new MaxFnEvalsConvergence(5000));
          //   optMethod.Add(new DeltaXConvergence(0.01));
             optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
 
             //generating random x,y values
-            double[] x0 = new double[4];
+            double[] x0 = new double[8];
             for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
                 x0[i] =  100*r.NextDouble();
 

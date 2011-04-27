@@ -343,18 +343,18 @@ namespace PlanarMechanismSimulator
                 //    PivotParameters[ii, 0, 0] = pivots[ii].X = 0.0;
                 //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
                 //}
-                if (pivots[ii].localLabels.Contains("trial"))
-                {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = 0;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 100;
+                //if (pivots[ii].localLabels.Contains("trial"))
+                //{
+                //    PivotParameters[ii, 0, 0] = pivots[ii].X = 0;
+                //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 100;
 
-                }
-                else if (pivots[ii].localLabels.Contains("trial2"))
-                {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = 250;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 180;
+                //}
+                //else if (pivots[ii].localLabels.Contains("trial2"))
+                //{
+                //    PivotParameters[ii, 0, 0] = pivots[ii].X = 250;
+                //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 180;
 
-                }
+                //}
                 //else if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("ip"))
                 //{
                 //    PivotParameters[ii, 0, 0] = pivots[ii].X = 6.0;
@@ -368,10 +368,10 @@ namespace PlanarMechanismSimulator
 
                 //////}
                 //else
-                else if (pivots[ii].localLabels.Contains("output"))
+                /*else*/ if (pivots[ii].localLabels.Contains("output"))
                 {
-                    PivotParameters[ii, 0, 0] = pivots[ii].X = 158.65;
-                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 161.92;
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = 125;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 225;
                 }
 
                 else
