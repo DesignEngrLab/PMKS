@@ -31,17 +31,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GraphSynth.FundamentalClassesAndInterfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
+    <Reference Include="GraphSynth.CustomControls">
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.CustomControls.dll</HintPath>
     </Reference>
-    <Reference Include="GraphSynth.Representation, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\GraphSynth.Representation.dll</HintPath>
+    <Reference Include="GraphSynth.FundamentalClassesAndInterfaces">
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
     </Reference>
-    <Reference Include="StarMath, Version=1.0.10.1015, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\StarMath.dll</HintPath>
+    <Reference Include="GraphSynth.Representation">
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.Representation.dll</HintPath>
+    </Reference>
+    <Reference Include="StarMath">
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

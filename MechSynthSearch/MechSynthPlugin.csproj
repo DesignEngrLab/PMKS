@@ -39,21 +39,22 @@
   <ItemGroup>
     <Reference Include="GraphSynth.CustomControls, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\GraphSynth.CustomControls.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.CustomControls.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="GraphSynth.FundamentalClassesAndInterfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="GraphSynth.Representation, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\GraphSynth.Representation.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.Representation.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="StarMath, Version=1.0.10.1015, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\GraphSynth2\StarMath.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

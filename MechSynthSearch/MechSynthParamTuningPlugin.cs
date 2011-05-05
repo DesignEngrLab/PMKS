@@ -93,18 +93,36 @@ namespace MechSynth
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
           var initPoints=  LHC.GenerateCandidates(null, 100);
 
+            //for each initPoints - generate the fstar value 
+
+
+
             //generating random x,y values
-            double[] x0 = new double[8];
-            for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
-                x0[i] =  100*r.NextDouble();
+            //double[] x0 = new double[8];
+            //for (int i = 0; i < x0.GetLength(0); i++) //since I am going to assign ground pivots as they are
+            //    x0[i] =  100*r.NextDouble();
 
 
             //sim.calculate(x0);
 
-            double[] xStar;
-            double fStar = optMethod.Run(out xStar, x0);
-           // double fStar = optMethod.Run(out xStar, 8);
-            
+           // double[] xStar;
+           // double fStar = optMethod.Run(out xStar, x0);
+           //// double fStar = optMethod.Run(out xStar, 8);
+
+          double[] fStar1 = new double[100];
+
+          for (int i = 0; i < 100; i++)
+          {
+              double[] x0 = new double[8];
+              x0 = initPoints[i];
+              double[] xStar;
+              double fStar = optMethod.Run(out xStar, x0);
+              fStar1[i] = fStar;
+
+          }
+
+
+            SearchIO.output("fStar Min="+StarMath.Min(fStar1));
 
             SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
             
