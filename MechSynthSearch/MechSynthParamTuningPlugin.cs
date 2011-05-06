@@ -39,12 +39,13 @@ namespace MechSynth
             //Below is a relation for bounding box and also the first point 
             double bb_min, bb_max;
 
-            bb_min = StarMath.Min(desiredPath);
-            bb_max = StarMath.Max(desiredPath);
+         //   bb_min = StarMath.Min(desiredPath);
+          //  bb_max = StarMath.Max(desiredPath);
 
             //now that min and max are obtained - we will form a bounding box using these max and min values
 
-            
+            bb_max = 250;
+            bb_min = 250;
 
             sim.Graph = seedGraph;
             //  designGraph testGraph = this.seedGraph;
@@ -52,7 +53,7 @@ namespace MechSynth
             //  ev.c = this.seedGraph;
 
             //bounding box - trying to contain the solutions within a particular box
-           // BoundingBox bb = new BoundingBox(sim, bb_max-bb_min, bb_max-bb_min);
+            BoundingBox bb = new BoundingBox(sim, bb_max,bb_min);
          //   GrashofCriteria cc = new GrashofCriteria(sim, 0);
 
             //adding a new objective function which can be taken by the optimization program
@@ -77,7 +78,7 @@ namespace MechSynth
 
             //we are removing this since we do not have a merit function defined
             optMethod.Add(new squaredExteriorPenalty(optMethod, 1.0));
-         //   optMethod.Add(bb);
+            optMethod.Add(bb);
         //    optMethod.Add(cc);
 
             // convergence 
@@ -91,7 +92,7 @@ namespace MechSynth
             for (int i = 0; i < n; i++)
             dsd.Add(new VariableDescriptor(0,300));
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
-          var initPoints=  LHC.GenerateCandidates(null, 100);
+          var initPoints=  LHC.GenerateCandidates(null, 10);
 
             //for each initPoints - generate the fstar value 
 
@@ -109,9 +110,9 @@ namespace MechSynth
            // double fStar = optMethod.Run(out xStar, x0);
            //// double fStar = optMethod.Run(out xStar, 8);
 
-          double[] fStar1 = new double[100];
+          double[] fStar1 = new double[initPoints.Count];
 
-          for (int i = 0; i < 100; i++)
+          for (int i = 0; i < fStar1.GetLength(0); i++)
           {
               double[] x0 = new double[8];
               x0 = initPoints[i];
