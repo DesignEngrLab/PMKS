@@ -61,8 +61,8 @@ namespace MechSynth
 
             }
 
-            
-            
+
+
 
 
             return rmsdistance2(output);
@@ -221,23 +221,23 @@ namespace MechSynth
 
         private double rmsdistance(double[,] output)
         {
-            //now that there are two arrays of the same size, we shall determine the straightline distance between two points
-
             double rms = 0.0;
-
+            int numOutRows = output.GetLength(0);
             for (int i = 0; i < desiredPath.GetLength(0); i++)
             {
-
-                rms += Math.Pow((desiredPath[i, 0] - output[i, 0]), 2) + Math.Pow((desiredPath[i, 1] - output[i, 1]), 2);
-
+                var MinDx = double.PositiveInfinity;
+                var desiredPt = new Point(desiredPath[i, 0], desiredPath[i, 1]);
+                for (int j = 0; j < numOutRows; j++)
+                {
+                    var pt1 = new Point(output[j, 0], output[j, 1]);
+                    double tempMin = (pt1 - desiredPt).LengthSquared;
+                    if (tempMin < MinDx) MinDx = tempMin;
+                }
+                rms += MinDx;
             }
-
             rms /= desiredPath.GetLength(0);
             rms = Math.Sqrt(rms);
-
-            SearchIO.output("rms = " + rms, 2);
-
-
+            //   SearchIO.output("RMS="+rms, 0);
             return rms;
         }
 
@@ -264,53 +264,55 @@ namespace MechSynth
             }
             rms /= desiredPath.GetLength(0);
             rms = Math.Sqrt(rms);
-         //   SearchIO.output("RMS="+rms, 0);
+            //   SearchIO.output("RMS="+rms, 0);
             return rms;
         }
 
         private double getShortestDistance(Point pt1, Point pt2, Point desiredPt)
         {
-            double minLength = (pt1 - desiredPt).LengthSquared;
-            minLength = Math.Min(minLength, (pt2 - desiredPt).LengthSquared);
+            double minLength = Math.Min((pt1 - desiredPt).LengthSquared,
+                (pt2 - desiredPt).LengthSquared);
 
-        //    Vector unitLeft = (desiredPt - pt1);
-        //    unitLeft.Normalize();
-        //    Vector unitRight = (pt2 - pt1);
-        //    unitRight.Normalize();
-        //    double theta = Math.Acos(unitLeft * unitRight);
-        //    if (theta > Math.PI / 2) return minLength;
+            Vector unitLeft = (desiredPt - pt1);
+            unitLeft.Normalize();
+            Vector unitRight = (pt2 - pt1);
+            unitRight.Normalize();
+            double theta = Math.Acos(unitLeft * unitRight);
+            if ((double.IsNaN(theta))||(theta > Math.PI / 2)) return minLength;
 
-        //    unitLeft = (pt1 - pt2);
-        //    unitLeft.Normalize();
-        //    unitRight = (desiredPt - pt2);
-        //    unitRight.Normalize();
-        //    theta = Math.Acos(unitLeft * unitRight);
-        //    if (theta > Math.PI / 2) return minLength;
+            unitLeft = (pt1 - pt2);
+            unitLeft.Normalize();
+            unitRight = (desiredPt - pt2);
+            unitRight.Normalize();
+            theta = Math.Acos(unitLeft * unitRight);
+            if ((double.IsNaN(theta))||(theta > Math.PI / 2)) return minLength;
+
+            var orthoVector = new Vector(-(pt1 - pt2).Y, (pt1 - pt2).X);
+            orthoVector.Normalize();
+            return orthoVector*(desiredPt - pt2);
+            //// then compare with the intermediate point
+            //// make sure that return length-squared not length
+
+            ////if the desired pt is in between pt1 and pt2 - say on a line
+
+            double x = (desiredPt.Y - pt1.Y) / (pt2.Y - pt1.Y) - (desiredPt.X - pt1.X) / (pt2.X - pt1.X);
+            //if x is zero, then the desired pt on the line connecting pt1 and pt2
+            //now to check if desiredpt lies between pt1 and pt1 or away
+            //we can check the distances between pt1 and pt2 with the desired pt
+
+            double dis_d_p1, dis_d_p2, dis_p1_p2;
+            dis_d_p1 = (desiredPt - pt1).Length;
+            dis_d_p2 = (desiredPt - pt2).Length;
+            dis_p1_p2 = (pt1 - pt2).Length;
+            //to check if desired is between pt1 and pt2
+            if (x == 0 && (dis_d_p1 < dis_p1_p2))
+            {
+                if (dis_d_p1 < dis_d_p2) return (desiredPt - pt1).LengthSquared;
+                else return (desiredPt - pt2).LengthSquared;
+            }
 
 
-        //    //// then compare with the intermediate point
-        //    //// make sure that return length-squared not length
 
-        //    ////if the desired pt is in between pt1 and pt2 - say on a line
-
-        //    double x = (desiredPt.Y - pt1.Y) / (pt2.Y - pt1.Y) - (desiredPt.X - pt1.X) / (pt2.X - pt1.X);
-        //    //if x is zero, then the desired pt on the line connecting pt1 and pt2
-        //   //now to check if desiredpt lies between pt1 and pt1 or away
-        //    //we can check the distances between pt1 and pt2 with the desired pt
-
-        //    double dis_d_p1, dis_d_p2, dis_p1_p2;
-        //    dis_d_p1 = (desiredPt - pt1).Length;
-        //    dis_d_p2 = (desiredPt - pt2).Length;
-        //    dis_p1_p2 = (pt1 - pt2).Length;
-        ////to check if desired is between pt1 and pt2
-        //    if (x == 0 && (dis_d_p1 < dis_p1_p2))
-        //    {
-        //        if (dis_d_p1 < dis_d_p2) return (desiredPt - pt1).LengthSquared;
-        //        else return (desiredPt - pt2).LengthSquared;
-        //    }
-                
-            
-            
             return minLength;
         }
 
