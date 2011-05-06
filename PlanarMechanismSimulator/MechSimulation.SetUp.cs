@@ -380,7 +380,7 @@ namespace PlanarMechanismSimulator
                     k = k + 1;
                     PivotParameters[ii, 0, 1] = pivots[ii].Y = x[k];
                     k = k + 1;
-                    
+
                 }
             }
             simulate();

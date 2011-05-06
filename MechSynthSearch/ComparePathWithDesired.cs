@@ -41,12 +41,30 @@ namespace MechSynth
             pivot_compare.RemoveAll(n => !n.localLabels.Contains("pivot"));
 
             var outputpivotindex = pivot_compare.FindIndex(n => n.localLabels.Contains("output"));
+            FileStream fs = new FileStream("output-format.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
             for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
             {
                 output[i, 0] = sim.PivotParameters[outputpivotindex, i, 0];
                 output[i, 1] = sim.PivotParameters[outputpivotindex, i, 1];
 
             }
+            //printing values of output - using evaluator Plugin
+            using (StreamWriter sw = new StreamWriter(fs))
+            {
+                for (int i = 0; i < output.GetLength(0); i++)
+                {
+                    sw.Write(output[i, 0] + " \t");
+                    sw.Write(output[i, 1] + "\t");
+                    sw.Write("\n");
+                }
+
+            }
+
+            
+            
+
+
             return rmsdistance2(output);
 
 
@@ -246,7 +264,7 @@ namespace MechSynth
             }
             rms /= desiredPath.GetLength(0);
             rms = Math.Sqrt(rms);
-            SearchIO.output("RMS="+rms, 0);
+         //   SearchIO.output("RMS="+rms, 0);
             return rms;
         }
 
@@ -255,29 +273,44 @@ namespace MechSynth
             double minLength = (pt1 - desiredPt).LengthSquared;
             minLength = Math.Min(minLength, (pt2 - desiredPt).LengthSquared);
 
-            //Vector unitLeft = (desiredPt - pt1);
-            //unitLeft.Normalize();
-            //Vector unitRight = (pt2 - pt1);
-            //unitRight.Normalize();
-            //double theta = Math.Acos(unitLeft * unitRight);
-            //if (theta > Math.PI / 2) return minLength;
+        //    Vector unitLeft = (desiredPt - pt1);
+        //    unitLeft.Normalize();
+        //    Vector unitRight = (pt2 - pt1);
+        //    unitRight.Normalize();
+        //    double theta = Math.Acos(unitLeft * unitRight);
+        //    if (theta > Math.PI / 2) return minLength;
 
-            //unitLeft = (pt1 - pt2);
-            //unitLeft.Normalize();
-            //unitRight = (desiredPt - pt2);
-            //unitRight.Normalize();
-            //theta = Math.Acos(unitLeft * unitRight);
-            //if (theta > Math.PI / 2) return minLength;
+        //    unitLeft = (pt1 - pt2);
+        //    unitLeft.Normalize();
+        //    unitRight = (desiredPt - pt2);
+        //    unitRight.Normalize();
+        //    theta = Math.Acos(unitLeft * unitRight);
+        //    if (theta > Math.PI / 2) return minLength;
 
 
-            //// then compare with the intermediate point
-            //// make sure that return length-squared not length
+        //    //// then compare with the intermediate point
+        //    //// make sure that return length-squared not length
 
-            ////if the desired pt is in between pt1 and pt2 - say on a line
+        //    ////if the desired pt is in between pt1 and pt2 - say on a line
 
-            //double x=(desiredPt.Y-pt1.Y)/(pt2.Y-pt1.Y)-(desiredPt.X-pt1.X)/(pt2.X-pt1.X);
-            //if (x == 0) return minLength;
+        //    double x = (desiredPt.Y - pt1.Y) / (pt2.Y - pt1.Y) - (desiredPt.X - pt1.X) / (pt2.X - pt1.X);
+        //    //if x is zero, then the desired pt on the line connecting pt1 and pt2
+        //   //now to check if desiredpt lies between pt1 and pt1 or away
+        //    //we can check the distances between pt1 and pt2 with the desired pt
 
+        //    double dis_d_p1, dis_d_p2, dis_p1_p2;
+        //    dis_d_p1 = (desiredPt - pt1).Length;
+        //    dis_d_p2 = (desiredPt - pt2).Length;
+        //    dis_p1_p2 = (pt1 - pt2).Length;
+        ////to check if desired is between pt1 and pt2
+        //    if (x == 0 && (dis_d_p1 < dis_p1_p2))
+        //    {
+        //        if (dis_d_p1 < dis_d_p2) return (desiredPt - pt1).LengthSquared;
+        //        else return (desiredPt - pt2).LengthSquared;
+        //    }
+                
+            
+            
             return minLength;
         }
 

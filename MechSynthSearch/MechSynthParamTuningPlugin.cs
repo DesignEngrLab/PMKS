@@ -53,7 +53,7 @@ namespace MechSynth
             //  ev.c = this.seedGraph;
 
             //bounding box - trying to contain the solutions within a particular box
-            BoundingBox bb = new BoundingBox(sim, bb_max,bb_min);
+      //      BoundingBox bb = new BoundingBox(sim, bb_max,bb_min);
          //   GrashofCriteria cc = new GrashofCriteria(sim, 0);
 
             //adding a new objective function which can be taken by the optimization program
@@ -78,11 +78,11 @@ namespace MechSynth
 
             //we are removing this since we do not have a merit function defined
             optMethod.Add(new squaredExteriorPenalty(optMethod, 1.0));
-            optMethod.Add(bb);
+      //      optMethod.Add(bb);
         //    optMethod.Add(cc);
 
             // convergence 
-            optMethod.Add(new MaxIterationsConvergence(1000));
+            optMethod.Add(new MaxIterationsConvergence(50));
          //   optMethod.Add(new DeltaXConvergence(0.01));
             optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
             optMethod.Add(new MaxSpanInPopulationConvergence(0.01));
@@ -92,7 +92,7 @@ namespace MechSynth
             for (int i = 0; i < n; i++)
             dsd.Add(new VariableDescriptor(0,300));
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
-          var initPoints=  LHC.GenerateCandidates(null, 10);
+          var initPoints=  LHC.GenerateCandidates(null, 100);
 
             //for each initPoints - generate the fstar value 
 
@@ -111,23 +111,35 @@ namespace MechSynth
            //// double fStar = optMethod.Run(out xStar, 8);
 
           double[] fStar1 = new double[initPoints.Count];
+          List<double[]> xStar1 = new List<double[]>();
+          
 
           for (int i = 0; i < fStar1.GetLength(0); i++)
           {
-              double[] x0 = new double[8];
+              double[] x0 = new double[n];
               x0 = initPoints[i];
               double[] xStar;
               double fStar = optMethod.Run(out xStar, x0);
               fStar1[i] = fStar;
-
+              xStar1.Add(xStar);
+              SearchIO.output("LHC i: " + i);
           }
 
+          int xstarindex;
 
-            SearchIO.output("fStar Min="+StarMath.Min(fStar1));
+            SearchIO.output("fStar Min="+StarMath.Min(fStar1,out xstarindex));
+            SearchIO.output("Xstar Values:" + xStar1[xstarindex]);
+            SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
+            SearchIO.output("Rerunning with new x values");
+
+            double[] xStar_new;
+            double fStar_new = optMethod.Run(out xStar_new, xStar1[xstarindex]);
+
+            
+            SearchIO.output("New fStar = " + fStar_new);
+
 
             SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
-            
-
 
         }
         protected void RunFullTPSquared()
