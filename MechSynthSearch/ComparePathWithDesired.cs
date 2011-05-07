@@ -307,8 +307,8 @@ namespace MechSynth
             //to check if desired is between pt1 and pt2
             if (x == 0 && (dis_d_p1 < dis_p1_p2))
             {
-                if (dis_d_p1 < dis_d_p2) return (desiredPt - pt1).LengthSquared;
-                else return (desiredPt - pt2).LengthSquared;
+                if (dis_d_p1 < dis_d_p2) return 0;
+                else return 0;
             }
 
 

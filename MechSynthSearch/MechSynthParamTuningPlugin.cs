@@ -82,7 +82,7 @@ namespace MechSynth
         //    optMethod.Add(cc);
 
             // convergence 
-            optMethod.Add(new MaxIterationsConvergence(50));
+            optMethod.Add(new MaxIterationsConvergence(25));
          //   optMethod.Add(new DeltaXConvergence(0.01));
             optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
             optMethod.Add(new MaxSpanInPopulationConvergence(0.01));
@@ -92,7 +92,7 @@ namespace MechSynth
             for (int i = 0; i < n; i++)
             dsd.Add(new VariableDescriptor(0,300));
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
-          var initPoints=  LHC.GenerateCandidates(null, 100);
+          var initPoints=  LHC.GenerateCandidates(null, 10);
 
             //for each initPoints - generate the fstar value 
 
