@@ -338,11 +338,11 @@ namespace PlanarMechanismSimulator
             int k = 0;
             for (int ii = 0; ii < p; ii++)
             {
-                //if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("input"))
-                //{
-                //    PivotParameters[ii, 0, 0] = pivots[ii].X = 0.0;
-                //    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
-                //}
+                if (pivots[ii].localLabels.Contains("ground") && pivots[ii].localLabels.Contains("input"))
+                {
+                    PivotParameters[ii, 0, 0] = pivots[ii].X = 0.0;
+                    PivotParameters[ii, 0, 1] = pivots[ii].Y = 0.0;
+                }
                 //if (pivots[ii].localLabels.Contains("trial"))
                 //{
                 //    PivotParameters[ii, 0, 0] = pivots[ii].X = 0;
@@ -368,7 +368,7 @@ namespace PlanarMechanismSimulator
 
                 //////}
                 //else
-                /*else*/ if (pivots[ii].localLabels.Contains("output"))
+                else if (pivots[ii].localLabels.Contains("output"))
                 {
                     PivotParameters[ii, 0, 0] = pivots[ii].X = 125;
                     PivotParameters[ii, 0, 1] = pivots[ii].Y = 225;

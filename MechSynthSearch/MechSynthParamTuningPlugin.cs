@@ -14,7 +14,12 @@ namespace MechSynth
 {
     public class MechSynthParamTuningPlugin : SearchProcess
     {
-        public MechSynthParamTuningPlugin(ISettings settings) : base(settings) { }
+        public MechSynthParamTuningPlugin(ISettings settings)
+            : base(settings)
+        {
+            this.AutoPlay = true;
+            this.RequiredNumRuleSets = 0;
+        }
         public override string text
         {
             get { return "MechSynth ParamTuning Plugin"; }
@@ -63,9 +68,10 @@ namespace MechSynth
             //initializing the optimization program 
             var optMethod = new NelderMead();
           //var optMethod = new GradientBasedOptimization();
-
+            
             optMethod.Add(new PowellMethod());
             optMethod.Add(new DSCPowell(0.00001, .5, 1000));
+            
             
        //     optMethod.Add(new GoldenSection(0.001,300));
             optMethod.Add(new ArithmeticMean(0.001, 0.1, 300));
@@ -82,17 +88,17 @@ namespace MechSynth
         //    optMethod.Add(cc);
 
             // convergence 
-            optMethod.Add(new MaxIterationsConvergence(25));
+            optMethod.Add(new MaxIterationsConvergence(100));
          //   optMethod.Add(new DeltaXConvergence(0.01));
             optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
             optMethod.Add(new MaxSpanInPopulationConvergence(0.01));
 
-            var n = 8;
+            var n = 6;
             var dsd = new DesignSpaceDescription();
             for (int i = 0; i < n; i++)
-            dsd.Add(new VariableDescriptor(0,300));
+            dsd.Add(new VariableDescriptor(StarMath.Min(desiredPath),StarMath.Max(desiredPath)));
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
-          var initPoints=  LHC.GenerateCandidates(null, 10);
+          var initPoints=  LHC.GenerateCandidates(null, 100);
 
             //for each initPoints - generate the fstar value 
 
@@ -127,19 +133,57 @@ namespace MechSynth
 
           int xstarindex;
 
-            SearchIO.output("fStar Min="+StarMath.Min(fStar1,out xstarindex));
+            SearchIO.output("fStar Min="+StarMath.Min(fStar1,out xstarindex),0 );
             SearchIO.output("Xstar Values:" + xStar1[xstarindex]);
             SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
-            SearchIO.output("Rerunning with new x values");
+            SearchIO.output("Rerunning with new x values",0);
 
-            double[] xStar_new;
-            double fStar_new = optMethod.Run(out xStar_new, xStar1[xstarindex]);
+            var optMethod1 = new GradientBasedOptimization();
+            optMethod1.Add(new FletcherReevesDirection());
+         //   optMethod1.Add(new ArithmeticMean(0.001, 0.1, 300));
 
+            optMethod1.Add(new GoldenSection(0.001, 300));
+            optMethod1.Add(sim);
+            optMethod1.Add(pathObjFun);
+            optMethod1.Add(new squaredExteriorPenalty(optMethod, 1.0));
+       //     optMethod1.Add(new MaxIterationsConvergence(100));
+            optMethod1.Add(new ToKnownBestFConvergence(0.0, 0.1));
+          //  optMethod.Add(new MaxSpanInPopulationConvergence(0.01))
+
+            double[] xStar2;
+            double fStar2 = optMethod1.Run(out xStar2, xStar1[xstarindex]);
+
+            SearchIO.output("New Fstar = " + fStar2, 0);
             
-            SearchIO.output("New fStar = " + fStar_new);
+            //double xstarmin, xstarmax;
+            //xstarmax = StarMath.Max(xStar1[xstarindex]);
+            //xstarmin = StarMath.Min(xStar1[xstarindex]);
+
+            //var dsd1 = new DesignSpaceDescription();
+            //dsd1.Add(new VariableDescriptor(xstarmin, xstarmax));
+            //var LHC1 = new LatinHyperCube(dsd1, VariablesInScope.BothDiscreteAndReal);
+            //var initPoints1 = LHC.GenerateCandidates(null, 100);
+            //double[] fstar1 = new double[initPoints1.Count];
+            //List<double[]> xstar_second = new List<double[]>();
+            //for (int i = 0; i < fstar1.GetLength(0); i++)
+            //{
+            //    double[] x0 = new double[n];
+            //    x0 = initPoints[i];
+            //    double[] xStar;
+            //    double fStar = optMethod.Run(out xStar, x0);
+            //    fstar1[i] = fStar;
+            //    xstar_second.Add(xStar);
+            //    SearchIO.output("LHC i: " + i);
+
+            //}
 
 
-            SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
+
+
+            //SearchIO.output("New fStar = " + StarMath.Min(fstar1), 0);
+
+
+            //SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
 
         }
         protected void RunFullTPSquared()
