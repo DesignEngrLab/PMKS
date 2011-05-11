@@ -96,7 +96,8 @@ namespace MechSynth
             var n = 6;
             var dsd = new DesignSpaceDescription();
             for (int i = 0; i < n; i++)
-            dsd.Add(new VariableDescriptor(StarMath.Min(desiredPath),StarMath.Max(desiredPath)));
+          //  dsd.Add(new VariableDescriptor(StarMath.Min(desiredPath),StarMath.Max(desiredPath)));
+            dsd.Add(new VariableDescriptor(0,300));
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
           var initPoints=  LHC.GenerateCandidates(null, 100);
 
@@ -138,22 +139,22 @@ namespace MechSynth
             SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
             SearchIO.output("Rerunning with new x values",0);
 
-            var optMethod1 = new GradientBasedOptimization();
-            optMethod1.Add(new FletcherReevesDirection());
-         //   optMethod1.Add(new ArithmeticMean(0.001, 0.1, 300));
+       //     var optMethod1 = new GradientBasedOptimization();
+       //     optMethod1.Add(new FletcherReevesDirection());
+       //  //   optMethod1.Add(new ArithmeticMean(0.001, 0.1, 300));
 
-            optMethod1.Add(new GoldenSection(0.001, 300));
-            optMethod1.Add(sim);
-            optMethod1.Add(pathObjFun);
-            optMethod1.Add(new squaredExteriorPenalty(optMethod, 1.0));
-       //     optMethod1.Add(new MaxIterationsConvergence(100));
-            optMethod1.Add(new ToKnownBestFConvergence(0.0, 0.1));
-          //  optMethod.Add(new MaxSpanInPopulationConvergence(0.01))
+       //     optMethod1.Add(new GoldenSection(0.001, 300));
+       //     optMethod1.Add(sim);
+       //     optMethod1.Add(pathObjFun);
+       //     optMethod1.Add(new squaredExteriorPenalty(optMethod, 1.0));
+       ////     optMethod1.Add(new MaxIterationsConvergence(100));
+       //     optMethod1.Add(new ToKnownBestFConvergence(0.0, 0.1));
+       //   //  optMethod.Add(new MaxSpanInPopulationConvergence(0.01))
 
-            double[] xStar2;
-            double fStar2 = optMethod1.Run(out xStar2, xStar1[xstarindex]);
+       //     double[] xStar2;
+       //     double fStar2 = optMethod1.Run(out xStar2, xStar1[xstarindex]);
 
-            SearchIO.output("New Fstar = " + fStar2, 0);
+       //     SearchIO.output("New Fstar = " + fStar2, 0);
             
             //double xstarmin, xstarmax;
             //xstarmax = StarMath.Max(xStar1[xstarindex]);
