@@ -30,10 +30,10 @@ namespace MechSynth
 
 
 
-          //  double[,] desiredPath ={{1.87,8},{2.93,8.46},{2.80,8.41},
-          //                             {1.99,8.06},{0.96,7.46},{0,6.71},{-0.77,5.93},{-1.3,5.26},{-1.60,4.81},{-1.65,4.75},{-1.25,5.33},{0,6.71}};
-            double[,] desiredPath ={{125,225},{165.44,217.76},{189.57,200.42},{185.89,178.49},{158.65,161.92},{109.38,135.30},{57.997,101.69},{24.59,82.07},{0.33,76.90},{-17.03,91.46},{-13.92,129.10},{-0.74,155.01},{20.73,180.91},{53.78,205.65},{88.17,219.90}};
-           
+            //  double[,] desiredPath ={{1.87,8},{2.93,8.46},{2.80,8.41},
+            //                             {1.99,8.06},{0.96,7.46},{0,6.71},{-0.77,5.93},{-1.3,5.26},{-1.60,4.81},{-1.65,4.75},{-1.25,5.33},{0,6.71}};
+            double[,] desiredPath = { { 125, 225 }, { 165.44, 217.76 }, { 189.57, 200.42 }, { 185.89, 178.49 }, { 158.65, 161.92 }, { 109.38, 135.30 }, { 57.997, 101.69 }, { 24.59, 82.07 }, { 0.33, 76.90 }, { -17.03, 91.46 }, { -13.92, 129.10 }, { -0.74, 155.01 }, { 20.73, 180.91 }, { 53.78, 205.65 }, { 88.17, 219.90 } };
+
             double startAngle = 0;
             double endAngle = 2 * Math.PI;
             double iOmega = 2;
@@ -44,8 +44,8 @@ namespace MechSynth
             //Below is a relation for bounding box and also the first point 
             double bb_min, bb_max;
 
-         //   bb_min = StarMath.Min(desiredPath);
-          //  bb_max = StarMath.Max(desiredPath);
+            //   bb_min = StarMath.Min(desiredPath);
+            //  bb_max = StarMath.Max(desiredPath);
 
             //now that min and max are obtained - we will form a bounding box using these max and min values
 
@@ -58,8 +58,8 @@ namespace MechSynth
             //  ev.c = this.seedGraph;
 
             //bounding box - trying to contain the solutions within a particular box
-      //      BoundingBox bb = new BoundingBox(sim, bb_max,bb_min);
-         //   GrashofCriteria cc = new GrashofCriteria(sim, 0);
+            //      BoundingBox bb = new BoundingBox(sim, bb_max,bb_min);
+            //   GrashofCriteria cc = new GrashofCriteria(sim, 0);
 
             //adding a new objective function which can be taken by the optimization program
             var pathObjFun = new ComparePathWithDesired(seedCandidate, desiredPath, sim);
@@ -67,13 +67,13 @@ namespace MechSynth
 
             //initializing the optimization program 
             var optMethod = new NelderMead();
-          //var optMethod = new GradientBasedOptimization();
-            
+            //var optMethod = new GradientBasedOptimization();
+
             optMethod.Add(new PowellMethod());
             optMethod.Add(new DSCPowell(0.00001, .5, 1000));
-            
-            
-       //     optMethod.Add(new GoldenSection(0.001,300));
+
+
+            //     optMethod.Add(new GoldenSection(0.001,300));
             optMethod.Add(new ArithmeticMean(0.001, 0.1, 300));
 
             //adding simulation
@@ -84,22 +84,34 @@ namespace MechSynth
 
             //we are removing this since we do not have a merit function defined
             optMethod.Add(new squaredExteriorPenalty(optMethod, 1.0));
-      //      optMethod.Add(bb);
-        //    optMethod.Add(cc);
+            //      optMethod.Add(bb);
+            //    optMethod.Add(cc);
 
             // convergence 
             optMethod.Add(new MaxIterationsConvergence(100));
-         //   optMethod.Add(new DeltaXConvergence(0.01));
+            //   optMethod.Add(new DeltaXConvergence(0.01));
             optMethod.Add(new ToKnownBestFConvergence(0.0, 0.1));
             optMethod.Add(new MaxSpanInPopulationConvergence(0.01));
 
             var n = 6;
             var dsd = new DesignSpaceDescription();
+            var minX = StarMath.Min(StarMath.GetColumn(0, desiredPath));
+            var maxX = StarMath.Max(StarMath.GetColumn(0, desiredPath));
+            var minY = StarMath.Min(StarMath.GetColumn(1, desiredPath));
+            var maxY = StarMath.Max(StarMath.GetColumn(1, desiredPath));
+            var delta = maxX - minX;
+            minX -= delta;
+            maxX += delta;
+            delta = maxY - minY;
+            minY -= delta;
+            maxY += delta;
+
             for (int i = 0; i < n; i++)
-          //  dsd.Add(new VariableDescriptor(StarMath.Min(desiredPath),StarMath.Max(desiredPath)));
-            dsd.Add(new VariableDescriptor(0,300));
+                if (i % 2 == 0) dsd.Add(new VariableDescriptor(minX, maxX));
+                else dsd.Add(new VariableDescriptor(minY, maxY));
+            // dsd.Add(new VariableDescriptor(0,300));
             var LHC = new LatinHyperCube(dsd, VariablesInScope.BothDiscreteAndReal);
-          var initPoints=  LHC.GenerateCandidates(null, 100);
+            var initPoints = LHC.GenerateCandidates(null, 100);
 
             //for each initPoints - generate the fstar value 
 
@@ -113,49 +125,49 @@ namespace MechSynth
 
             //sim.calculate(x0);
 
-           // double[] xStar;
-           // double fStar = optMethod.Run(out xStar, x0);
-           //// double fStar = optMethod.Run(out xStar, 8);
+            // double[] xStar;
+            // double fStar = optMethod.Run(out xStar, x0);
+            //// double fStar = optMethod.Run(out xStar, 8);
 
-          double[] fStar1 = new double[initPoints.Count];
-          List<double[]> xStar1 = new List<double[]>();
-          
+            double[] fStar1 = new double[initPoints.Count];
+            List<double[]> xStar1 = new List<double[]>();
 
-          for (int i = 0; i < fStar1.GetLength(0); i++)
-          {
-              double[] x0 = new double[n];
-              x0 = initPoints[i];
-              double[] xStar;
-              double fStar = optMethod.Run(out xStar, x0);
-              fStar1[i] = fStar;
-              xStar1.Add(xStar);
-              SearchIO.output("LHC i: " + i);
-          }
 
-          int xstarindex;
+            for (int i = 0; i < fStar1.GetLength(0); i++)
+            {
+                double[] x0 = new double[n];
+                x0 = initPoints[i];
+                double[] xStar;
+                double fStar = optMethod.Run(out xStar, x0);
+                fStar1[i] = fStar;
+                xStar1.Add(xStar);
+                SearchIO.output("LHC i: " + i);
+            }
 
-            SearchIO.output("fStar Min="+StarMath.Min(fStar1,out xstarindex),0 );
+            int xstarindex;
+
+            SearchIO.output("fStar Min=" + StarMath.Min(fStar1, out xstarindex), 0);
             SearchIO.output("Xstar Values:" + xStar1[xstarindex]);
             SearchIO.output("***Converged by" + optMethod.ConvergenceDeclaredByTypeString, 0);
-            SearchIO.output("Rerunning with new x values",0);
+            SearchIO.output("Rerunning with new x values", 0);
 
-       //     var optMethod1 = new GradientBasedOptimization();
-       //     optMethod1.Add(new FletcherReevesDirection());
-       //  //   optMethod1.Add(new ArithmeticMean(0.001, 0.1, 300));
+            //     var optMethod1 = new GradientBasedOptimization();
+            //     optMethod1.Add(new FletcherReevesDirection());
+            //  //   optMethod1.Add(new ArithmeticMean(0.001, 0.1, 300));
 
-       //     optMethod1.Add(new GoldenSection(0.001, 300));
-       //     optMethod1.Add(sim);
-       //     optMethod1.Add(pathObjFun);
-       //     optMethod1.Add(new squaredExteriorPenalty(optMethod, 1.0));
-       ////     optMethod1.Add(new MaxIterationsConvergence(100));
-       //     optMethod1.Add(new ToKnownBestFConvergence(0.0, 0.1));
-       //   //  optMethod.Add(new MaxSpanInPopulationConvergence(0.01))
+            //     optMethod1.Add(new GoldenSection(0.001, 300));
+            //     optMethod1.Add(sim);
+            //     optMethod1.Add(pathObjFun);
+            //     optMethod1.Add(new squaredExteriorPenalty(optMethod, 1.0));
+            ////     optMethod1.Add(new MaxIterationsConvergence(100));
+            //     optMethod1.Add(new ToKnownBestFConvergence(0.0, 0.1));
+            //   //  optMethod.Add(new MaxSpanInPopulationConvergence(0.01))
 
-       //     double[] xStar2;
-       //     double fStar2 = optMethod1.Run(out xStar2, xStar1[xstarindex]);
+            //     double[] xStar2;
+            //     double fStar2 = optMethod1.Run(out xStar2, xStar1[xstarindex]);
 
-       //     SearchIO.output("New Fstar = " + fStar2, 0);
-            
+            //     SearchIO.output("New Fstar = " + fStar2, 0);
+
             //double xstarmin, xstarmax;
             //xstarmax = StarMath.Max(xStar1[xstarindex]);
             //xstarmin = StarMath.Min(xStar1[xstarindex]);

@@ -41,7 +41,7 @@ namespace MechSynth
             pivot_compare.RemoveAll(n => !n.localLabels.Contains("pivot"));
 
             var outputpivotindex = pivot_compare.FindIndex(n => n.localLabels.Contains("output"));
-            FileStream fs = new FileStream("output-format.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+           // FileStream fs = new FileStream("output-format.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
 
             for (int i = 0; i < sim.PivotParameters.GetLength(1); i++)
             {
@@ -50,16 +50,16 @@ namespace MechSynth
 
             }
             //printing values of output - using evaluator Plugin
-            using (StreamWriter sw = new StreamWriter(fs))
-            {
-                for (int i = 0; i < output.GetLength(0); i++)
-                {
-                    sw.Write(output[i, 0] + " \t");
-                    sw.Write(output[i, 1] + "\t");
-                    sw.Write("\n");
-                }
+            //using (StreamWriter sw = new StreamWriter(fs))
+            //{
+            //    for (int i = 0; i < output.GetLength(0); i++)
+            //    {
+            //        sw.Write(output[i, 0] + " \t");
+            //        sw.Write(output[i, 1] + "\t");
+            //        sw.Write("\n");
+            //    }
 
-            }
+            //}
 
 
 
