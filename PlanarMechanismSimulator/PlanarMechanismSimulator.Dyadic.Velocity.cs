@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OptimizationToolbox;
 
 #endregion
@@ -52,7 +53,7 @@ namespace PlanarMechanismSimulator
                 // when FindIndex returns a negative one, this means it was not found
                 if (foundIndex == -1)
                 {
-                    if (!pivot.localLabels.Contains("slider_conn"))
+                    if (!pivot.Contains("slider_conn"))
                     {
                         unknownsList.Add(new PivotDynamicMatrixTerm
                                              {
@@ -71,9 +72,9 @@ namespace PlanarMechanismSimulator
                     else
                     {
                         foreach (var aa in pivot.Links)
-                            if (aa.localLabels.Contains("pivotarc"))
+                            foreach (var otherPivot in aa.Pivots.Where(b=> b!=aa))
                             {
-                                if (aa.otherNode(pivot).localLabels.Contains("sliderh"))
+                                if (otherPivot.PivotType == PivotTypes.PX)
                                 {
                                     unknownsList.Add(new PivotDynamicMatrixTerm
                                                          {
@@ -82,7 +83,7 @@ namespace PlanarMechanismSimulator
                                                              dir = Direction.X
                                                          });
                                 }
-                                else if (aa.otherNode(pivot).localLabels.Contains("sliderv"))
+                                else if (otherPivot.PivotType == PivotTypes.PY)
                                 {
                                     unknownsList.Add(new PivotDynamicMatrixTerm
                                                          {
@@ -119,11 +120,9 @@ namespace PlanarMechanismSimulator
                     /* find the first link it's connected to, and call that attachedLink */
                     foreach (var a in pivots[i].Links)
                     {
-                        if (a.otherNode(pivots[i]).localLabels.Contains("link") &&
-                            !(a.otherNode(pivots[i]).localLabels.Contains("slider_conn"))
-                            && !(a.IsGround))
+                        if (!a.Contains("slider_conn") && !a.IsGround)
                         {
-                            attachedLink = a.otherNode(pivots[i]);
+                            attachedLink = a;
                             break;
                         }
                     }
@@ -142,45 +141,26 @@ namespace PlanarMechanismSimulator
                     }
                 }
 
-                else if (pivots[i].localLabels.Contains("sliderh") || pivots[i].localLabels.Contains("sliderv"))
-                {
+                else if (pivots[i].PivotType == PivotTypes.PX || pivots[i].PivotType == PivotTypes.PY)
+                    {
                     //var nsample = new node();
                     //var nsample2 = new node();
                     //var nsample3 = new node();
                     //nsample = null;
                     //nsample2 = null;
                     //nsample3 = null;
-                    foreach (arc a in pivots[i].arcs)
+                        foreach (var nsample in pivots[i].Links)
                     {
-                        if (a.otherNode(pivots[i]).localLabels.Contains("slider_conn"))
+                        if (nsample.Contains("slider_conn"))
                         {
-                            nsample = a.otherNode(pivots[i]);
-
-                            foreach (arc a1 in nsample.arcs)
+                            foreach (var piv1 in nsample.Pivots)
                             {
-                                if (!a1.otherNode(nsample).localLabels.Contains("slider"))
+                                if (!piv1.Contains("slider"))
                                 {
-                                    nsample2 = a1.otherNode(nsample);
-
-                                    //ICx = nsample2.X;
-                                    //ICy = nsample2.Y;
-
-                                    foreach (arc ar in nsample2.arcs)
-                                    {
-                                        if (ar.otherNode(nsample2).localLabels.Contains("link") &&
-                                            (!(ar.otherNode(nsample2).localLabels.Contains("slider_conn"))
-                                             || !(ar.otherNode(nsample2).localLabels.Contains("ground"))))
-                                        {
-                                            nsample3 = ar.otherNode(nsample2);
-
-                                            if (nsample3 != null)
-                                                break;
-                                        }
-                                    }
-
+                                    var link1 = piv1.Links.Find(a => (!a.Contains("slider_conn") || !ar.IsGround));
                                     foreach (circleDiagramItem cd in circleDiagram)
                                     {
-                                        if ((cd.link2 == nsample3) && (!double.IsNaN(cd.speed)) &&
+                                        if ((cd.link2 == link1) && (!double.IsNaN(cd.speed)) &&
                                             cd.link1.IsGround)
                                         {
                                             omega = cd.speed;
@@ -258,7 +238,7 @@ namespace PlanarMechanismSimulator
             {
                 if (links[i] == circleDiagram[inputSpeedIndex].link2)
                     linkParams[i,  0] = circleDiagram[inputSpeedIndex].speed;
-                if (links[i].localLabels.Contains("slider_conn"))
+                if (links[i].Contains("slider_conn"))
                 {
                     linkParams[i,  0] = 0.0;
                     linkParams[i,  1] = 0.0;
@@ -550,7 +530,7 @@ namespace PlanarMechanismSimulator
 
             double Slope0, Slope1;
 
-            var searchnode = new List<node>();
+            var searchnode = new List<pivot>();
 
 
             double xc = double.NaN, yc = double.NaN;
@@ -679,47 +659,46 @@ namespace PlanarMechanismSimulator
                         //basically looking for slider/slideronalink/PIS
 
 
-                        foreach (arc ar in arr.link1.arcs)
+                        foreach (var ar in arr.link1.Pivots)
                         {
-                            if (ar.otherNode(arr.link1).localLabels.Contains("sliderh") ||
-                                ar.otherNode(arr.link1).localLabels.Contains("sliderv")
-                                || ar.otherNode(arr.link1).localLabels.Contains("slideronalink"))
+                            if (ar.PivotType == PivotTypes.PX || ar.PivotType == PivotTypes.PY)
+                              //  || ar.localLabels.Contains("slideronalink"))
                                 //i have actually removed the pis checking in these statements
                                 //which were earlier included
-                                searchnode.Add(ar.otherNode(arr.link1));
+                                searchnode.Add(ar);
                         }
 
 
-                        foreach (arc ar in arr.link2.arcs)
+                        foreach (var ar in arr.link2.Pivots)
                         {
-                            if (arr.link1.localLabels.Contains("slideronalink_conn")
-                                || arr.link1.localLabels.Contains("slider_conn"))
+                            if (arr.link1.Contains("slideronalink_conn")
+                                || arr.link1.Contains("slider_conn"))
                             {
-                                foreach (arc ar1 in arr.link1.arcs)
+                                foreach (var ar1 in arr.link1.Pivots)
                                 {
-                                    if (ar1.otherNode(arr.link1) != searchnode[0])
-                                        searchnode.Add(ar1.otherNode(arr.link1));
-                                    if (searchnode[0] != ar.otherNode(arr.link2))
-                                        searchnode.Add(ar.otherNode(arr.link2));
+                                    if (ar1 != searchnode[0])
+                                        searchnode.Add(ar1);
+                                    if (searchnode[0] != ar)
+                                        searchnode.Add(ar);
                                 }
                             }
 
-                            else if (arr.link2.localLabels.Contains("slideronalink_conn")
-                                     || arr.link1.localLabels.Contains("slider_conn"))
+                            else if (arr.link2.Contains("slideronalink_conn")
+                                     || arr.link1.Contains("slider_conn"))
                             {
-                                foreach (arc ar1 in arr.link2.arcs)
+                                foreach (var ar1 in arr.link2.Pivots)
                                 {
-                                    if (ar1.otherNode(arr.link2) != searchnode[0])
-                                        searchnode.Add(ar1.otherNode(arr.link2));
-                                    if (searchnode[0] != ar.otherNode(arr.link1))
-                                        searchnode.Add(ar.otherNode(arr.link1));
+                                    if (ar1 != searchnode[0])
+                                        searchnode.Add(ar1);
+                                    if (searchnode[0] != ar)
+                                        searchnode.Add(ar);
                                 }
                             }
                         }
 
                         //now that searchnode[0] consists of sliderh,sliderv,pis,slideronalink X&Y, searchnode[1]&[2] - contains the other X's & Y's typically used for slideronalink
 
-                        if (searchnode[0].localLabels.Contains("sliderh"))
+                        if (searchnode[0].PivotType == PivotTypes.PX)
                         {
                             xbr = brr.x;
                             xcr = crr.x;
@@ -731,7 +710,7 @@ namespace PlanarMechanismSimulator
                             xc = xbr;
                             yc = Slope1 * xc + B0;
                         }
-                        else if (searchnode[0].localLabels.Contains("sliderv"))
+                        else if (searchnode[0].PivotType==PivotTypes.PY)
                         {
                             ybr = brr.x;
                             xcr = crr.x;
@@ -743,7 +722,7 @@ namespace PlanarMechanismSimulator
                             yc = ybr;
                             xc = (yc - B0) / Slope1;
                         }
-                        else if (searchnode[0].localLabels.Contains("slideronalink"))
+                        else if (searchnode[0].Contains("slideronalink"))
                         {
                             xar = searchnode[1].X;
                             yar = searchnode[1].Y;
@@ -857,47 +836,46 @@ namespace PlanarMechanismSimulator
                         //basically looking for slider/slideronalink/PIS
 
 
-                        foreach (arc ar in arr.link1.arcs)
+                        foreach (var ar in arr.link1.Pivots)
                         {
-                            if (ar.otherNode(arr.link1).localLabels.Contains("sliderh") ||
-                                ar.otherNode(arr.link1).localLabels.Contains("sliderv")
-                                || ar.otherNode(arr.link1).localLabels.Contains("slideronalink"))
+                            if (ar.PivotType == PivotTypes.PX || ar.PivotType == PivotTypes.PY 
+                              || ar.Contains("slideronalink"))
                                 //i have actually removed the pis checking in these statements
                                 //which were earlier included
-                                searchnode.Add(ar.otherNode(arr.link1));
+                                searchnode.Add(ar);
                         }
 
 
-                        foreach (arc ar in arr.link2.arcs)
+                        foreach (var ar in arr.link2.Pivots)
                         {
-                            if (arr.link1.localLabels.Contains("slideronalink_conn")
-                                || arr.link1.localLabels.Contains("slider_conn"))
+                            if (arr.link1.Contains("slideronalink_conn")
+                                || arr.link1.Contains("slider_conn"))
                             {
-                                foreach (arc ar1 in arr.link1.arcs)
+                                foreach (var ar1 in arr.link1.Pivots)
                                 {
-                                    if (ar1.otherNode(arr.link1) != searchnode[0])
-                                        searchnode.Add(ar1.otherNode(arr.link1));
-                                    if (searchnode[0] != ar.otherNode(arr.link2))
-                                        searchnode.Add(ar.otherNode(arr.link2));
+                                    if (ar1 != searchnode[0])
+                                        searchnode.Add(ar1);
+                                    if (searchnode[0] != ar)
+                                        searchnode.Add(ar);
                                 }
                             }
 
-                            else if (arr.link2.localLabels.Contains("slideronalink_conn")
-                                     || arr.link1.localLabels.Contains("slider_conn"))
+                            else if (arr.link2.Contains("slideronalink_conn")
+                                     || arr.link1.Contains("slider_conn"))
                             {
-                                foreach (arc ar1 in arr.link2.arcs)
+                                foreach (var ar1 in arr.link2.Pivots)
                                 {
-                                    if (ar1.otherNode(arr.link2) != searchnode[0])
-                                        searchnode.Add(ar1.otherNode(arr.link2));
-                                    if (searchnode[0] != ar.otherNode(arr.link1))
-                                        searchnode.Add(ar.otherNode(arr.link1));
+                                    if (ar1 != searchnode[0])
+                                        searchnode.Add(ar1);
+                                    if (searchnode[0] != ar)
+                                        searchnode.Add(ar);
                                 }
                             }
                         }
 
                         //now that searchnode[0] consists of sliderh,sliderv,pis,slideronalink X&Y, searchnode[1]&[2] - contains the other X's & Y's typically used for slideronalink
 
-                        if (searchnode[0].localLabels.Contains("sliderh"))
+                        if (searchnode[0].PivotType == PivotTypes.PX)
                         {
                             xbr = brr.x;
                             xcr = crr.x;
@@ -909,7 +887,7 @@ namespace PlanarMechanismSimulator
                             xc = xbr;
                             yc = Slope1 * xc + B0;
                         }
-                        else if (searchnode[0].localLabels.Contains("sliderv"))
+                        else if (searchnode[0].PivotType == PivotTypes.PY)
                         {
                             ybr = brr.x;
                             xcr = crr.x;
@@ -921,7 +899,7 @@ namespace PlanarMechanismSimulator
                             yc = ybr;
                             xc = (yc - B0) / Slope1;
                         }
-                        else if (searchnode[0].localLabels.Contains("slideronalink"))
+                        else if (searchnode[0].Contains("slideronalink"))
                         {
                             xar = searchnode[1].X;
                             yar = searchnode[1].Y;
@@ -1000,7 +978,7 @@ namespace PlanarMechanismSimulator
 
             else
             {
-                if (link1.localLabels.Contains("pis_conn") || link2.localLabels.Contains("pis_conn"))
+                if (link1.Contains("pis_conn") || link2.Contains("pis_conn"))
                 {
                     x00 = list2[(CDIRows[0, 0])].x;
                     y00 = list2[(CDIRows[0, 0])].y;
@@ -1013,22 +991,22 @@ namespace PlanarMechanismSimulator
                     Slope0 = (y01 - y00) / (x01 - x00);
 
 
-                    if (!(list1[(CDIRows[0, 0])].link2.localLabels.Contains("pis_conn")))
-                        foreach (arc a in list1[(CDIRows[0, 0])].link2.arcs)
+                    if (!(list1[(CDIRows[0, 0])].link2.Contains("pis_conn")))
+                        foreach (var a in list1[(CDIRows[0, 0])].link2.Pivots)
                         {
-                            if (a.otherNode(list1[(CDIRows[0, 0])].link2).localLabels.Contains("pis"))
+                            if (a.Contains("pis"))
                             {
-                                searchnode.Add(a.otherNode(list1[(CDIRows[0, 0])].link2));
+                                searchnode.Add(a);
                                 searchnode.Add(list1[(CDIRows[0, 0])].link2);
                                 searchnode.Add(list2[(CDIRows[0, 0])].link2);
                             }
                         }
-                    if (!(list2[(CDIRows[0, 0])].link2.localLabels.Contains("pis_conn")))
-                        foreach (arc a in list2[(CDIRows[0, 0])].link2.arcs)
+                    if (!(list2[(CDIRows[0, 0])].link2.Contains("pis_conn")))
+                        foreach (var a in list2[(CDIRows[0, 0])].link2.Pivots)
                         {
-                            if (a.otherNode(list2[(CDIRows[0, 0])].link2).localLabels.Contains("pis"))
+                            if (a.Contains("pis"))
                             {
-                                searchnode.Add(a.otherNode(list2[(CDIRows[0, 0])].link2));
+                                searchnode.Add(a);
                                 searchnode.Add(list2[(CDIRows[0, 0])].link2);
                                 searchnode.Add(list1[(CDIRows[0, 0])].link2);
                             }
@@ -1040,9 +1018,9 @@ namespace PlanarMechanismSimulator
 
                     if (searchnode.Count >= 2)
                     {
-                        foreach (arc b in searchnode[2].arcs)
-                            if (!b.otherNode(searchnode[2]).localLabels.Contains("pis"))
-                                searchnode.Add(b.otherNode(searchnode[2]));
+                        foreach (var b in searchnode[2].Pivots)
+                            if (!b.Contains("pis"))
+                                searchnode.Add(b);
 
                         //the above statement might not work if the pis is connected to a triangular plate or quad node?
                         //will it work for circular slot? may not - as of now this work only for straight line paths

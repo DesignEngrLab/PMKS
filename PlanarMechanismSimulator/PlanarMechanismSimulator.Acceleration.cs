@@ -1,5 +1,6 @@
 ﻿#region
 using System;
+using System.Linq;
 using OptimizationToolbox;
 using StarMathLib;
 #endregion
@@ -11,7 +12,7 @@ namespace PlanarMechanismSimulator
     {
         #region New Acceleration Determination
 
-        private void findAccelerationNew(double[,] LinkParameters, double[,] PivotParameters)
+        private void findAccelerationNew(double[,] LinkParams, double[,] PivotParams)
         {
             double iAlpha = 0;
 
@@ -26,9 +27,9 @@ namespace PlanarMechanismSimulator
             for (var i = 0; i < maxRow; i++) //shouldn't this be 2*no of equations taking into account X and Y
             {
                 var d = Omeg[i].dir;
-                var link = ((LinkDynamicMatrixTerm)Omeg[i]).belongsTo;
-                var pivot0 =((PivotDynamicMatrixTerm)coriolis1[i]).belongsFrom;
-                var pivot1 = ((PivotDynamicMatrixTerm)coriolis1[i]).belongsTo;
+                var link = ((LinkDynamicMatrixTerm) Omeg[i]).belongsTo;
+                var pivot0 = ((PivotDynamicMatrixTerm) coriolis1[i]).belongsFrom;
+                var pivot1 = ((PivotDynamicMatrixTerm) coriolis1[i]).belongsTo;
 
                 for (no = 0; no < n; no++)
                     if (links[no] == link)
@@ -37,12 +38,12 @@ namespace PlanarMechanismSimulator
                 //also omega from linkparameters
                 if (d == Direction.X)
                     wsquareMatrix[i, 0] =
-                        -(LinkParameters[no, timeRow, 0]*LinkParameters[no, timeRow, 0]*(-pivot1.X + pivot0.X)) +
-                        coriolis[no, timeRow, 0];
+                        -(LinkParams[no, 0]*LinkParams[no, 0]*(-pivot1.X + pivot0.X)) +
+                        coriolis[no, 0];
                 if (d == Direction.Y)
                     wsquareMatrix[i, 0] =
-                        -(LinkParameters[no, timeRow, 0]*LinkParameters[no, timeRow, 0]*(-pivot1.Y + pivot0.Y)) +
-                        coriolis[no, timeRow, 1];
+                        -(LinkParams[no, 0]*LinkParams[no, 0]*(-pivot1.Y + pivot0.Y)) +
+                        coriolis[no, 1];
 
                 //we also need to alpha X (link length)  - in terms of X and Y - but this will be in acceleration matrix as part of separate equation
                 for (var j = 0; j < maxCol; j++)
@@ -50,15 +51,15 @@ namespace PlanarMechanismSimulator
                     if (unknowns[j].dir == d)
                         //&& unknowns[j].defaultValue != 0.0
                     {
-                        if (((PivotDynamicMatrixTerm)unknowns[j]).belongsTo == pivot0)
+                        if (((PivotDynamicMatrixTerm) unknowns[j]).belongsTo == pivot0)
                             accelerationMatrix[i, j] = 1;
-                        if (((PivotDynamicMatrixTerm)unknowns[j]).belongsTo == pivot1)
+                        if (((PivotDynamicMatrixTerm) unknowns[j]).belongsTo == pivot1)
                             accelerationMatrix[i, j] = -1;
                     }
 
                     if ((unknowns[j] is LinkDynamicMatrixTerm) &&
-                        unknowns[j].type == DynamicType.angularAcceleration && 
-                        ((LinkDynamicMatrixTerm)unknowns[j]).belongsTo == link)
+                        unknowns[j].type == DynamicType.angularAcceleration &&
+                        ((LinkDynamicMatrixTerm) unknowns[j]).belongsTo == link)
                         // && unknowns[j].defaultValue != 0
                         if (d == Direction.X)
                             accelerationMatrix[i, j] = (-pivot1.Y + pivot0.Y);
@@ -69,7 +70,7 @@ namespace PlanarMechanismSimulator
                     {
                         //this is for a PIS // slider on a link
 
-                        if (((PivotDynamicMatrixTerm)Omeg[i]).belongsTo.localLabels.Contains("pis_conn"))
+                        if (((PivotDynamicMatrixTerm) Omeg[i]).belongsTo.localLabels.Contains("pis_conn"))
                             accelerationMatrix[i, j] = -1;
                     }
                 }
@@ -173,7 +174,7 @@ namespace PlanarMechanismSimulator
 
                     foreach (circleDiagramItem c in circleDiagram)
                         if (c.link1.IsGround && c.speed == iOmega)
-                            if (c.link2 == ((LinkDynamicMatrixTerm)unknowns[i]).belongsTo)
+                            if (c.link2 == ((LinkDynamicMatrixTerm) unknowns[i]).belongsTo)
                             {
                                 indexno = i;
                                 break;
@@ -403,12 +404,12 @@ namespace PlanarMechanismSimulator
                 {
                     for (var b = 0; b < maxRow; b++)
                         if (unknowns_New[b] is PivotDynamicMatrixTerm &&
-                           ((PivotDynamicMatrixTerm)unknowns_New[b]).belongsTo == pivots[i])
+                            ((PivotDynamicMatrixTerm) unknowns_New[b]).belongsTo == pivots[i])
                         {
                             if (unknowns_New[b].dir == Direction.X)
-                                PivotParameters[i, timeRow, 4] = PivotParameters[i, timeRow, 4] + result[b, 0];
+                                PivotParams[i, 4] = PivotParams[i, 4] + result[b, 0];
                             else if (unknowns_New[b].dir == Direction.Y)
-                                PivotParameters[i, timeRow, 5] = PivotParameters[i, timeRow, 5] + result[b, 0];
+                                PivotParams[i, 5] = PivotParams[i, 5] + result[b, 0];
                         }
                 }
             }
@@ -419,9 +420,9 @@ namespace PlanarMechanismSimulator
                 {
                     for (var b = 0; b < maxRow; b++)
                         if (unknowns_New[b] is LinkDynamicMatrixTerm &&
-                           ((LinkDynamicMatrixTerm)unknowns_New[b]).belongsTo == links[i])
+                            ((LinkDynamicMatrixTerm) unknowns_New[b]).belongsTo == links[i])
                         {
-                            LinkParameters[i, timeRow, 1] = result[b, 0];
+                            LinkParams[i, 1] = result[b, 0];
                         }
                 }
             }
@@ -430,28 +431,23 @@ namespace PlanarMechanismSimulator
 
             for (var i = 0; i < p; i++)
             {
-                if (pivots[i].localLabels.Contains("slider_conn"))
+                if (pivots[i].Contains("slider_conn"))
                 {
-                    var accln1 = PivotParameters[i, timeRow, 4];
-                    var accln2 = PivotParameters[i, timeRow, 5];
+                    var accln1 = PivotParams[i, 4];
+                    var accln2 = PivotParams[i, 5];
 
-                    foreach (arc aa in pivots[i].arcs)
-                        if (aa.localLabels.Contains("pivotarc"))
-                            if (aa.otherNode(pivots[i]).localLabels.Contains("sliderh") ||
-                                aa.otherNode(pivots[i]).localLabels.Contains("sliderv"))
+                    foreach (var aa in pivots[i].Links)
+                        foreach (var otherPivot in aa.Pivots.Where(op => op != pivots[i]))
+                        {
+                            if (otherPivot.PivotType == PivotTypes.PX || otherPivot.PivotType == PivotTypes.PY)
                             {
-                                var n_n = aa.otherNode(pivots[i]);
-                                for (var j = 0; j < p; j++)
-                                    if (pivots[j] == n_n)
-                                    {
-                                        PivotParameters[j, timeRow, 4] = accln1;
-                                        PivotParameters[j, timeRow, 5] = accln2;
-                                    }
+                                PivotParams[otherPivot.index, 4] = accln1;
+                                PivotParams[otherPivot.index, 5] = accln2;
                             }
+                        }
                 }
+                #endregion
             }
-
-            #endregion
         }
 
         #endregion
@@ -558,9 +554,9 @@ namespace PlanarMechanismSimulator
                 var piv = pivots[i];
                 if (!piv.IsGround && piv.PivotType==PivotTypes.RPX || piv.PivotType==PivotTypes.RPY)
                 {
-                    var link1 = piv.Links.Find(a => (a.localLabels.Contains("slideronalink_conn") ||
-                                                            a.localLabels.Contains("pis_conn")));
-                    var otherPiv = link1.Pivots.Find(a => !(a.localLabels.Contains("slideronalink")));
+                    var link1 = piv.Links.Find(a => (a.Contains("slideronalink_conn") ||
+                                                            a.Contains("pis_conn")));
+                    var otherPiv = link1.Pivots.Find(a => !(a.Contains("slideronalink")));
                     double slope0 = 0.0, slope1 = 0.0;
 
                     slope0 = (otherPiv.Y - piv.Y)/(otherPiv.X - piv.Y); //use this in one equation -using n1
@@ -600,18 +596,18 @@ namespace PlanarMechanismSimulator
                             omega = c.speed;
 
 
-                    //     slipvelocity[i, timeRow, 0] = slipvelocityx;
-                    //     slipvelocity[i, timeRow, 1] = slipvelocityy;
+                    //     slipvelocity[i, 0] = slipvelocityx;
+                    //     slipvelocity[i, 1] = slipvelocityy;
 
 
-                    //      pivotParameters[i, timeRow, 2] += slipvelocityy;
-                    //      pivotParameters[i, timeRow, 3] += slipvelocityx;
+                    //      pivotParameters[i, 2] += slipvelocityy;
+                    //      pivotParameters[i, 3] += slipvelocityx;
 
                     //calculating the coriolis componenet
                     //which is 2xOmegaxslip velocity
 
-                    coriolis[i, timeRow, 0] = -2*omega*PivotParams[i,  3];
-                    coriolis[i, timeRow, 1] = 2*omega*PivotParams[i,  2];
+                    coriolis[i, 0] = -2*omega*PivotParams[i,  3];
+                    coriolis[i, 1] = 2*omega*PivotParams[i,  2];
                 }
             }
         }

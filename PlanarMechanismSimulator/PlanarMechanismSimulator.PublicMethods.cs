@@ -199,7 +199,7 @@ namespace PlanarMechanismSimulator
             long numFEvals = 0;
             do
             {
-                numFEvals += nonDyadicPositionFinder.numEvals;
+                numFEvals += nonDyadicPositionFinder.NumEvals;
                 for (int i = 0; i < x.GetLength(0); i++)
                     x[i] = 20 * r.NextDouble() - 10;
                 fStar = nonDyadicPositionFinder.Run(out xStar, x);

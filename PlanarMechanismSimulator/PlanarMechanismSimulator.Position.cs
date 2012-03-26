@@ -1,6 +1,7 @@
 ﻿#region
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OptimizationToolbox;
 #endregion
 
@@ -51,33 +52,6 @@ namespace PlanarMechanismSimulator
 
         #region Find Link Lengths - this is a static value - BUT GOT TO ADD NAN TO POSITIONS THAT DO NOT HAVE A DIRECT LINK
 
-        private double[,] findlinkLengths()
-        {
-            var pivotLengths = new double[p, p];
-
-            for (var i = 0; i < p; i++)
-            {
-                foreach (arc a in pivots[i].arcs)
-                    if (a.localLabels.Contains("pivotarc"))
-                    {
-                        var q = a.otherNode(pivots[i]);
-                        var dist = 0.0;
-                        dist = Math.Sqrt(Math.Pow(pivots[i].X - q.X, 2) + Math.Pow(pivots[i].Y - q.Y, 2));
-
-                        //find the index of the other node
-                        var k = 0;
-                        for (var j = 0; j < p; j++)
-                            if (pivots[j] == q)
-                            {
-                                k = j;
-                                break;
-                            }
-
-                        pivotLengths[i, k] = dist;
-                    }
-            }
-            return pivotLengths;
-        }
 
         #endregion
 
@@ -129,25 +103,14 @@ namespace PlanarMechanismSimulator
             #region Input Link New Position
 
             for (var x = 0; x < p; x++)
-                if (pivots[x].IsGround && pivots[x].localLabels.Contains("input"))
+                if (pivots[x].IsGround && pivots[x] == inputpivot)
                 {
-                    foreach (arc cc in pivots[x].arcs)
-                        if (cc.localLabels.Contains("pivotarc"))
+                    foreach (var cc in pivots[x].Links)
+                        foreach (var otherPiv in cc.Pivots.Where(piv => piv != pivots[x]))
                         {
-                            if (!(cc.otherNode(pivots[x]).localLabels.Contains("ground")) &&
-                                !(cc.otherNode(pivots[x]).localLabels.Contains("slider")))
+                            if (!otherPiv.IsGround && otherPiv.PivotType != PivotTypes.PX && otherPiv.PivotType != PivotTypes.PY)
                             {
-                                node qw = null;
-                                qw = cc.otherNode(pivots[x]);
-                                //determine the index of qw as well as 
-                                //pass pivotlengths to inputlink_newposition function
-                                var v = 0;
-                                for (v = 0; v < p; v++)
-                                    if (pivots[v] == qw)
-                                        break;
-
-
-                                findInputLink_NewPositions(qw, pivots1, pivotLengths, v, x);
+                                findInputLink_NewPositions(otherPiv.index, pivots1, pivotLengths, v, x);
                             }
                         }
                 }
@@ -285,7 +248,8 @@ namespace PlanarMechanismSimulator
                 {
                     if (double.IsNaN(pivots1[y].X))
                     {
-                        if (pivots1[y].PivotType==PivotTypes.PX localLabels.Contains("slider_conn") || pivots1[y].localLabels.Contains("slider"))
+                        if (pivots1[y].PivotType == PivotTypes.PX || pivots1[y].PivotType == PivotTypes.PY
+                            || pivots1[y].Contains("slider_conn") || pivots1[y].Contains("slider"))
                         {
                             #region slider:Circle - Line intersection
 

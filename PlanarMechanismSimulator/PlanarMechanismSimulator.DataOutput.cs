@@ -43,8 +43,8 @@ namespace PlanarMechanismSimulator
                 if (pivots[i].localLabels.Contains("inputloc") /*&& pivots[i].localLabels.Contains("ip") && !pivots[i].localLabels.Contains("ground")*/)
                 {
                     // file.Write(pivots[i].localLabels + "\t");
-                    file.Write(PivotParameters[i, timeRow, 0] + "\t");
-                    file.Write(PivotParameters[i, timeRow, 1] + "\t");
+                   // file.Write(PivotParameters[i, timeRow, 0] + "\t");
+                  //  file.Write(PivotParameters[i, timeRow, 1] + "\t");
                     //file.Write(PivotParameters[i, timeRow, 2] + "\t");
                     //file.Write(PivotParameters[i, timeRow, 3] + "\t");
                     //file.Write(PivotParameters[i, timeRow, 4] + "\t");

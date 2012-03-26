@@ -14,7 +14,7 @@ namespace PlanarMechanismSimulator
 
             #region fill up link spots in CircleDiagram
 
-            sizeofCDI = (n*(n - 1)/2);
+            sizeofCDI = (n * (n - 1) / 2);
             circleDiagram = new circleDiagramItem[sizeofCDI]; //size is equal to no of instant centers
             //code below gives the link indices for each circleDiagram Item and is assigning the instant 
             //center pairs - these may not be necessarily starting from input - but in the way the graph
@@ -65,10 +65,10 @@ namespace PlanarMechanismSimulator
                 var pivot0 = link.Pivots[0];
 
                 //we are not adding slider to acceleration determination - this will be copied from the velocity of slider_conn pivot
-                if (!pivot0.localLabels.Contains("sliderh") && !pivot0.localLabels.Contains("sliderv"))
+                if (pivot0.PivotType != PivotTypes.PX && pivot0 != PivotTypes.PY)
                     addToUnknowns(pivot0, unknownsList);
 
-                if (!link.IsGround && !link.localLabels.Contains("slider_conn"))
+                if (!link.IsGround && !link.Contains("slider_conn"))
                 {
                     unknownsList.Add(new LinkDynamicMatrixTerm()
                                          {
@@ -85,7 +85,7 @@ namespace PlanarMechanismSimulator
                 {
                     pivot pivot1 = link.Pivots[j];
 
-                    if (!link.IsGround && !link.localLabels.Contains("slider_conn"))
+                    if (!link.IsGround && !link.Contains("slider_conn"))
                     {
                         Omeg.Add(new LinkDynamicMatrixTerm()
                                      {
@@ -97,11 +97,11 @@ namespace PlanarMechanismSimulator
                         //if (link.localLabels.Contains("ground")) Omeg[row].defaultValue = 0.0;
                         //else Omeg[row].defaultValue = double.NaN;
 
-                        if ((pivot0.localLabels.Contains("pis")) || (pivot1.localLabels.Contains("pis")) ||
-                            (pivot0.localLabels.Contains("slideronalink")) ||
-                            (pivot1.localLabels.Contains("slideronalink")))
+                        if ((pivot0.Contains("pis")) || (pivot1.localLabels.Contains("pis")) ||
+                            (pivot0.Contains("slideronalink")) ||
+                            (pivot1.Contains("slideronalink")))
                         {
-                            if (link.localLabels.Contains("pis_conn"))
+                            if (link.Contains("pis_conn"))
 
                                 coriolis1.Add(new PivotDynamicMatrixTerm()
                                                   {
@@ -139,7 +139,7 @@ namespace PlanarMechanismSimulator
                     //    coriolis1[row].defaultValue = double.NaN;
                     //else coriolis1[row].defaultValue = 0.0;
 
-                    if (!link.IsGround && !link.localLabels.Contains("slider_conn"))
+                    if (!link.IsGround && !link.Contains("slider_conn"))
                     {
                         Omeg.Add(new LinkDynamicMatrixTerm()
                                      {
@@ -152,11 +152,11 @@ namespace PlanarMechanismSimulator
                         //if (link.localLabels.Contains("ground")) Omeg[row].defaultValue = 0.0;
                         //else Omeg[row].defaultValue = double.NaN;
 
-                        if ((pivot0.localLabels.Contains("pis")) || (pivot1.localLabels.Contains("pis")) ||
-                            (pivot0.localLabels.Contains("slideronalink")) ||
-                            (pivot1.localLabels.Contains("slideronalink")))
+                        if ((pivot0.Contains("pis")) || (pivot1.Contains("pis")) ||
+                            (pivot0.Contains("slideronalink")) ||
+                            (pivot1.Contains("slideronalink")))
                         {
-                            if (link.localLabels.Contains("pis_conn"))
+                            if (link.Contains("pis_conn"))
                             {
                                 coriolis1.Add(new PivotDynamicMatrixTerm()
                                                   {
@@ -191,11 +191,11 @@ namespace PlanarMechanismSimulator
                     //else coriolis1[row].defaultValue = 0.0;
                     //row++;
 
-                    if ((pivot0.localLabels.Contains("pis")) || (pivot1.localLabels.Contains("pis")) ||
-                        (pivot0.localLabels.Contains("slideronalink")) ||
-                        (pivot1.localLabels.Contains("slideronalink")))
+                    if ((pivot0.Contains("pis")) || (pivot1.Contains("pis")) ||
+                        (pivot0.Contains("slideronalink")) ||
+                        (pivot1.Contains("slideronalink")))
                     {
-                        if (link.localLabels.Contains("pis_conn"))
+                        if (link.Contains("pis_conn"))
                             unknownsList.Add(new PivotDynamicMatrixTerm()
                                                  {
                                                      belongsFrom = pivot0,
@@ -223,8 +223,8 @@ namespace PlanarMechanismSimulator
 
             #endregion
 
-            slipvelocity = new double[p,numSteps,2];
-            slipacceleration = new double[p,numSteps,2];
+            slipvelocity = new double[p, numSteps, 2];
+            slipacceleration = new double[p, numSteps, 2];
         }
     }
 }

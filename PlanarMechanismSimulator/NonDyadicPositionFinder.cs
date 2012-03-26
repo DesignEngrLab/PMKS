@@ -17,6 +17,8 @@ namespace PlanarMechanismSimulator
         private readonly IEnumerable<link> links;
         private readonly IList<pivot> pivots;
 
+        internal long NumEvals { get; private set; }
+
         internal NonDyadicPositionFinder(IEnumerable<link> links, IList<pivot> pivots, int numPivots, double epsilon)
         {
             this.links = links;
@@ -59,6 +61,7 @@ namespace PlanarMechanismSimulator
         }
         internal double Run(out double[] xStar, double[] xInit=null)
         {
+            NumEvals += optMethod.numEvals;
             optMethod.ResetFunctionEvaluationDatabase();
             var result = optMethod.Run(out xStar, xInit);
             if (SolutionFound())
