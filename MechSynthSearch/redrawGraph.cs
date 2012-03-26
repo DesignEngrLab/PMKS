@@ -11,9 +11,5 @@ namespace MechSynth
         {
             get { return "Redraw After Optimization"; }
         }
-        protected override void RunLayout()
-        {
-            base.RunLayout();
-        }
     }
 }

@@ -31,33 +31,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GraphSynth.CustomControls">
-      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.CustomControls.dll</HintPath>
-    </Reference>
-    <Reference Include="GraphSynth.FundamentalClassesAndInterfaces">
-      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.FundamentalClassesAndInterfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="GraphSynth.Representation">
-      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\GraphSynth.Representation.dll</HintPath>
-    </Reference>
     <Reference Include="StarMath">
-      <HintPath>..\..\..\..\..\Program Files\GraphSynth2\StarMath.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\GraphSynth2\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="circleDiagramItem.cs" />
+    <Compile Include="PlanarMechanismSimulator.DataOutput.cs" />
+    <Compile Include="PlanarMechanismSimulator.Numerical.cs" />
+    <Compile Include="LinkLengthFunction.cs" />
+    <Compile Include="PlanarMechanismSimulator.PublicMethods.cs" />
+    <Compile Include="NonDyadicPositionFinder.cs" />
+    <Compile Include="linkAndPivot.cs" />
     <Compile Include="DynamicMatrixTerm.cs" />
-    <Compile Include="MechSimulation.Acceleration.cs" />
-    <Compile Include="MechSimulation.Position.cs" />
-    <Compile Include="MechSimulation.SetUp.cs" />
-    <Compile Include="MechSimulation.Velocity.cs" />
+    <Compile Include="PlanarMechanismSimulator.Acceleration.cs" />
+    <Compile Include="PlanarMechanismSimulator.Position.cs" />
+    <Compile Include="PlanarMechanismSimulator.Dyadic.SetUp.cs" />
+    <Compile Include="PlanarMechanismSimulator.Dyadic.Velocity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

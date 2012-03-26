@@ -1,31 +1,30 @@
-﻿using System;
+﻿#region
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using GraphSynth.Representation;
-using GraphSynth;
 using OptimizationToolbox;
-using SearchIO = GraphSynth.SearchIO;
+#endregion
 
 namespace PlanarMechanismSimulator
-
-    //at time t=0; all acceleration and velocity are zero
+//at time t=0; all acceleration and velocity are zero
 {
-    public partial class MechSimulation : IDependentAnalysis
+    public partial class PlanarMechanismSimulator : IDependentAnalysis
     {
         #region New Position Found in Last Pass
-        List<Boolean> PositionsFound = new List<Boolean>(); //Campbell: I'm worried about this list. All calls occur in this first method, except for a clear on line 579.
-        private bool NewPositionFoundInLastPass(List<node> pivots1)
+
+        private readonly List<Boolean> PositionsFound = new List<Boolean>();
+        //Campbell: I'm worried about this list. All calls occur in this first method, except for a clear on line 579.
+
+        private bool NewPositionFoundInLastPass(List<pivot> pivots1)
         {
             /* assume, at first, that no change has occured (result = false),
              * then if any change is found switch it to true. */
-            Boolean result = false;
+            var result = false;
             /* a change is search in the following for-loop. A change means
              * that the position (or just the X-coord in this case) is an
              * actual number - no longer NaN, but if the corresponding 
              * boolean in PositionsFound is false, then last pass it was
              * NaN. Therefore a change has occured - set result to true. */
-            for (int i = 0; i < pivots1.Count; i++)
+            for (var i = 0; i < pivots1.Count; i++)
                 if (!double.IsNaN(pivots1[i].X) &&
                     ((PositionsFound.Count <= i) || !PositionsFound[i]))
                 {
@@ -37,7 +36,7 @@ namespace PlanarMechanismSimulator
              * that were previously false but which now have a value. */
             if (result)
             {
-                for (int i = 0; i < pivots1.Count; i++)
+                for (var i = 0; i < pivots1.Count; i++)
                 {
                     if (PositionsFound.Count <= i)
                         PositionsFound.Add(false);
@@ -47,29 +46,29 @@ namespace PlanarMechanismSimulator
             }
             return result;
         }
-        #endregion
-        #region Find Link Lengths - this is a static value - BUT GOT TO ADD NAN TO POSITIONS THAT DO NOT HAVE A DIRECT LINK
 
+        #endregion
+
+        #region Find Link Lengths - this is a static value - BUT GOT TO ADD NAN TO POSITIONS THAT DO NOT HAVE A DIRECT LINK
 
         private double[,] findlinkLengths()
         {
-            double[,] pivotLengths = new double[p, p];
+            var pivotLengths = new double[p, p];
 
-            for (int i = 0; i < p; i++)
+            for (var i = 0; i < p; i++)
             {
                 foreach (arc a in pivots[i].arcs)
                     if (a.localLabels.Contains("pivotarc"))
                     {
-                        node q = a.otherNode(pivots[i]);
-                        double dist = 0.0;
+                        var q = a.otherNode(pivots[i]);
+                        var dist = 0.0;
                         dist = Math.Sqrt(Math.Pow(pivots[i].X - q.X, 2) + Math.Pow(pivots[i].Y - q.Y, 2));
 
                         //find the index of the other node
-                        int k = 0;
-                        for (int j = 0; j < p; j++)
+                        var k = 0;
+                        for (var j = 0; j < p; j++)
                             if (pivots[j] == q)
                             {
-
                                 k = j;
                                 break;
                             }
@@ -79,11 +78,15 @@ namespace PlanarMechanismSimulator
             }
             return pivotLengths;
         }
+
         #endregion
+
         #region Function: Find New Positions
-        private Boolean findNewPositions(int timeRow,  double[,] pivotLengths)
+
+        private Boolean findNewPositions(int timeRow, double[,] pivotLengths)
         {
             #region Perform Numerical integration
+
             //int i;
             //for (i = 0; i < p; i++)
             //{
@@ -99,13 +102,12 @@ namespace PlanarMechanismSimulator
             //    }
 
             //}
+
             #endregion
 
             #region Analytical Postion via. Circle intersection / circle line intersection
 
-
-
-            List<node> pivots1 = new List<node>(pivots);
+            var pivots1 = new List<pivot>(pivots);
 
             //now adding pivots
 
@@ -113,9 +115,9 @@ namespace PlanarMechanismSimulator
             //we shall compare the straightline position between the new position(from values) and the old position
             //depending on which is less, we shall select
 
-            double[,] oldpivotpositions = new double[p, 2];
+            var oldpivotpositions = new double[p, 2];
 
-            for (int pp_1 = 0; pp_1 < p; pp_1++)
+            for (var pp_1 = 0; pp_1 < p; pp_1++)
             {
                 oldpivotpositions[pp_1, 0] = pivots1[pp_1].X;
                 oldpivotpositions[pp_1, 1] = pivots1[pp_1].Y;
@@ -125,19 +127,21 @@ namespace PlanarMechanismSimulator
             //we shall do it for each pivot connected to the input link
 
             #region Input Link New Position
-            for (int x = 0; x < p; x++)
-                if (pivots[x].localLabels.Contains("ground") && pivots[x].localLabels.Contains("input"))
+
+            for (var x = 0; x < p; x++)
+                if (pivots[x].IsGround && pivots[x].localLabels.Contains("input"))
                 {
                     foreach (arc cc in pivots[x].arcs)
                         if (cc.localLabels.Contains("pivotarc"))
                         {
-                            if (!(cc.otherNode(pivots[x]).localLabels.Contains("ground")) && !(cc.otherNode(pivots[x]).localLabels.Contains("slider")))
+                            if (!(cc.otherNode(pivots[x]).localLabels.Contains("ground")) &&
+                                !(cc.otherNode(pivots[x]).localLabels.Contains("slider")))
                             {
                                 node qw = null;
                                 qw = cc.otherNode(pivots[x]);
                                 //determine the index of qw as well as 
                                 //pass pivotlengths to inputlink_newposition function
-                                int v = 0;
+                                var v = 0;
                                 for (v = 0; v < p; v++)
                                     if (pivots[v] == qw)
                                         break;
@@ -147,27 +151,25 @@ namespace PlanarMechanismSimulator
                             }
                         }
                 }
+
             #endregion
 
+            foreach (var pp in pivots1)
+                if ((!pp.IsGround) && (!pp.newp) && ((pp.PivotType != PivotTypes.RPX) || (pp.PivotType != PivotTypes.RPY)))
+                {
+                    pp.X = double.NaN;
+                    pp.Y = double.NaN;
+                }
 
-            foreach (node pp in pivots1)
-            {
-                if (!pp.localLabels.Contains("ground"))
-                    if (!pp.localLabels.Contains("newp"))
-                        if (!pp.localLabels.Contains("slider_conn"))
-                        {
-                            pp.X = double.NaN;
-                            pp.Y = double.NaN;
-                        }
-            }
 
             //if there is a pin-in-slot (or slideronalink) that is connected to the input link
             //then find the positions of the other pivot that is connected to the Pis by intersection
             //should think about merging pis and slideronalink
 
             #region PIS connected to the input
-            foreach (node pp in pivots1)
-                if (pp.localLabels.Contains("newp") && pp.localLabels.Contains("pis"))
+
+            foreach (var pp in pivots1)
+                if (pp.newp && pp.localLabels.Contains("pis"))
                 {
                     foreach (arc aa in pp.arcs)
                         if (aa.localLabels.Contains("pivotarc"))
@@ -180,7 +182,7 @@ namespace PlanarMechanismSimulator
                                 //determine the length between the two nodes
                                 //intersect on this gradient the length and that forms the new position
 
-                                node c1 = aa.otherNode(pp);
+                                var c1 = aa.otherNode(pp);
                                 node c2 = null;
 
                                 //get the other node which has a NAN and which is directly to this node and the pis
@@ -199,8 +201,8 @@ namespace PlanarMechanismSimulator
 
                                 //get the slope between pp & node c1;
 
-                                double SlopeDr = pp.X - c1.X;
-                                double SlopeNr = pp.Y - c1.Y;
+                                var SlopeDr = pp.X - c1.X;
+                                var SlopeNr = pp.Y - c1.Y;
 
 
                                 //get the length between c1 and c2
@@ -216,7 +218,7 @@ namespace PlanarMechanismSimulator
                                         break;
 
 
-                                double length = pivotLengths[bb1, bb2];
+                                var length = pivotLengths[bb1, bb2];
 
                                 //determine whether the slope is 0 or infinity or normal
                                 // intersect the circle and the line
@@ -224,8 +226,6 @@ namespace PlanarMechanismSimulator
                                 {
                                     pivots1[bb2].X = c1.X;
                                     pivots1[bb2].Y = c1.Y + length;
-
-
                                 }
 
                                 else if (SlopeNr == 0)
@@ -236,21 +236,22 @@ namespace PlanarMechanismSimulator
 
                                 else
                                 {
-                                    double Actual_Slope = SlopeNr / SlopeDr;
+                                    var Actual_Slope = SlopeNr / SlopeDr;
 
-                                    double x_1 = c1.X;
-                                    double y_1 = c1.Y;
+                                    var x_1 = c1.X;
+                                    var y_1 = c1.Y;
 
                                     //double x_value_1 = (-2.0 * x_1 + Math.Sqrt((2.0 * x_1) * (2.0 * x_1) + 4.0 * 1.0 * (length * length / (1.0 + Actual_Slope * Actual_Slope))))/(2.0);
                                     //double x_value_2 = (-2.0 * x_1 - Math.Sqrt((2.0 * x_1) * (2.0 * x_1) + 4.0 * 1.0 * (length * length / (1.0 + Actual_Slope * Actual_Slope))))/2.0;
 
 
+                                    var x_value_1 = Math.Sqrt((length * length) / (1 + Actual_Slope * Actual_Slope)) + x_1;
+                                    ;
+                                    var x_value_2 = -Math.Sqrt((length * length) / (1 + Actual_Slope * Actual_Slope)) + x_1;
+                                    ;
 
-                                    double x_value_1 = Math.Sqrt((length * length) / (1 + Actual_Slope * Actual_Slope)) + x_1; ;
-                                    double x_value_2 = -Math.Sqrt((length * length) / (1 + Actual_Slope * Actual_Slope)) + x_1; ;
-
-                                    double y_value_1 = Actual_Slope * (x_value_1 - x_1) + y_1;
-                                    double y_value_2 = Actual_Slope * (x_value_2 - x_1) + y_1;
+                                    var y_value_1 = Actual_Slope * (x_value_1 - x_1) + y_1;
+                                    var y_value_2 = Actual_Slope * (x_value_2 - x_1) + y_1;
 
                                     //depending on which one - add it to the c2.X term;
 
@@ -264,15 +265,11 @@ namespace PlanarMechanismSimulator
                                         pivots1[bb2].X = x_value_2;
                                         pivots1[bb2].Y = y_value_2;
                                     }
-
                                 }
-
                             }
                         }
-
-
-
                 }
+
             #endregion
 
             while (ContainsUnknownPositions(pivots1) && NewPositionFoundInLastPass(pivots1))
@@ -284,15 +281,14 @@ namespace PlanarMechanismSimulator
 
                 //step - select the pivots that has new position and has another pivot 
 
-                for (int y = 0; y < p; y++)
+                for (var y = 0; y < p; y++)
                 {
-
                     if (double.IsNaN(pivots1[y].X))
                     {
-
-                        if (pivots1[y].localLabels.Contains("slider_conn") || pivots1[y].localLabels.Contains("slider"))
+                        if (pivots1[y].PivotType==PivotTypes.PX localLabels.Contains("slider_conn") || pivots1[y].localLabels.Contains("slider"))
                         {
                             #region slider:Circle - Line intersection
+
                             node c1 = null;
                             node cc = null;
 
@@ -300,7 +296,8 @@ namespace PlanarMechanismSimulator
                             {
                                 foreach (arc ar in pivots1[y].arcs)
                                     if (ar.localLabels.Contains("pivotarc"))
-                                        if (!double.IsNaN(ar.otherNode(pivots1[y]).X) && ar.otherNode(pivots1[y]).localLabels.Contains("slider_conn"))
+                                        if (!double.IsNaN(ar.otherNode(pivots1[y]).X) &&
+                                            ar.otherNode(pivots1[y]).localLabels.Contains("slider_conn"))
                                         {
                                             cc = ar.otherNode(pivots1[y]);
 
@@ -311,7 +308,6 @@ namespace PlanarMechanismSimulator
                                                         c1 = arc1.otherNode(cc);
                                         }
                             }
-
 
 
                             int no1 = 0, no12 = 0;
@@ -328,7 +324,7 @@ namespace PlanarMechanismSimulator
 
                             //get the length
 
-                            double length1 = pivotLengths[no12, no1];
+                            var length1 = pivotLengths[no12, no1];
 
                             //find out whether the other end is a slider h or slider v
 
@@ -339,7 +335,7 @@ namespace PlanarMechanismSimulator
                             if (pivots1[y].localLabels.Contains("sliderv"))
                                 whatSlider = "v";
 
-                            List<double> values = new List<double>();
+                            var values = new List<double>();
 
                             FindCircleLineIntersection(cc, c1, whatSlider, length1, values);
 
@@ -350,7 +346,6 @@ namespace PlanarMechanismSimulator
                             //now depending on the sign convention, we need to choose values from values.list
 
 
-
                             if ((cc.X >= 0 && cc.Y >= 0) || (cc.X >= 0 && cc.Y <= 0))
                             {
                                 pivots1[y].X = values[0];
@@ -359,7 +354,6 @@ namespace PlanarMechanismSimulator
 
                                 pivots1[no12].X = values[0];
                                 pivots1[no12].Y = values[1];
-
                             }
                             else if ((cc.X <= 0 && cc.Y <= 0) || (cc.X <= 0 && cc.Y <= 0))
                             {
@@ -369,24 +363,23 @@ namespace PlanarMechanismSimulator
 
                                 pivots1[no12].X = values[2];
                                 pivots1[no12].Y = values[3];
-
                             }
-
 
                             #endregion
                         }
-                        else if (!pivots1[y].localLabels.Contains("slider_conn") && !pivots1[y].localLabels.Contains("slider") &&
-                            !pivots1[y].localLabels.Contains("pis"))
+                        else if (!pivots1[y].localLabels.Contains("slider_conn") &&
+                                 !pivots1[y].localLabels.Contains("slider") &&
+                                 !pivots1[y].localLabels.Contains("pis"))
                         {
-
                             #region Circle Circle Intersection - For general Case - not sliders
-                            List<node> N_for_intersection = new List<node>();
+
+                            var N_for_intersection = new List<node>();
                             foreach (arc ar in pivots1[y].arcs)
                                 if (ar.localLabels.Contains("pivotarc"))
                                     if (!double.IsNaN(ar.otherNode(pivots1[y]).X))
                                         N_for_intersection.Add(ar.otherNode(pivots1[y]));
 
-                            List<double> values = new List<double>();
+                            var values = new List<double>();
                             if (N_for_intersection.Count >= 2)
                             {
                                 //need to determine lengths between pivot points
@@ -400,13 +393,12 @@ namespace PlanarMechanismSimulator
                                     if (pivots[no2] == N_for_intersection[1])
                                         break;
 
-                                double length1, length2;
-
-                                length1 = pivotLengths[y, no1];
-                                length2 = pivotLengths[y, no2];
+                                var length1 = pivotLengths[y, no1];
+                                var length2 = pivotLengths[y, no2];
 
 
-                                Find_New_Intersection_points(length1, length2, N_for_intersection[0], N_for_intersection[1], values);
+                                Find_New_Intersection_points(length1, length2, N_for_intersection[0],
+                                                             N_for_intersection[1], values);
 
                                 //we know which pivot and also the two different possibilities from values.list
                                 //we shall use the straight-line distance determination technique to get the right value. 
@@ -416,20 +408,24 @@ namespace PlanarMechanismSimulator
                                 st1_x = oldpivotpositions[y, 0];
                                 st1_y = oldpivotpositions[y, 1];
 
-                                if (double.IsNaN(values[0]) && double.IsNaN(values[1]) && double.IsNaN(values[2]) && double.IsNaN(values[3]))
+                                if (double.IsNaN(values[0]) && double.IsNaN(values[1]) && double.IsNaN(values[2]) &&
+                                    double.IsNaN(values[3]))
                                 {
                                     pivots1[y].X = values[0];
                                     pivots1[y].Y = values[1];
                                 }
                                 else
                                 {
-
                                     //straight-line distance
 
                                     double st_d1 = 0.0, st_d2 = 0.0;
 
-                                    st_d1 = Math.Sqrt((st1_x - values[0]) * (st1_x - values[0]) + (st1_y - values[1]) * (st1_y - values[1]));
-                                    st_d2 = Math.Sqrt((st1_x - values[2]) * (st1_x - values[2]) + (st1_y - values[3]) * (st1_y - values[3]));
+                                    st_d1 =
+                                        Math.Sqrt((st1_x - values[0]) * (st1_x - values[0]) +
+                                                  (st1_y - values[1]) * (st1_y - values[1]));
+                                    st_d2 =
+                                        Math.Sqrt((st1_x - values[2]) * (st1_x - values[2]) +
+                                                  (st1_y - values[3]) * (st1_y - values[3]));
 
                                     if (st_d1 < st_d2)
                                     {
@@ -441,11 +437,10 @@ namespace PlanarMechanismSimulator
                                     {
                                         pivots1[y].X = values[2];
                                         pivots1[y].Y = values[3];
-
                                     }
                                 }
-
                             }
+
                             #endregion
                         }
 
@@ -464,7 +459,8 @@ namespace PlanarMechanismSimulator
 
                             node abab = null;
                             foreach (arc ab in pivots1[y].arcs)
-                                if (ab.localLabels.Contains("pivotarc") && ab.otherNode(pivots1[y]).localLabels.Contains("ground"))
+                                if (ab.localLabels.Contains("pivotarc") &&
+                                    ab.otherNode(pivots1[y]).localLabels.Contains("ground"))
                                     abab = ab.otherNode(pivots1[y]);
 
                             //determine the index of abab and length from the pis pivot
@@ -473,22 +469,24 @@ namespace PlanarMechanismSimulator
                                 if (pivots1[x] == abab)
                                     break;
 
-                            double length1 = pivotLengths[y, x];
+                            var length1 = pivotLengths[y, x];
 
                             //now determine the line on which the pis is located
 
                             foreach (arc ab in pivots1[y].arcs)
-                                if (ab.otherNode(pivots1[y]).localLabels.Contains("link") && ab.otherNode(pivots1[y]).localLabels.Contains("pis_conn"))
+                                if (ab.otherNode(pivots1[y]).localLabels.Contains("link") &&
+                                    ab.otherNode(pivots1[y]).localLabels.Contains("pis_conn"))
                                 {
-                                    node pis_link = ab.otherNode(pivots1[y]);
+                                    var pis_link = ab.otherNode(pivots1[y]);
 
                                     //now determine the two pivots on this link other than pis
 
                                     //list of nodes
-                                    List<node> pis_link_nodes = new List<node>();
+                                    var pis_link_nodes = new List<node>();
 
                                     foreach (arc ab1 in pis_link.arcs)
-                                        if (ab1.otherNode(pis_link).localLabels.Contains("pivot") && !ab1.otherNode(pis_link).localLabels.Contains("pis"))
+                                        if (ab1.otherNode(pis_link).localLabels.Contains("pivot") &&
+                                            !ab1.otherNode(pis_link).localLabels.Contains("pis"))
                                             pis_link_nodes.Add(ab1.otherNode(pis_link));
 
 
@@ -502,27 +500,29 @@ namespace PlanarMechanismSimulator
                                     xx2 = pis_link_nodes[1].X;
                                     yy2 = pis_link_nodes[1].Y;
 
-                                    double slope = (yy2 - yy1) / (xx2 - xx1);
+                                    var slope = (yy2 - yy1) / (xx2 - xx1);
 
-                                    double C = yy1 - slope * xx1;
+                                    var C = yy1 - slope * xx1;
 
                                     double Delta;
 
-                                    Delta = Math.Pow((-2 * abab.X + 2 * (C - abab.Y) * (slope)), 2) - 4 * (slope * slope + 1) * (abab.X * abab.X + (C - abab.Y) * (C - abab.Y) - length1 * length1);
+                                    Delta = Math.Pow((-2 * abab.X + 2 * (C - abab.Y) * (slope)), 2) -
+                                            4 * (slope * slope + 1) *
+                                            (abab.X * abab.X + (C - abab.Y) * (C - abab.Y) - length1 * length1);
                                     double value_x1 = 0.0, value_x2 = 0.0, value_y_1 = 0.0, value_y_2 = 0.0;
 
                                     if (Delta > 0)
                                     {
-                                        value_x1 = (-(-2 * abab.X + 2 * (C - abab.Y) * slope) + Math.Sqrt(Delta)) / (2 * (slope * slope + 1));
-                                        value_x2 = (-(-2 * abab.X + 2 * (C - abab.Y) * slope) - Math.Sqrt(Delta)) / (2 * (slope * slope + 1));
+                                        value_x1 = (-(-2 * abab.X + 2 * (C - abab.Y) * slope) + Math.Sqrt(Delta)) /
+                                                   (2 * (slope * slope + 1));
+                                        value_x2 = (-(-2 * abab.X + 2 * (C - abab.Y) * slope) - Math.Sqrt(Delta)) /
+                                                   (2 * (slope * slope + 1));
                                         value_y_1 = slope * value_x1 + C;
                                         value_y_2 = slope * value_x2 + C;
-
                                     }
 
                                     else
                                     {
-
                                     }
 
                                     //perhaps compare with the previous point
@@ -530,12 +530,18 @@ namespace PlanarMechanismSimulator
 
                                     //find the minimum distance and then go about
 
-                                    double dist1 = Math.Sqrt((oldpivotpositions[y, 0] - value_x1) * (oldpivotpositions[y, 0] - value_x1) +
-                                                           (oldpivotpositions[y, 1] - value_y_1) * (oldpivotpositions[y, 0] - value_y_1));
+                                    var dist1 =
+                                        Math.Sqrt((oldpivotpositions[y, 0] - value_x1) *
+                                                  (oldpivotpositions[y, 0] - value_x1) +
+                                                  (oldpivotpositions[y, 1] - value_y_1) *
+                                                  (oldpivotpositions[y, 0] - value_y_1));
 
 
-                                    double dist2 = Math.Sqrt((oldpivotpositions[y, 0] - value_x2) * (oldpivotpositions[y, 0] - value_x2) +
-                                                           (oldpivotpositions[y, 1] - value_y_2) * (oldpivotpositions[y, 0] - value_y_2));
+                                    var dist2 =
+                                        Math.Sqrt((oldpivotpositions[y, 0] - value_x2) *
+                                                  (oldpivotpositions[y, 0] - value_x2) +
+                                                  (oldpivotpositions[y, 1] - value_y_2) *
+                                                  (oldpivotpositions[y, 0] - value_y_2));
 
 
                                     if (dist1 < dist2)
@@ -547,16 +553,8 @@ namespace PlanarMechanismSimulator
                                     {
                                         pivots1[y].X = value_x2;
                                         pivots1[y].Y = value_y_2;
-
                                     }
                                 }
-
-
-
-
-
-
-
 
                             #endregion
                         }
@@ -569,30 +567,23 @@ namespace PlanarMechanismSimulator
 
 
                 //removing "newp" label from all pivots (here it is used only for input link
-
-                for (int kk = 0; kk < p; kk++)
-                    if (pivots1[kk].localLabels.Contains("newp"))
-                        pivots1[kk].localLabels.Remove("newp");
+                foreach (var a in pivots1) a.newp = false;
             }
             /* After the while-loop terminates, we reset the PositionsFound list. */
             PositionsFound.Clear();
-            #endregion
 
-          
+            #endregion
 
             #region Copy values to Pivots X and Y
 
-            for (int t = 0; t < p; t++)
+            for (var t = 0; t < p; t++)
             {
                 if (timeRow != numSteps - 1)
                 {
                     if (!double.IsNaN(pivots1[t].X))
                     {
-
-
                         PivotParameters[t, timeRow + 1, 0] = pivots1[t].X;
                         PivotParameters[t, timeRow + 1, 1] = pivots1[t].Y;
-
                     }
 
                     pivots[t].X = PivotParameters[t, timeRow + 1, 0];
@@ -607,18 +598,19 @@ namespace PlanarMechanismSimulator
             //        path[generalcounter, 1] = pivots[i].Y;
             //    }
             // make sure to put positions both in pivotparameters as well as back into the graph (just in pivots list)
+
             #endregion
 
             return checkrotatability(pivots1);
         }
 
         #region Check if there is any NAN in the pivots
-        private bool checkrotatability(List<node> pivots1)
+
+        private bool checkrotatability(List<pivot> pivots1)
         {
-            
             //if there is any NAN for any pivots.x / pivots.y , then system.output and also exit this candidate
-            Boolean result = true;
-            for (int tempi = 0; tempi < p; tempi++)
+            var result = true;
+            for (var tempi = 0; tempi < p; tempi++)
                 if (pivots1[tempi].X == double.NaN || pivots1[tempi].Y == double.NaN)
                 {
                     SearchIO.output("Failed Candidate - Rotatability not satisfied");
@@ -632,22 +624,23 @@ namespace PlanarMechanismSimulator
                     //if NaNtracker is 1.0; then there is NaN and the system is no good.
                 }
             return result;
-
-            
         }
+
         #endregion
 
         #endregion
+
         #region Circle - Line Intersection for Sliders
-        private void FindCircleLineIntersection(node c1, node c2, string whatSlider, double length1, List<double> values)
+
+        private void FindCircleLineIntersection(pivot c1, pivot c2, string whatSlider, double length1, List<double> values)
         {
             //calculating the intersection points
             //first is determining b^2 - 4*a*c term
 
             //X Y coordinates of the point c1
 
-            double xx = c2.X;
-            double yy = c2.Y;
+            var xx = c2.X;
+            var yy = c2.Y;
 
             double horz = double.NaN, vert = double.NaN;
 
@@ -657,12 +650,11 @@ namespace PlanarMechanismSimulator
                 vert = c1.X;
 
 
-
             //write a if statement to account for both horz and vert sliders
 
             if (!double.IsNaN(horz))
             {
-                double delta = (2 * xx) * (2 * xx) - 4 * 1 * (xx * xx + (horz - yy) * (horz - yy) - length1 * length1);
+                var delta = (2 * xx) * (2 * xx) - 4 * 1 * (xx * xx + (horz - yy) * (horz - yy) - length1 * length1);
 
                 if (delta > 0)
                 {
@@ -683,7 +675,7 @@ namespace PlanarMechanismSimulator
 
             if (!double.IsNaN(vert))
             {
-                double delta = (2 * yy) * (2 * yy) - 4 * 1 * (yy * yy + (vert - xx) * (vert - xx) - length1 * length1);
+                var delta = (2 * yy) * (2 * yy) - 4 * 1 * (yy * yy + (vert - xx) * (vert - xx) - length1 * length1);
 
                 if (delta > 0)
                 {
@@ -700,14 +692,13 @@ namespace PlanarMechanismSimulator
                     values.Add(double.NaN);
                 }
             }
-
-
-
         }
 
         #endregion
+
         #region New Intersection Points
-        private void Find_New_Intersection_points(double length1, double length2, node c1, node c2, List<double> values)
+
+        private void Find_New_Intersection_points(double length1, double length2, pivot c1, pivot c2, List<double> values)
         {
             //code obtained from 
             //http://local.wasp.uwa.edu.au/~pbourke/geometry/2circle/
@@ -732,7 +723,6 @@ namespace PlanarMechanismSimulator
             //this shall be done once the code is working for a 4 bar mechanism
 
 
-
             if (d > (length1 + length2))
             {
                 values.Add(double.NaN);
@@ -750,8 +740,6 @@ namespace PlanarMechanismSimulator
 
             else
             {
-
-
                 //determine distance from point 0 to point 2
 
                 double a;
@@ -787,21 +775,22 @@ namespace PlanarMechanismSimulator
                 values.Add(x_2);
                 values.Add(y_2);
             }
-
         }
-        #endregion
-        #region Input Link New Position Determination
-        private void findInputLink_NewPositions(node qw, List<node> pivots1, double[,] pivotlengths, int v, int x)
-        {
 
+        #endregion
+
+        #region Input Link New Position Determination
+
+        private void findInputLink_NewPositions(pivot qw, List<pivot> pivots1, double[,] pivotlengths, int v, int x)
+        {
             double x_pos, y_pos;
             double linklength;
             linklength = pivotlengths[x, v];
-            double xx = qw.X;
-            double yy = qw.Y;
+            var xx = qw.X;
+            var yy = qw.Y;
             double x2 = 0.0, y2 = 0.0;
 
-            for (int i = 0; i < p; i++)
+            for (var i = 0; i < p; i++)
                 if (pivots1[i].localLabels.Contains("input"))
                 {
                     x2 = pivots1[i].X;
@@ -809,36 +798,41 @@ namespace PlanarMechanismSimulator
                 }
 
 
-            double x_distance = xx - x2;
-            double y_distance = yy - y2;
+            var x_distance = xx - x2;
+            var y_distance = yy - y2;
 
-            double theta = Math.Atan2(y_distance, x_distance) + (inputSweepAngle / numSteps);
+            var theta = Math.Atan2(y_distance, x_distance) + (inputSweepAngle / numSteps);
 
             x_pos = linklength * Math.Cos(theta);
             y_pos = linklength * Math.Sin(theta);
 
-            double actualx = x_pos + x2;
-            double actualy = y_pos + y2;
+            var actualx = x_pos + x2;
+            var actualy = y_pos + y2;
             pivots1[v].X = actualx;
             pivots1[v].Y = actualy;
-            pivots1[v].localLabels.Add("newp");
-
+            pivots1[v].newp = true;
         }
+
         #endregion
+
         #region To check if pivots have been given new positions
-        Boolean ContainsUnknownPositions(List<node> pivots1)
+
+        private Boolean ContainsUnknownPositions(List<pivot> pivots1)
         {
-            foreach (node p in pivots1)
+            foreach (var p in pivots1)
             {
                 if (double.IsNaN(p.X))
                     return true;
-
             }
 
             return false;
         }
+
         #endregion
+
+        void IDependentAnalysis.calculate(double[] x)
+        {
+            throw new NotImplementedException();
+        }
     }
-
-
 }
