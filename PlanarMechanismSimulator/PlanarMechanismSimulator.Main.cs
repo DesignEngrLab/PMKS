@@ -243,7 +243,7 @@ namespace PlanarMechanismSimulator
                     var pivotIndices =
                         newLinkIDs.Where(lid => lid.Contains(linkNames[k])).Select(lid => newLinkIDs.IndexOf(lid));
                     var pivotsForThisLink = pivotIndices.Select(i => joints[i]).ToList();
-                    links.Add(new link(pivotsForThisLink, pivotsForThisLink.Count(piv => piv.isGround) >= 2));
+                    links.Add(new link(linkNames[k],pivotsForThisLink, pivotsForThisLink.Count(piv => piv.isGround) >= 2));
                 }
                 /* now that links have been created, need to add these to pivots */
                 for (int i = 0; i < newLinkIDs.Count; i++)

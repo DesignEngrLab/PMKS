@@ -37,7 +37,7 @@ namespace PlanarMechanismSimulator
                     var gear1 = joints[p].Link1;
                     var gear2 = joints[p].Link2;
                     var g1center = gear1.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[p].Link1));
-                    var g2center = g2.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[p].Link2));
+                    var g2center = gear2.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[p].Link2));
                     currentJointParams[i, 2] = (lastLinkParams[links.IndexOf(gear1), 0] * (g1center.Y - joints[p].Y) +
                     lastLinkParams[links.IndexOf(gear2), 0] * (g2center.Y - joints[p].Y)) / 2.0;
                     currentJointParams[i, 3] = (lastLinkParams[links.IndexOf(gear1), 0] * (joints[p].X - g1center.X) +
@@ -89,7 +89,7 @@ namespace PlanarMechanismSimulator
                     var gear1 = joints[p].Link1;
                     var gear2 = joints[p].Link2;
                     var g1center = gear1.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[p].Link1));
-                    var g2center = g2.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[p].Link2));
+                    var g2center = gear2.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[p].Link2));
                     currentJointParams[i, 4] = (lastLinkParams[links.IndexOf(gear1), 2] * (g1center.Y - joints[p].Y) +
                                         lastLinkParams[links.IndexOf(gear2), 2] * (g2center.Y - joints[p].Y)) / 2.0;
                     currentJointParams[i, 5] = (lastLinkParams[links.IndexOf(gear1), 3] * (joints[p].X - g1center.X) +
@@ -128,14 +128,18 @@ namespace PlanarMechanismSimulator
                          * For gear teeth, the position is of joint stays fixed even though the gear teeth are
                          * flying by. Have to do these at the end. */
                         continue;
-                    joints[i].X = lastParams[i, 0] + lastParams[i, 2] * time_step + 0.5 * lastParams[i, 4] * time_step * time_step;
-                    joints[i].Y = lastParams[i, 1] + lastParams[i, 3] * time_step + 0.5 * lastParams[i, 5] * time_step * time_step;
+                    joints[i].X = lastParams[i, 0] + lastParams[i, 2] * time_step +
+                                  0.5 * lastParams[i, 4] * time_step * time_step;
+                    joints[i].Y = lastParams[i, 1] + lastParams[i, 3] * time_step +
+                                  0.5 * lastParams[i, 5] * time_step * time_step;
 
-if (joints[i].LinkIsSlide(joints[i].Link1))
-{}
-                    else if (joints[i].LinkIsSlide(joints[i].Link2))
-{
+                    if (joints[i].LinkIsSlide(joints[i].Link1))
+                    {
                     }
+                    else if (joints[i].LinkIsSlide(joints[i].Link2))
+                    {
+                    }
+                }
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
                 for (int i = 0; i < p; i++)
                 {
@@ -160,5 +164,5 @@ if (joints[i].LinkIsSlide(joints[i].Link1))
             }
         }
     }
-    }
 }
+

@@ -7,6 +7,7 @@ namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
+        private const int numberOfTries = 100;
         private void FindFullMovementNonDyadic()
         {
             var currentTime = 0.0;
@@ -120,8 +121,8 @@ namespace PlanarMechanismSimulator
         private Boolean OptimizePositionsNonDyadic()
         {
             var optMethod = new NewtonMethod();
-            var objfun = new NonDyadicPositionFinder(links,joints,inputIndex,epsilon);
- 
+            var objfun = new NonDyadicPositionFinder(links, joints, inputIndex, epsilon);
+
 
             optMethod.Add(objfun);
             var converge = new ToKnownBestFConvergence(0, 1e-4);
@@ -132,10 +133,12 @@ namespace PlanarMechanismSimulator
             optMethod.Add(new DeltaFConvergence(1e-2));
             //optMethod.Add(new FixedOrGoldenSection(1e-2, 0));
             optMethod.Add(new GoldenSection(1e-2, 0));
+            var x = new double[2 * inputIndex]; //need to check if this is always true. If input is a ternary link it could be less.
             double[] xStar;
             var r = new Random();
             var fStar = double.PositiveInfinity;
             long numFEvals = 0;
+            int k = 0;
             do
             {
                 numFEvals += optMethod.numEvals;
@@ -144,13 +147,13 @@ namespace PlanarMechanismSimulator
                     x[i] = 20 * r.NextDouble() - 10;
                 fStar = optMethod.Run(out xStar, x);
                 //SearchIO.output("fStar = " + fStar);
-            } while (!optMethod.ConvergenceDeclaredBy.Contains(converge));
-
+            } while (!optMethod.ConvergenceDeclaredBy.Contains(converge) && k++ < numberOfTries);
             Console.WriteLine("Convergence Declared by " + optMethod.ConvergenceDeclaredByTypeString);
             Console.WriteLine("X* = " + StarMath.MakePrintString(xStar));
             Console.WriteLine("F* = " + fStar, 1);
             Console.WriteLine("NumEvals = " + numFEvals);
-
+            if (!optMethod.ConvergenceDeclaredBy.Contains(converge)) return false;
+            return true;
         }
 
     }

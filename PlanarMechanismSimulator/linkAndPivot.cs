@@ -36,6 +36,7 @@ namespace PlanarMechanismSimulator
         {
             get
             {
+                throw new NotImplementedException();
             }
         }
 
@@ -56,9 +57,8 @@ namespace PlanarMechanismSimulator
             if (referencePts.Count==0)
             referencePts.AddRange(joints.Where(j => (j.jointType==JointTypes.G)).Select(j=>new point{X=j.X, Y=j.Y}));
             // next add the orthogonal points for the slides
-            referencePts.AddRange(joints.Where(j => (j.jointType==JointTypes.P || j.jointType==JointTypes.RP) && j.LinkIsSlide(this))
-                .Select(j=> findOrthoPoint(j)));
-            var numLengths = 2 * (joints.Count - 2) + 1];
+            referencePts.AddRange(joints.Where(j => (j.jointType==JointTypes.P || j.jointType==JointTypes.RP) && j.LinkIsSlide(this)).Select(findOrthoPoint));
+            var numLengths = 2 * (joints.Count - 2) + 1;
             lengths = new double[numLengths];
                     int lengthIndex = 0;
                     int linkIndex = 0;
