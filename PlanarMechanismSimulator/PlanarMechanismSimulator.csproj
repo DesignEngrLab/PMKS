@@ -12,6 +12,7 @@
     <AssemblyName>PlanarMechanismSimulator</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\PlanarMechanismSimulator.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,18 +39,18 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="circleDiagramItem.cs" />
-    <Compile Include="PlanarMechanismSimulator.DataOutput.cs" />
+    <Compile Include="Dyadic\circleDiagramItem.cs" />
+    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
+    <Compile Include="NonDyadic\PlanarMechanismSimulator.NonDyadic.Main.cs" />
+    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Main.cs" />
+    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
     <Compile Include="PlanarMechanismSimulator.Numerical.cs" />
-    <Compile Include="LinkLengthFunction.cs" />
-    <Compile Include="PlanarMechanismSimulator.PublicMethods.cs" />
-    <Compile Include="NonDyadicPositionFinder.cs" />
+    <Compile Include="NonDyadic\LinkLengthFunction.cs" />
+    <Compile Include="PlanarMechanismSimulator.Main.cs" />
+    <Compile Include="NonDyadic\NonDyadicPositionFinder.cs" />
     <Compile Include="linkAndPivot.cs" />
-    <Compile Include="DynamicMatrixTerm.cs" />
-    <Compile Include="PlanarMechanismSimulator.Acceleration.cs" />
-    <Compile Include="PlanarMechanismSimulator.Position.cs" />
-    <Compile Include="PlanarMechanismSimulator.Dyadic.SetUp.cs" />
-    <Compile Include="PlanarMechanismSimulator.Dyadic.Velocity.cs" />
+    <Compile Include="Dyadic\DynamicMatrixTerm.cs" />
+    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

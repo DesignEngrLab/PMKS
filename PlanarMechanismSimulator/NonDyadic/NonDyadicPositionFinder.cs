@@ -15,11 +15,11 @@ namespace PlanarMechanismSimulator
         
         private readonly int numPivots ;
         private readonly IEnumerable<link> links;
-        private readonly IList<pivot> pivots;
+        private readonly IList<joint> pivots;
 
         internal long NumEvals { get; private set; }
 
-        internal NonDyadicPositionFinder(IEnumerable<link> links, IList<pivot> pivots, int numPivots, double epsilon)
+        internal NonDyadicPositionFinder(IEnumerable<link> links, IList<joint> pivots, int numPivots, double epsilon)
         {
             this.links = links;
             this.pivots = pivots;
@@ -27,20 +27,21 @@ namespace PlanarMechanismSimulator
             linkFunctions = new List<LinkLengthFunction>();
             foreach (var c in links)
             {
-                var p0 = c.Pivots[0];
+                var p0 = c.joints[0];
                 var p0Index = pivots.IndexOf(p0);
-                var p1 = c.Pivots[1];
+                var p1 = c.joints[1];
                 var p1Index = pivots.IndexOf(p1);
                 if ((!double.IsNaN(p0.X)) && (!double.IsNaN(p0.Y)) &&
                     (!double.IsNaN(p1.X)) && (!double.IsNaN(p1.Y)))
                     linkFunctions.Add(new LinkLengthFunction(p0Index, p0.X, p0.Y, p1Index, p1.X, p1.Y));
-                else if ((!double.IsNaN(p0.X)) && (!double.IsNaN(p0.Y)) && (!double.IsNaN(c.length)))
-                    linkFunctions.Add(new LinkLengthFunction(p0Index, p0.X, p0.Y, p1Index, c.length));
-                else if ((!double.IsNaN(p1.X)) && (!double.IsNaN(p1.Y)) && (!double.IsNaN(c.length)))
-                    linkFunctions.Add(new LinkLengthFunction(p1Index, p1.X, p1.Y, p0Index, c.length));
-                else if (!double.IsNaN(c.length))
-                    linkFunctions.Add(new LinkLengthFunction(p0Index, p1Index, c.length));
+                else if ((!double.IsNaN(p0.X)) && (!double.IsNaN(p0.Y)) && (!double.IsNaN(c.lengths[0])))
+                    linkFunctions.Add(new LinkLengthFunction(p0Index, p0.X, p0.Y, p1Index, c.lengths[0]));
+                else if ((!double.IsNaN(p1.X)) && (!double.IsNaN(p1.Y)) && (!double.IsNaN(c.lengths[0])))
+                    linkFunctions.Add(new LinkLengthFunction(p1Index, p1.X, p1.Y, p0Index, c.lengths[0]));
+                else if (!double.IsNaN(c.lengths[0]))
+                    linkFunctions.Add(new LinkLengthFunction(p0Index, p1Index, c.lengths[0]));
                 else throw new Exception("Links is not well-specified (in constructor of NonDyadicPositionFinder).");
+                //todo: note how all the lengths above are lengths[0] need to fix s.t. they correspond to proper values.
             }
             optMethod = new NewtonMethod();
             optMethod.Add(this);
@@ -71,8 +72,8 @@ namespace PlanarMechanismSimulator
                     pivots[i/2].Y = xStar[i+1];
                 }
             foreach (var a in links)
-                a.length = Math.Sqrt((a.Pivots[0].X - a.Pivots[1].X)*(a.Pivots[0].X - a.Pivots[1].X)
-                                     + (a.Pivots[0].Y - a.Pivots[1].Y)*(a.Pivots[0].Y - a.Pivots[1].Y));
+                a.lengths[0] = Math.Sqrt((a.joints[0].X - a.joints[1].X)*(a.joints[0].X - a.joints[1].X)
+                                     + (a.joints[0].Y - a.joints[1].Y)*(a.joints[0].Y - a.joints[1].Y));
             return result;
         }
 

@@ -2,8 +2,8 @@
 {
     internal class PivotDynamicMatrixTerm : DynamicMatrixTerm
     {
-        internal pivot belongsFrom;
-        internal pivot belongsTo;
+        internal joint belongsFrom;
+        internal joint belongsTo;
     }
 
     internal  class LinkDynamicMatrixTerm:DynamicMatrixTerm
