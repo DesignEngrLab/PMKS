@@ -22,6 +22,7 @@ namespace PlanarMechanismSimulator
             LinkParameters.Add(currentTime, currentLinkParams);
             bool validPosition;
 
+            var ndPosFinder = new NonDyadicPositionFinder(links, joints, inputIndex, epsilon);
 
             do /*** Stepping Forward in Time **/
             {
@@ -35,7 +36,7 @@ namespace PlanarMechanismSimulator
                 /* Based upon the numerical approximation, we analytically update the remaining
                  * joints. First, we analytically set the input pivot.*/
                 MoveInputToNextPosition(currentTime, FixedTimeStep);
-                validPosition = OptimizePositionsNonDyadic();
+                validPosition = ndPosFinder.Run_PositionsAreClose();
                 /* create new currentPivotParams based on these updated positions of the joints */
                 if (validPosition)
                 {
@@ -71,7 +72,7 @@ namespace PlanarMechanismSimulator
             /* Based upon the numerical approximation, we analytically update the remaining
              * joints. First, we analytically set the input pivot.*/
             MoveInputToNextPosition(currentTime, -FixedTimeStep);
-            validPosition = OptimizePositionsNonDyadic();
+            validPosition = ndPosFinder.Run_PositionsAreClose();
             /* create new currentPivotParams based on these updated positions of the joints */
             if (!validPosition) return;
             currentPivotParams = new double[p, 6];
@@ -99,7 +100,7 @@ namespace PlanarMechanismSimulator
                 /* Based upon the numerical approximation, we analytically update the remaining
                  * joints. First, we analytically set the input pivot.*/
                 MoveInputToNextPosition(currentTime, -FixedTimeStep);
-                validPosition = OptimizePositionsNonDyadic();
+                validPosition = ndPosFinder.Run_PositionsAreClose();
                 /* create new currentPivotParams based on these updated positions of the joints */
                 if (validPosition)
                 {
@@ -116,44 +117,6 @@ namespace PlanarMechanismSimulator
                 }
                 #endregion
             } while (validPosition && lessThanFullRotation());
-        }
-
-        private Boolean OptimizePositionsNonDyadic()
-        {
-            var optMethod = new NewtonMethod();
-            var objfun = new NonDyadicPositionFinder(links, joints, inputIndex, epsilon);
-
-
-            optMethod.Add(objfun);
-            var converge = new ToKnownBestFConvergence(0, 1e-4);
-            optMethod.Add(converge);
-            //optMethod.Add(new FletcherReevesDirection());
-            // optMethod.Add(new MaxFnEvalsConvergence(300));
-            optMethod.Add(new MaxIterationsConvergence(30));
-            optMethod.Add(new DeltaFConvergence(1e-2));
-            //optMethod.Add(new FixedOrGoldenSection(1e-2, 0));
-            optMethod.Add(new GoldenSection(1e-2, 0));
-            var x = new double[2 * inputIndex]; //need to check if this is always true. If input is a ternary link it could be less.
-            double[] xStar;
-            var r = new Random();
-            var fStar = double.PositiveInfinity;
-            long numFEvals = 0;
-            int k = 0;
-            do
-            {
-                numFEvals += optMethod.numEvals;
-                optMethod.ResetFunctionEvaluationDatabase();
-                for (int i = 0; i < x.GetLength(0); i++)
-                    x[i] = 20 * r.NextDouble() - 10;
-                fStar = optMethod.Run(out xStar, x);
-                //SearchIO.output("fStar = " + fStar);
-            } while (!optMethod.ConvergenceDeclaredBy.Contains(converge) && k++ < numberOfTries);
-            Console.WriteLine("Convergence Declared by " + optMethod.ConvergenceDeclaredByTypeString);
-            Console.WriteLine("X* = " + StarMath.MakePrintString(xStar));
-            Console.WriteLine("F* = " + fStar, 1);
-            Console.WriteLine("NumEvals = " + numFEvals);
-            if (!optMethod.ConvergenceDeclaredBy.Contains(converge)) return false;
-            return true;
         }
 
     }

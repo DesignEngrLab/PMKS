@@ -36,6 +36,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="joint.cs" />
     <Compile Include="Dyadic\circleDiagramItem.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
     <Compile Include="NonDyadic\PlanarMechanismSimulator.NonDyadic.Main.cs" />
@@ -45,7 +46,7 @@
     <Compile Include="NonDyadic\LinkLengthFunction.cs" />
     <Compile Include="PlanarMechanismSimulator.Main.cs" />
     <Compile Include="NonDyadic\NonDyadicPositionFinder.cs" />
-    <Compile Include="linkAndPivot.cs" />
+    <Compile Include="link.cs" />
     <Compile Include="Dyadic\DynamicMatrixTerm.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -59,6 +60,9 @@
       <Project>{8B37DF1E-A3C9-42B6-BF1F-D65180FF556E}</Project>
       <Name>StarMath</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HTMLPage1.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

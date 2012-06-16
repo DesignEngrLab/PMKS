@@ -243,7 +243,7 @@ namespace PlanarMechanismSimulator
                     var pivotIndices =
                         newLinkIDs.Where(lid => lid.Contains(linkNames[k])).Select(lid => newLinkIDs.IndexOf(lid));
                     var pivotsForThisLink = pivotIndices.Select(i => joints[i]).ToList();
-                    links.Add(new link(linkNames[k],pivotsForThisLink, pivotsForThisLink.Count(piv => piv.isGround) >= 2));
+                    links.Add(new link(linkNames[k], pivotsForThisLink, pivotsForThisLink.Count(piv => piv.isGround) >= 2));
                 }
                 /* now that links have been created, need to add these to pivots */
                 for (int i = 0; i < newLinkIDs.Count; i++)
@@ -261,7 +261,7 @@ namespace PlanarMechanismSimulator
                 inputIndex = joints.Count;
                 joints.Add(inputpivot);
                 joints.AddRange(groundPivots);
-                if (Positions != null) AssignLengthsFromPositions();
+                foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
             {
@@ -289,7 +289,7 @@ namespace PlanarMechanismSimulator
                         joints[i].Y = InitPositions[i][1];
                     }
                 }
-                AssignLengthsFromPositions();
+                foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
             {
@@ -297,37 +297,6 @@ namespace PlanarMechanismSimulator
             }
         }
 
-        private void AssignLengthsFromPositions()
-        {
-            try
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    var maxLengthIndex = links[i].lengths.GetLength(0);
-                    int lengthIndex = 0;
-                    int linkIndex = 0;
-                    while (lengthIndex < maxLengthIndex)
-                    {
-                        links[i].lengths[lengthIndex++] = Math.Sqrt(
-                            (links[i].joints[linkIndex].X - links[i].joints[linkIndex + 1].X)
-                            * (links[i].joints[linkIndex].X - links[i].joints[linkIndex + 1].X)
-                            + (links[i].joints[linkIndex].Y - links[i].joints[linkIndex + 1].Y)
-                            * (links[i].joints[linkIndex].Y - links[i].joints[linkIndex + 1].Y));
-                        if (lengthIndex < maxLengthIndex)
-                            links[i].lengths[lengthIndex++] = Math.Sqrt(
-                                (links[i].joints[linkIndex].X - links[i].joints[linkIndex + 2].X)
-                                * (links[i].joints[linkIndex].X - links[i].joints[linkIndex + 2].X)
-                                + (links[i].joints[linkIndex].Y - links[i].joints[linkIndex + 2].Y)
-                                * (links[i].joints[linkIndex].Y - links[i].joints[linkIndex + 2].Y));
-                        linkIndex++;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Failed to assign lengths from positions (see inner exeception).", e);
-            }
-        }
 
         /// <summary>
         /// Assigns the lengths of the links.
@@ -426,22 +395,7 @@ namespace PlanarMechanismSimulator
                 newInputIndex++;
             }
             var nonDyadicPositionFinder = new NonDyadicPositionFinder(links, newPivots, newInputIndex, epsilon);
-            var x = new double[2 * newInputIndex];
-            double[] xStar;
-            var r = new Random();
-            var fStar = double.PositiveInfinity;
-            long numFEvals = 0;
-            do
-            {
-                numFEvals += nonDyadicPositionFinder.NumEvals;
-                for (int i = 0; i < x.GetLength(0); i++)
-                    x[i] = 20 * r.NextDouble() - 10;
-                fStar = nonDyadicPositionFinder.Run(out xStar, x);
-                //SearchIO.output("fStar = " + fStar);
-            } while (!nonDyadicPositionFinder.SolutionFound());
-
-            return fStar;
-
+            return nonDyadicPositionFinder.Run_PositionsAreUnknown();
         }
 
         /// <summary>

@@ -9,20 +9,23 @@ namespace PlanarMechanismSimulator
 {
     internal class NonDyadicPositionFinder : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {
+        private const double rangeMultiplier = 5.0;
+        private const int numberOfTries = 50;
+
         private readonly List<LinkLengthFunction> linkFunctions;
         private readonly abstractConvergence ConvergedWithinLimit;
         private readonly abstractOptMethod optMethod;
-        
-        private readonly int numPivots ;
+
+        private readonly int numPivots;
         private readonly IEnumerable<link> links;
-        private readonly IList<joint> pivots;
+        private readonly IList<joint> joints;
 
         internal long NumEvals { get; private set; }
 
         internal NonDyadicPositionFinder(IEnumerable<link> links, IList<joint> pivots, int numPivots, double epsilon)
         {
             this.links = links;
-            this.pivots = pivots;
+            this.joints = pivots;
             this.numPivots = numPivots;
             linkFunctions = new List<LinkLengthFunction>();
             foreach (var c in links)
@@ -47,35 +50,82 @@ namespace PlanarMechanismSimulator
             optMethod.Add(this);
             ConvergedWithinLimit = new ToKnownBestFConvergence(0, epsilon);
             optMethod.Add(ConvergedWithinLimit);
-            optMethod.Add(new FixedOrGoldenSection(5*epsilon, 0));
+            optMethod.Add(new FixedOrGoldenSection(5 * epsilon, 0));
             optMethod.Add(new MaxIterationsConvergence(300));
-            optMethod.Add(new DeltaFConvergence(5*epsilon));
+            optMethod.Add(new DeltaFConvergence(5 * epsilon));
         }
 
         internal void MovePivot(int index, double x, double y)
         {
-            foreach (var lf in linkFunctions) lf.MovePivot(index, x, y);
         }
         internal Boolean SolutionFound()
         {
             return optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit);
         }
-        internal double Run(out double[] xStar, double[] xInit=null)
+        internal Boolean Run_PositionsAreClose()
         {
-            NumEvals += optMethod.numEvals;
             optMethod.ResetFunctionEvaluationDatabase();
+            var xInit = new double[2 * numPivots]; //need to check if this is always true. If input is a ternary link it could be less.
+            for (int i = 0; i < numPivots; i++)
+            {
+                xInit[2 * i] = joints[i].X;
+                xInit[2 * i + 1] = joints[i].Y;
+            }
+
+            double[] xStar;
             var result = optMethod.Run(out xStar, xInit);
             if (SolutionFound())
-                for (int i = 0; i < 2*numPivots; i=i+2)
+            {
+                for (int i = 0; i < numPivots; i++)
                 {
-                    pivots[i/2].X = xStar[i];
-                    pivots[i/2].Y = xStar[i+1];
+                    joints[i].X = xStar[2 * i];
+                    joints[i].Y = xStar[2 * i + 1];
                 }
-            foreach (var a in links)
-                a.lengths[0] = Math.Sqrt((a.joints[0].X - a.joints[1].X)*(a.joints[0].X - a.joints[1].X)
-                                     + (a.joints[0].Y - a.joints[1].Y)*(a.joints[0].Y - a.joints[1].Y));
-            return result;
+                return true;
+            }
+            return false;
         }
+
+        internal double Run_PositionsAreUnknown()
+        {
+            var r = new Random();
+            var fStar = double.PositiveInfinity;
+            double[] xStar=null;
+            long numFEvals = 0;
+            int k = 0;
+            var xMin = joints.Min(j => j.X);
+            var xMax = joints.Max(j => j.X);
+            var yMin = joints.Min(j => j.Y);
+            var yMax = joints.Max(j => j.Y);
+            var maxLength = links.Max(l0 => l0.lengths.Max());
+            var range =rangeMultiplier* (new[] { xMax - xMin, yMax - yMin, maxLength }).Max();
+            var offset = (xMin + xMax + yMin + yMax) / 4 - (range / 2);
+            do
+            {
+                numFEvals += optMethod.numEvals;
+                optMethod.ResetFunctionEvaluationDatabase();
+                var xInit = new double[2 * numPivots]; //need to check if this is always true. If input is a ternary link it could be less.
+
+                for (int i = 0; i < numPivots; i++)
+                    xInit[i] = range * r.NextDouble() +offset;
+                double[] xStarTemp;
+                var fStarTemp = optMethod.Run(out xStarTemp, xInit);
+                if (fStarTemp < fStar)
+                {
+                    xStar = xStarTemp;
+                    fStar = fStarTemp;
+                }
+                //SearchIO.output("fStar = " + fStar);
+            } while (!optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit) && k++ < numberOfTries);
+
+            for (int i = 0; i < numPivots; i++)
+            {
+                joints[i].X = xStar[2 * i];
+                joints[i].Y = xStar[2 * i + 1];
+            }
+            return fStar;
+        }
+
 
         public double calculate(double[] x)
         { return linkFunctions.Sum(a => a.calculate(x)); }

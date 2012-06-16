@@ -13,19 +13,19 @@ namespace PlanarMechanismSimulator
         private readonly int index2;
         private readonly double origLength;
 
-        private double xIndex1;
-        private double yIndex1;
-        private double xIndex2;
-        private double yIndex2;
+        private double x1;
+        private double y1;
+        private double x2;
+        private double y2;
 
         private double deltaX
         {
-            get { return xIndex1 - xIndex2; }
+            get { return x1 - x2; }
         }
 
         private double deltaY
         {
-            get { return yIndex1 - yIndex2; }
+            get { return y1 - y2; }
         }
 
         private double newLengthSqared
@@ -40,10 +40,10 @@ namespace PlanarMechanismSimulator
 
         public LinkLengthFunction(int index1, double XIndex1, double YIndex1, int index2, double XIndex2, double YIndex2)
         {
-            xIndex1 = XIndex1;
-            yIndex1 = YIndex1;
-            xIndex2 = XIndex2;
-            yIndex2 = YIndex2;
+            x1 = XIndex1;
+            y1 = YIndex1;
+            x2 = XIndex2;
+            y2 = YIndex2;
             this.index1 = index1;
             this.index2 = index2;
             origLength = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -56,8 +56,8 @@ namespace PlanarMechanismSimulator
         }
         public LinkLengthFunction(int index1, double XIndex1, double YIndex1, int index2, double length)
         {
-            xIndex1 = XIndex1;
-            yIndex1 = YIndex1;
+            x1 = XIndex1;
+            y1 = YIndex1;
             this.index1 = index1;
             this.index2 = index2;
             origLength = length;
@@ -127,27 +127,27 @@ namespace PlanarMechanismSimulator
         {
             if (x.GetLength(0) > 2 * index1 + 1)
             {
-                xIndex1 = x[2 * index1];
-                yIndex1 = x[2 * index1 + 1];
+                x1 = x[2 * index1];
+                y1 = x[2 * index1 + 1];
             }
             if (x.GetLength(0) > 2 * index2 + 1)
             {
-                xIndex2 = x[2 * index2];
-                yIndex2 = x[2 * index2 + 1];
+                x2 = x[2 * index2];
+                y2 = x[2 * index2 + 1];
             }
         }
         
-        internal void MovePivot(int index, double x, double y)
+        internal void SetJointPosition(int index, double x, double y)
         {
             if (index == index1)
             {
-                xIndex1 = x;
-                yIndex1 = y;
+                x1 = x;
+                y1 = y;
             }
             if (index == index2)
             {
-                xIndex2 = x;
-                yIndex2 = y;
+                x2 = x;
+                y2 = y;
             }
         }
     }
