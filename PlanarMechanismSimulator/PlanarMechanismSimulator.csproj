@@ -36,6 +36,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants.cs" />
     <Compile Include="joint.cs" />
     <Compile Include="Dyadic\circleDiagramItem.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />

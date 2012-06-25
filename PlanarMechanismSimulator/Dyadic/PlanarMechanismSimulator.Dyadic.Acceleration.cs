@@ -12,6 +12,7 @@ namespace PlanarMechanismSimulator
     {
         private Boolean findAccelerationAnalytically(double currentTime, bool forwardInTime)
         {
+            return false;
             throw new NotImplementedException();
         }
         //#region New Acceleration Determination

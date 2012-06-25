@@ -87,17 +87,17 @@ namespace ExcelPlanarMechSimulator
 
         private void button_Simulate_Click(object sender, RibbonControlEventArgs e)
         {
-            var rpm = double.NaN;
+            var rpm=double.NaN;
             if (Globals.Sheet1.Range["n2"].Value2 == null || !double.TryParse(Globals.Sheet1.Range["n2"].Value2.ToString(), out rpm))
                 rpm = 10.0;
             Globals.Sheet1.Range["n2"].Value2 = rpm;
-            pms.InputSpeed = 2 * Math.PI * rpm / 60.0;
+            pms.InputAngularSpeed = 2 * Math.PI * rpm / 60.0;
 
-            var deltaAngle = double.NaN;
+            var deltaAngle=double.NaN;
             if (Globals.Sheet1.Range["r2"].Value2 == null || !double.TryParse(Globals.Sheet1.Range["r2"].Value2.ToString(), out deltaAngle))
-                deltaAngle = 1.0;
+                deltaAngle =1.0;
             Globals.Sheet1.Range["r2"].Value2 = deltaAngle;
-            pms.DeltaAngle = Math.PI * deltaAngle / 180.0;
+            pms.DeltaAngle = deltaAngle;
 
 
             pms.FindFullMovement();

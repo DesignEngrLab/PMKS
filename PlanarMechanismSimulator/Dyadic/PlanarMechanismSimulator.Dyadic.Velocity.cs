@@ -1132,6 +1132,7 @@ namespace PlanarMechanismSimulator
             //    findLinearSlipVelocities(currentPivotParams);
             //    //find slip velocities and update
             //}
+            return false;
             throw new NotImplementedException();
         }
 

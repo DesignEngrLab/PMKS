@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using OptimizationToolbox;
 
 namespace PlanarMechanismSimulator
@@ -11,134 +12,131 @@ namespace PlanarMechanismSimulator
 
         private void FindFullMovementDyadic()
         {
-            var currentTime = 0.0;
-            var currentPivotParams = new double[p, 6];
-            for (int i = 0; i < p; i++)
-            {
-                currentPivotParams[i, 0] = joints[i].X;
-                currentPivotParams[i, 1] = joints[i].Y;
-            }
-            JointParameters.Add(currentTime, currentPivotParams);
-            var currentLinkParams = new double[n, 2];
-            LinkParameters.Add(currentTime, currentLinkParams);
-            bool validPosition;
-
+            #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
             SetUpDyadicObjects();
-
-            do /*** Stepping Forward in Time **/
-            {
-                #region Find Velocities for Current Position
-                if (!findVelocitiesThroughICMethod(currentTime, true))
-                {
-                    Status +="Instant Centers could not be found at" + currentTime + ".";
-                    NumericalVelocity(currentTime, true);
-                }
-                #endregion
-                #region Find Accelerations for Current Position
-                if (!findAccelerationAnalytically(currentTime, true))
-                {
-                    Status +="Analytical acceleration could not be found at" + currentTime + ".";
-                    NumericalAcceleration(currentTime, true);
-                }
-                #endregion
-                #region Find Next Positions
-                /* this time, NumericalPosition is called first and instead of
-                 * updating currentPivotParams (which is already full at this point)
-                 * we update the X, Y positions of the joints, which are global to the method. */
-                NumericalPosition(currentTime, FixedTimeStep);
-                /* Based upon the numerical approximation, we analytically update the remaining
-                 * joints. First, we analytically set the input pivot.*/
-                MoveInputToNextPosition(currentTime, FixedTimeStep);
-                validPosition = AnalyticallyCorrectPositionsDyadic();
-                /* create new currentPivotParams based on these updated positions of the joints */
-                if (validPosition)
-                {
-                    currentPivotParams = new double[p, 6];
-                    for (int i = 0; i < p; i++)
-                    {
-                        currentPivotParams[i, 0] = joints[i].X;
-                        currentPivotParams[i, 1] = joints[i].Y;
-                    }
-                    currentTime += FixedTimeStep;
-                    JointParameters.Add(currentTime, currentPivotParams);
-                    currentLinkParams = new double[n, 2];
-                    LinkParameters.Add(currentTime, currentLinkParams);
-                }
-                #endregion
-            } while (validPosition && lessThanFullRotation());
-            if (!lessThanFullRotation()) return;
-
-            #region Reset to t=0
-
-            currentPivotParams = JointParameters.Values[0];
-            currentTime = JointParameters.Keys[0];
+            var initPivotParams = new double[p, 6];
             for (int i = 0; i < p; i++)
             {
-                joints[i].X = currentPivotParams[i, 0];
-                joints[i].Y = currentPivotParams[i, 1];
+                initPivotParams[i, 0] = joints[i].X;
+                initPivotParams[i, 1] = joints[i].Y;
             }
-
-            #endregion
-
-            #region Find first backwards step positions
-            NumericalPosition(currentTime, -FixedTimeStep);
-            /* Based upon the numerical approximation, we analytically update the remaining
-             * joints. First, we analytically set the input pivot.*/
-            MoveInputToNextPosition(currentTime, -FixedTimeStep);
-            validPosition = AnalyticallyCorrectPositionsDyadic();
-            /* create new currentPivotParams based on these updated positions of the joints */
-            if (!validPosition) return;
-            currentPivotParams = new double[p, 6];
-            for (int i = 0; i < p; i++)
+            var initLinkParams = new double[n, 3];
+            for (int i = 0; i < n; i++)
+                initLinkParams[i, 0] = links[i].Angle;
+            angleRange = new double[] { links[inputLinkIndex].Angle, links[inputLinkIndex].Angle };
+            JointParameters.Add(0.0, initPivotParams);
+            LinkParameters.Add(0.0, initLinkParams);
+            /* attempt to find velocities and accelerations at initial point analytically
+             * there is no point in trying numerically as this is the first point and the numerical methods
+             * perform finite difference of current and last time steps. */
+            if (!(findVelocitiesThroughICMethod(0.0, true) && findAccelerationAnalytically(0.0, true)))
             {
-                currentPivotParams[i, 0] = joints[i].X;
-                currentPivotParams[i, 1] = joints[i].Y;
+                var smallBackwardStepJointParams = (double[,])initPivotParams.Clone();
+                var dummyLinkParams = new double[n, 3];
+                MoveInputToNextPosition(0.0, -0.01 * FixedTimeStep, smallBackwardStepJointParams, dummyLinkParams);
+                if (AnalyticallyCorrectPositionsDyadic(smallBackwardStepJointParams, dummyLinkParams))
+                {
+                    JointParameters.Add(-0.01 * FixedTimeStep, smallBackwardStepJointParams);
+                    LinkParameters.Add(-0.01 * FixedTimeStep, dummyLinkParams);
+                    NumericalVelocity(0.0, true);
+                    NumericalAcceleration(0.0, true);
+                    JointParameters.Remove(-0.01 * FixedTimeStep);
+                    LinkParameters.Remove(-0.01 * FixedTimeStep);
+                }
+                else throw new Exception("Unable to establish micro-perturbation to initial position.");
             }
-            currentTime -= FixedTimeStep;
-            JointParameters.Add(currentTime, currentPivotParams);
-            currentLinkParams = new double[n, 2];
-            LinkParameters.Add(currentTime, currentLinkParams);
             #endregion
-
-            do /*** Stepping Backward in Time **/
-            {
-                if (!findVelocitiesThroughICMethod(currentTime, false))
+            #region Work Simultaneously in both rotation directions
+            Parallel.Invoke(
+                delegate()
                 {
-                    Status +="Instant Centers could not be found at"+currentTime+".";
-                    NumericalVelocity(currentTime, false);
-                }
-                if (!findAccelerationAnalytically(currentTime, false))
-                {
-                    Status +="Analytical acceleration could not be found at" + currentTime + ".";
-                    NumericalAcceleration(currentTime, false);
-                }
-                #region Find Next Positions
-
-                /* this time, NumericalPosition is called first and instead of
-                 * updating currentPivotParams (which is already full at this point)
-                 * we update the X, Y positions of the joints, which are global to the method. */
-                NumericalPosition(currentTime, -FixedTimeStep);
-                /* Based upon the numerical approximation, we analytically update the remaining
-                 * joints. First, we analytically set the input pivot.*/
-                MoveInputToNextPosition(currentTime, -FixedTimeStep);
-                validPosition = AnalyticallyCorrectPositionsDyadic();
-                /* create new currentPivotParams based on these updated positions of the joints */
-                if (validPosition)
-                {
-                    currentPivotParams = new double[p, 6];
-                    for (int i = 0; i < p; i++)
+                    var currentTime = 0.0;
+                    var currentLinkParams = new double[n, 3];
+                    var currentPivotParams = new double[p, 6];
+                    Boolean validPosition;
+                    do /*** Stepping Forward in Time **/
                     {
-                        currentPivotParams[i, 0] = joints[i].X;
-                        currentPivotParams[i, 1] = joints[i].Y;
-                    }
-                    currentTime += FixedTimeStep;
-                    JointParameters.Add(currentTime, currentPivotParams);
-                    currentLinkParams = new double[n, 2];
-                    LinkParameters.Add(currentTime, currentLinkParams);
-                }
-                #endregion
-            } while (validPosition && lessThanFullRotation());
+                        #region Find Next Positions
+                        /* First, we analytically set the input pivot.*/
+                        MoveInputToNextPosition(currentTime, FixedTimeStep, currentPivotParams, currentLinkParams);
+                        /* this time, NumericalPosition is called first and instead of
+                         * updating currentPivotParams (which is already full at this point)
+                         * we update the X, Y positions of the joints, which are global to the method. */
+                        NumericalPosition(currentTime, FixedTimeStep, currentPivotParams, currentLinkParams);
+                        /* Based upon the numerical approximation, we analytically update the remaining
+                         * joints. */
+                        validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams);
+                        /* create new currentPivotParams based on these updated positions of the joints */
+                        if (validPosition)
+                        {
+                            currentTime += FixedTimeStep;
+                            JointParameters.Add(currentTime, currentPivotParams);
+                            LinkParameters.Add(currentTime, currentLinkParams);
+                            lock (angleRange) { angleRange[0] = currentLinkParams[inputLinkIndex, 0]; }
+                        #endregion
+                            #region Find Velocities for Current Position
+                            if (!findVelocitiesThroughICMethod(currentTime, true))
+                            {
+                                Status += "Instant Centers could not be found at" + currentTime + ".";
+                                NumericalVelocity(currentTime, true);
+                            }
+                            #endregion
+                            #region Find Accelerations for Current Position
+                            if (!findAccelerationAnalytically(currentTime, true))
+                            {
+                                Status += "Analytical acceleration could not be found at" + currentTime + ".";
+                                NumericalAcceleration(currentTime, true);
+                            }
+                            #endregion
+                        }
+                    } while (validPosition && lessThanFullRotation());
+                },
+                delegate()
+                {
+                    var currentTime = 0.0;
+                    var currentLinkParams = new double[n, 3];
+                    var currentPivotParams = new double[p, 6];
+                    Boolean validPosition;
+                    do /*** Stepping Backward in Time **/
+                    {
+                        #region Find Next Positions
+                        /* First, we analytically set the input pivot.*/
+                        MoveInputToNextPosition(currentTime, -FixedTimeStep, currentPivotParams, currentLinkParams);
+                        /* this time, NumericalPosition is called first and instead of
+                         * updating currentPivotParams (which is already full at this point)
+                         * we update the X, Y positions of the joints, which are global to the method. */
+                        NumericalPosition(currentTime, -FixedTimeStep, currentPivotParams, currentLinkParams);
+                        /* Based upon the numerical approximation, we analytically update the remaining
+                         * joints. */
+                        validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams);
+                        /* create new currentPivotParams based on these updated positions of the joints */
+                        if (validPosition)
+                        {
+                            currentTime -= FixedTimeStep;
+                            JointParameters.Add(currentTime, currentPivotParams);
+                            LinkParameters.Add(currentTime, currentLinkParams);
+                            lock (angleRange) { angleRange[1] = currentLinkParams[inputLinkIndex, 0]; }
+                        #endregion
+                            #region Find Velocities for Current Position
+                            if (!findVelocitiesThroughICMethod(currentTime, false))
+                            {
+                                Status += "Instant Centers could not be found at" + currentTime + ".";
+                                NumericalVelocity(currentTime, false);
+                            }
+                            #endregion
+                            #region Find Accelerations for Current Position
+                            if (!findAccelerationAnalytically(currentTime, false))
+                            {
+                                Status += "Analytical acceleration could not be found at" + currentTime + ".";
+                                NumericalAcceleration(currentTime, false);
+                            }
+                            #endregion
+                        }
+                    } while (validPosition && lessThanFullRotation());
+                });
+            #endregion
         }
+
         private void SetUpDyadicObjects()
         {
             //var numEqs = 0;

@@ -1,12 +1,9 @@
-﻿#region
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using OptimizationToolbox;
-#endregion
 
 namespace PlanarMechanismSimulator
-//at time t=0; all acceleration and velocity are zero
 {
     public partial class Simulator : IDependentAnalysis
     {
@@ -803,9 +800,78 @@ namespace PlanarMechanismSimulator
 
         #endregion
 
-        private Boolean AnalyticallyCorrectPositionsDyadic()
+        private Boolean AnalyticallyCorrectPositionsDyadic(double[,] currentPivotParams, double[,] currentLinkParams)
         {
-            throw new NotImplementedException();
+            var knownPositions = joints.Where(j => j.isGround || inputLink.joints.Contains(j)).ToList();
+            var unknownPositions = joints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
+            do
+            {
+                var solvableJoint = unknownPositions.FirstOrDefault(j =>
+                    (j.Link1.joints.Count(jj => knownPositions.Contains(jj))
+                    + j.Link2.joints.Count(jj => knownPositions.Contains(jj)) >= 2));
+                if (solvableJoint == null) return false;
+                var sJIndex = joints.IndexOf(solvableJoint);
+                var link1Knowns = solvableJoint.Link1.joints.Where(jj => knownPositions.Contains(jj));
+                var link2Knowns = solvableJoint.Link2.joints.Where(jj => knownPositions.Contains(jj));
+                point sJPoint = null;
+                if (link1Knowns.Count() >= 2)
+                    sJPoint = solveFromSingleLinkMembers(solvableJoint, solvableJoint.Link1, link1Knowns, currentPivotParams);
+                else if (link2Knowns.Count() >= 2)
+                    sJPoint = solveFromSingleLinkMembers(solvableJoint, solvableJoint.Link2, link2Knowns, currentPivotParams);
+                else if (solvableJoint.jointType == JointTypes.R && link1Knowns.First().jointType == JointTypes.R
+                    && link2Knowns.First().jointType == JointTypes.R)
+                    sJPoint = solveViaCircleIntersection(solvableJoint, link1Knowns.First(), solvableJoint.Link1,
+                        link2Knowns.First(), solvableJoint.Link2, currentPivotParams);
+                else throw new Exception("Can't analyze solvable joint of type: " + solvableJoint.jointType.ToString() + " when connected to type " +
+                link1Knowns.First().jointType.ToString() + " and " + link2Knowns.First().jointType.ToString());
+                if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
+                    return false;
+                currentPivotParams[sJIndex, 0] = sJPoint.X;
+                currentPivotParams[sJIndex, 1] = sJPoint.Y;
+                knownPositions.Add(solvableJoint);
+                unknownPositions.Remove(solvableJoint);
+            } while (unknownPositions.Count > 0);
+            return true;
+        }
+
+        private point solveViaCircleIntersection(joint solvableJoint, joint joint1, link link1, joint joint2, link link2, double[,] jointParams)
+        {
+            /* taken from http://2000clicks.com/MathHelp/GeometryConicSectionCircleIntersection.aspx */
+            var r1 = link1.lengthBetween(solvableJoint, joint1);
+            var r2 = link2.lengthBetween(solvableJoint, joint2);
+            var xA = jointParams[joints.IndexOf(joint1), 0];
+            var yA = jointParams[joints.IndexOf(joint1), 1];
+            var xB = jointParams[joints.IndexOf(joint2), 0];
+            var yB = jointParams[joints.IndexOf(joint2), 1];
+
+            var dSquared = (xA - xB) * (xA - xB) + (yA - yB) * (yA - yB);
+            var ratio = (r1 * r1 - r2 * r2) / (2 * dSquared);
+            var xBase = (xA + xB) / 2 + (xB - xA) * ratio;
+            var yBase = (yA + yB) / 2 + (yB - yA) * ratio;
+            var fourTimesKsquared = ((r1 + r2) * (r1 + r2) - dSquared) * (dSquared - (r1 - r2) * (r1 - r2));
+
+            if (Constants.sameCloseZero(fourTimesKsquared)) return new point { X = xBase, Y = yBase };
+            if (fourTimesKsquared < 0) return new point { X = double.NaN, Y = double.NaN };
+
+            var K = Math.Sqrt(fourTimesKsquared) / 4;
+            var xOffset = 2 * (yB - yA) * K / dSquared;
+            var yOffset = 2 * (xA - xB) * K / dSquared;
+            var xPos = xBase + xOffset;
+            var yPos = yBase + yOffset;
+            var xNeg = xBase - xOffset;
+            var yNeg = yBase - yOffset;
+            var xNum = jointParams[joints.IndexOf(solvableJoint), 0];
+            var yNum = jointParams[joints.IndexOf(solvableJoint), 1];
+            var distPosSquared = (xPos - xNum) * (xPos - xNum) + (yPos - yNum) * (yPos - yNum);
+            var distNegSquared = (xNeg - xNum) * (xNeg - xNum) + (yNeg - yNum) * (yNeg - yNum);
+            if (distNegSquared < distPosSquared)
+                return new point { X = xNeg, Y = yNeg };
+            return new point { X = xPos, Y = yPos };
+        }
+
+        private point solveFromSingleLinkMembers(joint solvableJoint, link link, IEnumerable<joint> knownJoints, double[,] jointParams)
+        {
+            return solveViaCircleIntersection(solvableJoint, knownJoints.First(), link, knownJoints.Last(), link, jointParams);
         }
     }
 }

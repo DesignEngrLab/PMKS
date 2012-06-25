@@ -27,6 +27,7 @@ namespace PlanarMechanismSimulator
         /// Gets the status.
         /// </summary>
         public string Status { get; private set; }
+        private double[] angleRange;
 
         private double _eps = double.NaN;
         private double _deltaAngle = double.NaN;
@@ -45,7 +46,7 @@ namespace PlanarMechanismSimulator
             {
                 _eps = value;
                 _deltaAngle = double.NaN;
-                InputAngularSpeed = double.NaN;
+                InputSpeed = double.NaN;
                 _fixedTimeStep = double.NaN;
             }
         }
@@ -63,7 +64,7 @@ namespace PlanarMechanismSimulator
             {
                 _deltaAngle = value;
                 _eps = double.NaN;
-                _fixedTimeStep = _deltaAngle / InputAngularSpeed;
+                _fixedTimeStep = _deltaAngle / InputSpeed;
             }
         }
 
@@ -80,7 +81,7 @@ namespace PlanarMechanismSimulator
             {
                 _fixedTimeStep = value;
                 _eps = double.NaN;
-                _deltaAngle = InputAngularSpeed * _fixedTimeStep;
+                _deltaAngle = InputSpeed * _fixedTimeStep;
             }
         }
 
@@ -90,7 +91,7 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The input angular speed.
         /// </value>
-        public double InputAngularSpeed { get; set; }
+        public double InputSpeed { get; set; }
 
         #endregion
 
@@ -100,8 +101,10 @@ namespace PlanarMechanismSimulator
         public int p { get; private set; }
         public List<link> links { get; private set; }
         public List<joint> joints { get; private set; }
-        private int inputIndex;
+        private int inputJointIndex;
         private joint inputpivot;
+        private int inputLinkIndex;
+        private link inputLink;
 
         /// <summary>
         /// Gets a value indicating whether this instance is dyadic.
@@ -113,15 +116,13 @@ namespace PlanarMechanismSimulator
         {
             get
             {
-                var knownPositions = joints.Where(j => j.isGround).ToList();
-                knownPositions = knownPositions.Union(inputpivot.Link1.joints).ToList();
-                knownPositions = knownPositions.Union(inputpivot.Link2.joints).ToList();
+                var knownPositions = joints.Where(j => j.isGround || inputLink.joints.Contains(j)).ToList();
                 var unknownPositions = joints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
                 do
                 {
                     var determined = unknownPositions.FirstOrDefault(j =>
-                        (j.Link1.joints.Any(jj => knownPositions.Contains(jj))
-                        && j.Link2.joints.Any(jj => knownPositions.Contains(jj))));
+                        (j.Link1.joints.Count(jj => knownPositions.Contains(jj))
+                        + j.Link2.joints.Count(jj => knownPositions.Contains(jj))>=2));
                     if (determined == null) return false;
                     knownPositions.Add(determined);
                     unknownPositions.Remove(determined);
@@ -142,13 +143,13 @@ namespace PlanarMechanismSimulator
         /// <param name="InitPositions">The init positions.</param>
         public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, IList<double[]> InitPositions = null)
         {
-            InputAngularSpeed = 1.0;
+            InputSpeed = 1.0;
             CreateLinkAndPositionDetails(LinkIDs, JointTypes, InitPositions);
         }
 
         public Simulator(string data)
         {
-            InputAngularSpeed = 1.0;
+            InputSpeed = 1.0;
             var positions = new List<double[]>();
             var jointTypes = new List<string>();
             var pivotSentences = data.Split('\n').ToList();
@@ -186,12 +187,12 @@ namespace PlanarMechanismSimulator
         }
 
 
-        private void CreateLinkAndPositionDetails(IList<List<string>> LinkIDs, IList<string> JointTypes,
+        private void CreateLinkAndPositionDetails(IList<List<string>> LinkIDs, IList<string> JointTypeStrings,
                                                   IList<double[]> Positions = null)
         {
             try
             {
-                if (JointTypes.Count != LinkIDs.Count)
+                if (JointTypeStrings.Count != LinkIDs.Count)
                     throw new Exception("The number of PivotTypes (which is " + p + ") must be the"
                                         + "same as the number of LinkID pairs (which is " + LinkIDs.Count + ")");
 
@@ -212,26 +213,26 @@ namespace PlanarMechanismSimulator
                 var newLinkIDs = new List<List<string>>();
                 /* create the pivots */
                 joints = new List<joint>(); //create an arry of pivots
-                for (int i = 0; i < JointTypes.Count; i++)
+                for (int i = 0; i < JointTypeStrings.Count; i++)
                 {
                     double[] currentJointPosition = null;
                     if (Positions != null) currentJointPosition = Positions[i];
                     if (LinkIDs[i].Count == 1)
                     {
-                        joints.Add(new joint((LinkIDs[i][0] == "ground"), JointTypes[i], currentJointPosition));
+                        joints.Add(new joint((LinkIDs[i][0] == "ground"), JointTypeStrings[i], currentJointPosition));
                         newLinkIDs.Add(new List<string> { LinkIDs[i][0] });
                     }
                     else
                         for (int j = 0; j < LinkIDs[i].Count - 1; j++)
                         {
-                            if (j > 0 && JointTypes[i].Equals("rp", StringComparison.InvariantCultureIgnoreCase))
+                            if (j > 0 && JointTypeStrings[i].Equals("rp", StringComparison.InvariantCultureIgnoreCase))
                                 joints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                                      "r", currentJointPosition));
-                            else if (j > 0 && (JointTypes[i].Equals("g", StringComparison.InvariantCultureIgnoreCase)
-                                 || JointTypes[i].Equals("p", StringComparison.InvariantCultureIgnoreCase)))
-                                throw new Exception("More than two links is not allowed for " + JointTypes[i] + " joints.");
+                            else if (j > 0 && (JointTypeStrings[i].Equals("g", StringComparison.InvariantCultureIgnoreCase)
+                                 || JointTypeStrings[i].Equals("p", StringComparison.InvariantCultureIgnoreCase)))
+                                throw new Exception("More than two links is not allowed for " + JointTypeStrings[i] + " joints.");
                             else joints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
-                                             JointTypes[i], currentJointPosition));
+                                             JointTypeStrings[i], currentJointPosition));
                             newLinkIDs.Add(new List<string> { LinkIDs[i][j], LinkIDs[i][j + 1] });
                         }
                 }
@@ -255,10 +256,21 @@ namespace PlanarMechanismSimulator
 
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
                 inputpivot = joints[0];
+                    if (inputpivot.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
+                    if (inputpivot.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
+                if (!inputpivot.Link1.isGround)
+                {
+                    if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
+                    var tempLinkRef = inputpivot.Link1;
+                    inputpivot.Link1=inputpivot.Link2;
+                    inputpivot.Link2=tempLinkRef;
+                }
+                 inputLink = inputpivot.Link2;
+                 inputLinkIndex = links.IndexOf(inputLink);
                 joints.Remove(inputpivot);
                 var groundPivots = joints.FindAll(piv => piv.isGround);
                 joints.RemoveAll(piv => piv.isGround);
-                inputIndex = joints.Count;
+                inputJointIndex = joints.Count;
                 joints.Add(inputpivot);
                 joints.AddRange(groundPivots);
                 foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
@@ -346,8 +358,8 @@ namespace PlanarMechanismSimulator
                                         inputLink.lengths[0]);
                 inputpivot.X = inputX;
                 inputpivot.Y = inputY;
-                joints[inputIndex + 1].X = gnd1X;
-                joints[inputIndex + 1].Y = gnd1Y;
+                joints[inputJointIndex + 1].X = gnd1X;
+                joints[inputJointIndex + 1].Y = gnd1Y;
                 return epsilon > FindInitialPositionMain();
             }
             catch (Exception e)
@@ -373,8 +385,8 @@ namespace PlanarMechanismSimulator
                                 links.Find(a => a.joints.Contains(inputpivot));
                 inputpivot.X = inputX;
                 inputpivot.Y = inputY;
-                joints[inputIndex + 1].X = inputX + Math.Cos(AngleToGnd1) * inputLink.lengths[0];
-                joints[inputIndex + 1].Y = inputY + Math.Sin(AngleToGnd1) * inputLink.lengths[0];
+                joints[inputJointIndex + 1].X = inputX + Math.Cos(AngleToGnd1) * inputLink.lengths[0];
+                joints[inputJointIndex + 1].Y = inputY + Math.Sin(AngleToGnd1) * inputLink.lengths[0];
                 return epsilon > FindInitialPositionMain();
             }
             catch (Exception e)
@@ -386,7 +398,7 @@ namespace PlanarMechanismSimulator
         private double FindInitialPositionMain()
         {
             var newPivots = new List<joint>(joints);
-            var newInputIndex = inputIndex;
+            var newInputIndex = inputJointIndex;
             while (newInputIndex < p - 3)
             {
                 var lastGnd = newPivots[p - 1];
@@ -438,14 +450,17 @@ namespace PlanarMechanismSimulator
 
 
 
-        private bool lessThanFullRotation()
+        private Boolean lessThanFullRotation()
         {
-            var timeSpan = JointParameters.Keys[JointParameters.Values.Count - 1]
-                           - JointParameters.Keys[0];
-            return (timeSpan + FixedTimeStep < 2 * Math.PI / InputAngularSpeed);
+            if (inputpivot.jointType==JointTypes.P) return true; // if the input is a sliding block, then there is no limit 
+                                                       // eventually, links will reach invalid positions in both directions. 
+            double range;
+            lock (angleRange)
+            {
+                range = angleRange[0] - angleRange[1];
+            }
+            return range < 2 * Math.PI;
         }
-
-
 
 
 
@@ -507,11 +522,43 @@ namespace PlanarMechanismSimulator
             }
         }
 
-        private void MoveInputToNextPosition(double currentTime, double timeStep)
+        private void MoveInputToNextPosition(double currentTime, double timeStep, double[,] newJointParams, double[,] newLinkParams)
         {
-            //todo
-            //throw new NotImplementedException();
-            //inputpivot.
+            var delta = InputSpeed * timeStep;
+            var lastJointParameters = JointParameters[currentTime];
+            if (inputpivot.jointType == JointTypes.R)
+            {
+                var lastAngle = LinkParameters[currentTime][inputLinkIndex, 0];
+                var newAngle = lastAngle + delta;
+                newLinkParams[inputLinkIndex, 0] = newAngle;
+                newLinkParams[inputLinkIndex, 1] = InputSpeed;
+                newLinkParams[inputLinkIndex, 2] = 0.0;
+                  var xGnd=  newJointParams[inputJointIndex, 0] = lastJointParameters[inputJointIndex, 0];
+                    var yGnd=newJointParams[inputJointIndex, 1] = lastJointParameters[inputJointIndex, 1];
+
+                    foreach (var j in inputLink.joints)
+                    {
+                        if (inputpivot == j) continue;
+                        var jIndex = joints.IndexOf(j);
+                        var length = inputLink.lengthBetween(inputpivot, j);
+                        var theta = Math.Atan2(j.Y - yGnd, j.X - xGnd) + delta;
+                        newJointParams[jIndex, 0] = xGnd + length * Math.Cos(theta);
+                        newJointParams[jIndex, 1] = xGnd + length * Math.Sin(theta);
+                    }
+            }
+            else /*else, the input is a prismatic slide */
+            {
+                newLinkParams[inputLinkIndex, 0] = newLinkParams[inputLinkIndex, 1] = newLinkParams[inputLinkIndex, 2] = 0.0;
+                /* the block input does not rotate therefore the angle, angular velocity, and angular accelerations are all zero. */
+                var xDelta = delta * Math.Cos(inputpivot.SlideAngle);
+                var yDelta = delta * Math.Sin(inputpivot.SlideAngle);
+                foreach (var j in inputLink.joints)
+                {
+                    var jIndex = joints.IndexOf(j);
+                    newJointParams[jIndex, 0] = lastJointParameters[jIndex, 0] + xDelta;
+                    newJointParams[jIndex, 1] = lastJointParameters[jIndex, 1] + yDelta;
+                }
+            }
         }
     }
 }
