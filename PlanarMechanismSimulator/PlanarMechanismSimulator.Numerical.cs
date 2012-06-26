@@ -12,21 +12,19 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                for (int i = 0; i < p; i++)
-                {
-                    if (joints[i].isGround)
-                    {
+                /* first set the ground joints to zero velocity */
+                for (int i = inputJointIndex+1; i < p; i++)
                         currentJointParams[i, 2] = currentJointParams[i, 3] = 0.0;
-                        continue;
-                    }
-                    if (inputLink.joints.Contains(joints[i]) || joints[i].jointType == JointTypes.G) continue;
+                for (int i = 0; i < inputJointIndex; i++)
+                {
+                    if (joints[i].jointType == JointTypes.G) continue;
                     currentJointParams[i, 2] = (currentJointParams[i, 0] - lastJointParams[i, 0]) / deltaTime;
                     currentJointParams[i, 3] = (currentJointParams[i, 1] - lastJointParams[i, 1]) / deltaTime;
                 }
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
-                for (int i = 0; i < p; i++)
+                for (int i = 0; i < inputJointIndex; i++)
                 {
-                    if (joints[i].isGround || inputLink.joints.Contains(joints[i]) || joints[i].jointType != JointTypes.G) continue;
+                    if (joints[i].jointType != JointTypes.G) continue;
                     var gear1 = joints[i].Link1;
                     var gear2 = joints[i].Link2;
                     var g1center = gear1.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[i].Link1));
@@ -102,15 +100,14 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                for (int i = 0; i < p; i++)
+                for (int i = inputJointIndex+1; i < p; i++)
                 {
-                    if (joints[i].isGround)
-                    {
                         newJointParams[i, 0] = lastJointParams[i, 0];
                         newJointParams[i, 1] = lastJointParams[i, 1];
-                        continue;
-                    }
-                    if (inputLink.joints.Contains(joints[i]) || joints[i].jointType == JointTypes.G)
+                                           }                  
+                for (int i = 0; i < inputJointIndex; i++)
+                {
+                    if (joints[i].jointType == JointTypes.G)
                         /* The input link's joints should already have been updated, so don't overwrite those values.
                          * For gear teeth, the position is of joint stays fixed even though the gear teeth are
                          * flying by. Have to do these at the end. */
@@ -121,7 +118,7 @@ namespace PlanarMechanismSimulator
                                   0.5 * lastJointParams[i, 5] * deltaTime * deltaTime;
                 }
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
-                for (int i = 0; i < p; i++)
+                for (int i = 0; i < inputJointIndex; i++)
                 {
                     if (joints[i].isGround || inputLink.joints.Contains(joints[i]) || joints[i].jointType != JointTypes.G) continue;
                     var link1center = joints[i].Link1.referencePts[0];

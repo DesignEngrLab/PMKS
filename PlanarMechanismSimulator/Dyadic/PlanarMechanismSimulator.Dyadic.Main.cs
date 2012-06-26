@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using OptimizationToolbox;
 
@@ -23,7 +22,7 @@ namespace PlanarMechanismSimulator
             var initLinkParams = new double[n, 3];
             for (int i = 0; i < n; i++)
                 initLinkParams[i, 0] = links[i].Angle;
-            angleRange = new double[] { links[inputLinkIndex].Angle, links[inputLinkIndex].Angle };
+            angleRange = new[] { links[inputLinkIndex].Angle, links[inputLinkIndex].Angle };
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
             MoveInputToNextPosition(0.0, initPivotParams, initLinkParams, initPivotParams, initLinkParams);
@@ -52,15 +51,16 @@ namespace PlanarMechanismSimulator
                 else throw new Exception("Unable to establish micro-perturbation to initial position.");
             }
             #endregion
-            #region Work Simultaneously in both rotation directions
+
             Parallel.Invoke(
-                delegate()
-                {
+            #region *** Stepping Forward in Time ***
+                delegate
+                    {
                     var currentTime = 0.0;
                     var currentLinkParams = new double[n, 3];
                     var currentPivotParams = new double[p, 6];
                     Boolean validPosition;
-                    do /*** Stepping Forward in Time **/
+                    do
                     {
                         #region Find Next Positions
                         /* First, we analytically set the input pivot.*/
@@ -104,20 +104,22 @@ namespace PlanarMechanismSimulator
                         }
                     } while (validPosition && lessThanFullRotation());
                 },
-                delegate()
-                {
+            #endregion
+            #region *** Stepping Backward in Time ***
+                delegate
+                    {
                     var currentTime = 0.0;
                     var currentLinkParams = new double[n, 3];
                     var currentPivotParams = new double[p, 6];
                     Boolean validPosition;
-                    do /*** Stepping Backward in Time **/
+                    do
                     {
                         var lastPivotParams = JointParameters.Values[0];
                         var lastLinkParams = LinkParameters.Values[0];
                         #region Find Next Positions
                         /* First, we analytically set the input pivot.*/
                         MoveInputToNextPosition(-InputSpeed * FixedTimeStep, currentPivotParams, currentLinkParams,
-lastPivotParams, lastLinkParams);
+               lastPivotParams, lastLinkParams);
                         /* this time, NumericalPosition is called first and instead of
                          * updating currentPivotParams (which is already full at this point)
                          * we update the X, Y positions of the joints, which are global to the method. */
@@ -153,8 +155,8 @@ lastPivotParams, lastLinkParams);
                             LinkParameters.Add(currentTime, currentLinkParams);
                         }
                     } while (validPosition && lessThanFullRotation());
-                });
             #endregion
+                });
         }
 
         private void SetUpDyadicObjects()

@@ -105,6 +105,8 @@ namespace ExcelPlanarMechSimulator
             SortedList<double, double[,]> linkParameters = pms.LinkParameters;
             SortedList<double, double[,]> jointParameters = pms.JointParameters;
             //todo: add to 2nd and 3rd sheets of spreadsheet
+            Globals.Sheet2.Range["a1:c4"].Value = linkParameters[0.0];
+            // hanxu
         }
 
 
