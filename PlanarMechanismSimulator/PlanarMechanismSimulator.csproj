@@ -33,6 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OptimizationToolbox">
+      <HintPath>..\Resources\OptimizationToolbox.dll</HintPath>
+    </Reference>
+    <Reference Include="StarMath">
+      <HintPath>..\Resources\StarMath.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
@@ -51,16 +57,6 @@
     <Compile Include="Dyadic\DynamicMatrixTerm.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\OOOT\OptimizationToolbox\OptimizationToolbox.csproj">
-      <Project>{02218BAA-F410-4B89-96C9-9CE2A0F7FC8A}</Project>
-      <Name>OptimizationToolbox</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\StarMath\StarMath\StarMath.csproj">
-      <Project>{8B37DF1E-A3C9-42B6-BF1F-D65180FF556E}</Project>
-      <Name>StarMath</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="HTMLPage1.html" />
