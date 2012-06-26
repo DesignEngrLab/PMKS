@@ -122,7 +122,7 @@ namespace PlanarMechanismSimulator
                 {
                     var determined = unknownPositions.FirstOrDefault(j =>
                         (j.Link1.joints.Count(jj => knownPositions.Contains(jj))
-                        + j.Link2.joints.Count(jj => knownPositions.Contains(jj))>=2));
+                        + j.Link2.joints.Count(jj => knownPositions.Contains(jj)) >= 2));
                     if (determined == null) return false;
                     knownPositions.Add(determined);
                     unknownPositions.Remove(determined);
@@ -256,17 +256,17 @@ namespace PlanarMechanismSimulator
 
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
                 inputpivot = joints[0];
-                    if (inputpivot.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
-                    if (inputpivot.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
+                if (inputpivot.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
+                if (inputpivot.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
                 if (!inputpivot.Link1.isGround)
                 {
                     if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
                     var tempLinkRef = inputpivot.Link1;
-                    inputpivot.Link1=inputpivot.Link2;
-                    inputpivot.Link2=tempLinkRef;
+                    inputpivot.Link1 = inputpivot.Link2;
+                    inputpivot.Link2 = tempLinkRef;
                 }
-                 inputLink = inputpivot.Link2;
-                 inputLinkIndex = links.IndexOf(inputLink);
+                inputLink = inputpivot.Link2;
+                inputLinkIndex = links.IndexOf(inputLink);
                 joints.Remove(inputpivot);
                 var groundPivots = joints.FindAll(piv => piv.isGround);
                 joints.RemoveAll(piv => piv.isGround);
@@ -452,8 +452,8 @@ namespace PlanarMechanismSimulator
 
         private Boolean lessThanFullRotation()
         {
-            if (inputpivot.jointType==JointTypes.P) return true; // if the input is a sliding block, then there is no limit 
-                                                       // eventually, links will reach invalid positions in both directions. 
+            if (inputpivot.jointType == JointTypes.P) return true; // if the input is a sliding block, then there is no limit 
+            // eventually, links will reach invalid positions in both directions. 
             double range;
             lock (angleRange)
             {
@@ -522,29 +522,33 @@ namespace PlanarMechanismSimulator
             }
         }
 
-        private void MoveInputToNextPosition(double currentTime, double timeStep, double[,] newJointParams, double[,] newLinkParams)
+       // private void MoveInputToNextPosition(double currentTime, double timeStep, double[,] newJointParams, double[,] newLinkParams)
+
+        private void MoveInputToNextPosition(double delta, double[,] newJointParams, double[,] newLinkParams, double[,] oldJointParams, double[,] oldLinkParams)
         {
-            var delta = InputSpeed * timeStep;
-            var lastJointParameters = JointParameters[currentTime];
             if (inputpivot.jointType == JointTypes.R)
             {
-                var lastAngle = LinkParameters[currentTime][inputLinkIndex, 0];
+                var lastAngle = oldLinkParams[inputLinkIndex, 0];
                 var newAngle = lastAngle + delta;
                 newLinkParams[inputLinkIndex, 0] = newAngle;
                 newLinkParams[inputLinkIndex, 1] = InputSpeed;
                 newLinkParams[inputLinkIndex, 2] = 0.0;
-                  var xGnd=  newJointParams[inputJointIndex, 0] = lastJointParameters[inputJointIndex, 0];
-                    var yGnd=newJointParams[inputJointIndex, 1] = lastJointParameters[inputJointIndex, 1];
+                var xGnd = newJointParams[inputJointIndex, 0] = oldJointParams[inputJointIndex, 0];
+                var yGnd = newJointParams[inputJointIndex, 1] = oldJointParams[inputJointIndex, 1];
 
-                    foreach (var j in inputLink.joints)
-                    {
-                        if (inputpivot == j) continue;
-                        var jIndex = joints.IndexOf(j);
-                        var length = inputLink.lengthBetween(inputpivot, j);
-                        var theta = Math.Atan2(j.Y - yGnd, j.X - xGnd) + delta;
-                        newJointParams[jIndex, 0] = xGnd + length * Math.Cos(theta);
-                        newJointParams[jIndex, 1] = xGnd + length * Math.Sin(theta);
-                    }
+                foreach (var j in inputLink.joints)
+                {
+                    if (inputpivot == j) continue;
+                    var jIndex = joints.IndexOf(j);
+                    var length = inputLink.lengthBetween(inputpivot, j);
+                    var theta = Math.Atan2(j.Y - yGnd, j.X - xGnd) + delta;
+                    newJointParams[jIndex, 0] = xGnd + length * Math.Cos(theta);
+                    newJointParams[jIndex, 1] = xGnd + length * Math.Sin(theta);
+                    newJointParams[jIndex, 2] = -InputSpeed * length * Math.Sin(theta);
+                    newJointParams[jIndex, 3] = InputSpeed * length * Math.Cos(theta);
+                    newJointParams[jIndex, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
+                    newJointParams[jIndex, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
+                }
             }
             else /*else, the input is a prismatic slide */
             {
@@ -555,8 +559,8 @@ namespace PlanarMechanismSimulator
                 foreach (var j in inputLink.joints)
                 {
                     var jIndex = joints.IndexOf(j);
-                    newJointParams[jIndex, 0] = lastJointParameters[jIndex, 0] + xDelta;
-                    newJointParams[jIndex, 1] = lastJointParameters[jIndex, 1] + yDelta;
+                    newJointParams[jIndex, 0] = oldJointParams[jIndex, 0] + xDelta;
+                    newJointParams[jIndex, 1] = oldJointParams[jIndex, 1] + yDelta;
                 }
             }
         }

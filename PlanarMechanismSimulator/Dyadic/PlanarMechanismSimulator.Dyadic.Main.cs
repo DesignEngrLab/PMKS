@@ -26,6 +26,9 @@ namespace PlanarMechanismSimulator
             angleRange = new double[] { links[inputLinkIndex].Angle, links[inputLinkIndex].Angle };
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
+            MoveInputToNextPosition(0.0, initPivotParams, initLinkParams, initPivotParams, initLinkParams);
+            var lastForwardPivotParams = initPivotParams;
+            var lastForwardLinkParams = initLinkParams;
             /* attempt to find velocities and accelerations at initial point analytically
              * there is no point in trying numerically as this is the first point and the numerical methods
              * perform finite difference of current and last time steps. */
@@ -33,13 +36,16 @@ namespace PlanarMechanismSimulator
             {
                 var smallBackwardStepJointParams = (double[,])initPivotParams.Clone();
                 var dummyLinkParams = new double[n, 3];
-                MoveInputToNextPosition(0.0, -0.01 * FixedTimeStep, smallBackwardStepJointParams, dummyLinkParams);
+                MoveInputToNextPosition(-0.01 * InputSpeed * FixedTimeStep, smallBackwardStepJointParams,
+                    dummyLinkParams, initPivotParams, initLinkParams);
                 if (AnalyticallyCorrectPositionsDyadic(smallBackwardStepJointParams, dummyLinkParams))
                 {
                     JointParameters.Add(-0.01 * FixedTimeStep, smallBackwardStepJointParams);
                     LinkParameters.Add(-0.01 * FixedTimeStep, dummyLinkParams);
-                    NumericalVelocity(0.0, true);
-                    NumericalAcceleration(0.0, true);
+                    NumericalVelocity(-0.01 * FixedTimeStep, smallBackwardStepJointParams,
+                    dummyLinkParams, initPivotParams, initLinkParams);
+                    NumericalAcceleration(-0.01 * FixedTimeStep, smallBackwardStepJointParams,
+                    dummyLinkParams, initPivotParams, initLinkParams);
                     JointParameters.Remove(-0.01 * FixedTimeStep);
                     LinkParameters.Remove(-0.01 * FixedTimeStep);
                 }
@@ -58,36 +64,43 @@ namespace PlanarMechanismSimulator
                     {
                         #region Find Next Positions
                         /* First, we analytically set the input pivot.*/
-                        MoveInputToNextPosition(currentTime, FixedTimeStep, currentPivotParams, currentLinkParams);
+                        MoveInputToNextPosition(InputSpeed * FixedTimeStep, currentPivotParams, currentLinkParams,
+                            lastForwardPivotParams, lastForwardLinkParams);
                         /* this time, NumericalPosition is called first and instead of
                          * updating currentPivotParams (which is already full at this point)
                          * we update the X, Y positions of the joints, which are global to the method. */
-                        NumericalPosition(currentTime, FixedTimeStep, currentPivotParams, currentLinkParams);
+                        NumericalPosition(FixedTimeStep, currentPivotParams, currentLinkParams,
+                            lastForwardPivotParams, lastForwardLinkParams);
                         /* Based upon the numerical approximation, we analytically update the remaining
                          * joints. */
                         validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams);
                         /* create new currentPivotParams based on these updated positions of the joints */
+                        #endregion
                         if (validPosition)
                         {
-                            currentTime += FixedTimeStep;
-                            JointParameters.Add(currentTime, currentPivotParams);
-                            LinkParameters.Add(currentTime, currentLinkParams);
                             lock (angleRange) { angleRange[0] = currentLinkParams[inputLinkIndex, 0]; }
-                        #endregion
+
                             #region Find Velocities for Current Position
                             if (!findVelocitiesThroughICMethod(currentTime, true))
                             {
                                 Status += "Instant Centers could not be found at" + currentTime + ".";
-                                NumericalVelocity(currentTime, true);
+                                NumericalVelocity(FixedTimeStep, currentPivotParams, currentLinkParams,
+                                    lastForwardPivotParams, lastForwardLinkParams);
                             }
                             #endregion
                             #region Find Accelerations for Current Position
                             if (!findAccelerationAnalytically(currentTime, true))
                             {
                                 Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                                NumericalAcceleration(currentTime, true);
+                                NumericalAcceleration(FixedTimeStep, currentPivotParams, currentLinkParams,
+                                    lastForwardPivotParams, lastForwardLinkParams);
                             }
                             #endregion
+                            currentTime += FixedTimeStep;
+                            JointParameters.Add(currentTime, currentPivotParams);
+                            LinkParameters.Add(currentTime, currentLinkParams);
+                            lastForwardPivotParams = currentPivotParams;
+                            lastForwardLinkParams = currentLinkParams;
                         }
                     } while (validPosition && lessThanFullRotation());
                 },
@@ -99,38 +112,45 @@ namespace PlanarMechanismSimulator
                     Boolean validPosition;
                     do /*** Stepping Backward in Time **/
                     {
+                        var lastPivotParams = JointParameters.Values[0];
+                        var lastLinkParams = LinkParameters.Values[0];
                         #region Find Next Positions
                         /* First, we analytically set the input pivot.*/
-                        MoveInputToNextPosition(currentTime, -FixedTimeStep, currentPivotParams, currentLinkParams);
+                        MoveInputToNextPosition(-InputSpeed * FixedTimeStep, currentPivotParams, currentLinkParams,
+lastPivotParams, lastLinkParams);
                         /* this time, NumericalPosition is called first and instead of
                          * updating currentPivotParams (which is already full at this point)
                          * we update the X, Y positions of the joints, which are global to the method. */
-                        NumericalPosition(currentTime, -FixedTimeStep, currentPivotParams, currentLinkParams);
+                        NumericalPosition(-FixedTimeStep, currentPivotParams, currentLinkParams,
+                            lastPivotParams, lastLinkParams);
                         /* Based upon the numerical approximation, we analytically update the remaining
                          * joints. */
                         validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams);
                         /* create new currentPivotParams based on these updated positions of the joints */
+                        #endregion
                         if (validPosition)
                         {
-                            currentTime -= FixedTimeStep;
-                            JointParameters.Add(currentTime, currentPivotParams);
-                            LinkParameters.Add(currentTime, currentLinkParams);
                             lock (angleRange) { angleRange[1] = currentLinkParams[inputLinkIndex, 0]; }
-                        #endregion
+
                             #region Find Velocities for Current Position
-                            if (!findVelocitiesThroughICMethod(currentTime, false))
+                            if (!findVelocitiesThroughICMethod(currentTime, true))
                             {
                                 Status += "Instant Centers could not be found at" + currentTime + ".";
-                                NumericalVelocity(currentTime, false);
+                                NumericalVelocity(-FixedTimeStep, currentPivotParams, currentLinkParams,
+                            lastPivotParams, lastLinkParams);
                             }
                             #endregion
                             #region Find Accelerations for Current Position
-                            if (!findAccelerationAnalytically(currentTime, false))
+                            if (!findAccelerationAnalytically(currentTime, true))
                             {
                                 Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                                NumericalAcceleration(currentTime, false);
+                                NumericalAcceleration(-FixedTimeStep, currentPivotParams, currentLinkParams,
+                            lastPivotParams, lastLinkParams);
                             }
                             #endregion
+                            currentTime -= FixedTimeStep;
+                            JointParameters.Add(currentTime, currentPivotParams);
+                            LinkParameters.Add(currentTime, currentLinkParams);
                         }
                     } while (validPosition && lessThanFullRotation());
                 });

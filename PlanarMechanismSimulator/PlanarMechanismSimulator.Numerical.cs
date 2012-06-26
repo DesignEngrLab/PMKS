@@ -8,22 +8,10 @@ namespace PlanarMechanismSimulator
     public partial class Simulator : IDependentAnalysis
     {
         //todo:update LinkParameters in Velocity and Acceleration
-        private Boolean NumericalVelocity(double currentTime, Boolean forwardInTime)
+        private Boolean NumericalVelocity(double deltaTime, double[,] currentJointParams, double[,] currentLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
         {
             try
             {
-                int currentIndex = JointParameters.IndexOfKey(currentTime);
-                //find the position in the JointParameters list
-                var currentJointParams = JointParameters.Values[currentIndex];
-                //could get values through iterator, but assuming 
-                // this is faster since we already have position.
-                var lastIndex = forwardInTime ? currentIndex - 1 : currentIndex + 1; //establish last index
-                var lastJointParams = currentJointParams; //as a default, initialize is the same as currentParams
-                var deltaTime = JointParameters.Keys[currentIndex] - JointParameters.Keys[lastIndex];
-                if (lastIndex >= 0 && lastIndex < JointParameters.Count) // but ideally it is distinct, so long as it is
-                    lastJointParams = JointParameters.Values[lastIndex]; // not at the end of the list.
-                var currentLinkParams = LinkParameters.Values[currentIndex];
-                var lastLinkParams = LinkParameters.Values[lastIndex];
                 for (int i = 0; i < p; i++)
                 {
                     if (joints[i].isGround)
@@ -64,22 +52,10 @@ namespace PlanarMechanismSimulator
                 throw;
             }
         }
-        private Boolean NumericalAcceleration(double currentTime, Boolean forwardInTime)
+        private Boolean NumericalAcceleration(double deltaTime, double[,] currentJointParams, double[,] currentLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
         {
             try
             {
-                var currentIndex = JointParameters.IndexOfKey(currentTime);
-                //find the position in the JointParameters list
-                var currentJointParams = JointParameters.Values[currentIndex];
-                //could get values through iterator, but assuming 
-                // this is faster since we already have position.
-                var lastIndex = forwardInTime ? currentIndex - 1 : currentIndex + 1; //establish last index
-                var lastJointParams = currentJointParams; //as a default, initialize is the same as currentParams
-                var deltaTime = JointParameters.Keys[currentIndex] - JointParameters.Keys[lastIndex];
-                if (lastIndex >= 0 && lastIndex < JointParameters.Count) // but ideally it is distinct, so long as it is
-                    lastJointParams = JointParameters.Values[lastIndex]; // not at the end of the list.
-                var currentLinkParams = LinkParameters.Values[currentIndex];
-                var lastLinkParams = LinkParameters.Values[lastIndex];
                 for (int i = 0; i < p; i++)
                 {
                     if (joints[i].isGround)
@@ -121,18 +97,17 @@ namespace PlanarMechanismSimulator
                 throw;
             }
         }
-        private void NumericalPosition(double currentTime, double time_step, double[,] newPivotParams, double[,] newLinkParams)
+        private void NumericalPosition(double deltaTime, double[,] newJointParams, double[,] newLinkParams,
+            double[,] lastJointParams, double[,] lastLinkParams)
         {
             try
             {
-                var lastParams = JointParameters[currentTime]; //find the position in the JointParameters list
-
                 for (int i = 0; i < p; i++)
                 {
                     if (joints[i].isGround)
                     {
-                        newPivotParams[i, 0] = lastParams[i, 0];
-                        newPivotParams[i, 1] = lastParams[i, 1];
+                        newJointParams[i, 0] = lastJointParams[i, 0];
+                        newJointParams[i, 1] = lastJointParams[i, 1];
                         continue;
                     }
                     if (inputLink.joints.Contains(joints[i]) || joints[i].jointType == JointTypes.G)
@@ -140,10 +115,10 @@ namespace PlanarMechanismSimulator
                          * For gear teeth, the position is of joint stays fixed even though the gear teeth are
                          * flying by. Have to do these at the end. */
                         continue;
-                    newPivotParams[i, 0] = lastParams[i, 0] + lastParams[i, 2] * time_step +
-                                  0.5 * lastParams[i, 4] * time_step * time_step;
-                    newPivotParams[i, 1] = lastParams[i, 1] + lastParams[i, 3] * time_step +
-                                  0.5 * lastParams[i, 5] * time_step * time_step;
+                    newJointParams[i, 0] = lastJointParams[i, 0] + lastJointParams[i, 2] * deltaTime +
+                                  0.5 * lastJointParams[i, 4] * deltaTime * deltaTime;
+                    newJointParams[i, 1] = lastJointParams[i, 1] + lastJointParams[i, 3] * deltaTime +
+                                  0.5 * lastJointParams[i, 5] * deltaTime * deltaTime;
                 }
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
                 for (int i = 0; i < p; i++)
@@ -157,13 +132,13 @@ namespace PlanarMechanismSimulator
                     var distCenter2Center = Math.Sqrt((link1center.X - link2center.X) * (link1center.X - link2center.X)
                                                    + (link1center.Y - link2center.Y) * (link1center.Y - link2center.Y));
                     //***************
-                    newPivotParams[i, 0] = link1center.X + (link2center.X - link1center.X) * (distToL1Center / distCenter2Center);
-                    newPivotParams[i, 1] = link1center.Y + (link2center.Y - link1center.Y) * (distToL1Center / distCenter2Center);
+                    newJointParams[i, 0] = link1center.X + (link2center.X - link1center.X) * (distToL1Center / distCenter2Center);
+                    newJointParams[i, 1] = link1center.Y + (link2center.Y - link1center.Y) * (distToL1Center / distCenter2Center);
                 }
             }
             catch (Exception e)
             {
-                throw new Exception("Failed to find numerical position stepping " + time_step + " seconds from t = " + currentTime);
+                throw new Exception("Failed to find numerical position stepping " + deltaTime + " seconds.");
             }
         }
     }
