@@ -104,9 +104,85 @@ namespace ExcelPlanarMechSimulator
             button_Simulate.Enabled = false;
             SortedList<double, double[,]> linkParameters = pms.LinkParameters;
             SortedList<double, double[,]> jointParameters = pms.JointParameters;
-            //todo: add to 2nd and 3rd sheets of spreadsheet
-            Globals.Sheet2.Range["a1:c4"].Value = linkParameters[0.0];
+            
+            //add to 2nd and 3rd sheets of spreadsheet
+            //Globals.Sheet2.Range["b2:d5"].Value = linkParameters[0.0];
+            int jointNumCol = 6;
+            int linkNumCol = 3;
+
+            //create headings for joint data
+            mergeAndCenter(Globals.Sheet2.Range["a1:a2"]);
+            Globals.Sheet2.Cells[1, 1] = "time";
+            for (int i = 0; i < jointParameters[0.0].Length/jointNumCol; i++)
+            {
+                mergeAndCenter(Globals.Sheet2.Range[Globals.Sheet2.Cells[1, 2 + jointNumCol * i], Globals.Sheet2.Cells[1, 1 + jointNumCol * (i + 1)]]);
+                Globals.Sheet2.Cells[1, 2 + jointNumCol * i].Value = ("Joint " + (i + 1) + " (") + Globals.Sheet1.Cells[i + 3, 6].Value + ")";
+                Globals.Sheet2.Cells[2, 2 + jointNumCol * i].Value = "x";
+                Globals.Sheet2.Cells[2, 3 + jointNumCol * i].Value = "y";
+                Globals.Sheet2.Cells[2, 4 + jointNumCol * i].Value = "v-x";
+                Globals.Sheet2.Cells[2, 5 + jointNumCol * i].Value = "v-y";
+                Globals.Sheet2.Cells[2, 6 + jointNumCol * i].Value = "a-x";
+                Globals.Sheet2.Cells[2, 7 + jointNumCol * i].Value = "a-y";
+            }
+            ////create headings for link data
+            //mergeAndCenter(Globals.Sheet3.Range["a1:a2"]);
+            //Globals.Sheet3.Cells[1, 1] = "time";
+            //for (int i = 0; i < linkParameters[0.0].Length / linkNumCol; i++)
+            //{
+            //    mergeAndCenter(Globals.Sheet2.Range[Globals.Sheet2.Cells[1, 2 + jointNumCol * i], Globals.Sheet2.Cells[1, 1 + jointNumCol * (i + 1)]]);
+            //    Globals.Sheet2.Cells[1, 2 + jointNumCol * i].Value = ("Joint " + (i + 1) + " (") + Globals.Sheet1.Cells[i + 3, 6].Value + ")";
+            //    Globals.Sheet2.Cells[2, 2 + jointNumCol * i].Value = "x";
+            //    Globals.Sheet2.Cells[2, 3 + jointNumCol * i].Value = "y";
+            //    Globals.Sheet2.Cells[2, 4 + jointNumCol * i].Value = "v-x";
+            //    Globals.Sheet2.Cells[2, 5 + jointNumCol * i].Value = "v-y";
+            //    Globals.Sheet2.Cells[2, 6 + jointNumCol * i].Value = "a-x";
+            //    Globals.Sheet2.Cells[2, 7 + jointNumCol * i].Value = "a-y";
+            //}
+
+
+            //print data
+            int timeIndex = 0;
+            double[,] dataValue;
+            foreach (KeyValuePair<double, double[,]> dataRow in jointParameters)
+            {
+                Globals.Sheet2.Cells[timeIndex + 3, 1].Value = dataRow.Key;
+                dataValue = dataRow.Value;
+                for (int j = 0; j < dataValue.Length; j++)
+                {
+                    Globals.Sheet2.Cells[timeIndex + 3, 2 + j].Value = dataValue[(j / jointNumCol), (j % jointNumCol)];
+                }
+                timeIndex++;
+            }
+            //for (int i = 0; i < jointParameters.Count; i++)
+            //{
+            //    //foreach (KeyValuePair<double, double[,]> d in jointParameters)
+            //    //{
+            //    //    Globals.Sheet2.Cells[i+3, 1].Value = d.Key;
+            //    //}
+            //    for (int j = 0; j < jointParameters[0.0].Length; j++)
+            //    {
+            //        //Globals.Sheet2.Cells[7, 7].Value = jointParameters.Values(3);
+            //        //Globals.Sheet2.Range[Globals.Sheet2.Cells[i + 3, 2 + jointNumCol * j], Globals.Sheet2.Cells[i + 3, 1 + jointNumCol * (j + 1)]].Value = jointParameters.GetEnumerator(1);
+            //        //for (int k=0; k</jointNumCol
+            //    }
+            //}
+            //jointParameters.Count
+            //Globals.Sheet2.Cells[1, 1
+            //for (int i = 0; i <= jointParameters[0.0].Length / jointNumCol; i++)
+            //{
+            //    Globals.Sheet2.Range[Globals.Sheet2.Cells[1, 2+jointNumCol*i], Globals.Sheet2.Cells[1, 1+jointNumCol*(i+1)]].Merge();
+            //}
+            //Globals.Sheet2.Range["f1:f2"].Value = linkParameters[0.0].Length;
             // hanxu
+        }
+
+        private void mergeAndCenter(Microsoft.Office.Interop.Excel.Range theRange)
+        {
+            //this function merges and centers the selected range of cells
+            theRange.Merge();
+            theRange.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
+            theRange.VerticalAlignment = Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
+            return;
         }
 
 
