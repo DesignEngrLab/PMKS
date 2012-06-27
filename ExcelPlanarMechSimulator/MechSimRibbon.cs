@@ -106,6 +106,11 @@ namespace ExcelPlanarMechSimulator
             SortedList<double, double[,]> jointParameters = pms.JointParameters;
 
             //add to 2nd and 3rd sheets of spreadsheet
+            Globals.Sheet2.UsedRange.ClearContents(); //first clear the data
+            Globals.Sheet3.UsedRange.ClearContents();
+            Globals.Sheet2.UsedRange.Rows[1, Type.Missing].Unmerge(); //undo the merging
+            Globals.Sheet3.UsedRange.Rows[1, Type.Missing].Unmerge(); 
+            //constants for joints and links
             int jointNumCol = 6;
             int linkNumCol = 3;
 
@@ -166,8 +171,6 @@ namespace ExcelPlanarMechSimulator
                 timeIndex++;
             }
 
-
-            // hanxu
         }
 
         private void mergeAndCenter(Microsoft.Office.Interop.Excel.Range theRange)
