@@ -27,7 +27,7 @@ namespace PlanarMechanismSimulator
         /// Gets the status.
         /// </summary>
         public string Status { get; private set; }
-        private double[] angleRange;
+        public double[] angleRange;
 
         private double _eps = double.NaN;
         private double _deltaAngle = double.NaN;
