@@ -132,6 +132,10 @@ namespace PlanarMechanismSimulator
                     newJointParams[i, 0] = link1center.X + (link2center.X - link1center.X) * (distToL1Center / distCenter2Center);
                     newJointParams[i, 1] = link1center.Y + (link2center.Y - link1center.Y) * (distToL1Center / distCenter2Center);
                 }
+                for (int i = 0; i < n; i++)
+                {
+                    //adjust link parameters
+                }
             }
             catch (Exception e)
             {
