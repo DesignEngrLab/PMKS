@@ -34,15 +34,9 @@ namespace PlanarMechanismSimulator
                     newJointParams[i, 3] = (lastLinkParams[links.IndexOf(gear1), 0] * (joints[i].X - g1center.X) +
                     lastLinkParams[links.IndexOf(gear2), 0] * (joints[i].X - g2center.X)) / 2.0;
                 }
-                /* todo: now need to update currentLinkParams based on values from currentPivotParams. Is there a better
-                 * way to do gears? */
                 for (int i = 0; i < n; i++)
-                {
-                    /* will need cases for each joint type that a link connects to*/
-                    var attachedJoints = links[i].joints;
-                    var xC = attachedJoints.Sum(j => j.X) / attachedJoints.Count;
-                    var yC = attachedJoints.Sum(j => j.Y) / attachedJoints.Count;
-                }
+                    if (i != inputLinkIndex)
+                        newLinkParams[i, 1] = (newLinkParams[i, 0] - lastLinkParams[i, 0]) / deltaTime;
                 return true;
             }
             catch (Exception e)
@@ -78,15 +72,9 @@ namespace PlanarMechanismSimulator
                     newJointParams[i, 5] = (lastLinkParams[links.IndexOf(gear1), 3] * (joints[i].X - g1center.X) +
                     lastLinkParams[links.IndexOf(gear2), 3] * (joints[i].X - g2center.X)) / 2.0;
                 }
-                /* todo: now need to update currentLinkParams based on values from currentPivotParams. Is there a better
-                 * way to do gears? */
                 for (int i = 0; i < n; i++)
-                {
-                    /* will need cases for each joint type that a link connects to*/
-                    var attachedJoints = links[i].joints;
-                    var xC = attachedJoints.Sum(j => j.X) / attachedJoints.Count;
-                    var yC = attachedJoints.Sum(j => j.Y) / attachedJoints.Count;
-                }
+                    if (i != inputLinkIndex)
+                        newLinkParams[i, 2] = (newLinkParams[i, 1] - lastLinkParams[i, 1]) / deltaTime;
                 return true;
             }
             catch (Exception e)

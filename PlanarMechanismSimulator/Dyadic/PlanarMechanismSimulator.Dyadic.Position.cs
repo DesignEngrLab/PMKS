@@ -831,6 +831,14 @@ namespace PlanarMechanismSimulator
                 knownPositions.Add(solvableJoint);
                 unknownPositions.Remove(solvableJoint);
             } while (unknownPositions.Count > 0);
+            for (int i = 0; i < n; i++)
+            {
+                if (i == inputLinkIndex) continue;
+                var joint0Index = joints.IndexOf(links[i].joints[0]);
+                var joint1Index = joints.IndexOf(links[i].joints[1]);
+                currentLinkParams[i, 0] = Math.Atan2(currentPivotParams[joint1Index, 1] - currentPivotParams[joint0Index, 1],
+                    currentPivotParams[joint1Index, 0] - currentPivotParams[joint0Index, 0]);
+            }
             return true;
         }
 
@@ -838,7 +846,10 @@ namespace PlanarMechanismSimulator
         {
             /* taken from http://2000clicks.com/MathHelp/GeometryConicSectionCircleIntersection.aspx */
             var r1 = link1.lengthBetween(solvableJoint, joint1);
+            if (Constants.sameCloseZero(r1)) return new point { X = jointParams[joints.IndexOf(joint1), 0], Y = jointParams[joints.IndexOf(joint1), 1] };
             var r2 = link2.lengthBetween(solvableJoint, joint2);
+            if (Constants.sameCloseZero(r2)) return new point { X = jointParams[joints.IndexOf(joint2), 0], Y = jointParams[joints.IndexOf(joint2), 1] };
+
             var xA = jointParams[joints.IndexOf(joint1), 0];
             var yA = jointParams[joints.IndexOf(joint1), 1];
             var xB = jointParams[joints.IndexOf(joint2), 0];

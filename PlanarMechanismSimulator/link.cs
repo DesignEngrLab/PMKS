@@ -102,7 +102,6 @@ namespace PlanarMechanismSimulator
                 pointTypes.Add(LinkPointType.OrthoSlideReference);
             }
             joints = newJoints;
-            offsetAngle = Math.Atan2(joints[1].Y - joints[0].Y, joints[1].X - joints[0].X);
             //** see comments under lengths declaration for reason why this is commented. **
             //var numLengths = 2 * (joints.Count - 2) + 1;
             var numLengths = referencePts.Count * (referencePts.Count - 1) / 2;
