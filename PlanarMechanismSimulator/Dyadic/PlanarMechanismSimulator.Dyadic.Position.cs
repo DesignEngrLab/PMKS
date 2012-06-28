@@ -803,16 +803,16 @@ namespace PlanarMechanismSimulator
         private Boolean AnalyticallyCorrectPositionsDyadic(double[,] currentPivotParams, double[,] currentLinkParams)
         {
             var knownPositions = joints.Where(j => j.isGround || inputLink.joints.Contains(j)).ToList();
-            var unknownPositions = joints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
+            var unknownPositions = joints.Where(j => !knownPositions.Contains(j)).ToList();
             do
             {
                 var solvableJoint = unknownPositions.FirstOrDefault(j =>
                     (j.Link1.joints.Count(jj => knownPositions.Contains(jj))
-                    + j.Link2.joints.Count(jj => knownPositions.Contains(jj)) >= 2));
+                    + ((j.Link2 == null) ? 0 : j.Link2.joints.Count(jj => knownPositions.Contains(jj))) >= 2));
                 if (solvableJoint == null) return false;
                 var sJIndex = joints.IndexOf(solvableJoint);
                 var link1Knowns = solvableJoint.Link1.joints.Where(jj => knownPositions.Contains(jj));
-                var link2Knowns = solvableJoint.Link2.joints.Where(jj => knownPositions.Contains(jj));
+                var link2Knowns = (solvableJoint.Link2 == null) ? null : solvableJoint.Link2.joints.Where(jj => knownPositions.Contains(jj));
                 point sJPoint = null;
                 if (link1Knowns.Count() >= 2)
                     sJPoint = solveFromSingleLinkMembers(solvableJoint, solvableJoint.Link1, link1Knowns, currentPivotParams);

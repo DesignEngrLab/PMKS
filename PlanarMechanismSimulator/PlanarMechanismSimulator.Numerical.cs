@@ -8,18 +8,18 @@ namespace PlanarMechanismSimulator
     public partial class Simulator : IDependentAnalysis
     {
         //todo:update LinkParameters in Velocity and Acceleration
-        private Boolean NumericalVelocity(double deltaTime, double[,] currentJointParams, double[,] currentLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
+        private Boolean NumericalVelocity(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
         {
             try
             {
                 /* first set the ground joints to zero velocity */
-                for (int i = inputJointIndex+1; i < p; i++)
-                        currentJointParams[i, 2] = currentJointParams[i, 3] = 0.0;
+                for (int i = inputJointIndex + 1; i < p; i++)
+                    newJointParams[i, 2] = newJointParams[i, 3] = 0.0;
                 for (int i = 0; i < inputJointIndex; i++)
                 {
                     if (joints[i].jointType == JointTypes.G) continue;
-                    currentJointParams[i, 2] = (currentJointParams[i, 0] - lastJointParams[i, 0]) / deltaTime;
-                    currentJointParams[i, 3] = (currentJointParams[i, 1] - lastJointParams[i, 1]) / deltaTime;
+                    newJointParams[i, 2] = (newJointParams[i, 0] - lastJointParams[i, 0]) / deltaTime;
+                    newJointParams[i, 3] = (newJointParams[i, 1] - lastJointParams[i, 1]) / deltaTime;
                 }
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
                 for (int i = 0; i < inputJointIndex; i++)
@@ -29,9 +29,9 @@ namespace PlanarMechanismSimulator
                     var gear2 = joints[i].Link2;
                     var g1center = gear1.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[i].Link1));
                     var g2center = gear2.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[i].Link2));
-                    currentJointParams[i, 2] = (lastLinkParams[links.IndexOf(gear1), 0] * (g1center.Y - joints[i].Y) +
+                    newJointParams[i, 2] = (lastLinkParams[links.IndexOf(gear1), 0] * (g1center.Y - joints[i].Y) +
                     lastLinkParams[links.IndexOf(gear2), 0] * (g2center.Y - joints[i].Y)) / 2.0;
-                    currentJointParams[i, 3] = (lastLinkParams[links.IndexOf(gear1), 0] * (joints[i].X - g1center.X) +
+                    newJointParams[i, 3] = (lastLinkParams[links.IndexOf(gear1), 0] * (joints[i].X - g1center.X) +
                     lastLinkParams[links.IndexOf(gear2), 0] * (joints[i].X - g2center.X)) / 2.0;
                 }
                 /* todo: now need to update currentLinkParams based on values from currentPivotParams. Is there a better
@@ -50,7 +50,7 @@ namespace PlanarMechanismSimulator
                 throw;
             }
         }
-        private Boolean NumericalAcceleration(double deltaTime, double[,] currentJointParams, double[,] currentLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
+        private Boolean NumericalAcceleration(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
         {
             try
             {
@@ -58,12 +58,12 @@ namespace PlanarMechanismSimulator
                 {
                     if (joints[i].isGround)
                     {
-                        currentJointParams[i, 4] = currentJointParams[i, 5] = 0.0;
+                        newJointParams[i, 4] = newJointParams[i, 5] = 0.0;
                         continue;
                     }
                     if (inputLink.joints.Contains(joints[i]) || joints[i].jointType == JointTypes.G) continue;
-                    currentJointParams[i, 4] = (currentJointParams[i, 2] - lastJointParams[i, 2]) / deltaTime;
-                    currentJointParams[i, 5] = (currentJointParams[i, 3] - lastJointParams[i, 3]) / deltaTime;
+                    newJointParams[i, 4] = (newJointParams[i, 2] - lastJointParams[i, 2]) / deltaTime;
+                    newJointParams[i, 5] = (newJointParams[i, 3] - lastJointParams[i, 3]) / deltaTime;
                 }
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
                 for (int i = 0; i < p; i++)
@@ -73,9 +73,9 @@ namespace PlanarMechanismSimulator
                     var gear2 = joints[i].Link2;
                     var g1center = gear1.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[i].Link1));
                     var g2center = gear2.joints.First(j => j.jointType != JointTypes.G && j.LinkIsSlide(joints[i].Link2));
-                    currentJointParams[i, 4] = (lastLinkParams[links.IndexOf(gear1), 2] * (g1center.Y - joints[i].Y) +
+                    newJointParams[i, 4] = (lastLinkParams[links.IndexOf(gear1), 2] * (g1center.Y - joints[i].Y) +
                                         lastLinkParams[links.IndexOf(gear2), 2] * (g2center.Y - joints[i].Y)) / 2.0;
-                    currentJointParams[i, 5] = (lastLinkParams[links.IndexOf(gear1), 3] * (joints[i].X - g1center.X) +
+                    newJointParams[i, 5] = (lastLinkParams[links.IndexOf(gear1), 3] * (joints[i].X - g1center.X) +
                     lastLinkParams[links.IndexOf(gear2), 3] * (joints[i].X - g2center.X)) / 2.0;
                 }
                 /* todo: now need to update currentLinkParams based on values from currentPivotParams. Is there a better
@@ -95,16 +95,15 @@ namespace PlanarMechanismSimulator
                 throw;
             }
         }
-        private void NumericalPosition(double deltaTime, double[,] newJointParams, double[,] newLinkParams,
-            double[,] lastJointParams, double[,] lastLinkParams)
+        private void NumericalPosition(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
         {
             try
             {
-                for (int i = inputJointIndex+1; i < p; i++)
+                for (int i = inputJointIndex + 1; i < p; i++)
                 {
-                        newJointParams[i, 0] = lastJointParams[i, 0];
-                        newJointParams[i, 1] = lastJointParams[i, 1];
-                                           }                  
+                    newJointParams[i, 0] = lastJointParams[i, 0];
+                    newJointParams[i, 1] = lastJointParams[i, 1];
+                }
                 for (int i = 0; i < inputJointIndex; i++)
                 {
                     if (joints[i].jointType == JointTypes.G)
@@ -120,7 +119,7 @@ namespace PlanarMechanismSimulator
                 /* now that these have updated, we have to go back a fix any gears to be interpolations of their pivots. */
                 for (int i = 0; i < inputJointIndex; i++)
                 {
-                    if (joints[i].isGround || inputLink.joints.Contains(joints[i]) || joints[i].jointType != JointTypes.G) continue;
+                    if (joints[i].jointType != JointTypes.G) continue;
                     var link1center = joints[i].Link1.referencePts[0];
                     var link2center = joints[i].Link2.referencePts[0];
                     //***************debug need to remove references to joints[i].X and .Y

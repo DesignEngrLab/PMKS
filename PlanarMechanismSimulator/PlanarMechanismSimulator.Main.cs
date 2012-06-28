@@ -522,15 +522,13 @@ namespace PlanarMechanismSimulator
             }
         }
 
-       // private void MoveInputToNextPosition(double currentTime, double timeStep, double[,] newJointParams, double[,] newLinkParams)
+        // private void MoveInputToNextPosition(double currentTime, double timeStep, double[,] newJointParams, double[,] newLinkParams)
 
         private void MoveInputToNextPosition(double delta, double[,] newJointParams, double[,] newLinkParams, double[,] oldJointParams, double[,] oldLinkParams)
         {
             if (inputpivot.jointType == JointTypes.R)
             {
-                var lastAngle = oldLinkParams[inputLinkIndex, 0];
-                var newAngle = lastAngle + delta;
-                newLinkParams[inputLinkIndex, 0] = newAngle;
+                newLinkParams[inputLinkIndex, 0] = oldLinkParams[inputLinkIndex, 0] + delta;
                 newLinkParams[inputLinkIndex, 1] = InputSpeed;
                 newLinkParams[inputLinkIndex, 2] = 0.0;
                 var xGnd = newJointParams[inputJointIndex, 0] = oldJointParams[inputJointIndex, 0];
@@ -539,15 +537,15 @@ namespace PlanarMechanismSimulator
                 foreach (var j in inputLink.joints)
                 {
                     if (inputpivot == j) continue;
-                    var jIndex = joints.IndexOf(j);
                     var length = inputLink.lengthBetween(inputpivot, j);
-                    var theta = Math.Atan2(j.Y - yGnd, j.X - xGnd) + delta;
-                    newJointParams[jIndex, 0] = xGnd + length * Math.Cos(theta);
-                    newJointParams[jIndex, 1] = xGnd + length * Math.Sin(theta);
-                    newJointParams[jIndex, 2] = -InputSpeed * length * Math.Sin(theta);
-                    newJointParams[jIndex, 3] = InputSpeed * length * Math.Cos(theta);
-                    newJointParams[jIndex, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
-                    newJointParams[jIndex, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
+                    var index = joints.IndexOf(j);
+                    var theta = Math.Atan2(oldJointParams[index, 1] - yGnd, oldJointParams[index, 0] - xGnd) + delta;
+                    newJointParams[index, 0] = xGnd + length * Math.Cos(theta);
+                    newJointParams[index, 1] = yGnd + length * Math.Sin(theta);
+                    newJointParams[index, 2] = -InputSpeed * length * Math.Sin(theta);
+                    newJointParams[index, 3] = InputSpeed * length * Math.Cos(theta);
+                    newJointParams[index, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
+                    newJointParams[index, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
                 }
             }
             else /*else, the input is a prismatic slide */
@@ -556,11 +554,10 @@ namespace PlanarMechanismSimulator
                 /* the block input does not rotate therefore the angle, angular velocity, and angular accelerations are all zero. */
                 var xDelta = delta * Math.Cos(inputpivot.SlideAngle);
                 var yDelta = delta * Math.Sin(inputpivot.SlideAngle);
-                foreach (var j in inputLink.joints)
+                for (int i = 0; i < inputLink.joints.Count; i++)
                 {
-                    var jIndex = joints.IndexOf(j);
-                    newJointParams[jIndex, 0] = oldJointParams[jIndex, 0] + xDelta;
-                    newJointParams[jIndex, 1] = oldJointParams[jIndex, 1] + yDelta;
+                    newJointParams[i, 0] = oldJointParams[i, 0] + xDelta;
+                    newJointParams[i, 1] = oldJointParams[i, 1] + yDelta;
                 }
             }
         }

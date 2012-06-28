@@ -81,7 +81,10 @@ namespace ExcelPlanarMechSimulator
             finally
             {
                 if (button_Simulate.Enabled)
+                {
                     Globals.Sheet1.Range["h4"].Value2 += " Ready to simulate.";
+                    button_Simulate_Click(sender, e);
+                }
             }
         }
 
@@ -109,7 +112,7 @@ namespace ExcelPlanarMechSimulator
             Globals.Sheet2.UsedRange.ClearContents(); //first clear the data
             Globals.Sheet3.UsedRange.ClearContents();
             Globals.Sheet2.UsedRange.Rows[1, Type.Missing].Unmerge(); //undo the merging
-            Globals.Sheet3.UsedRange.Rows[1, Type.Missing].Unmerge(); 
+            Globals.Sheet3.UsedRange.Rows[1, Type.Missing].Unmerge();
             //constants for joints and links
             int jointNumCol = 6;
             int linkNumCol = 3;
@@ -117,10 +120,15 @@ namespace ExcelPlanarMechSimulator
             //create headings for joint data
             mergeAndCenter(Globals.Sheet2.Range["a1:a2"]);
             Globals.Sheet2.Cells[1, 1] = "time";
-            for (int i = 0; i < jointParameters[0.0].Length / jointNumCol; i++)
+            for (int i = 0; i < pms.joints.Count; i++)
             {
+                var name = "Joint " + (i + 1) + " (";
+                name += pms.joints[i].Link1.name;
+                if (pms.joints[i].Link2 != null)
+                    name += ", " + pms.joints[i].Link2.name;
+                name +=  ")";
                 mergeAndCenter(Globals.Sheet2.Range[Globals.Sheet2.Cells[1, 2 + jointNumCol * i], Globals.Sheet2.Cells[1, 1 + jointNumCol * (i + 1)]]);
-                Globals.Sheet2.Cells[1, 2 + jointNumCol * i].Value = ("Joint " + (i + 1) + " (") + Globals.Sheet1.Cells[i + 3, 6].Value + ")";
+                Globals.Sheet2.Cells[1, 2 + jointNumCol * i].Value = name;
                 Globals.Sheet2.Cells[2, 2 + jointNumCol * i].Value = "x";
                 Globals.Sheet2.Cells[2, 3 + jointNumCol * i].Value = "y";
                 Globals.Sheet2.Cells[2, 4 + jointNumCol * i].Value = "v-x";

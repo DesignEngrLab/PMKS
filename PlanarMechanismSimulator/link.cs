@@ -52,7 +52,7 @@ namespace PlanarMechanismSimulator
         {
             get
             {
-                return Math.Atan2(joints[1].Y - joints[0].Y, joints[1].X - joints[0].X) - offsetAngle;
+                return Math.Atan2(joints[1].Y - joints[0].Y, joints[1].X - joints[0].X);
             }
         }
 
