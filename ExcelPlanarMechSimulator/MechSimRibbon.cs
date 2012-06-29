@@ -14,13 +14,22 @@ namespace ExcelPlanarMechSimulator
         }
 
         protected Simulator pms { get; set; }
+        void status(string message)
+        {
+            Globals.Sheet1.Range["h4"].Value2 += message + "\n";
+        }
+         void clear_status()
+        {
+            Globals.Sheet1.Range["h4"].Value2 = "";
+        }
 
         private void button_Parse_Click(object sender, RibbonControlEventArgs e)
         {
             try
             {
+                clear_status();
+                status("Parsing...");
                 Globals.Sheet1.Range["j2"].Value2 = "?";
-                Globals.Sheet1.Range["h4"].Value2 = "";
                 button_Simulate.Enabled = true;
                 var rng = Globals.Sheet1.Range["B3:F22"];
                 object[,] data = rng.Value2;
@@ -66,8 +75,7 @@ namespace ExcelPlanarMechSimulator
                 }
                 else
                 {
-                    Globals.Sheet1.Range["h4"].Value2 = "Cannot simulate mechanisms with degrees of freedom greater than"
-                                                        + " or less than 1. ";
+                    status("Cannot simulate mechanisms with degrees of freedom greater than or less than 1. ");
                     button_Simulate.Enabled = false;
                     // Globals.Sheet1.Range["j2"].Style //trying to change background color.
                 }
@@ -75,21 +83,23 @@ namespace ExcelPlanarMechSimulator
             }
             catch (Exception exc)
             {
-                Globals.Sheet1.Range["h4"].Value2 += "Error in input data: " + exc.Message;
+                status("Error in input data: " + exc.Message);
                 button_Simulate.Enabled = false;
             }
             finally
             {
                 if (button_Simulate.Enabled)
                 {
-                    Globals.Sheet1.Range["h4"].Value2 += " Ready to simulate.";
+                    status(" Ready to simulate.");
                     button_Simulate_Click(sender, e);
                 }
             }
         }
 
+
         private void button_Simulate_Click(object sender, RibbonControlEventArgs e)
         {
+            status("Simulating...");
             var rpm = double.NaN;
             if (Globals.Sheet1.Range["n2"].Value2 == null || !double.TryParse(Globals.Sheet1.Range["n2"].Value2.ToString(), out rpm))
                 rpm = 10.0;
@@ -108,6 +118,7 @@ namespace ExcelPlanarMechSimulator
             SortedList<double, double[,]> linkParameters = pms.LinkParameters;
             SortedList<double, double[,]> jointParameters = pms.JointParameters;
 
+            status("Writing output to sheets...");
             //add to 2nd and 3rd sheets of spreadsheet
             Globals.Sheet2.UsedRange.ClearContents(); //first clear the data
             Globals.Sheet3.UsedRange.ClearContents();
@@ -178,7 +189,7 @@ namespace ExcelPlanarMechSimulator
                     }
                 timeIndex++;
             }
-
+            status("completed.");
         }
 
         private void mergeAndCenter(Microsoft.Office.Interop.Excel.Range theRange)

@@ -831,9 +831,8 @@ namespace PlanarMechanismSimulator
                 knownPositions.Add(solvableJoint);
                 unknownPositions.Remove(solvableJoint);
             } while (unknownPositions.Count > 0);
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < inputLinkIndex; i++)
             {
-                if (i == inputLinkIndex) continue;
                 var joint0Index = joints.IndexOf(links[i].joints[0]);
                 var joint1Index = joints.IndexOf(links[i].joints[1]);
                 currentLinkParams[i, 0] = Math.Atan2(currentPivotParams[joint1Index, 1] - currentPivotParams[joint0Index, 1],

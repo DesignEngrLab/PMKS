@@ -55,8 +55,13 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OptimizationToolbox">
+    <Reference Include="OptimizationToolbox, Version=1.0.10.1209, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Resources\OptimizationToolbox.dll</HintPath>
+    </Reference>
+    <Reference Include="StarMath, Version=1.0.11.729, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Resources\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
