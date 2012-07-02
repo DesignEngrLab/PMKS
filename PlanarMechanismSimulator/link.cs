@@ -5,13 +5,13 @@ using StarMathLib;
 
 namespace PlanarMechanismSimulator
 {
-    internal enum LinkPointType
-    {
-        Pin,
-        Center,
-        GearTooth,
-        OrthoSlideReference
-    };
+    //internal enum LinkPointType
+    //{
+    //    Pin,
+    //    Center,
+    //    GearTooth,
+    //    OrthoSlideReference
+    //};
 
     public class link
     {
@@ -25,10 +25,9 @@ namespace PlanarMechanismSimulator
         /// </summary>
         public readonly Boolean isGround;
 
-        private double offsetAngle;
 
-        internal List<point> referencePts;
-        private List<LinkPointType> pointTypes;
+        // internal List<point> referencePts;
+        //  private List<LinkPointType> pointTypes;
 
 
         /// <summary>
@@ -44,17 +43,17 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The lengths.
         /// </value>
-        public double[] lengths { get; set; }
+        public double[] lengths { get; private set; }
 
         public string name { get; private set; }
 
-        public double Angle
-        {
-            get
-            {
-                return Math.Atan2(joints[1].Y - joints[0].Y, joints[1].X - joints[0].X);
-            }
-        }
+        public double Angle { get; set; }
+        //{
+        //    get
+        //    {
+        //        return Math.Atan2(joints[1].Y - joints[0].Y, joints[1].X - joints[0].X);
+        //    }
+        //}
 
         internal link(string name, List<joint> Joints, Boolean IsGround)
         {
@@ -65,56 +64,34 @@ namespace PlanarMechanismSimulator
 
         internal void DetermineLengthsAndReferences()
         {
-            // first put the pin joints on the list
-            referencePts = joints.Where(j => j.jointType == JointTypes.R).Cast<point>().ToList();
-            // next put P and RP that are not the slide components.
-            referencePts.AddRange(
-                joints.Where(j => (j.jointType == JointTypes.P || j.jointType == JointTypes.RP) && !j.LinkIsSlide(this)));
-            // now add point for the gear teeth interactions. note these will move around the gear, they will not be at the contact point for long.
-            var newJoints = new List<joint>(referencePts.Cast<joint>());
-            var numPins = newJoints.Count;
-
-            pointTypes = new List<LinkPointType>();
-            for (int i = 0; i < numPins; i++) pointTypes.Add(LinkPointType.Pin);
-
-
-            // next add the orthogonal points for the prismatic slides
-            foreach (var j in joints.Where(j => j.jointType == JointTypes.P && j.LinkIsSlide(this)))
+            var fixedJoints = joints.FindAll(j => !j.LinkIsSlide(this) && j.jointType != JointTypes.G).ToList();
+            if (fixedJoints.Count < 2 || fixedJoints.Count(j => j.isGround) > 1) Angle = 0.0;
+            else if (fixedJoints.Count(j => j.isGround) == 1)
             {
-                newJoints.Add(j);
-                if (referencePts.Count > 0) referencePts.Add(findOrthoPoint(j, referencePts[0]));
-                else referencePts.Add(new point { X = j.X, Y = j.Y }); //else, just make this the first reference point    
-                pointTypes.Add(LinkPointType.OrthoSlideReference);
+                var ground = fixedJoints.Find(j => j.isGround);
+                var notGround = fixedJoints.Find(j => !j.isGround);
+                Angle = Math.Atan2(notGround.initY - ground.initY, notGround.initX - ground.initX);
             }
-            // add gear tooth points that spin with gear
-            foreach (var j in joints.Where(j => j.jointType == JointTypes.G))
-            {
-                newJoints.Add(j);
-                referencePts.Add(new point { X = j.X, Y = j.Y });
-                pointTypes.Add(LinkPointType.GearTooth);
-            }
-            // next add the orthogonal points for the slides
-            foreach (var j in joints.Where(j => j.jointType == JointTypes.RP && j.LinkIsSlide(this)))
-            {
-                newJoints.Add(j);
-                if (referencePts.Count > 0) referencePts.Add(findOrthoPoint(j, referencePts[0]));
-                else throw new Exception("Link, " + name + ", cannot be comprise of only of slide-side RP joints (intrinsically 2 or more DOF).");
-                pointTypes.Add(LinkPointType.OrthoSlideReference);
-            }
-            joints = newJoints;
+            else Angle = Math.Atan2(fixedJoints[1].initY - fixedJoints[0].initY, fixedJoints[1].initX - fixedJoints[0].initX);
+
             //** see comments under lengths declaration for reason why this is commented. **
             //var numLengths = 2 * (joints.Count - 2) + 1;
-            var numLengths = referencePts.Count * (referencePts.Count - 1) / 2;
+            var numLengths = joints.Count * (joints.Count - 1) / 2;
             lengths = new double[numLengths];
             int lengthIndex = 0;
-            for (int i = 0; i < referencePts.Count - 1; i++)
-                for (int j = i + 1; j < referencePts.Count; j++)
+            for (int i = 0; i < joints.Count - 1; i++)
+                for (int j = i + 1; j < joints.Count; j++)
                 {
-                    lengths[lengthIndex++] = Math.Sqrt(
-                        (referencePts[i].X - referencePts[j].X)
-                        * (referencePts[i].X - referencePts[j].X)
-                        + (referencePts[i].Y - referencePts[j].Y)
-                        * (referencePts[i].Y - referencePts[j].Y));
+                    var iJoint = joints[i];
+                    var jJoint = joints[j];
+                    if (iJoint.LinkIsSlide(this) && jJoint.LinkIsSlide(this))
+                        if (Constants.sameCloseZero(iJoint.SlideAngle, jJoint.SlideAngle))
+                            lengths[lengthIndex++] = distanceBetweenFixedJoints(iJoint, jJoint);
+                        else lengths[lengthIndex++] = 0.0;
+                    else if (!iJoint.LinkIsSlide(this) && !jJoint.LinkIsSlide(this))
+                        lengths[lengthIndex++] = distanceBetweenFixedJoints(iJoint, jJoint);
+                    else if (iJoint.LinkIsSlide(this)) lengths[lengthIndex++] = findOrthoPoint(iJoint, jJoint);
+                    else if (jJoint.LinkIsSlide(this)) lengths[lengthIndex++] = findOrthoPoint(jJoint, iJoint);
                 }
             // ** see comments under lengths declaration for reason why this is commented.**
             //int linkIndex = 0;
@@ -135,20 +112,28 @@ namespace PlanarMechanismSimulator
             //}
         }
 
-        private point findOrthoPoint(joint j, point point)
+        private double findOrthoPoint(joint slideJoint, joint fixedJoint)
         {
-            var piRemainder = j.SlideAngle % Math.PI;
+            point orthoPoint;
+            var piRemainder = slideJoint.SlideAngle % Math.PI;
             if (Constants.sameCloseZero(piRemainder))
-                return new point { X = point.X, Y = j.Y };
-            if (Constants.sameCloseZero(Math.Abs(piRemainder), Math.PI / 2))
-                return new point { X = j.X, Y = point.Y };
-
-            var slope = Math.Tan(j.SlideAngle);
-            var x = (slope * slope * j.X + point.X + slope * (point.X - j.X)) / (slope * slope + 1);
-            var y = slope * x + (j.Y - slope * j.X);
-            return new point { X = x, Y = y };
+                orthoPoint =new point(fixedJoint.initX, slideJoint.initY);
+            else if (Constants.sameCloseZero(Math.Abs(piRemainder), Math.PI / 2))
+                orthoPoint = new point(slideJoint.initX, fixedJoint.initY);
+            else
+            {
+                var slope = Math.Tan(slideJoint.SlideAngle);
+                var x = (slope * slope * slideJoint.initX + fixedJoint.initX + slope * (fixedJoint.initX - slideJoint.initX)) /
+                        (slope * slope + 1);
+                var y = slope * x + (slideJoint.initY - slope * slideJoint.initX);
+                orthoPoint =new point(x, y);
+            }
+            return Math.Sqrt((orthoPoint.X - fixedJoint.initX)* (orthoPoint.X - fixedJoint.initX)+ (orthoPoint.Y - fixedJoint.initY)* (orthoPoint.Y - fixedJoint.initY));
         }
-
+        private double distanceBetweenFixedJoints(joint iJoint, joint jJoint)
+        {
+            return Math.Sqrt((iJoint.initX - jJoint.initX)* (iJoint.initX - jJoint.initX)+ (iJoint.initY - jJoint.initY)* (iJoint.initY - jJoint.initY));
+        }
         internal double lengthBetween(joint joint1, joint joint2)
         {
             return lengthBetween(joints.IndexOf(joint1), joints.IndexOf(joint2));

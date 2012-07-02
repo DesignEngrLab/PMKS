@@ -7,11 +7,8 @@ using StarMathLib;
 
 namespace PlanarMechanismSimulator
 {
-    internal class NonDyadicPositionFinder : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
+    internal class NonDyadicPositionSolver : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {
-        private const double rangeMultiplier = 5.0;
-        private const int numberOfTries = 50;
-
         private readonly List<LinkLengthFunction> linkFunctions;
         private readonly abstractConvergence ConvergedWithinLimit;
         private readonly abstractOptMethod optMethod;
@@ -24,7 +21,7 @@ namespace PlanarMechanismSimulator
 
         internal long NumEvals { get; private set; }
 
-        internal NonDyadicPositionFinder(IList<link> links, IList<joint> joints, int numUnknownPivots,
+        internal NonDyadicPositionSolver(IList<link> links, IList<joint> joints, int numUnknownPivots,
             int beginGndJointsIndex, int numUnknownLinks, double epsilon)
         {
             this.links = links;
@@ -43,13 +40,13 @@ namespace PlanarMechanismSimulator
                         var p0Index = joints.IndexOf(p0);
                         var p1 = c.joints[j];
                         var p1Index = joints.IndexOf(p1);
-                        if ((!double.IsNaN(p0.X)) && (!double.IsNaN(p0.Y)) &&
-                            (!double.IsNaN(p1.X)) && (!double.IsNaN(p1.Y)))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.X, p0.Y, p1Index, p1.X, p1.Y));
-                        else if ((!double.IsNaN(p0.X)) && (!double.IsNaN(p0.Y)) && (!double.IsNaN(c.lengths[lengthIndex])))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.X, p0.Y, p1Index, c.lengths[lengthIndex]));
-                        else if ((!double.IsNaN(p1.X)) && (!double.IsNaN(p1.Y)) && (!double.IsNaN(c.lengths[lengthIndex])))
-                            linkFunctions.Add(new LinkLengthFunction(p1Index, p1.X, p1.Y, p0Index, c.lengths[lengthIndex]));
+                        if ((!double.IsNaN(p0.initX)) && (!double.IsNaN(p0.initY)) &&
+                            (!double.IsNaN(p1.initX)) && (!double.IsNaN(p1.initY)))
+                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.initX, p0.initY, p1Index, p1.initX, p1.initY));
+                        else if ((!double.IsNaN(p0.initX)) && (!double.IsNaN(p0.initY)) && (!double.IsNaN(c.lengths[lengthIndex])))
+                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.initX, p0.initY, p1Index, c.lengths[lengthIndex]));
+                        else if ((!double.IsNaN(p1.initX)) && (!double.IsNaN(p1.initY)) && (!double.IsNaN(c.lengths[lengthIndex])))
+                            linkFunctions.Add(new LinkLengthFunction(p1Index, p1.initX, p1.initY, p0Index, c.lengths[lengthIndex]));
                         else if (!double.IsNaN(c.lengths[lengthIndex]))
                             linkFunctions.Add(new LinkLengthFunction(p0Index, p1Index, c.lengths[lengthIndex]));
                         else throw new Exception("Links is not well-specified (in constructor of NonDyadicPositionFinder).");
@@ -69,18 +66,18 @@ namespace PlanarMechanismSimulator
         {
             return optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit);
         }
-        internal bool Run_PositionsAreClose(double[,] jointParams, double[,] linkParams)
+        internal bool Run_PositionsAreClose(double[,] newJointParams, double[,] newLinkParams, double[,] oldJointParams, double[,] oldLinkParams)
         {
             optMethod.ResetFunctionEvaluationDatabase();
             var xInit = new double[2 * numUnknownPivots]; //need to check if this is always true. If input is a ternary link it could be less.
             for (int i = 0; i < numUnknownPivots; i++)
             {
-                xInit[2 * i] = jointParams[i, 0];
-                xInit[2 * i + 1] = jointParams[i, 1];
+                xInit[2 * i] = newJointParams[i, 0];
+                xInit[2 * i + 1] = newJointParams[i, 1];
             }
             for (int i = numUnknownPivots; i < beginGndJointsIndex; i++)
                 foreach (var llf in linkFunctions)
-                    llf.SetJointPosition(i, jointParams[i, 0], jointParams[i, 1]);
+                    llf.SetJointPosition(i, newJointParams[i, 0], newJointParams[i, 1]);
 
             double[] xStar;
             var result = optMethod.Run(out xStar, xInit);
@@ -88,34 +85,34 @@ namespace PlanarMechanismSimulator
             {
                 for (int i = 0; i < numUnknownPivots; i++)
                 {
-                    jointParams[i, 0] = xStar[2 * i];
-                    jointParams[i, 1] = xStar[2 * i + 1];
+                    newJointParams[i, 0] = xStar[2 * i];
+                    newJointParams[i, 1] = xStar[2 * i + 1];
                 }
                 for (int i = 0; i < numUnknownLinks; i++)
                 {
                     var joint0Index = joints.IndexOf(links[i].joints[0]);
                     var joint1Index = joints.IndexOf(links[i].joints[1]);
-                    linkParams[i, 0] = Math.Atan2(jointParams[joint1Index, 1] - jointParams[joint0Index, 1],
-                        jointParams[joint1Index, 0] - jointParams[joint0Index, 0]);
+                    newLinkParams[i, 0] = Math.Atan2(newJointParams[joint1Index, 1] - newJointParams[joint0Index, 1],
+                        newJointParams[joint1Index, 0] - newJointParams[joint0Index, 0]);
                 }
                 return true;
             }
             return false;
         }
 
-        internal double Run_PositionsAreUnknown()
+        internal double Run_PositionsAreUnknown(double[,] newJointParams, double[,] newLinkParams)
         {
             var r = new Random();
             var fStar = double.PositiveInfinity;
             double[] xStar = null;
             long numFEvals = 0;
             int k = 0;
-            var xMin = joints.Min(j => j.X);
-            var xMax = joints.Max(j => j.X);
-            var yMin = joints.Min(j => j.Y);
-            var yMax = joints.Max(j => j.Y);
+            var xMin = joints.Min(j => j.initX);
+            var xMax = joints.Max(j => j.initX);
+            var yMin = joints.Min(j => j.initY);
+            var yMax = joints.Max(j => j.initY);
             var maxLength = links.Max(l0 => l0.lengths.Max());
-            var range = rangeMultiplier * (new[] { xMax - xMin, yMax - yMin, maxLength }).Max();
+            var range = Constants.rangeMultiplier * (new[] { xMax - xMin, yMax - yMin, maxLength }).Max();
             var offset = (xMin + xMax + yMin + yMax) / 4 - (range / 2);
             do
             {
@@ -133,12 +130,19 @@ namespace PlanarMechanismSimulator
                     fStar = fStarTemp;
                 }
                 //SearchIO.output("fStar = " + fStar);
-            } while (!optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit) && k++ < numberOfTries);
+            } while (!optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit) && k++ < Constants.numberOfTries);
 
             for (int i = 0; i < numUnknownPivots; i++)
             {
-                joints[i].X = xStar[2 * i];
-                joints[i].Y = xStar[2 * i + 1];
+                newJointParams[i, 0] = xStar[2 * i];
+                newJointParams[i, 1] = xStar[2 * i + 1];
+            }
+            for (int i = 0; i < numUnknownLinks; i++)
+            {
+                var joint0Index = joints.IndexOf(links[i].joints[0]);
+                var joint1Index = joints.IndexOf(links[i].joints[1]);
+                newLinkParams[i, 0] = Math.Atan2(newJointParams[joint1Index, 1] - newJointParams[joint0Index, 1],
+                    newJointParams[joint1Index, 0] - newJointParams[joint0Index, 0]);
             }
             return fStar;
         }

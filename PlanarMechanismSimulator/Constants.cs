@@ -14,7 +14,10 @@ namespace PlanarMechanismSimulator
         ///   position of points (mostly in checking for a valid transformation (see
         ///   ValidTransformation) and if other nodes comply (see otherNodesComply).
         /// </summary>
-        private const double epsilon = 0.000001;
+        internal const double epsilon = 0.000001;
+
+        internal const double rangeMultiplier = 5.0;
+        internal const int numberOfTries = 50;
 
         internal static Boolean sameCloseZero(double x1)
         {

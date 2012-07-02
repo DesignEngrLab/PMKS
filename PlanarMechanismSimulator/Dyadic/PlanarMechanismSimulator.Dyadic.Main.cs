@@ -13,16 +13,16 @@ namespace PlanarMechanismSimulator
         {
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
             SetUpDyadicObjects();
-            var initPivotParams = new double[p, 6];
-            for (int i = 0; i < p; i++)
+            var initPivotParams = new double[numJoints, 6];
+            for (int i = 0; i < numJoints; i++)
             {
-                initPivotParams[i, 0] = joints[i].X;
-                initPivotParams[i, 1] = joints[i].Y;
+                initPivotParams[i, 0] = joints[i].initX;
+                initPivotParams[i, 1] = joints[i].initY;
             }
-            var initLinkParams = new double[n, 3];
-            for (int i = 0; i < n; i++)
+            var initLinkParams = new double[numLinks, 3];
+            for (int i = 0; i < numLinks; i++)
                 initLinkParams[i, 0] = links[i].Angle;
-            angleRange = new[] { links[inputLinkIndex].Angle, links[inputLinkIndex].Angle };
+            InputRange = new[] { links[inputLinkIndex].Angle, links[inputLinkIndex].Angle };
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
             MoveInputToNextPosition(0.0, initPivotParams, initLinkParams, initPivotParams, initLinkParams);
@@ -36,10 +36,10 @@ namespace PlanarMechanismSimulator
             if (!(findVelocitiesThroughICMethod(0.0, true) && findAccelerationAnalytically(0.0, true)))
             {
                 var smallBackwardStepJointParams = (double[,])initPivotParams.Clone();
-                var dummyLinkParams = new double[n, 3];
+                var dummyLinkParams = new double[numLinks, 3];
                 MoveInputToNextPosition(-0.01 * InputSpeed * FixedTimeStep, smallBackwardStepJointParams,
                     dummyLinkParams, initPivotParams, initLinkParams);
-                if (AnalyticallyCorrectPositionsDyadic(smallBackwardStepJointParams, dummyLinkParams))
+                if (AnalyticallyCorrectPositionsDyadic(smallBackwardStepJointParams, dummyLinkParams, initPivotParams, initLinkParams))
                 {
                     JointParameters.Add(-0.01 * FixedTimeStep, smallBackwardStepJointParams);
                     LinkParameters.Add(-0.01 * FixedTimeStep, dummyLinkParams);
@@ -62,8 +62,8 @@ delegate
     Boolean validPosition;
     do
     {
-        var currentLinkParams = new double[n, 3];
-        var currentPivotParams = new double[p, 6];
+        var currentLinkParams = new double[numLinks, 3];
+        var currentPivotParams = new double[numJoints, 6];
         #region Find Next Positions
         /* this time, NumericalPosition is called first and instead of
          * updating currentPivotParams (which is already full at this point)
@@ -75,12 +75,12 @@ delegate
             lastForwardPivotParams, lastForwardLinkParams);
         /* Based upon the numerical approximation, we analytically update the remaining
          * joints. */
-        validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams);
+        validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams, lastForwardPivotParams, lastForwardLinkParams);
         /* create new currentPivotParams based on these updated positions of the joints */
         #endregion
         if (validPosition)
         {
-            lock (angleRange) { angleRange[0] = currentLinkParams[inputLinkIndex, 0]; }
+            lock (InputRange) { InputRange[0] = currentLinkParams[inputLinkIndex, 0]; }
 
             #region Find Velocities for Current Position
             if (!findVelocitiesThroughICMethod(currentTime, true))
@@ -116,8 +116,8 @@ delegate
      Boolean validPosition;
      do
      {
-         var currentLinkParams = new double[n, 3];
-         var currentPivotParams = new double[p, 6];
+         var currentLinkParams = new double[numLinks, 3];
+         var currentPivotParams = new double[numJoints, 6];
          #region Find Next Positions
          /* this time, NumericalPosition is called first and instead of
           * updating currentPivotParams (which is already full at this point)
@@ -129,12 +129,12 @@ delegate
 lastBackwardPivotParams, lastBackwardLinkParams);
          /* Based upon the numerical approximation, we analytically update the remaining
           * joints. */
-         validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams);
+         validPosition = AnalyticallyCorrectPositionsDyadic(currentPivotParams, currentLinkParams,lastForwardPivotParams, lastForwardLinkParams);
          /* create new currentPivotParams based on these updated positions of the joints */
          #endregion
          if (validPosition)
          {
-             lock (angleRange) { angleRange[1] = currentLinkParams[inputLinkIndex, 0]; }
+             lock (InputRange) { InputRange[1] = currentLinkParams[inputLinkIndex, 0]; }
 
              #region Find Velocities for Current Position
              if (!findVelocitiesThroughICMethod(currentTime, true))

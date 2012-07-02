@@ -33,12 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OptimizationToolbox, Version=1.0.10.1209, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimizationToolbox">
       <HintPath>..\Resources\OptimizationToolbox.dll</HintPath>
     </Reference>
-    <Reference Include="StarMath, Version=1.0.11.729, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="StarMath">
       <HintPath>..\Resources\StarMath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -48,7 +46,6 @@
     <Compile Include="joint.cs" />
     <Compile Include="Dyadic\circleDiagramItem.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
-    <Compile Include="NonDyadic\PlanarMechanismSimulator.NonDyadic.Main.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Main.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
     <Compile Include="PlanarMechanismSimulator.Numerical.cs" />

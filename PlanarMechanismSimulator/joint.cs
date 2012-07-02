@@ -13,22 +13,31 @@ namespace PlanarMechanismSimulator
         // non-slip roll, like rack and pinion - although this challenges the 2 DOF nature of just gear teeth
         // cabling or belt or chain
     };
-    public class point
+    public struct point
     {
-        public double X { get; set; }
-        public double Y { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double X, Y;
+        public point(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
     }
-    public class joint : point
+    public class joint
     {
         public readonly Boolean isGround;
         public readonly JointTypes jointType;
+        public  double initX;
+        public  double initY;
 
         public link Link1 { get; internal set; }
         public link Link2 { get; internal set; }
         public double SlideAngle { get; set; }
         // how to plan for future cam shapes
 
-
+        
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition)
         {
             isGround = IsGround;
@@ -45,16 +54,16 @@ namespace PlanarMechanismSimulator
                     else SlideAngle = currentJointPosition[0];
                     if (currentJointPosition.GetLength(0) >= 3)
                     {
-                        X = currentJointPosition[1];
-                        Y = currentJointPosition[2];
+                        initX = currentJointPosition[1];
+                        initY = currentJointPosition[2];
                     }
                 }
                 else
                 {
                     if (currentJointPosition.GetLength(0) >= 2)
                     {
-                        X = currentJointPosition[0];
-                        Y = currentJointPosition[1];
+                        initX = currentJointPosition[0];
+                        initY = currentJointPosition[1];
                     }
                 }
             }
@@ -62,7 +71,9 @@ namespace PlanarMechanismSimulator
 
         public Boolean LinkIsSlide(link link0)
         {
-            return ((jointType == JointTypes.P || jointType == JointTypes.RP) && Link1 == link0);
+            return (Link1 == link0
+                && (jointType == JointTypes.P || jointType == JointTypes.RP
+                || (jointType == JointTypes.G && double.IsNaN(SlideAngle))));
         }
     }
 }
