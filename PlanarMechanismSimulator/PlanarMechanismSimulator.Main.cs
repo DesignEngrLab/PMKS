@@ -535,34 +535,32 @@ namespace PlanarMechanismSimulator
 
                 for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 {
-                    var j = joints[i];
-                    //todo: can't use .SlideAngle after initiation
-                    if (j.LinkIsSlide(inputLink)) j.SlideAngle += delta;
-                    else
-                    {
-                        var length = inputLink.lengthBetween(inputpivot, j);
-                        var theta = Math.Atan2(oldJointParams[i, 1] - yGnd, oldJointParams[i, 0] - xGnd) + delta;
-                        newJointParams[i, 0] = xGnd + length * Math.Cos(theta);
-                        newJointParams[i, 1] = yGnd + length * Math.Sin(theta);
-                        newJointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
-                        newJointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
-                        newJointParams[i, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
-                        newJointParams[i, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
-                    }
+                    var length = inputLink.lengthBetween(inputpivot, joints[i]);
+                    var theta = Math.Atan2(oldJointParams[i, 1] - yGnd, oldJointParams[i, 0] - xGnd) + delta;
+                    newJointParams[i, 0] = xGnd + length * Math.Cos(theta);
+                    newJointParams[i, 1] = yGnd + length * Math.Sin(theta);
+                    newJointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
+                    newJointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
+                    newJointParams[i, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
+                    newJointParams[i, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
                 }
             }
-            else /*else, the input is a prismatic slide */
+            else if (inputpivot.jointType == JointTypes.P)
             {
-                newLinkParams[inputLinkIndex, 0] = newLinkParams[inputLinkIndex, 1] = newLinkParams[inputLinkIndex, 2] = 0.0;
+                newLinkParams[inputLinkIndex, 0] = oldLinkParams[inputLinkIndex, 0];
+                newLinkParams[inputLinkIndex, 1] = InputSpeed;
+                newLinkParams[inputLinkIndex, 2] = 0.0;
                 /* the block input does not rotate therefore the angle, angular velocity, and angular accelerations are all zero. */
-                var xDelta = delta * Math.Cos(inputpivot.SlideAngle);
-                var yDelta = delta * Math.Sin(inputpivot.SlideAngle);
+                var angle = newLinkParams[links.IndexOf(inputpivot.Link1), 0] + inputpivot.SlideAngle;
+                var xDelta = delta * Math.Cos(angle);
+                var yDelta = delta * Math.Sin(angle);
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {
                     newJointParams[i, 0] = oldJointParams[i, 0] + xDelta;
                     newJointParams[i, 1] = oldJointParams[i, 1] + yDelta;
                 }
             }
+            else throw new Exception("Currently only R or P can be the input joints.");
         }
 
     }

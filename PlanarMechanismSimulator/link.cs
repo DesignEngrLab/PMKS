@@ -72,8 +72,8 @@ namespace PlanarMechanismSimulator
                 var notGround = fixedJoints.Find(j => !j.isGround);
                 Angle = Math.Atan2(notGround.initY - ground.initY, notGround.initX - ground.initX);
             }
-            else Angle = Math.Atan2(fixedJoints[1].initY - fixedJoints[0].initY, fixedJoints[1].initX - fixedJoints[0].initX);
-
+            else Angle = Math.Atan2(fixedJoints[1].initY - fixedJoints[0].initY, fixedJoints[1].initX - fixedJoints[0].initX);  
+            
             //** see comments under lengths declaration for reason why this is commented. **
             //var numLengths = 2 * (joints.Count - 2) + 1;
             var numLengths = joints.Count * (joints.Count - 1) / 2;
@@ -110,6 +110,9 @@ namespace PlanarMechanismSimulator
             //            * (joints[linkIndex].Y - joints[linkIndex + 2].Y));
             //    linkIndex++;
             //}
+            foreach (var j in joints)
+                /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
+                if (j.LinkIsSlide(this)) j.SlideAngle -= Angle;   
         }
 
         private double findOrthoPoint(joint slideJoint, joint fixedJoint)

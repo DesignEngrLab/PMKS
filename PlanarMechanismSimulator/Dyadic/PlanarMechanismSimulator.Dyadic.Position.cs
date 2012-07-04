@@ -142,19 +142,14 @@ namespace PlanarMechanismSimulator
             var thisLink = links[linkIndex];
             foreach (var j in thisLink.joints)
             {
-                if (j == knownJoint) continue;
+                if (j == knownJoint || j.LinkIsSlide(thisLink)) continue;
                 var jIndex = joints.IndexOf(j);
-                //todo: can't use .SlideAngle after initiation
-                if (j.LinkIsSlide(thisLink)) j.SlideAngle += deltaAngle;
-                else
-                {
-                    newKnownJoints.Add(j);
-                    var length = thisLink.lengthBetween(j, knownJoint);
-                    oldAngle = Math.Atan2(oldJointParams[jIndex, 1] - oldJointParams[knownIndex, 1], oldJointParams[jIndex, 0] - oldJointParams[knownIndex, 0]);
-                    var newAngle = oldAngle + deltaAngle;
-                    currentJointParams[jIndex, 0] = currentJointParams[knownIndex, 0] + length * Math.Cos(newAngle);
-                    currentJointParams[jIndex, 1] = currentJointParams[knownIndex, 1] + length * Math.Sin(newAngle);
-                }
+                newKnownJoints.Add(j);
+                var length = thisLink.lengthBetween(j, knownJoint);
+                oldAngle = Math.Atan2(oldJointParams[jIndex, 1] - oldJointParams[knownIndex, 1], oldJointParams[jIndex, 0] - oldJointParams[knownIndex, 0]);
+                var newAngle = oldAngle + deltaAngle;
+                currentJointParams[jIndex, 0] = currentJointParams[knownIndex, 0] + length * Math.Cos(newAngle);
+                currentJointParams[jIndex, 1] = currentJointParams[knownIndex, 1] + length * Math.Sin(newAngle);
             }
             return newKnownJoints;
         }
