@@ -71,23 +71,28 @@ namespace PlanarMechanismSimulator
                                 return false;
                             currentJointParams[sJIndex, 0] = sJPoint.X;
                             currentJointParams[sJIndex, 1] = sJPoint.Y;
-                            angleChange = solveViaAngleChange(sJPoint, sJIndex, knownPoint1, kPIndex1, oldJointParams);
+                            angleChange = solveAngleChange(sJPoint, sJIndex, knownPoint1, kPIndex1, oldJointParams);
                             newKnownJointsFromLink1 = setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(solvableJoint.Link1),
                                                                       currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
                             newKnownLinkAnglesFromLink1 = setLinkAngles(angleChange, solvableJoint.Link1, newKnownJointsFromLink1, currentLinkParams, oldLinkParams);
-                            angleChange = solveViaAngleChange(sJPoint, sJIndex, knownPoint2, kPIndex2, oldJointParams);
+                            angleChange = solveAngleChange(sJPoint, sJIndex, knownPoint2, kPIndex2, oldJointParams);
                             newKnownJointsFromLink2 = setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(solvableJoint.Link2),
                                                                       currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
                             newKnownLinkAnglesFromLink2 = setLinkAngles(angleChange, solvableJoint.Link2, newKnownJointsFromLink2, currentLinkParams, oldLinkParams);
                             goto default;
                         case JointTypes.P:
-                            angleChange = solveViaAngleChange(knownPoint1, kPIndex1, knownPoint2, kPIndex2, oldJointParams);
-                            newKnownJointsFromLink1 = setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(solvableJoint.Link1),
-                                                                      currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                            newKnownLinkAnglesFromLink1 = setLinkAngles(angleChange, solvableJoint.Link1, newKnownJointsFromLink1, currentLinkParams, oldLinkParams);
+                            double rAC = solvableJoint.Link2.lengthBetween(solvableJoint, knownJoint2);
+                            angleChange = solveRPRIntersection(knownPoint2, rAC, knownPoint1, solvableJoint.Link1.lengthBetween(solvableJoint, knownJoint1),
+                                new point(oldJointParams[sJIndex, 0], oldJointParams[sJIndex, 1]), new point(oldJointParams[kPIndex2, 0], oldJointParams[kPIndex2, 1]),
+                                oldLinkParams[links.IndexOf(solvableJoint.Link1), 0] + solvableJoint.SlideAngle);
+                            currentJointParams[sJIndex, 0] = rAC * Math.Cos(oldLinkParams[links.IndexOf(solvableJoint.Link2), 0] + angleChange);
+                            currentJointParams[sJIndex, 1] = rAC * Math.Sin(oldLinkParams[links.IndexOf(solvableJoint.Link2), 0] + angleChange);
                             newKnownJointsFromLink2 = setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(solvableJoint.Link2),
                                                                       currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
                             newKnownLinkAnglesFromLink2 = setLinkAngles(angleChange, solvableJoint.Link2, newKnownJointsFromLink2, currentLinkParams, oldLinkParams);
+                            newKnownJointsFromLink1 = setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(solvableJoint.Link1),
+                                                                      currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
+                            newKnownLinkAnglesFromLink1 = setLinkAngles(angleChange, solvableJoint.Link1, newKnownJointsFromLink1, currentLinkParams, oldLinkParams);
                             goto default;
                         default:
                             knownPositions.Add(solvableJoint);
@@ -110,8 +115,17 @@ namespace PlanarMechanismSimulator
             return true;
         }
 
+        private double solveRPRIntersection(point ptA, double rAC, point ptB, double rBC, point oldPtC, point oldPtA, double oldSlideAngle)
+        {
+            var lAB = Math.Sqrt((ptB.X - ptA.X) * (ptB.X - ptA.X) + (ptB.Y - ptA.Y) * (ptB.Y - ptA.Y));
+            var phi = Math.Atan2(ptB.Y - ptA.Y, ptB.X - ptA.X);
+            var oldTheta = Math.Atan2(oldPtC.Y - oldPtA.Y, oldPtC.X - oldPtA.X);
+            var alpha = Math.PI - oldTheta - oldSlideAngle;
+            return Math.PI - alpha - phi - Math.Asin((rAC * Math.Sin(alpha) + rAC) / lAB);
+        }
+
         #region Methods for R-P-R and R-R-R
-        private double solveViaAngleChange(point point1, int pt1Index, point point2, int pt2Index, double[,] oldJointParams)
+        private double solveAngleChange(point point1, int pt1Index, point point2, int pt2Index, double[,] oldJointParams)
         {
             var newAngle = Math.Atan2(point1.Y - point2.Y, point1.X - point2.X);
             var oldAngle = Math.Atan2(oldJointParams[pt1Index, 1] - oldJointParams[pt2Index, 1], oldJointParams[pt1Index, 0] - oldJointParams[pt2Index, 0]);
@@ -130,6 +144,7 @@ namespace PlanarMechanismSimulator
             {
                 if (j == knownJoint) continue;
                 var jIndex = joints.IndexOf(j);
+                //todo: can't use .SlideAngle after initiation
                 if (j.LinkIsSlide(thisLink)) j.SlideAngle += deltaAngle;
                 else
                 {

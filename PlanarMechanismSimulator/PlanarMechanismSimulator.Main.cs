@@ -536,6 +536,7 @@ namespace PlanarMechanismSimulator
                 for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 {
                     var j = joints[i];
+                    //todo: can't use .SlideAngle after initiation
                     if (j.LinkIsSlide(inputLink)) j.SlideAngle += delta;
                     else
                     {
