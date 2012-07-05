@@ -46,7 +46,7 @@
     <Compile Include="joint.cs" />
     <Compile Include="Dyadic\circleDiagramItem.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
-    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Main.cs" />
+    <Compile Include="PlanarMechanismSimulator.FindFullMovement.cs" />
     <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
     <Compile Include="PlanarMechanismSimulator.Numerical.cs" />
     <Compile Include="NonDyadic\LinkLengthFunction.cs" />

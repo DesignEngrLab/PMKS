@@ -100,6 +100,7 @@ namespace PlanarMechanismSimulator
         private joint inputpivot;
         private int inputLinkIndex;
         private link inputLink;
+        private link groundLink;
 
         /// <summary>
         /// Gets a value indicating whether this instance is dyadic.
@@ -253,17 +254,17 @@ namespace PlanarMechanismSimulator
                 inputpivot = joints[0];
                 if (inputpivot.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
                 if (inputpivot.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
-                if (!inputpivot.Link1.isGround)
-                {
-                    if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
-                    var tempLinkRef = inputpivot.Link1;
-                    inputpivot.Link1 = inputpivot.Link2;
-                    inputpivot.Link2 = tempLinkRef;
-                }
+                //if (!inputpivot.Link1.isGround)
+                //{
+                //    if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
+                //    var tempLinkRef = inputpivot.Link1;
+                //    inputpivot.Link1 = inputpivot.Link2;
+                //    inputpivot.Link2 = tempLinkRef;
+                //}
                 /* reorder links, move input link and ground link to back of list */
-                inputLink = inputpivot.Link2;
+                inputLink =(inputpivot.Link2.isGround)? inputpivot.Link1:inputpivot.Link2;
                 links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list
-                var groundLink = links.First(c => c.isGround);
+                groundLink = links.First(c => c.isGround);
                 links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
                 inputLinkIndex = links.Count - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
@@ -431,24 +432,6 @@ namespace PlanarMechanismSimulator
         }
 
 
-
-        /// <summary>
-        /// Finds the full movement.
-        /// </summary>
-        public void FindFullMovement()
-        {
-            if ((double.IsNaN(this.DeltaAngle)) && (double.IsNaN(this.FixedTimeStep)))
-                throw new Exception(
-                    "Either the angle delta or the time step must be specified.");
-
-            JointParameters = new SortedList<double, double[,]>();
-            LinkParameters = new SortedList<double, double[,]>();
-            FindFullMovementDyadic();
-        }
-
-
-
-
         private Boolean lessThanFullRotation()
         {
             if (inputpivot.jointType == JointTypes.P) return true; // if the input is a sliding block, then there is no limit 
@@ -521,43 +504,60 @@ namespace PlanarMechanismSimulator
             }
         }
 
-        // private void MoveInputToNextPosition(double currentTime, double timeStep, double[,] newJointParams, double[,] newLinkParams)
 
-        private void MoveInputToNextPosition(double delta, double[,] newJointParams, double[,] newLinkParams, double[,] oldJointParams, double[,] oldLinkParams)
+        private void InitializeGroundAndInputSpeedAndAcceleration(double[,] jointParams, double[,] linkParams)
         {
+            /* these are the ground joints, which are not moving. */
+            for (int i = inputJointIndex + 1; i < numJoints; i++)
+            {
+                jointParams[i, 2] = jointParams[i, 3] = 0.0;
+                jointParams[i, 4] = jointParams[i, 5] = 0.0;
+            }
+            /* and, of course, the ground link is not rotating at all. */
+            linkParams[inputLinkIndex + 1, 1] = 0.0;
+            linkParams[inputLinkIndex + 1, 2] = 0.0;
+
+            if (!inputpivot.isGround) return;
+            /* uh-oh, if the input is not connected to ground, we can't assume any values for
+             * the x&y velocities or accelerations. */
             if (inputpivot.jointType == JointTypes.R)
             {
-                newLinkParams[inputLinkIndex, 0] = oldLinkParams[inputLinkIndex, 0] + delta;
-                newLinkParams[inputLinkIndex, 1] = InputSpeed;
-                newLinkParams[inputLinkIndex, 2] = 0.0;
-                var xGnd = newJointParams[inputJointIndex, 0] = oldJointParams[inputJointIndex, 0];
-                var yGnd = newJointParams[inputJointIndex, 1] = oldJointParams[inputJointIndex, 1];
+                /* otherwise, input is rotating at a constant speed. */
+                linkParams[inputLinkIndex, 1] = InputSpeed;
+                linkParams[inputLinkIndex, 2] = 0.0;
+
+                var xInputJoint = jointParams[inputJointIndex, 0];
+                var yInputJoint = jointParams[inputJointIndex, 1];
+                jointParams[inputJointIndex, 2] = jointParams[inputJointIndex, 3] = 0.0;
+                jointParams[inputJointIndex, 4] = jointParams[inputJointIndex, 5] = 0.0;
 
                 for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 {
                     var length = inputLink.lengthBetween(inputpivot, joints[i]);
-                    var theta = Math.Atan2(oldJointParams[i, 1] - yGnd, oldJointParams[i, 0] - xGnd) + delta;
-                    newJointParams[i, 0] = xGnd + length * Math.Cos(theta);
-                    newJointParams[i, 1] = yGnd + length * Math.Sin(theta);
-                    newJointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
-                    newJointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
-                    newJointParams[i, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
-                    newJointParams[i, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
+                    var theta = Math.Atan2(jointParams[i, 1] - yInputJoint, jointParams[i, 0] - xInputJoint);
+                    jointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
+                    jointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
+                    jointParams[i, 4] = jointParams[i, 5] = 0.0;
                 }
             }
             else if (inputpivot.jointType == JointTypes.P)
             {
-                newLinkParams[inputLinkIndex, 0] = oldLinkParams[inputLinkIndex, 0];
-                newLinkParams[inputLinkIndex, 1] = InputSpeed;
-                newLinkParams[inputLinkIndex, 2] = 0.0;
-                /* the block input does not rotate therefore the angle, angular velocity, and angular accelerations are all zero. */
-                var angle = newLinkParams[links.IndexOf(inputpivot.Link1), 0] + inputpivot.SlideAngle;
-                var xDelta = delta * Math.Cos(angle);
-                var yDelta = delta * Math.Sin(angle);
+                /* the block input does not rotate therefore the angular velocity, and angular accelerations are all zero. */
+                linkParams[inputLinkIndex, 1] = 0.0;
+                linkParams[inputLinkIndex, 2] = 0.0;
+
+                var angle = inputpivot.SlideAngle;
+                /* need to offset the angle by the rotation of either the input link or ground.
+                 * both are probably zero, but just in case. */
+                if (inputpivot.Link1 == inputLink) angle += linkParams[inputLinkIndex, 0];
+                else angle += linkParams[inputLinkIndex + 1, 0];
+
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {
-                    newJointParams[i, 0] = oldJointParams[i, 0] + xDelta;
-                    newJointParams[i, 1] = oldJointParams[i, 1] + yDelta;
+                    /* position will be changed by the setLinkPosition function. */
+                    jointParams[i, 2] = InputSpeed * Math.Cos(angle);
+                    jointParams[i, 3] = InputSpeed * Math.Sin(angle);
+                    jointParams[i, 4] = jointParams[i, 5] = 0.0;
                 }
             }
             else throw new Exception("Currently only R or P can be the input joints.");

@@ -7,187 +7,202 @@ namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-        private Boolean AnalyticallyCorrectPositionsDyadic(double[,] currentJointParams, double[,] currentLinkParams, double[,] oldJointParams, double[,] oldLinkParams)
+        private Boolean AnalyticallyCorrectPositionsDyadic(double delta, double[,] currentJointParams, double[,] currentLinkParams,
+            double[,] oldJointParams, double[,] oldLinkParams)
         {
-            var knownPositions = new List<joint>(joints.GetRange(firstInputJointIndex, numJoints - firstInputJointIndex));
-            var unknownPositions = new List<joint>(joints.GetRange(0, firstInputJointIndex));
+            for (int i = inputJointIndex + 1; i < numJoints; i++)
+            {
+                currentJointParams[i, 0] = oldJointParams[i, 0];
+                currentJointParams[i, 1] = oldJointParams[i, 1];
+            }
+            var unknownPositions = new List<joint>(joints);
             unknownPositions.RemoveAll(j => j.Link2 == null);
-            var knownLinkAngles = new List<link> { links[inputLinkIndex], links[inputLinkIndex + 1] };
-            // add any links to knownLinkAngles which are P to input or ground (don't forget to update currentLinkParams
+            setLinkPosition(inputpivot, inputJointIndex, inputLinkIndex, unknownPositions, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, delta);
+            setLinkPosition(joints[inputJointIndex+1], inputJointIndex+1, inputLinkIndex+1, unknownPositions, 
+                currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, 0.0);
+
+            var unknownLinkAngles = new List<link>(links);
+            setLinkAngles(0.0, groundLink, unknownLinkAngles, currentLinkParams, oldLinkParams);
+            setLinkAngles(delta, inputLink, unknownLinkAngles, currentLinkParams, oldLinkParams);
+            // add any links to !unknownLinkAngles which are P to input or ground (don't forget to update currentLinkParams
             int initUnkCount;
             do
             {
-                var sJIndex = initUnkCount = unknownPositions.Count;
-                while (sJIndex > 0)
+                var k = initUnkCount = unknownPositions.Count;
+                while (k > 0)
                 {
-                    var j = unknownPositions[--sJIndex];
+                    var j = unknownPositions[--k];
+                    var jIndex = joints.IndexOf(j);
                     joint knownJoint1 = null;
                     joint knownJoint2 = null;
-                    List<joint> newKnownJointsFromLink1 = null;
-                    List<joint> newKnownJointsFromLink2 = null;
-                    List<link> newKnownLinkAnglesFromLink1 = null;
-                    List<link> newKnownLinkAnglesFromLink2 = null;
                     switch (j.jointType)
                     {
                         case JointTypes.R:
                             #region R-R-R
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
                             {
                                 var kPIndex1 = joints.IndexOf(knownJoint1);
                                 var kPIndex2 = joints.IndexOf(knownJoint2);
                                 var knownPoint1 = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 1]);
-                                var knownPoint2 = new point(currentJointParams[kPIndex2, 0], currentJointParams[kPIndex2, 2]);
+                                var knownPoint2 = new point(currentJointParams[kPIndex2, 0], currentJointParams[kPIndex2, 1]);
                                 var sJPoint = solveViaCircleIntersection(j.Link1.lengthBetween(j, knownJoint1), knownPoint1,
-                                j.Link2.lengthBetween(j, knownJoint2), knownPoint2, new point(currentJointParams[sJIndex, 0], currentJointParams[sJIndex, 1]));
+                                    j.Link2.lengthBetween(j, knownJoint2), knownPoint2, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]));
                                 if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
                                     return false;
-                                currentJointParams[sJIndex, 0] = sJPoint.X;
-                                currentJointParams[sJIndex, 1] = sJPoint.Y;
-                                var angleChange = solveAngleChange(sJPoint, sJIndex, knownPoint1, kPIndex1, oldJointParams);
-                                newKnownJointsFromLink1 = setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(j.Link1),
+                                currentJointParams[jIndex, 0] = sJPoint.X;
+                                currentJointParams[jIndex, 1] = sJPoint.Y;
+                                var angleChange = solveAngleChange(sJPoint, jIndex, knownPoint1, kPIndex1, oldJointParams);
+                                setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                                                           currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                newKnownLinkAnglesFromLink1 = setLinkAngles(angleChange, j.Link1, newKnownJointsFromLink1, currentLinkParams, oldLinkParams);
-                                angleChange = solveAngleChange(sJPoint, sJIndex, knownPoint2, kPIndex2, oldJointParams);
-                                newKnownJointsFromLink2 = setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(j.Link2),
-                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                newKnownLinkAnglesFromLink2 = setLinkAngles(angleChange, j.Link2, newKnownJointsFromLink2, currentLinkParams, oldLinkParams);
-                                goto default;
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                angleChange = solveAngleChange(sJPoint, jIndex, knownPoint2, kPIndex2, oldJointParams);
+                                setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
+                                                                         currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
+                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                break;
                             }
                             #endregion
                             #region R-R-P
-                            else if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && knownLinkAngles.Contains(j.Link2))
+                            else if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region P-R-R
-                            else if (knownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2))
+                            else if (!unknownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region P-R-P
-                            else if (knownLinkAngles.Contains(j.Link1) && knownLinkAngles.Contains(j.Link2))
-                            {
-                                goto default;
-                            }
-                            #endregion
-                            else break;
-
-                        case JointTypes.P:
-                            #region R-P-R
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
+                                && FindKnownSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
                             {
                                 var kPIndex1 = joints.IndexOf(knownJoint1);
                                 var kPIndex2 = joints.IndexOf(knownJoint2);
                                 var knownPoint1 = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 1]);
-                                var knownPoint2 = new point(currentJointParams[kPIndex2, 0], currentJointParams[kPIndex2, 2]);
+                                var knownPoint2 = new point(currentJointParams[kPIndex2, 0], currentJointParams[kPIndex2, 1]);
+                                var sJPoint = solveViaIntersectingLines(currentSlideAngle(knownJoint1, currentLinkParams), knownPoint1,
+                                   currentSlideAngle(knownJoint2, currentLinkParams), knownPoint2);
+                                if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
+                                    return false;
+                                currentJointParams[jIndex, 0] = sJPoint.X;
+                                currentJointParams[jIndex, 1] = sJPoint.Y;
+                                setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
+                                                                         currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, 0.0);
+                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
+                                                                         currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, 0.0);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                
+                            }
+                            #endregion
+                             break;
+
+                        case JointTypes.P:
+                            #region R-P-R
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
+                            {
+                                var kPIndex1 = joints.IndexOf(knownJoint1);
+                                var kPIndex2 = joints.IndexOf(knownJoint2);
+                                var knownPoint1 = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 1]);
+                                var knownPoint2 = new point(currentJointParams[kPIndex2, 0], currentJointParams[kPIndex2, 1]);
                                 double rAC = j.Link2.lengthBetween(j, knownJoint2);
-                                var angleChange = solveRPRIntersection(knownPoint2, rAC, knownPoint1, j.Link1.lengthBetween(j, knownJoint1),
-                                       new point(oldJointParams[sJIndex, 0], oldJointParams[sJIndex, 1]), new point(oldJointParams[kPIndex2, 0], oldJointParams[kPIndex2, 1]),
-                                       oldLinkParams[links.IndexOf(j.Link1), 0] + j.SlideAngle);
-                                currentJointParams[sJIndex, 0] = rAC * Math.Cos(oldLinkParams[links.IndexOf(j.Link2), 0] + angleChange);
-                                currentJointParams[sJIndex, 1] = rAC * Math.Sin(oldLinkParams[links.IndexOf(j.Link2), 0] + angleChange);
-                                newKnownJointsFromLink2 = setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(j.Link2),
+                                double oldTheta = Math.Atan2(oldJointParams[jIndex, 1] - oldJointParams[kPIndex2, 1], oldJointParams[jIndex, 0] - oldJointParams[kPIndex2, 0]);
+                                double angleChange;
+                                var sJPoint = solveRPRIntersection(knownPoint2, rAC, knownPoint1, j.Link1.lengthBetween(j, knownJoint1), oldTheta,
+                                       oldLinkParams[links.IndexOf(j.Link1), 0] + j.SlideAngle, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
+                                       out angleChange);
+                                currentJointParams[jIndex, 0] = sJPoint.X;
+                                currentJointParams[jIndex, 1] = sJPoint.Y;
+                                setLinkPosition(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
                                                                           currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                newKnownLinkAnglesFromLink2 = setLinkAngles(angleChange, j.Link2, newKnownJointsFromLink2, currentLinkParams, oldLinkParams);
-                                newKnownJointsFromLink1 = setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(j.Link1),
+                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkPosition(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                                                           currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                newKnownLinkAnglesFromLink1 = setLinkAngles(angleChange, j.Link1, newKnownJointsFromLink1, currentLinkParams, oldLinkParams);
-                                goto default;
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                
                             }
                             #endregion
                             #region R-P-P
-                            else if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && knownLinkAngles.Contains(j.Link2))
+                            else if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region P-P-R
-                            else if (knownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2))
+                            else if (!unknownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region P-P-P
-                            else if (knownLinkAngles.Contains(j.Link1) && knownLinkAngles.Contains(j.Link2))
+                            else if (!unknownLinkAngles.Contains(j.Link1) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
-                            else break;
+                             break;
 
                         case JointTypes.RP:
                             #region R-RP-R&P
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2)
-                                && knownLinkAngles.Contains(j.Link2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2)
+                                && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
 
                             #endregion
                             #region R&P-RP-R
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && knownLinkAngles.Contains(j.Link1)
-                                && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link1)
+                                && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region P-RP-R&P
-                            if (knownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2) && knownLinkAngles.Contains(j.Link2))
+                            if (!unknownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region R&P-RP-P
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && knownLinkAngles.Contains(j.Link1) && knownLinkAngles.Contains(j.Link2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link1) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
-                            else break;
+                             break;
 
                         case JointTypes.G:
                             #region R-RP-R&P
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2)
-                                && knownLinkAngles.Contains(j.Link2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2)
+                                && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
 
                             #endregion
                             #region R&P-RP-R
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && knownLinkAngles.Contains(j.Link1)
-                                && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link1)
+                                && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region P-RP-R&P
-                            if (knownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, knownPositions, out knownJoint2) && knownLinkAngles.Contains(j.Link2))
+                            if (!unknownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
                             #region R&P-RP-P
-                            if (FindKnownPositionOnLink(j.Link1, knownPositions, out knownJoint1) && knownLinkAngles.Contains(j.Link1) && knownLinkAngles.Contains(j.Link2))
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link1) && !unknownLinkAngles.Contains(j.Link2))
                             {
-                                goto default;
+                                
                             }
                             #endregion
-                            else break;
-                        default:
-                            knownPositions.Add(j);
-                            knownPositions.AddRange(newKnownJointsFromLink1);
-                            knownPositions.AddRange(newKnownJointsFromLink2);
-                            unknownPositions.Remove(j);
-                            unknownPositions.RemoveAll(newKnownJointsFromLink1.Contains);
-                            unknownPositions.RemoveAll(newKnownJointsFromLink2.Contains);
-                            knownLinkAngles.Add(j.Link1);
-                            knownLinkAngles.Add(j.Link2);
-                            knownLinkAngles.AddRange(newKnownLinkAnglesFromLink1);
-                            knownLinkAngles.AddRange(newKnownLinkAnglesFromLink2);
-                            break;
+                             break;
                     }
                 }
             } while (unknownPositions.Count > 0 || initUnkCount == unknownPositions.Count);
@@ -196,14 +211,26 @@ namespace PlanarMechanismSimulator
             else return true;
         }
 
-        private double solveRPRIntersection(point ptA, double rAC, point ptB, double rBC, point oldPtC, point oldPtA, double oldSlideAngle)
+        #region Methods for P-?-P
+        private double currentSlideAngle(joint j, double[,] currentLinkParams)
         {
-            var lAB = Math.Sqrt((ptB.X - ptA.X) * (ptB.X - ptA.X) + (ptB.Y - ptA.Y) * (ptB.Y - ptA.Y));
-            var phi = Math.Atan2(ptB.Y - ptA.Y, ptB.X - ptA.X);
-            var oldTheta = Math.Atan2(oldPtC.Y - oldPtA.Y, oldPtC.X - oldPtA.X);
-            var alpha = Math.PI - oldTheta - oldSlideAngle;
-            return Math.PI - alpha - phi - Math.Asin((rAC * Math.Sin(alpha) + rAC) / lAB);
+            return Math.Tan(j.SlideAngle + currentLinkParams[links.IndexOf(j.Link1), 0]);
         }
+        private point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
+        {
+            if (double.IsNaN(slopeA))
+                return new point(ptA.X, slopeB * ptA.X + (ptB.Y - slopeB * ptB.X));
+            if (double.IsNaN(slopeB))
+                return new point(ptB.X, slopeA * ptB.X + (ptA.Y - slopeA * ptA.X));
+            if (Constants.sameCloseZero(ptA.X, ptB.X) && Constants.sameCloseZero(ptA.Y, ptB.Y)) return ptA;
+            if (Constants.sameCloseZero(slopeA, slopeB)) return new point(double.NaN, double.NaN);
+            var offsetA = ptA.Y - slopeA * ptA.X;
+            var offsetB = ptB.Y - slopeB * ptB.X;
+            var y = (offsetB - offsetA) / (slopeA - slopeB);
+            var x = (y - offsetA) / slopeA;
+            return new point(x, y);
+        }
+        #endregion
 
         #region Methods for R-P-R and R-R-R
         private double solveAngleChange(point point1, int pt1Index, point point2, int pt2Index, double[,] oldJointParams)
@@ -213,41 +240,34 @@ namespace PlanarMechanismSimulator
             return newAngle - oldAngle;
         }
 
-
-        private List<joint> setLinkPosition(joint knownJoint, int knownIndex, int linkIndex,
-            double[,] currentJointParams, double[,] oldJointParams, double[,] currentLinkParams, double[,] oldLinkParams, double deltaAngle)
+        #region the basis of R-P-R dyad determination method is the complex little function
+        private point solveRPRIntersection(point ptA, double rAC, point ptB, double rBC, 
+            double oldTheta, double oldSlideAngle, point numPt, out double angleChange)
         {
-            var oldAngle = oldLinkParams[linkIndex, 0];
-            currentLinkParams[linkIndex, 0] = oldAngle + deltaAngle;
-            var newKnownJoints = new List<joint>();
-            var thisLink = links[linkIndex];
-            foreach (var j in thisLink.joints)
-            {
-                if (j == knownJoint || j.LinkIsSlide(thisLink)) continue;
-                var jIndex = joints.IndexOf(j);
-                newKnownJoints.Add(j);
-                var length = thisLink.lengthBetween(j, knownJoint);
-                oldAngle = Math.Atan2(oldJointParams[jIndex, 1] - oldJointParams[knownIndex, 1], oldJointParams[jIndex, 0] - oldJointParams[knownIndex, 0]);
-                var newAngle = oldAngle + deltaAngle;
-                currentJointParams[jIndex, 0] = currentJointParams[knownIndex, 0] + length * Math.Cos(newAngle);
-                currentJointParams[jIndex, 1] = currentJointParams[knownIndex, 1] + length * Math.Sin(newAngle);
-            }
-            return newKnownJoints;
-        }
+            var lAB = Math.Sqrt((ptB.X - ptA.X) * (ptB.X - ptA.X) + (ptB.Y - ptA.Y) * (ptB.Y - ptA.Y));
+            var phi = Math.Atan2(ptB.Y - ptA.Y, ptB.X - ptA.X);
+            var alpha = oldTheta + oldSlideAngle;
+            var thetaNeg = alpha - phi - Math.Asin((rBC + rAC * Math.Sin(alpha)) / lAB);
+            var xNeg = ptA.X + rAC * Math.Cos(thetaNeg);
+            var yNeg = ptA.Y + rAC * Math.Sin(thetaNeg);
+            var distNegSquared = (xNeg - numPt.X) * (xNeg - numPt.X) + (yNeg - numPt.Y) * (yNeg - numPt.Y);
 
-        private List<link> setLinkAngles(double angleChange, link thisLink, IEnumerable<joint> knownJoints, double[,] currentLinkParams, double[,] oldLinkParams)
-        {
-            var newKnownLinkAngles = new List<link>();
-            foreach (var j in knownJoints)
+            alpha = oldTheta - oldSlideAngle;
+            var thetaPos = alpha + phi + Math.PI / 2 - Math.Asin((rBC - rAC * Math.Sin(alpha)) / lAB);
+            var xPos = ptA.X + rAC * Math.Cos(thetaPos);
+            var yPos = ptA.Y + rAC * Math.Sin(thetaPos);
+            var distPosSquared = (xPos - numPt.X) * (xPos - numPt.X) + (yPos - numPt.Y) * (yPos - numPt.Y);
+            if (distNegSquared < distPosSquared)
             {
-                if (j.jointType != JointTypes.P) continue;
-                var newLink = (j.Link1 == thisLink) ? j.Link2 : j.Link1;
-                var newLinkIndex = links.IndexOf(newLink);
-                currentLinkParams[newLinkIndex, 0] = oldLinkParams[newLinkIndex, 0] + angleChange;
-                newKnownLinkAngles.Add(newLink);
+                angleChange = thetaNeg - oldTheta;
+                return new point(xNeg, yNeg);
             }
-            return newKnownLinkAngles;
+            angleChange = thetaPos - oldTheta;
+            return new point(xPos, yPos);
         }
+        #endregion
+
+        #region the basis of R-R-R dyad determination method is the intersection of two circles
         private point solveViaCircleIntersection(double r1, point ptA, double r2, point ptB, point numPt)
         {
             /* taken from http://2000clicks.com/MathHelp/GeometryConicSectionCircleIntersection.aspx */
@@ -278,11 +298,73 @@ namespace PlanarMechanismSimulator
         }
         #endregion
 
+        #endregion
 
-        private bool FindKnownPositionOnLink(link link, List<joint> knownPositions, out joint knownJoint)
+        private void setLinkPosition(joint knownJoint, int knownIndex, int linkIndex, List<joint> unknownPositions,
+            double[,] currentJointParams, double[,] oldJointParams, double[,] currentLinkParams, double[,] oldLinkParams, double delta)
+        {
+            var thisLink = links[linkIndex];
+            if (knownJoint.jointType == JointTypes.R)
+            {
+                var oldAngle = oldLinkParams[linkIndex, 0];
+                currentLinkParams[linkIndex, 0] = oldAngle + delta;
+
+                foreach (var j in thisLink.joints)
+                    if (unknownPositions.Contains(j) || !j.LinkIsSlide(thisLink))
+                    {
+                        unknownPositions.Remove(j);
+                        if (j == knownJoint) continue;
+                        var jIndex = joints.IndexOf(j);
+                        var length = thisLink.lengthBetween(j, knownJoint);
+                        oldAngle = Math.Atan2(oldJointParams[jIndex, 1] - oldJointParams[knownIndex, 1], oldJointParams[jIndex, 0] - oldJointParams[knownIndex, 0]);
+                        var newAngle = oldAngle + delta;
+                        currentJointParams[jIndex, 0] = currentJointParams[knownIndex, 0] + length * Math.Cos(newAngle);
+                        currentJointParams[jIndex, 1] = currentJointParams[knownIndex, 1] + length * Math.Sin(newAngle);
+                    }
+
+            }
+            else if (knownJoint.jointType == JointTypes.P)
+            {
+                currentLinkParams[inputLinkIndex, 0] = oldLinkParams[inputLinkIndex, 0];
+                /* the block input does not rotate therefore the angle, angular velocity, and angular accelerations are all zero. */
+                var angle = currentLinkParams[links.IndexOf(inputpivot.Link1), 0] + inputpivot.SlideAngle;
+                var xDelta = delta * Math.Cos(angle);
+                var yDelta = delta * Math.Sin(angle);
+                for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
+                {
+                    currentJointParams[i, 0] = oldJointParams[i, 0] + xDelta;
+                    currentJointParams[i, 1] = oldJointParams[i, 1] + yDelta;
+                }
+            }
+            else throw new Exception("A G-joint or a RP-joint should not have been sent to setLinkPosition.");
+        }
+
+        private void setLinkAngles(double angleChange, link thisLink, List<link> unknownLinkAngles,
+            double[,] currentLinkParams, double[,] oldLinkParams)
+        {
+            unknownLinkAngles.Remove(thisLink);
+            foreach (var j in thisLink.joints)
+            {
+                if (j.jointType != JointTypes.P) continue;
+                var newLink = (j.Link1 == thisLink) ? j.Link2 : j.Link1;
+                var newLinkIndex = links.IndexOf(newLink);
+                currentLinkParams[newLinkIndex, 0] = oldLinkParams[newLinkIndex, 0] + angleChange;
+                unknownLinkAngles.Remove(newLink);
+            }
+        }
+
+        private bool FindKnownPositionOnLink(link link, List<joint> unknownPositions, out joint knownJoint)
         {
             knownJoint = null;
-            knownJoint = link.joints.Find(j => knownPositions.Contains(j) && !j.LinkIsSlide(link)); // and j is not a gear?
+            knownJoint = link.joints.Find(j => !unknownPositions.Contains(j) && j.jointType == JointTypes.R);
+            if (knownJoint != null) return true;
+            return false;
+        }
+        private bool FindKnownSlopeOnLink(link link, List<joint> unknownPositions, List<link> unknownLinkAngles, out joint knownJoint)
+        {
+            knownJoint = null;
+            if (unknownLinkAngles.Contains(link)) return false;
+            knownJoint = link.joints.Find(j => !unknownPositions.Contains(j) && j.jointType == JointTypes.P);
             if (knownJoint != null) return true;
             return false;
         }
