@@ -115,54 +115,54 @@ delegate
     } while (validPosition && lessThanFullRotation());
 }
             #endregion
-            #region *** Stepping Backward in Time ***
-, delegate
- {
-     var currentTime = 0.0;
-     Boolean validPosition;
-     do
-     {
-         var currentLinkParams = new double[numLinks, 3];
-         var currentPivotParams = new double[numJoints, 6];
-         #region Find Next Positions
-         NumericalPosition(-FixedTimeStep, currentPivotParams, currentLinkParams,
-             lastBackwardPivotParams, lastBackwardLinkParams);
-         var delta = -InputSpeed * FixedTimeStep;
-         validPosition = DefineNewPositions(delta, currentPivotParams, currentLinkParams,
-             lastForwardPivotParams, lastForwardLinkParams);
-         #endregion
-         if (validPosition)
-         {
-             lock (InputRange) { InputRange[1] = currentLinkParams[inputLinkIndex, 0]; }
-             InitializeGroundAndInputSpeedAndAcceleration(currentPivotParams, currentLinkParams);
+//            #region *** Stepping Backward in Time ***
+//, delegate
+// {
+//     var currentTime = 0.0;
+//     Boolean validPosition;
+//     do
+//     {
+//         var currentLinkParams = new double[numLinks, 3];
+//         var currentPivotParams = new double[numJoints, 6];
+//         #region Find Next Positions
+//         NumericalPosition(-FixedTimeStep, currentPivotParams, currentLinkParams,
+//             lastBackwardPivotParams, lastBackwardLinkParams);
+//         var delta = -InputSpeed * FixedTimeStep;
+//         validPosition = DefineNewPositions(delta, currentPivotParams, currentLinkParams,
+//             lastForwardPivotParams, lastForwardLinkParams);
+//         #endregion
+//         if (validPosition)
+//         {
+//             lock (InputRange) { InputRange[1] = currentLinkParams[inputLinkIndex, 0]; }
+//             InitializeGroundAndInputSpeedAndAcceleration(currentPivotParams, currentLinkParams);
 
-             #region Find Velocities for Current Position
-             if (!findVelocitiesThroughICMethod(currentTime, true))
-             {
-                 Status += "Instant Centers could not be found at" + currentTime + ".";
-                 NumericalVelocity(-FixedTimeStep, currentPivotParams, currentLinkParams,
-                     lastBackwardPivotParams, lastBackwardLinkParams);
-             }
-             #endregion
-             #region Find Accelerations for Current Position
-             if (!findAccelerationAnalytically(currentTime, true))
-             {
-                 Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                 NumericalAcceleration(-FixedTimeStep, currentPivotParams, currentLinkParams,
-                     lastBackwardPivotParams, lastBackwardLinkParams);
-             }
-             #endregion
-             currentTime -= FixedTimeStep; 
-             lock (JointParameters)
-                 JointParameters.Add(currentTime, currentPivotParams);
-             lock (LinkParameters)
-                 LinkParameters.Add(currentTime, currentLinkParams);
-             lastBackwardPivotParams = currentPivotParams;
-             lastBackwardLinkParams = currentLinkParams;
-         }
-     } while (validPosition && lessThanFullRotation());
-            #endregion
- }
+//             #region Find Velocities for Current Position
+//             if (!findVelocitiesThroughICMethod(currentTime, true))
+//             {
+//                 Status += "Instant Centers could not be found at" + currentTime + ".";
+//                 NumericalVelocity(-FixedTimeStep, currentPivotParams, currentLinkParams,
+//                     lastBackwardPivotParams, lastBackwardLinkParams);
+//             }
+//             #endregion
+//             #region Find Accelerations for Current Position
+//             if (!findAccelerationAnalytically(currentTime, true))
+//             {
+//                 Status += "Analytical acceleration could not be found at" + currentTime + ".";
+//                 NumericalAcceleration(-FixedTimeStep, currentPivotParams, currentLinkParams,
+//                     lastBackwardPivotParams, lastBackwardLinkParams);
+//             }
+//             #endregion
+//             currentTime -= FixedTimeStep;
+//             lock (JointParameters)
+//                 JointParameters.Add(currentTime, currentPivotParams);
+//             lock (LinkParameters)
+//                 LinkParameters.Add(currentTime, currentLinkParams);
+//             lastBackwardPivotParams = currentPivotParams;
+//             lastBackwardLinkParams = currentLinkParams;
+//         }
+//     } while (validPosition && lessThanFullRotation());
+//            #endregion
+// }
         );
         }
 

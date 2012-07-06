@@ -8,6 +8,12 @@ namespace ExcelPlanarMechSimulator
 {
     public partial class MechSimRibbon
     {
+        private bool _convertAnglefromDegrees = true;
+        public Boolean ConvertAnglefromDegrees
+        {
+            get { return _convertAnglefromDegrees; }
+            set { _convertAnglefromDegrees = value; }
+        }
         private void MechSimRibbon_Load(object sender, RibbonUIEventArgs e)
         {
             button_Simulate.Enabled = false;
@@ -18,7 +24,7 @@ namespace ExcelPlanarMechSimulator
         {
             Globals.Sheet1.Range["h4"].Value2 += message + "\n";
         }
-         void clear_status()
+        void clear_status()
         {
             Globals.Sheet1.Range["h4"].Value2 = "";
         }
@@ -48,7 +54,11 @@ namespace ExcelPlanarMechSimulator
                         if (data[i + 1, 2] != null && double.TryParse(data[i + 1, 2].ToString(), out Xtemp)
                             && data[i + 1, 3] != null && double.TryParse(data[i + 1, 3].ToString(), out Ytemp)
                             && data[i + 1, 4] != null && double.TryParse(data[i + 1, 4].ToString(), out angleTemp))
+                        {
+                            if (ConvertAnglefromDegrees) angleTemp *= Math.PI / 180.0;
                             Positions.Add(new[] { angleTemp, Xtemp, Ytemp });
+
+                        }
                         else throw new Exception("Numerical data required (x, y, and angle) for joint at row " + (i + 1).ToString());
                     }
                     else
@@ -137,7 +147,7 @@ namespace ExcelPlanarMechSimulator
                 name += pms.joints[i].Link1.name;
                 if (pms.joints[i].Link2 != null)
                     name += ", " + pms.joints[i].Link2.name;
-                name +=  ")";
+                name += ")";
                 mergeAndCenter(Globals.Sheet2.Range[Globals.Sheet2.Cells[1, 2 + jointNumCol * i], Globals.Sheet2.Cells[1, 1 + jointNumCol * (i + 1)]]);
                 Globals.Sheet2.Cells[1, 2 + jointNumCol * i].Value = name;
                 Globals.Sheet2.Cells[2, 2 + jointNumCol * i].Value = "x";
@@ -221,6 +231,7 @@ namespace ExcelPlanarMechSimulator
         {
 
         }
+
 
     }
 }

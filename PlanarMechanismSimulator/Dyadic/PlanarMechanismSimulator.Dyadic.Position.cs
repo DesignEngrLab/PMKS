@@ -35,8 +35,8 @@ namespace PlanarMechanismSimulator
                 {
                     var j = unknownPositions[--k];
                     var jIndex = joints.IndexOf(j);
-                    joint knownJoint1 = null;
-                    joint knownJoint2 = null;
+                    joint knownJoint1;
+                    joint knownJoint2;
                     switch (j.jointType)
                     {
                         case JointTypes.R:
@@ -109,8 +109,6 @@ namespace PlanarMechanismSimulator
                             else if (FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
                                 && FindKnownSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
                             {
-                                var kPIndex1 = joints.IndexOf(knownJoint1);
-                                var kPIndex2 = joints.IndexOf(knownJoint2);
                                 var sJPoint = solveViaIntersectingLines(j, jIndex, knownJoint1, knownJoint2, currentJointParams,
                                     oldJointParams, currentLinkParams, oldLinkParams);
                                 currentJointParams[jIndex, 0] = sJPoint.X;
@@ -139,6 +137,8 @@ namespace PlanarMechanismSimulator
                                 var sJPoint = solveRPRIntersection(knownPoint2, rAC, knownPoint1, j.Link1.lengthBetween(j, knownJoint1), oldTheta,
                                      angleOfBlockToJoint(jIndex, kPIndex2, oldJointParams, oldLinkParams), new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
                                        out angleChange);
+                                if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
+                                    return false;
                                 currentJointParams[jIndex, 0] = sJPoint.X;
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromRotate(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
@@ -150,15 +150,46 @@ namespace PlanarMechanismSimulator
                             }
                             #endregion
                             #region R-P-P
-                            else if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) && !unknownLinkAngles.Contains(j.Link2))
-                            {
+                            else if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1)
+                                && FindKnownSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
+                            { /* in this case, the slide is on the rotating link and the block is on the sliding link */
+                                var kPIndex1 = joints.IndexOf(knownJoint1);
+                                double angleChange;
+                                point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, jIndex, kPIndex1, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
 
+
+                                    out angleChange);
+                                if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
+                                    return false;
+                                currentJointParams[jIndex, 0] = sJPoint.X;
+                                currentJointParams[jIndex, 1] = sJPoint.Y;
+                                setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
+                                    currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
+                                                                         currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
                             }
                             #endregion
                             #region P-P-R
-                            else if (!unknownLinkAngles.Contains(j.Link1) && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
-                            {
-
+                            else if (FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint1)
+                                && FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint2))
+                            { /* in this case, the block is on the rotating link and the slide is on the sliding link */
+                                var kPIndex1 = joints.IndexOf(knownJoint1);
+                                var kPIndex2 = joints.IndexOf(knownJoint2);
+                                double angleChange;
+                                point sJPoint = solveViaSlopeToCircleIntersectionPPR(j, jIndex, kPIndex1, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
+                                    out angleChange);
+                                if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
+                                    return false;
+                                currentJointParams[jIndex, 0] = sJPoint.X;
+                                currentJointParams[jIndex, 1] = sJPoint.Y;
+                                setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link2), unknownPositions,
+                                    currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkPositionFromSlide(knownJoint2, kPIndex2, links.IndexOf(j.Link1), unknownPositions,
+                                                                         currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
                             }
                             #endregion
                             #region P-P-P
@@ -246,7 +277,7 @@ namespace PlanarMechanismSimulator
             } while (unknownPositions.Count > 0 || initUnkCount == unknownPositions.Count);
             if (initUnkCount == unknownPositions.Count)
                 return NDPS.Run_PositionsAreClose(currentJointParams, currentLinkParams, oldJointParams, oldLinkParams);
-            else return true;
+            return true;
         }
 
         #region Methods for P-?-P
@@ -325,24 +356,65 @@ namespace PlanarMechanismSimulator
         private point solveRPRIntersection(point ptA, double rAC, point ptB, double rBC,
             double oldTheta, double alpha, point numPt, out double angleChange)
         {
+            angleChange = double.NaN;
             var lAB = Constants.distance(ptA, ptB);
             var phi = Constants.angle(ptA, ptB);
-            var thetaNeg = alpha - phi - Math.Asin((rBC + rAC * Math.Sin(alpha)) / lAB);
-            var xNeg = ptA.X + rAC * Math.Cos(thetaNeg);
-            var yNeg = ptA.Y + rAC * Math.Sin(thetaNeg);
-            var distNegSquared = (xNeg - numPt.X) * (xNeg - numPt.X) + (yNeg - numPt.Y) * (yNeg - numPt.Y);
+            if ((rBC + rAC * Math.Sin(alpha)) > lAB) return new point(double.NaN, double.NaN);
+            /* first, the internal positive case */
+            var beta = Math.Asin((rBC + rAC * Math.Sin(alpha)) / lAB);
+            var thetaIntPos = Math.PI - alpha - beta + phi;
+            var xIntPos = ptA.X + rAC * Math.Cos(thetaIntPos);
+            var yIntPos = ptA.Y + rAC * Math.Sin(thetaIntPos);
+            var distthetaIntPosSquared = Constants.distanceSqared(xIntPos, yIntPos, numPt.X, numPt.Y);
 
-            var thetaPos = alpha + phi + Math.PI / 2 - Math.Asin((rBC - rAC * Math.Sin(alpha)) / lAB);
-            var xPos = ptA.X + rAC * Math.Cos(thetaPos);
-            var yPos = ptA.Y + rAC * Math.Sin(thetaPos);
-            var distPosSquared = (xPos - numPt.X) * (xPos - numPt.X) + (yPos - numPt.Y) * (yPos - numPt.Y);
-            if (distNegSquared < distPosSquared)
+            /* second, the internal negative case */
+            var thetaIntNeg = beta + phi - alpha;
+            var xIntNeg = ptA.X + rAC * Math.Cos(thetaIntNeg);
+            var yIntNeg = ptA.Y + rAC * Math.Sin(thetaIntNeg);
+            var distthetaIntNegSquared = Constants.distanceSqared(xIntNeg, yIntNeg, numPt.X, numPt.Y);
+
+            /* first, the External positive case */
+            beta = Math.Asin((rBC - rAC * Math.Sin(alpha)) / lAB);
+            var thetaExtPos = Math.PI - alpha + beta + phi;
+            var xExtPos = ptA.X + rAC * Math.Cos(thetaExtPos);
+            var yExtPos = ptA.Y + rAC * Math.Sin(thetaExtPos);
+            var distthetaExtPosSquared = Constants.distanceSqared(xExtPos, yExtPos, numPt.X, numPt.Y);
+
+            /* second, the External negative case */
+            var thetaExtNeg = phi - beta - alpha;
+            var xExtNeg = ptA.X + rAC * Math.Cos(thetaExtNeg);
+            var yExtNeg = ptA.Y + rAC * Math.Sin(thetaExtNeg);
+            var distthetaExtNegSquared = Constants.distanceSqared(xExtNeg, yExtNeg, numPt.X, numPt.Y);
+
+            var distance = new List<double>
+                               {
+                                   distthetaIntPosSquared, distthetaIntNegSquared,
+                                   distthetaExtPosSquared, distthetaExtNegSquared
+                               };
+            var minDist = distance.Min();
+            point jPoint;
+            switch (distance.FindIndex(d => d == minDist))
             {
-                angleChange = thetaNeg - oldTheta;
-                return new point(xNeg, yNeg);
+                case 0:
+                    angleChange = thetaIntPos - oldTheta;
+                    jPoint = new point(xIntPos, yIntPos);
+                    break;
+                case 1:
+                    angleChange = thetaIntNeg - oldTheta;
+                    jPoint = new point(xIntNeg, yIntNeg);
+                    break;
+                case 2:
+                    angleChange = thetaExtPos - oldTheta;
+                    jPoint = new point(xExtPos, yExtPos);
+                    break;
+                default:
+                    angleChange = thetaExtNeg - oldTheta;
+                    jPoint = new point(xExtNeg, yExtNeg);
+                    break;
             }
-            angleChange = thetaPos - oldTheta;
-            return new point(xPos, yPos);
+            while (angleChange < -Math.PI / 2) angleChange += Math.PI;
+            while (angleChange > Math.PI / 2) angleChange -= Math.PI;
+            return jPoint;
         }
         #endregion
 
@@ -409,6 +481,63 @@ namespace PlanarMechanismSimulator
             var yPos = ptA.Y + r1 * Math.Sin(thetaPos);
             var distPosSquared = Constants.distanceSqared(numPt.X, numPt.Y, xPos, yPos);
             var oldTheta = Constants.angle(oldJointParams[kpIndex, 0], oldJointParams[kpIndex, 1], oldJointParams[jIndex, 0], oldJointParams[jIndex, 1]);
+            if (distNegSquared < distPosSquared)
+            {
+                angleChange = thetaNeg - oldTheta;
+                return new point(xNeg, yNeg);
+            }
+            angleChange = thetaPos - oldTheta;
+            return new point(xPos, yPos);
+        }
+
+
+        private point solveViaSlopeToCircleIntersectionPPR(joint j, int jIndex, int kPIndex1,
+            double[,] currentJointParams, double[,] oldJointParams, double[,] currentLinkParams, double[,] oldLinkParams,
+            point numPt, out double angleChange)
+        {
+            var ptA = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 0]);
+            var rAC = j.Link2.lengthBetween(j, joints[kPIndex1]);
+            var oldTheta = Constants.angle(oldJointParams[kPIndex1, 0], oldJointParams[kPIndex1, 1],
+                oldJointParams[jIndex, 0], oldJointParams[jIndex, 1]);
+            var slideAngleC = slideAngle(j, currentLinkParams);
+            var alpha = angleOfBlockToJoint(jIndex, kPIndex1, oldJointParams, oldLinkParams);
+            var thetaNeg = slideAngleC - alpha;
+            var xNeg = ptA.X + rAC * Math.Cos(thetaNeg);
+            var yNeg = ptA.Y + rAC * Math.Sin(thetaNeg);
+            var distNegSquared = Constants.distanceSqared(xNeg, yNeg, numPt.X, numPt.Y);
+
+            var thetaPos = thetaNeg + Math.PI;
+            var xPos = ptA.X + rAC * Math.Cos(thetaPos);
+            var yPos = ptA.Y + rAC * Math.Sin(thetaPos);
+            var distPosSquared = Constants.distanceSqared(xPos, yPos, numPt.X, numPt.Y);
+            if (distNegSquared < distPosSquared)
+            {
+                angleChange = thetaNeg - oldTheta;
+                return new point(xNeg, yNeg);
+            }
+            angleChange = thetaPos - oldTheta;
+            return new point(xPos, yPos);
+        }
+
+        private point solveViaSlopeToCircleIntersectionRPP(joint j, int jIndex, int kPIndex1,
+            double[,] currentJointParams, double[,] oldJointParams, double[,] currentLinkParams, double[,] oldLinkParams,
+            point numPt, out double angleChange)
+        {
+            var ptA = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 0]);
+            var rAC = j.Link2.lengthBetween(j, joints[kPIndex1]);
+            var oldTheta = Constants.angle(oldJointParams[kPIndex1, 0], oldJointParams[kPIndex1, 1],
+                oldJointParams[jIndex, 0], oldJointParams[jIndex, 1]);
+            var slideAngleC = slideAngle(j, currentLinkParams);
+            var alpha = angleOfBlockToJoint(jIndex, kPIndex1, oldJointParams, oldLinkParams);
+            var thetaNeg = slideAngleC - alpha;
+            var xNeg = ptA.X + rAC * Math.Cos(thetaNeg);
+            var yNeg = ptA.Y + rAC * Math.Sin(thetaNeg);
+            var distNegSquared = Constants.distanceSqared(xNeg, yNeg, numPt.X, numPt.Y);
+
+            var thetaPos = thetaNeg + Math.PI;
+            var xPos = ptA.X + rAC * Math.Cos(thetaPos);
+            var yPos = ptA.Y + rAC * Math.Sin(thetaPos);
+            var distPosSquared = Constants.distanceSqared(xPos, yPos, numPt.X, numPt.Y);
             if (distNegSquared < distPosSquared)
             {
                 angleChange = thetaNeg - oldTheta;
