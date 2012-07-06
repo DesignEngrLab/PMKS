@@ -28,5 +28,62 @@ namespace PlanarMechanismSimulator
         {
             return sameCloseZero(x1 - x2);
         }
+
+
+        #region DistanceSquared
+        internal static double distanceSqared(double x1, double y1, double x2, double y2)
+        {
+            return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+        }
+        internal static double distanceSqared(point point1, point point2)
+        {
+            return distanceSqared(point1.X, point1.Y, point2.X, point2.Y);
+        }
+        internal static double distanceSqared(point point1, joint joint2)
+        {
+            return distanceSqared(point1.X, point1.Y, joint2.initX, joint2.initY);
+        }
+        internal static double distanceSqared(joint joint1, joint joint2)
+        {
+            return distanceSqared(joint1.initX, joint1.initY, joint2.initX, joint2.initY);
+        }
+        #endregion
+
+        #region Distance
+        internal static double distance(double x1, double y1, double x2, double y2)
+        {
+            return Math.Sqrt(distanceSqared(x1, y1, x2, y2));
+        }
+        internal static double distance(point point1, point point2)
+        {
+            return distance(point1.X, point1.Y, point2.X, point2.Y);
+        }
+        internal static double distance(point point1, joint joint2)
+        {
+            return distance(point1.X, point1.Y, joint2.initX, joint2.initY);
+        }
+        internal static double distance(joint joint1, joint joint2)
+        {
+            return distance(joint1.initX, joint1.initY, joint2.initX, joint2.initY);
+        }
+        #endregion
+
+        #region Angle
+        internal static double angle(point start, point end)
+        {
+            return angle(start.X, start.Y, end.X, end.Y);
+        }
+
+        internal static double angle(joint start, joint end)
+        {
+            return angle(start.initX, start.initY, end.initX, end.initY);
+        }
+
+        internal static double angle(double startX, double startY, double endX, double endY)
+        {
+            return Math.Atan2(y2 - y1, x2 - x1);
+        }
+        #endregion
+
     }
 }

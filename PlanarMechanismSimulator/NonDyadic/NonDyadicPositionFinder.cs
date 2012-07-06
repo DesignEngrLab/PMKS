@@ -92,8 +92,8 @@ namespace PlanarMechanismSimulator
                 {
                     var joint0Index = joints.IndexOf(links[i].joints[0]);
                     var joint1Index = joints.IndexOf(links[i].joints[1]);
-                    newLinkParams[i, 0] = Math.Atan2(newJointParams[joint1Index, 1] - newJointParams[joint0Index, 1],
-                        newJointParams[joint1Index, 0] - newJointParams[joint0Index, 0]);
+                    newLinkParams[i, 0] = Constants.angle(newJointParams[joint0Index, 0], newJointParams[joint0Index, 1],
+                       newJointParams[joint1Index, 0], newJointParams[joint1Index, 1]);
                 }
                 return true;
             }
@@ -141,8 +141,8 @@ namespace PlanarMechanismSimulator
             {
                 var joint0Index = joints.IndexOf(links[i].joints[0]);
                 var joint1Index = joints.IndexOf(links[i].joints[1]);
-                newLinkParams[i, 0] = Math.Atan2(newJointParams[joint1Index, 1] - newJointParams[joint0Index, 1],
-                    newJointParams[joint1Index, 0] - newJointParams[joint0Index, 0]);
+                newLinkParams[i, 0] = Constants.angle(newJointParams[joint0Index, 0], newJointParams[joint0Index, 1],
+                    newJointParams[joint1Index, 0], newJointParams[joint1Index, 1]);
             }
             return fStar;
         }

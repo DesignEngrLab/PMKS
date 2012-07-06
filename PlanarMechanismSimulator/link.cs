@@ -48,12 +48,6 @@ namespace PlanarMechanismSimulator
         public string name { get; private set; }
 
         public double Angle { get; set; }
-        //{
-        //    get
-        //    {
-        //        return Math.Atan2(joints[1].Y - joints[0].Y, joints[1].X - joints[0].X);
-        //    }
-        //}
 
         internal link(string name, List<joint> Joints, Boolean IsGround)
         {
@@ -70,10 +64,10 @@ namespace PlanarMechanismSimulator
             {
                 var ground = fixedJoints.Find(j => j.isGround);
                 var notGround = fixedJoints.Find(j => !j.isGround);
-                Angle = Math.Atan2(notGround.initY - ground.initY, notGround.initX - ground.initX);
+                Angle = Constants.angle(ground, notGround);
             }
-            else Angle = Math.Atan2(fixedJoints[1].initY - fixedJoints[0].initY, fixedJoints[1].initX - fixedJoints[0].initX);  
-            
+            else Angle = Constants.angle(fixedJoints[0], fixedJoints[1]);
+
             //** see comments under lengths declaration for reason why this is commented. **
             //var numLengths = 2 * (joints.Count - 2) + 1;
             var numLengths = joints.Count * (joints.Count - 1) / 2;
@@ -112,7 +106,7 @@ namespace PlanarMechanismSimulator
             //}
             foreach (var j in joints)
                 /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
-                if (j.LinkIsSlide(this)) j.SlideAngle -= Angle;   
+                if (j.LinkIsSlide(this)) j.SlideAngle -= Angle;
         }
 
         private double findOrthoPoint(joint slideJoint, joint fixedJoint)
@@ -120,7 +114,7 @@ namespace PlanarMechanismSimulator
             point orthoPoint;
             var piRemainder = slideJoint.SlideAngle % Math.PI;
             if (Constants.sameCloseZero(piRemainder))
-                orthoPoint =new point(fixedJoint.initX, slideJoint.initY);
+                orthoPoint = new point(fixedJoint.initX, slideJoint.initY);
             else if (Constants.sameCloseZero(Math.Abs(piRemainder), Math.PI / 2))
                 orthoPoint = new point(slideJoint.initX, fixedJoint.initY);
             else
@@ -129,13 +123,9 @@ namespace PlanarMechanismSimulator
                 var x = (slope * slope * slideJoint.initX + fixedJoint.initX + slope * (fixedJoint.initX - slideJoint.initX)) /
                         (slope * slope + 1);
                 var y = slope * x + (slideJoint.initY - slope * slideJoint.initX);
-                orthoPoint =new point(x, y);
+                orthoPoint = new point(x, y);
             }
-            return Math.Sqrt((orthoPoint.X - fixedJoint.initX)* (orthoPoint.X - fixedJoint.initX)+ (orthoPoint.Y - fixedJoint.initY)* (orthoPoint.Y - fixedJoint.initY));
-        }
-        private double distanceBetweenFixedJoints(joint iJoint, joint jJoint)
-        {
-            return Math.Sqrt((iJoint.initX - jJoint.initX)* (iJoint.initX - jJoint.initX)+ (iJoint.initY - jJoint.initY)* (iJoint.initY - jJoint.initY));
+            return Constants.distance(orthoPoint, fixedJoint);
         }
         internal double lengthBetween(joint joint1, joint joint2)
         {

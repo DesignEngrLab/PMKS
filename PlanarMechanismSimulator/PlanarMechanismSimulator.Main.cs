@@ -262,7 +262,7 @@ namespace PlanarMechanismSimulator
                 //    inputpivot.Link2 = tempLinkRef;
                 //}
                 /* reorder links, move input link and ground link to back of list */
-                inputLink =(inputpivot.Link2.isGround)? inputpivot.Link1:inputpivot.Link2;
+                inputLink = (inputpivot.Link2.isGround) ? inputpivot.Link1 : inputpivot.Link2;
                 links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list
                 groundLink = links.First(c => c.isGround);
                 links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
@@ -357,9 +357,7 @@ namespace PlanarMechanismSimulator
                     throw new Exception("Link lengths for all links need to be set first.");
                 var inputLink = links.Find(a => a.isGround && a.joints.Contains(inputpivot)) ??
                                 links.Find(a => a.joints.Contains(inputpivot));
-                if (
-                    Math.Abs(inputLink.lengths[0] -
-                             Math.Sqrt((inputX - gnd1X) * (inputX - gnd1X) + (inputY - gnd1Y) * (inputY - gnd1Y))) > epsilon)
+                if (!Constants.sameCloseZero(inputLink.lengths[0], Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
                                         inputLink.lengths[0]);
                 inputpivot.initX = inputX;
@@ -534,7 +532,7 @@ namespace PlanarMechanismSimulator
                 for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 {
                     var length = inputLink.lengthBetween(inputpivot, joints[i]);
-                    var theta = Math.Atan2(jointParams[i, 1] - yInputJoint, jointParams[i, 0] - xInputJoint);
+                    var theta = Constants.angle(xInputJoint, yInputJoint, jointParams[i, 0], jointParams[i, 1]);
                     jointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
                     jointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
                     jointParams[i, 4] = jointParams[i, 5] = 0.0;
