@@ -43,7 +43,7 @@ namespace PlanarMechanismSimulator
                 var smallBackwardStepJointParams = (double[,])initPivotParams.Clone();
                 var dummyLinkParams = (double[,])initLinkParams.Clone();
                 var delta = -0.01 * InputSpeed * FixedTimeStep;
-                if (AnalyticallyCorrectPositionsDyadic(delta, smallBackwardStepJointParams, dummyLinkParams, initPivotParams, initLinkParams))
+                if (DefineNewPositions(delta, smallBackwardStepJointParams, dummyLinkParams, initPivotParams, initLinkParams))
                 {
                     JointParameters.Add(-0.01 * FixedTimeStep, smallBackwardStepJointParams);
                     LinkParameters.Add(-0.01 * FixedTimeStep, dummyLinkParams);
@@ -79,7 +79,7 @@ delegate
         var delta = InputSpeed * FixedTimeStep;
         /* Based upon the numerical approximation, we analytically update the remaining
          * joints. */
-        validPosition = AnalyticallyCorrectPositionsDyadic(delta, currentPivotParams, currentLinkParams,
+        validPosition = DefineNewPositions(delta, currentPivotParams, currentLinkParams,
             lastForwardPivotParams, lastForwardLinkParams);
         /* create new currentPivotParams based on these updated positions of the joints */
         #endregion
@@ -128,7 +128,7 @@ delegate
          NumericalPosition(-FixedTimeStep, currentPivotParams, currentLinkParams,
              lastBackwardPivotParams, lastBackwardLinkParams);
          var delta = -InputSpeed * FixedTimeStep;
-         validPosition = AnalyticallyCorrectPositionsDyadic(delta, currentPivotParams, currentLinkParams,
+         validPosition = DefineNewPositions(delta, currentPivotParams, currentLinkParams,
              lastForwardPivotParams, lastForwardLinkParams);
          #endregion
          if (validPosition)

@@ -80,10 +80,10 @@ namespace PlanarMechanismSimulator
                     var jJoint = joints[j];
                     if (iJoint.LinkIsSlide(this) && jJoint.LinkIsSlide(this))
                         if (Constants.sameCloseZero(iJoint.SlideAngle, jJoint.SlideAngle))
-                            lengths[lengthIndex++] = distanceBetweenFixedJoints(iJoint, jJoint);
+                            lengths[lengthIndex++] = Constants.distance(iJoint, jJoint);
                         else lengths[lengthIndex++] = 0.0;
                     else if (!iJoint.LinkIsSlide(this) && !jJoint.LinkIsSlide(this))
-                        lengths[lengthIndex++] = distanceBetweenFixedJoints(iJoint, jJoint);
+                        lengths[lengthIndex++] = Constants.distance(iJoint, jJoint);
                     else if (iJoint.LinkIsSlide(this)) lengths[lengthIndex++] = findOrthoPoint(iJoint, jJoint);
                     else if (jJoint.LinkIsSlide(this)) lengths[lengthIndex++] = findOrthoPoint(jJoint, iJoint);
                 }
