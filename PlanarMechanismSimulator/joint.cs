@@ -34,7 +34,7 @@ namespace PlanarMechanismSimulator
 
         public link Link1 { get; internal set; }
         public link Link2 { get; internal set; }
-        public double SlideAngle { get; set; }
+        public double SlideAngle = double.NaN;
         // how to plan for future cam shapes
 
         

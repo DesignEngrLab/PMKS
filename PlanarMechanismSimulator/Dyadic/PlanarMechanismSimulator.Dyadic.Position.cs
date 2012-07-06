@@ -137,7 +137,7 @@ namespace PlanarMechanismSimulator
                                 double oldTheta = Constants.angle(oldJointParams[kPIndex2, 0], oldJointParams[kPIndex2, 1], oldJointParams[jIndex, 0], oldJointParams[jIndex, 1]);
                                 double angleChange;
                                 var sJPoint = solveRPRIntersection(knownPoint2, rAC, knownPoint1, j.Link1.lengthBetween(j, knownJoint1), oldTheta,
-                                       oldLinkParams[links.IndexOf(j.Link1), 0] + j.SlideAngle, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
+                                     angleOfBlockToJoint(jIndex, kPIndex2, oldJointParams, oldLinkParams), new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
                                        out angleChange);
                                 currentJointParams[jIndex, 0] = sJPoint.X;
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
@@ -252,7 +252,10 @@ namespace PlanarMechanismSimulator
         #region Methods for P-?-P
         private double slideAngle(joint j, double[,] linkParams)
         {
-            return j.SlideAngle + linkParams[links.IndexOf(j.Link1), 0];
+            var result = j.SlideAngle + linkParams[links.IndexOf(j.Link1), 0];
+            while (result < -Math.PI / 2) result += Math.PI;
+            while (result > Math.PI / 2) result -= Math.PI;
+            return result;
         }
         private point solveViaIntersectingLines(joint j, int jIndex, joint knownJointA, joint knownJointB,
             double[,] currentJointParams, double[,] oldJointParams, double[,] currentLinkParams, double[,] oldLinkParams)
@@ -312,23 +315,23 @@ namespace PlanarMechanismSimulator
         private double angleOfBlockToJoint(int blockJoint, int referenceJoint, double[,] jointParams, double[,] linkParams)
         {
             var theta = Constants.angle(jointParams[blockJoint, 0], jointParams[blockJoint, 1], jointParams[referenceJoint, 0], jointParams[referenceJoint, 1]);
-            var slideTheta = slideAngle(joints[blockJoint], linkParams);
-            return 2 * Math.PI - theta - slideTheta;
+            var result = slideAngle(joints[blockJoint], linkParams) - theta;
+            while (result < 0) result += Math.PI;
+            while (result > Math.PI) result -= Math.PI;
+            return result;
         }
 
         #region the basis of R-P-R dyad determination method is the complex little function
         private point solveRPRIntersection(point ptA, double rAC, point ptB, double rBC,
-            double oldTheta, double oldSlideAngle, point numPt, out double angleChange)
+            double oldTheta, double alpha, point numPt, out double angleChange)
         {
             var lAB = Constants.distance(ptA, ptB);
             var phi = Constants.angle(ptA, ptB);
-            var alpha = oldTheta + oldSlideAngle;
             var thetaNeg = alpha - phi - Math.Asin((rBC + rAC * Math.Sin(alpha)) / lAB);
             var xNeg = ptA.X + rAC * Math.Cos(thetaNeg);
             var yNeg = ptA.Y + rAC * Math.Sin(thetaNeg);
             var distNegSquared = (xNeg - numPt.X) * (xNeg - numPt.X) + (yNeg - numPt.Y) * (yNeg - numPt.Y);
 
-            alpha = oldTheta - oldSlideAngle;
             var thetaPos = alpha + phi + Math.PI / 2 - Math.Asin((rBC - rAC * Math.Sin(alpha)) / lAB);
             var xPos = ptA.X + rAC * Math.Cos(thetaPos);
             var yPos = ptA.Y + rAC * Math.Sin(thetaPos);

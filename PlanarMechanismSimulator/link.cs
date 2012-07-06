@@ -105,17 +105,19 @@ namespace PlanarMechanismSimulator
             //    linkIndex++;
             //}
             foreach (var j in joints)
-                /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
+            {  /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
                 if (j.LinkIsSlide(this)) j.SlideAngle -= Angle;
+                while (j.SlideAngle < -Math.PI / 2) j.SlideAngle += Math.PI;
+                while (j.SlideAngle > Math.PI / 2) j.SlideAngle -= Math.PI;
+            }
         }
 
         private double findOrthoPoint(joint slideJoint, joint fixedJoint)
         {
             point orthoPoint;
-            var piRemainder = slideJoint.SlideAngle % Math.PI;
-            if (Constants.sameCloseZero(piRemainder))
+            if (Constants.sameCloseZero(slideJoint.SlideAngle))
                 orthoPoint = new point(fixedJoint.initX, slideJoint.initY);
-            else if (Constants.sameCloseZero(Math.Abs(piRemainder), Math.PI / 2))
+            else if (Constants.sameCloseZero(Math.Abs(slideJoint.SlideAngle), Math.PI / 2))
                 orthoPoint = new point(slideJoint.initX, fixedJoint.initY);
             else
             {
