@@ -1,0 +1,12 @@
+﻿<UserControl x:Class="PMKS_Silverlight_App.LinkInputTable"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk"
+    xmlns:now="clr-namespace:PMKS_Silverlight_App">
+    <s:DataGrid x:Name="linkDataGrid" AutoGenerateColumns="False" Background="Transparent">
+        <s:DataGrid.Columns>
+            <s:DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+            <s:DataGridCheckBoxColumn Header="Visible?" Binding="{Binding Visible}"/>
+        </s:DataGrid.Columns>
+    </s:DataGrid>
+</UserControl>

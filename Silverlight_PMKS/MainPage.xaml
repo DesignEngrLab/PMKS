@@ -1,0 +1,40 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:src="clr-namespace:PMKS_Silverlight_App" xmlns:Silverlight_PMKS="clr-namespace:Silverlight_PMKS"
+    x:Class="PMKS_Silverlight_App.MainPage"
+    mc:Ignorable="d"
+    d:DesignHeight="674" d:DesignWidth="855">
+
+    <Grid x:Name="LayoutRoot">
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FF053C39" Offset="1"/>
+                <GradientStop Color="White"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="131"/>
+            <ColumnDefinition Width="269"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="44"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="188"/>
+            <RowDefinition/>
+            <RowDefinition Height="215"/>
+        </Grid.RowDefinitions>
+        <src:MainViewer Grid.RowSpan="3" Grid.ColumnSpan="4"/>
+         <TextBlock  Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Grid.ColumnSpan="3" Width="418"/>
+
+        <src:TimeSlider Grid.Row="1" Grid.Column="3" Grid.RowSpan="3"/>
+        <src:JointInputTable Grid.Row="1" Grid.ColumnSpan="2" IsEnabled="True" Margin="0,0,0,3" Height="Auto" Width="Auto"/>
+        <src:LinkInputTable Grid.Row="3" IsEnabled="True" Margin="0,0,0,3" Height="Auto" Width="Auto" />
+        <src:GlobalSettings Grid.Column="2" Grid.ColumnSpan="2" />
+        
+    </Grid>
+
+</UserControl>
