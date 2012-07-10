@@ -125,8 +125,8 @@ namespace ExcelPlanarMechSimulator
 
             pms.FindFullMovement();
             button_Simulate.Enabled = false;
-            SortedList<double, double[,]> linkParameters = pms.LinkParameters;
-            SortedList<double, double[,]> jointParameters = pms.JointParameters;
+            var linkParameters = pms.LinkParameters;
+            var jointParameters = pms.JointParameters;
 
             status("Writing output to sheets...");
             //add to 2nd and 3rd sheets of spreadsheet

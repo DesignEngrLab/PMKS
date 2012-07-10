@@ -42,20 +42,21 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Constants.cs" />
-    <Compile Include="joint.cs" />
-    <Compile Include="Dyadic\circleDiagramItem.cs" />
-    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
-    <Compile Include="PlanarMechanismSimulator.FindFullMovement.cs" />
-    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
-    <Compile Include="PlanarMechanismSimulator.Numerical.cs" />
-    <Compile Include="NonDyadic\LinkLengthFunction.cs" />
-    <Compile Include="PlanarMechanismSimulator.Main.cs" />
-    <Compile Include="NonDyadic\NonDyadicPositionFinder.cs" />
-    <Compile Include="link.cs" />
-    <Compile Include="Dyadic\DynamicMatrixTerm.cs" />
-    <Compile Include="Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs" />
+    <Compile Include="Other Classes\Constants.cs" />
+    <Compile Include="Other Classes\joint.cs" />
+    <Compile Include="Other Classes\link.cs" />
+    <Compile Include="Other Classes\TimeSortedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Simulator Classes\Dyadic\circleDiagramItem.cs" />
+    <Compile Include="Simulator Classes\Dyadic\DynamicMatrixTerm.cs" />
+    <Compile Include="Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
+    <Compile Include="Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs" />
+    <Compile Include="Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
+    <Compile Include="Simulator Classes\NonDyadic\LinkLengthFunction.cs" />
+    <Compile Include="Simulator Classes\NonDyadic\NonDyadicPositionFinder.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Main.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Numerical.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="HTMLPage1.html" />

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silverlight_PMKS", "Silverlight_PMKS.csproj", "{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silverlight_PMKS.Web", "..\Silverlight_PMKS.Web\Silverlight_PMKS.Web.csproj", "{226353A2-4376-44FE-A195-269F3CD4D306}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMKS_Silverlight", "PMKS_Silverlight.csproj", "{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{226353A2-4376-44FE-A195-269F3CD4D306}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{226353A2-4376-44FE-A195-269F3CD4D306}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{226353A2-4376-44FE-A195-269F3CD4D306}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{226353A2-4376-44FE-A195-269F3CD4D306}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}.Release|Any CPU.ActiveCfg = Release|Any CPU

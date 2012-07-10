@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PMKS_Silverlight</RootNamespace>
+    <AssemblyName>PMKS_Silverlight</AssemblyName>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+  </PropertyGroup>
+  <!-- This property group is only here to support building this project using the 
+       MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
+       to set the TargetFrameworkVersion to v3.5 -->
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core">
+      <HintPath>$(TargetFrameworkDirectory)System.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\PlanarMechanismSimulator\Other Classes\Constants.cs">
+      <Link>Other Classes\Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Other Classes\joint.cs">
+      <Link>Other Classes\joint.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Other Classes\link.cs">
+      <Link>Other Classes\link.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Other Classes\TimeSortedList.cs">
+      <Link>Other Classes\TimeSortedList.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\circleDiagramItem.cs">
+      <Link>Simulator Classes\Dyadic\circleDiagramItem.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\DynamicMatrixTerm.cs">
+      <Link>Simulator Classes\Dyadic\DynamicMatrixTerm.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs">
+      <Link>Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs">
+      <Link>Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs">
+      <Link>Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\NonDyadic\LinkLengthFunction.cs">
+      <Link>Simulator Classes\NonDyadic\LinkLengthFunction.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\NonDyadic\NonDyadicPositionFinder.cs">
+      <Link>Simulator Classes\NonDyadic\NonDyadicPositionFinder.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs">
+      <Link>Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\PlanarMechanismSimulator.Main.cs">
+      <Link>Simulator Classes\PlanarMechanismSimulator.Main.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\PlanarMechanismSimulator.Numerical.cs">
+      <Link>Simulator Classes\PlanarMechanismSimulator.Numerical.cs</Link>
+    </Compile>
+    <Compile Include="OOOT_Functions\Convergence Classes\abstractConvergenceClasses.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\DeltaFConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\DeltaGradFConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\DeltaXConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\MaxAgeConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\MaxFnEvalsConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\MaxIterationsConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\MaxSpanInPopulationConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\MaxTimeConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\ToKnownBestFConvergence.cs" />
+    <Compile Include="OOOT_Functions\Convergence Classes\ToKnownBestXConvergence.cs" />
+    <Compile Include="OOOT_Functions\Design Space Description\DesignSpaceDescription.cs" />
+    <Compile Include="OOOT_Functions\Design Space Description\VariableDescriptor.cs" />
+    <Compile Include="OOOT_Functions\Design Space Description\VariableDescriptorEnum.cs" />
+    <Compile Include="OOOT_Functions\Enumerators.cs" />
+    <Compile Include="OOOT_Functions\LineSearch\abstractLineSearch.cs" />
+    <Compile Include="OOOT_Functions\LineSearch\FixedOrGoldenSection.cs" />
+    <Compile Include="OOOT_Functions\LineSearch\GoldenSection.cs" />
+    <Compile Include="OOOT_Functions\Merit Functions\abstractMeritFunction.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\candidate.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\equalToValue.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\Interfaces.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\lessThanGreaterThanConstant.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\optFunctionData.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\polynomialFunctions.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\sameCandidate.cs" />
+    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\slackSquaredEqualityFromInequality.cs" />
+    <Compile Include="OOOT_Functions\optimizeSort.cs" />
+    <Compile Include="OOOT_Functions\OptMethods\abstractOptMethod.cs" />
+    <Compile Include="OOOT_Functions\OptMethods\abstractOptMethod.Evaluation.cs" />
+    <Compile Include="OOOT_Functions\OptMethods\NewtonMethod.cs" />
+    <Compile Include="OOOT_Functions\SearchDirection\abstractSearchDirection.cs" />
+    <Compile Include="OOOT_Functions\SearchDirection\BFGSDirection.cs" />
+    <Compile Include="OOOT_Functions\SearchDirection\CyclicCoordinates.cs" />
+    <Compile Include="OOOT_Functions\SearchDirection\FletcherReevesDirection.cs" />
+    <Compile Include="OOOT_Functions\SearchDirection\PowellsMethod.cs" />
+    <Compile Include="OOOT_Functions\SearchDirection\SteepestDescent.cs" />
+    <Compile Include="OOOT_Functions\SearchIO.cs" />
+    <Compile Include="StarMath_Functions\3D transforms.cs" />
+    <Compile Include="StarMath_Functions\add subtract multiply.cs" />
+    <Compile Include="StarMath_Functions\find functions.cs" />
+    <Compile Include="StarMath_Functions\inversion transpose.cs" />
+    <Compile Include="StarMath_Functions\make extract.cs" />
+    <Compile Include="StarMath_Functions\norm functions.cs" />
+    <Compile Include="StarMath_Functions\print functions.cs" />
+    <Compile Include="StarMath_Functions\solve.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
