@@ -5,8 +5,8 @@
     xmlns:src="clr-namespace:PMKS_Silverlight_App" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:System="clr-namespace:System;assembly=mscorlib" mc:Ignorable="d" x:Class="PMKS_Silverlight_App.JointInputTable"
-    d:DesignWidth="584" d:DesignHeight="113">
+    xmlns:System="clr-namespace:System;assembly=mscorlib"  x:Class="PMKS_Silverlight_App.JointInputTable"
+   >
     <UserControl.Resources>
         <src:JointTypeProvider x:Name="jointTypeProvider"/>
     </UserControl.Resources>
@@ -42,13 +42,13 @@
                         </DataTemplate>
                     </s:DataGridTemplateColumn.CellEditingTemplate>
                 </s:DataGridTemplateColumn>
-                <s:DataGridTextColumn Header="X Pos." Binding="{Binding XPos}"/>
+                <s:DataGridTextColumn Header="X Pos." Binding="{Binding Path=XPos,UpdateSourceTrigger=PropertyChanged}"/>
                 <s:DataGridTextColumn Header="Y Pos." Binding="{Binding YPos}"/>
                 <s:DataGridTextColumn Header="Angle" Binding="{Binding Angle}"/>
-                <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}"/>
-                <s:DataGridCheckBoxColumn Header="Position Visible?" Binding="{Binding PosVisible}"/>
-                <s:DataGridCheckBoxColumn Header="Velocity?" Binding="{Binding VelocityVisible}"/>
-                <s:DataGridCheckBoxColumn Header="Acceleration?" Binding="{Binding AccelerationVisible}"/>
+                <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110"/>
+                <s:DataGridCheckBoxColumn Header="Position Visible?" Binding="{Binding PosVisible}" Width="30"/>
+                <s:DataGridCheckBoxColumn Header="Velocity?" Binding="{Binding VelocityVisible}" Width="30"/>
+                <s:DataGridCheckBoxColumn Header="Acceleration?" Binding="{Binding AccelerationVisible}" Width="30"/>
             </s:DataGrid.Columns>
         </s:DataGrid>
     </StackPanel>

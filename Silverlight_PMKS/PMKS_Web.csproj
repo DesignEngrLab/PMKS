@@ -78,6 +78,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PageComponents\OutputStatus.xaml.cs">
+      <DependentUpon>OutputStatus.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModelsAndModels\DelegateCommand.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />
     <Compile Include="PageComponents\LinkInputTable.xaml.cs">
@@ -108,6 +111,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="PageComponents\OutputStatus.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="PageComponents\LinkInputTable.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

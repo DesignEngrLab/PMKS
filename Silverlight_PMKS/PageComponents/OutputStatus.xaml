@@ -1,0 +1,7 @@
+﻿<UserControl x:Class="PMKS_Silverlight_App.OutputStatus"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk"
+    xmlns:now="clr-namespace:PMKS_Silverlight_App">
+ <TextBox MinWidth="120" VerticalScrollBarVisibility="Visible" Background="#19FFFFFF" />
+</UserControl>

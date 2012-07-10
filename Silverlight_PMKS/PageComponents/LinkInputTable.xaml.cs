@@ -25,6 +25,7 @@ namespace PMKS_Silverlight_App
             this.linkDataGrid.ItemsSource = new List<LinkData>()
                 {
                     new LinkData {Name = "ground", Visible = true},
+                    new LinkData(),new LinkData(),new LinkData(),new LinkData()
                 };
         }
     }
