@@ -84,6 +84,7 @@
     <Compile Include="PageComponents\OutputStatus.xaml.cs">
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PageComponents\PanAndZoom.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />
     <Compile Include="PageComponents\LinkInputTable.xaml.cs">
@@ -147,7 +148,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Viewing Classes\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="PlanarMechanismSimulator_Silverlight.csproj">
       <Project>{86bd7c7a-ae19-4ed2-be7b-86e30ebb5de6}</Project>

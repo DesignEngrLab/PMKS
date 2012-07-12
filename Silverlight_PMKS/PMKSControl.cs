@@ -44,7 +44,8 @@ namespace PMKS_Silverlight_App
                 if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList())) return;
 
                 try
-                { RunSimulation();
+                {
+                    RunSimulation();
                 }
                 catch (Exception e)
                 {
@@ -160,22 +161,45 @@ namespace PMKS_Silverlight_App
         public static void UpdateVisuals()
         {
             if (pmks == null || pmks.JointParameters == null) return;
-            Canvas.Children.Clear();
-            foreach (var jointParam in pmks.JointParameters.Parameters)
+            canvas.Children.Clear();
+            var Xmin = double.PositiveInfinity;
+            var Ymin = double.PositiveInfinity;
+            var Xmax = double.NegativeInfinity;
+            var Ymax = double.NegativeInfinity;
+            for (int j = 0; j < pmks.JointParameters.Size; j++)
             {
+                var currentJointParams = pmks.JointParameters.Parameters[j];
+                var oldJointParams = (j > 0)
+                                         ? pmks.JointParameters.Parameters[j]
+                                         : pmks.JointParameters.Parameters[pmks.JointParameters.Size - 1];
                 for (int i = 0; i < pmks.numJoints; i++)
                 {
-                    Canvas.Children.Add(new Ellipse
+                    if (Constants.epsilon > Math.Abs(oldJointParams[i, 2]) + Math.Abs(oldJointParams[i, 3])) continue;
+                    var x = currentJointParams[i, 0];
+                    var y = currentJointParams[i, 1];
+                    canvas.Children.Add(new Ellipse
                         {
-                            Width = 500,
-                            Height = 500,
-                            RenderTransform = new TranslateTransform { X = 100*jointParam[i, 0], Y = 100*jointParam[i, 1] },
+                            Width = 0.5,
+                            Height = 0.5,
+                            RenderTransform = new TranslateTransform { X = x, Y = y },
                             Fill = new SolidColorBrush { Color = Colors.Green }
                         });
-
+                    if (x < Xmin) Xmin = x;
+                    if (y < Ymin) Ymin = y;
+                    if (x > Xmax) Xmax = x;
+                    if (y > Ymax) Ymax = y;
                 }
             }
+
+            var ScaleFactor = Math.Min(BigGrid.ActualWidth / (Xmax +buffer- Xmin), BigGrid.ActualHeight / (Ymax +buffer- Ymin));
+            canvas.RenderTransform = new MatrixTransform
+                {
+                    Matrix =
+                       new Matrix(ScaleFactor, 0, 0, -ScaleFactor, -ScaleFactor*Xmin-buffer, ScaleFactor*Ymax+buffer)
+                };
         }
+
+
 
         internal static void SettingsUpdated()
         {
@@ -195,6 +219,11 @@ namespace PMKS_Silverlight_App
 
         public static TextBox StatusBox { get; set; }
 
-        public static Canvas Canvas { get; set; }
+        public static Canvas canvas { get; set; }
+
+
+        public static Grid BigGrid { get; set; }
+
+        public static double buffer = .500;
     }
 }

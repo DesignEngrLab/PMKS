@@ -19,6 +19,11 @@ namespace PMKS_Silverlight_App
             InitializeComponent();
         }
 
+        private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
+        {
+            PMKSControl.BigGrid = LayoutRoot;
+        }
+
 
     }
 }
