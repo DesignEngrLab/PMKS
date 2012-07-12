@@ -6,28 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:System="clr-namespace:System;assembly=mscorlib"  x:Class="PMKS_Silverlight_App.JointInputTable"
-   >
+Loaded="JointInputTable_Loaded_1"   >
     <UserControl.Resources>
+        <src:JointsViewModel x:Name="JointsInfo" />
         <src:JointTypeProvider x:Name="jointTypeProvider"/>
     </UserControl.Resources>
-    <UserControl.DataContext>
-        <src:JointsViewModel />
-    </UserControl.DataContext>
-    <StackPanel >
-        <StackPanel Orientation="Horizontal" >
-            <Button Content="Open Text File" Command="{Binding Path=DataContext.OpenCommand,RelativeSource={RelativeSource  Mode=Self}}" 
-                                        CommandParameter="{Binding}"/>
-            <Button Content="Save as Text File" Command="{Binding Path=DataContext.SaveCommand,RelativeSource={RelativeSource  Mode=Self}}" 
-                                        CommandParameter="{Binding}"/>
-            <Button Content="Add New Row" Command="{Binding Path=DataContext.AddCommand,RelativeSource={RelativeSource  Mode=Self}}" 
-                                        CommandParameter="{Binding}"/>
-            <Button Content="Clear All Rows" Command="{Binding Path=DataContext.ClearCommand,RelativeSource={RelativeSource  Mode=Self}}" 
-                                        CommandParameter="{Binding}"/>
-            <Button Content="Remove Current Row" Command="{Binding Path=DataContext.RemoveCommand,RelativeSource={RelativeSource  Mode=Self}}" 
-                                        CommandParameter="{Binding}"/>
-        </StackPanel>
-        <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True"
-               ItemsSource="{Binding JointsInfo}"  CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All">
+        <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True" 
+               ItemsSource="{Binding Data, Source={StaticResource JointsInfo}}"  CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All">
             <s:DataGrid.Columns>
                 <s:DataGridTemplateColumn Header="Type of Joint">
                     <s:DataGridTemplateColumn.CellTemplate>
@@ -42,7 +27,7 @@
                         </DataTemplate>
                     </s:DataGridTemplateColumn.CellEditingTemplate>
                 </s:DataGridTemplateColumn>
-                <s:DataGridTextColumn Header="X Pos." Binding="{Binding Path=XPos,UpdateSourceTrigger=PropertyChanged}"/>
+                <s:DataGridTextColumn Header="X Pos."  Binding="{Binding XPos}" />
                 <s:DataGridTextColumn Header="Y Pos." Binding="{Binding YPos}"/>
                 <s:DataGridTextColumn Header="Angle" Binding="{Binding Angle}"/>
                 <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110"/>
@@ -51,5 +36,4 @@
                 <s:DataGridCheckBoxColumn Header="Acceleration?" Binding="{Binding AccelerationVisible}" Width="30"/>
             </s:DataGrid.Columns>
         </s:DataGrid>
-    </StackPanel>
 </UserControl>

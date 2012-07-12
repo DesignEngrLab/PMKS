@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PlanarMechanismSimulator
 {
-    static class Constants
+   public static class Constants
     {
         /// <summary>
         ///   This is used below in the close enough to zero booleans to match points
@@ -14,7 +14,7 @@ namespace PlanarMechanismSimulator
         ///   position of points (mostly in checking for a valid transformation (see
         ///   ValidTransformation) and if other nodes comply (see otherNodesComply).
         /// </summary>
-        internal const double epsilon = 0.000001;
+        public const double epsilon = 0.000001;
 
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;

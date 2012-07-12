@@ -17,24 +17,8 @@ namespace PMKS_Silverlight_App
         public LinkInputTable()
         {
             InitializeComponent();
-            Loaded += LinkInputTable_Loaded;
+            DataContext = new LinksViewModel();
         }
-
-        private void LinkInputTable_Loaded(object sender, RoutedEventArgs e)
-        {
-            this.linkDataGrid.ItemsSource = new List<LinkData>()
-                {
-                    new LinkData {Name = "ground", Visible = true},
-                    new LinkData(),new LinkData(),new LinkData(),new LinkData()
-                };
-        }
-    }
-
-
-    public class LinkData
-    {
-        public string Name { get; set; }
-        public Boolean Visible { get; set; }
     }
 
 }

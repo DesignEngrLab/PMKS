@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Windows;
@@ -14,153 +15,51 @@ namespace PMKS_Silverlight_App
 {
     public class JointsViewModel : ViewModelBase
     {
-        ObservableCollection<JointData> infos;
-        ICommand _command;
+        ObservableCollection<JointData> data;
 
         public JointsViewModel()
         {
-            JointsInfo = new ObservableCollection<JointData>()
+            Data = new ObservableCollection<JointData>()
             {
-                new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames="ground, "},
+                new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames="ground, input"},
+                new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "8.0", LinkNames="input coupler"},
+                new JointData {JointType = "R (pin joint)", XPos = "10.0", YPos = "12.0", LinkNames="coupler,output "},
+                new JointData {JointType = "R (pin joint)", XPos = "10.0", YPos = "0.0", LinkNames="ground, outpu"},
                 new JointData(),new JointData(),new JointData(),new JointData(),new JointData()
             };
         }
 
-        public ObservableCollection<JointData> JointsInfo
+        public ObservableCollection<JointData> Data
         {
             get
             {
-                return infos;
+                return data;
             }
             set
             {
-                infos = value;
-                OnPropertyChanged("JointsInfo");
-            }
-        }
-        #region Remove Command
-        public ICommand RemoveCommand
-        {
-            get
-            {
-                if (_command == null)
-                {
-                    _command = new DelegateCommand(RemoveCommandCanExecute, RemoveCommandExecute);
-                }
-                return _command;
+                data = value;
+                OnPropertyChanged("Data");
             }
         }
 
-        private void RemoveCommandExecute(object parameter)
-        {
-            int index = JointsInfo.IndexOf(parameter as JointData);
-            if (index > -1 && index < JointsInfo.Count)
-            {
-                JointsInfo.RemoveAt(index);
-            }
-        }
+        //internal bool SameTopology(JointsViewModel JointsInfo)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        private bool RemoveCommandCanExecute(object parameter)
-        {
-            return true;
-        }
-        #endregion
-
-        #region Add Command
-        public ICommand AddCommand
-        {
-            get
-            {
-                if (_command == null)
-                {
-                    _command = new DelegateCommand(AddCommandCanExecute, AddCommandExecute);
-                }
-                return _command;
-            }
-        }
-
-        private void AddCommandExecute(object parameter)
-        {
-                JointsInfo.Add(new JointData());
-        }
-
-        private bool AddCommandCanExecute(object parameter)
-        {
-            return true;
-        }
-        #endregion
-
-
-        #region Open Command
-        public ICommand OpenCommand
-        {
-            get
-            {
-                if (_command == null)
-                {
-                    _command = new DelegateCommand(OpenCommandCanExecute, OpenCommandExecute);
-                }
-                return _command;
-            }
-        }
-
-        private void OpenCommandExecute(object parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool OpenCommandCanExecute(object parameter)
-        {
-            return true;
-        }
-        #endregion
-        #region Save Command
-        public ICommand SaveCommand
-        {
-            get
-            {
-                if (_command == null)
-                {
-                    _command = new DelegateCommand(SaveCommandCanExecute, SaveCommandExecute);
-                }
-                return _command;
-            }
-        }
-
-        private void SaveCommandExecute(object parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool SaveCommandCanExecute(object parameter)
-        {
-            return true;
-        }
-        #endregion
-        #region Clear Command
-        public ICommand ClearCommand
-        {
-            get
-            {
-                if (_command == null)
-                {
-                    _command = new DelegateCommand(ClearCommandCanExecute, ClearCommandExecute);
-                }
-                return _command;
-            }
-        }
-
-        private void ClearCommandExecute(object parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool ClearCommandCanExecute(object parameter)
-        {
-            return true;
-        }
-        #endregion
+        //internal bool SameParameters(JointsViewModel JointsInfo)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
+    public class JointTypeProvider
+    {
+        public List<string> jointTypeList
+        {
+            get { return new List<string> { "R (pin joint)", "P (sliding block)", "RP (pin in slot)", "G (gear teeth)" }; }
+        }
+    }
+
 
 }
 

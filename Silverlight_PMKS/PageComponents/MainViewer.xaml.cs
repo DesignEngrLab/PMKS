@@ -18,5 +18,10 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
         }
+
+        private void MainViewer_Loaded_1(object sender, RoutedEventArgs e)
+        {
+            PMKSControl.Canvas = MainCanvas;
+        }
     }
 }

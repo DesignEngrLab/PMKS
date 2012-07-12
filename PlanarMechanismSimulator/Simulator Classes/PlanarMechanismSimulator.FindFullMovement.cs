@@ -49,7 +49,7 @@ namespace PlanarMechanismSimulator
                           ForwardJointParams,ForwardLinkParams,initPivotParams, initLinkParams);
                     /*** Stepping Backward in Time ***/
                    backwardSuccess = microPerturbForFiniteDifferenceOfVelocityAndAcceleration(-smallTimeStep,
-                      BackwardJointParams,BackwardJointParams,initPivotParams,initLinkParams);
+                      BackwardJointParams,BackwardLinkParams,initPivotParams,initLinkParams);
 
 #else
                 Parallel.Invoke(
@@ -59,7 +59,7 @@ namespace PlanarMechanismSimulator
                           ForwardJointParams, ForwardLinkParams, initPivotParams, initLinkParams),
                     /*** Stepping Backward in Time ***/
                     () => backwardSuccess = microPerturbForFiniteDifferenceOfVelocityAndAcceleration(-smallTimeStep,
-                      BackwardJointParams, BackwardJointParams, initPivotParams, initLinkParams));
+                      BackwardJointParams, BackwardLinkParams, initPivotParams, initLinkParams));
 #endif
                 if (forwardSuccess && backwardSuccess)
                 { /* central difference puts values in init parameters. */
@@ -152,7 +152,7 @@ namespace PlanarMechanismSimulator
                             lastPivotParams, lastLinkParams);
                     }
                     #endregion
-                    currentTime = timeStep;
+                    currentTime += timeStep;
                     if (Forward)
                     {
                         lock (JointParameters)

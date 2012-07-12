@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="PMKS_Silverlight_App.EditButtons"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" >
+    <StackPanel >
+        <StackPanel Orientation="Horizontal" >
+            <Button Content="Open Text File" Name="OpenButton" Click="OpenButton_Click"/>
+            <Button Content="Save as Text File" Name="SaveButton" Click="SaveButton_Click"/>
+            <Button Content="Simulate" x:Name="SimulateButton" Margin="28,0,0,0" Click="SimulateButton_Click" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" >
+            <Button Content="Add New Row" Name="AddButton" Click="AddButton_Click"/>
+            <Button Content="Clear All Rows" Name="ClearButton" Click="ClearButton_Click"/>
+            <Button Content="Remove Current Row" Name="RemoveButton" Click="RemoveButton_Click"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

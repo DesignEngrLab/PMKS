@@ -19,6 +19,11 @@ namespace PMKS_Silverlight_App
             InitializeComponent();
         }
 
+        private void OutputStatus_Loaded_1(object sender, RoutedEventArgs e)
+        {
+            PMKSControl.StatusBox = StatusBox;
+        }
+
     }
 
 }

@@ -28,7 +28,12 @@ namespace Silverlight_PMKS
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             this.RootVisual = new MainPage();
+
         }
+
+        protected LinksViewModel Links { get; set; }
+
+        protected JointsViewModel Joints { get; set; }
 
         private void Application_Exit(object sender, EventArgs e)
         {

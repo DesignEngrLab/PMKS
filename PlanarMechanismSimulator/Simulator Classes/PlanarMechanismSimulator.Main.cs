@@ -271,9 +271,9 @@ namespace PlanarMechanismSimulator
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
 
                 joints.Remove(inputpivot);
-                var groundPivots = joints.Where(j => j.isGround);
+                var groundPivots = joints.Where(j => j.isGround).ToList();
                 joints.RemoveAll(j => j.isGround);
-                var connectedInputJoints = joints.Where(inputLink.joints.Contains);
+                var connectedInputJoints = joints.Where(inputLink.joints.Contains).ToList();
                 joints.RemoveAll(inputLink.joints.Contains);
                 firstInputJointIndex = joints.Count;
                 joints.AddRange(connectedInputJoints);

@@ -17,7 +17,11 @@ namespace PMKS_Silverlight_App
         public JointInputTable()
         {
             InitializeComponent();
-            DataContext = new JointsViewModel();
+        }
+        private void JointInputTable_Loaded_1(object sender, RoutedEventArgs e)
+        {
+            PMKSControl.JointsInfo = (JointsViewModel) Resources["JointsInfo"];
+
         }
     }
 }
