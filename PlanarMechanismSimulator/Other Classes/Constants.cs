@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PlanarMechanismSimulator
 {
-   public static class Constants
+    public static class Constants
     {
         /// <summary>
         ///   This is used below in the close enough to zero booleans to match points
@@ -31,7 +31,7 @@ namespace PlanarMechanismSimulator
 
 
         #region DistanceSquared
-        internal static double distanceSqared(double x1, double y1, double x2, double y2)
+        public static double distanceSqared(double x1, double y1, double x2=0, double y2=0)
         {
             return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
         }
@@ -50,11 +50,11 @@ namespace PlanarMechanismSimulator
         #endregion
 
         #region Distance
-        internal static double distance(double x1, double y1, double x2, double y2)
+        public static double distance(double x1, double y1, double x2 = 0, double y2 = 0)
         {
             return Math.Sqrt(distanceSqared(x1, y1, x2, y2));
         }
-        internal static double distance(point point1, point point2)
+        public static double distance(point point1, point point2)
         {
             return distance(point1.X, point1.Y, point2.X, point2.Y);
         }

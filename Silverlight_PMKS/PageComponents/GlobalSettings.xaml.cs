@@ -20,7 +20,7 @@ namespace PMKS_Silverlight_App
             MetricCheckBox.IsChecked = true;
             RadiansCheckBox.IsChecked = true;
             AngleCheckBox.IsChecked = true;
-            AngleErrorBox.Text = "0.01";
+            AngleErrorBox.Text = "0.1";
             AngleErrorBox_LostFocus(null,null);
             speedBox.Text = "1.0";
             speedBox_LostFocus(null,null);

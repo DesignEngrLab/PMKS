@@ -96,7 +96,7 @@ namespace PlanarMechanismSimulator
         public List<link> links { get; private set; }
         public List<joint> joints { get; private set; }
         private int firstInputJointIndex;
-        private int inputJointIndex;
+        public int inputJointIndex;
         private joint inputpivot;
         private int inputLinkIndex;
         private link inputLink;
@@ -269,7 +269,7 @@ namespace PlanarMechanismSimulator
                 links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
                 inputLinkIndex = links.Count - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
-
+                var origOrder = new List<joint>(joints);
                 joints.Remove(inputpivot);
                 var groundPivots = joints.Where(j => j.isGround).ToList();
                 joints.RemoveAll(j => j.isGround);
@@ -280,6 +280,9 @@ namespace PlanarMechanismSimulator
                 inputJointIndex = joints.Count;
                 joints.Add(inputpivot);
                 joints.AddRange(groundPivots);
+                JointReOrdering = new int[numJoints];
+                for (int i = 0; i < numJoints; i++)
+                    JointReOrdering[i] = joints.IndexOf(origOrder[i]);
                 foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
@@ -304,8 +307,8 @@ namespace PlanarMechanismSimulator
                 {
                     if (InitPositions[i] != null)
                     {
-                        joints[i].initX = InitPositions[i][0];
-                        joints[i].initY = InitPositions[i][1];
+                        joints[JointReOrdering[i]].initX = InitPositions[i][0];
+                        joints[JointReOrdering[i]].initY = InitPositions[i][1];
                     }
                 }
                 foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
@@ -562,5 +565,7 @@ namespace PlanarMechanismSimulator
             else throw new Exception("Currently only R or P can be the input joints.");
         }
 
+
+        public int[] JointReOrdering { get;private set; }
     }
 }
