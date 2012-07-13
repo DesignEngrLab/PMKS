@@ -14,6 +14,7 @@ Loaded="JointInputTable_Loaded_1"   >
         <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True" 
                ItemsSource="{Binding Data, Source={StaticResource JointsInfo}}"  CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All">
             <s:DataGrid.Columns>
+                <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110"/>
                 <s:DataGridTemplateColumn Header="Type of Joint">
                     <s:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -30,7 +31,6 @@ Loaded="JointInputTable_Loaded_1"   >
                 <s:DataGridTextColumn Header="X Pos."  Binding="{Binding XPos}" />
                 <s:DataGridTextColumn Header="Y Pos." Binding="{Binding YPos}"/>
                 <s:DataGridTextColumn Header="Angle" Binding="{Binding Angle}"/>
-                <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110"/>
                 <s:DataGridCheckBoxColumn Header="Position Visible?" Binding="{Binding PosVisible}" Width="30"/>
                 <s:DataGridCheckBoxColumn Header="Velocity?" Binding="{Binding VelocityVisible}" Width="30"/>
                 <s:DataGridCheckBoxColumn Header="Acceleration?" Binding="{Binding AccelerationVisible}" Width="30"/>

@@ -19,7 +19,8 @@ namespace PMKS_Silverlight_App
             get { return _jointType; }
             set
             {
-                _jointType = value;
+                if (string.IsNullOrWhiteSpace(value)) _jointType = "";
+                else _jointType = value.Split(',', ' ')[0];
                 PMKSControl.ParseData();
             }
         }

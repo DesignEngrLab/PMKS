@@ -21,7 +21,14 @@ namespace PMKS_Silverlight_App
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
         {
-            PMKSControl.BigGrid = LayoutRoot;
+            JointsInfo =(JointsViewModel)jointInputTable.Resources["JointsInfo"];
+
+            PMKSControl.BigGrid = BigGrid;
+        }
+
+        private void LayoutRoot_Drop_1(object sender, DragEventArgs e)
+        {
+            var t = e.OriginalSource;
         }
 
 

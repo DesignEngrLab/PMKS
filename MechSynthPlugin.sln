@@ -7,9 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanarMechanismSimulator", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelPlanarMechSimulator", "ExcelPlanarMechSimulator\ExcelPlanarMechSimulator.csproj", "{0273A1EF-2543-4117-843F-FBB833B1681C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMKS_Web", "Silverlight_PMKS\PMKS_Web.csproj", "{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanarMechanismSimulator_Silverlight", "Silverlight_PMKS\PlanarMechanismSimulator_Silverlight.csproj", "{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMKS_Web", "PMKS_Web\PMKS_Web.csproj", "{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

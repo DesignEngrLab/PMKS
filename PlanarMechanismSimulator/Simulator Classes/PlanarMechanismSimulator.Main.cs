@@ -174,7 +174,7 @@ namespace PlanarMechanismSimulator
                     positions.Add(new[] { Xtemp, Ytemp });
                 else if ((words.Count() == jointTypeIndex + 4) && double.TryParse(words[jointTypeIndex + 1], out Xtemp)
                          && double.TryParse(words[jointTypeIndex + 2], out Ytemp)
-                         && double.TryParse(words[jointTypeIndex + 2], out angleTemp))
+                         && double.TryParse(words[jointTypeIndex + 3], out angleTemp))
                     positions.Add(new[] { angleTemp, Xtemp, Ytemp });
 
                 words.RemoveRange(jointTypeIndex, words.Count - jointTypeIndex);

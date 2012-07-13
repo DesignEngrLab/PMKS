@@ -30,53 +30,44 @@ namespace PMKS_Silverlight_App
         {
             if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
-            if (SameTopology() && SameParameters()) return;
+            if (SameTopology() && SameParameters())
+            {
+                UpdateVisuals();
+                return;
+            }
 
             if (SameTopology())
             {
                 DefinePositions();
                 pmks.AssignPositions(InitPositions);
-                if (pmks.DegreesOfFreedom == 1) pmks.FindFullMovement();
-                UpdateVisuals();
             }
-            else
+            else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList())) return;
+            try
             {
-                if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList())) return;
+                pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
 
-                try
+                if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
+                else status("The mechanism has non-dyadic loops.");
+                int dof = pmks.DegreesOfFreedom;
+                status("Degrees of freedom = " + dof);
+                if (dof == 1)
                 {
-                    RunSimulation();
-                }
-                catch (Exception e)
-                {
-                    status(e.Message);
+                    pmks.DeltaAngle = AngleIncrement;
+                    pmks.InputSpeed = Speed;
+                    pmks.FindFullMovement();
+                    UpdateVisuals();
                 }
             }
-
-        }
-
-        public static void RunSimulation()
-        {
-            if (pmks == null) pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
-
-            if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
-            else status("The mechanism has non-dyadic loops.");
-            int dof = pmks.DegreesOfFreedom;
-            status("Degrees of freedom = " + dof);
-            if (dof == 1)
+            catch (Exception e)
             {
-                pmks.DeltaAngle = AngleIncrement;
-                pmks.InputSpeed = Speed;
-                pmks.FindFullMovement();
-                UpdateVisuals();
+                status(e.Message);
             }
-
         }
 
         private static int TrimEmptyJoints()
         {
             for (int i = 0; i < JointsInfo.Data.Count; i++)
-                if (JointsInfo.Data[i].JointType == null) return i;
+                if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointType)) return i;
             return -1;
         }
 
@@ -98,7 +89,7 @@ namespace PMKS_Silverlight_App
             if (numJoints != JointTypes.Count) return false;
             for (int i = 0; i < numJoints; i++)
             {
-                if (!JointsInfo.Data[i].JointType.StartsWith(JointTypes[i])) return false;
+                if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
                 var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
                 if (LinkIDs[i].Any(linkID => !newLinkIDS.Remove(linkID)))
@@ -119,7 +110,7 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < numJoints; i++)
             {
                 if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointType)) return false;
-                JointTypes.Add(JointsInfo.Data[i].JointType.Substring(0, 2).Trim(' '));
+                JointTypes.Add(JointsInfo.Data[i].JointType);
             }
             return true;
         }
@@ -201,32 +192,32 @@ namespace PMKS_Silverlight_App
                         {
                             Width = 5 * penThick,
                             Height = 5 * penThick,
-                            RenderTransform = new TranslateTransform { X = x-2.5*penThick, Y = y-2.5*penThick },
+                            RenderTransform = new TranslateTransform { X = x - 2.5 * penThick, Y = y - 2.5 * penThick },
                             Fill = new SolidColorBrush { Color = Colors.Green }
                         });
                 }
-                var start = pCollect[0];
-                pCollect.RemoveAt(0);
-                canvas.Children.Add(new Path
-                    {
-                        Data = new PathGeometry
-                            {
-                                Figures =
-                                    new PathFigureCollection
-                                        {
-                                            new PathFigure
-                                                {
-                                                    StartPoint = start,
-                                                    Segments =
-                                                        new PathSegmentCollection
-                                                            {new PolyQuadraticBezierSegment {Points = pCollect}},
-                                                            IsClosed = false
-                                                }
-                                        }
-                            },
-                        StrokeThickness = penThick,
-                        Stroke = new SolidColorBrush { Color = Colors.Green }
-                    });
+                //var start = pCollect[0];
+                //pCollect.RemoveAt(0);
+                //canvas.Children.Add(new Path
+                //    {
+                //        Data = new PathGeometry
+                //            {
+                //                Figures =
+                //                    new PathFigureCollection
+                //                        {
+                //                            new PathFigure
+                //                                {
+                //                                    StartPoint = start,
+                //                                    Segments =
+                //                                        new PathSegmentCollection
+                //                                            {new PolyQuadraticBezierSegment {Points = pCollect}},
+                //                                            IsClosed = false
+                //                                }
+                //                        }
+                //            },
+                //        StrokeThickness = penThick,
+                //        Stroke = new SolidColorBrush { Color = Colors.Green }
+                //    });
                 var ScaleFactor = Math.Min((BigGrid.ActualWidth - 2 * buffer) / (maxima[0] - minima[0]),
                                            (BigGrid.ActualHeight - 2 * buffer) / (maxima[1] - minima[1]));
                 canvas.RenderTransform = new MatrixTransform

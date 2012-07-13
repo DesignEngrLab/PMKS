@@ -24,8 +24,6 @@ namespace PMKS_Silverlight_App
             AngleErrorBox_LostFocus(null,null);
             speedBox.Text = "1.0";
             speedBox_LostFocus(null,null);
-
-
         }
         
         private void AngleCheckBox_Checked(object sender, RoutedEventArgs e)
