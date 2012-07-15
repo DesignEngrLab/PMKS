@@ -5,14 +5,14 @@
     xmlns:src="clr-namespace:PMKS_Silverlight_App" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:System="clr-namespace:System;assembly=mscorlib"  x:Class="PMKS_Silverlight_App.JointInputTable"
-Loaded="JointInputTable_Loaded_1"   >
+    xmlns:System="clr-namespace:System;assembly=mscorlib"  x:Class="PMKS_Silverlight_App.JointInputTable" >
     <UserControl.Resources>
-        <src:JointsViewModel x:Name="JointsInfo" />
+        <!--<src:JointsViewModel x:Name="JointsInfo" />-->
         <src:JointTypeProvider x:Name="jointTypeProvider"/>
     </UserControl.Resources>
         <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True" 
-               ItemsSource="{Binding Data, Source={StaticResource JointsInfo}}"  CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All">
+               
+                    CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All" RowEditEnded="dataGrid_RowEditEnded" CellEditEnded="dataGrid_CellEditEnded">
             <s:DataGrid.Columns>
                 <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110"/>
                 <s:DataGridTemplateColumn Header="Type of Joint">

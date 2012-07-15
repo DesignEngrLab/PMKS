@@ -13,10 +13,8 @@ using System.Windows.Shapes;
 
 namespace PMKS_Silverlight_App
 {
-    public class LinksViewModel : ViewModelBase
+    public class LinksViewModel :DependencyObject
     {
-        ObservableCollection<LinkData> data;
-
         public LinksViewModel()
         {
             Data = new ObservableCollection<LinkData>()
@@ -26,18 +24,17 @@ namespace PMKS_Silverlight_App
             };
         }
 
+        public static readonly DependencyProperty DataCollectionProperty
+            = DependencyProperty.Register("Data",
+                                          typeof(ObservableCollection<LinkData>), typeof(LinksViewModel),
+                                          new PropertyMetadata(null));
+
         public ObservableCollection<LinkData> Data
         {
-            get
-            {
-                return data;
-            }
-            set
-            {
-                data = value;
-                OnPropertyChanged("Data");
-            }
+            get { return (ObservableCollection<LinkData>)GetValue(DataCollectionProperty); }
+            set { SetValue(DataCollectionProperty, value); }
         }
+
     }
     public class LinkData
     {

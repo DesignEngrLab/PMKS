@@ -22,7 +22,6 @@ namespace PMKS_Silverlight_App
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
-            string data = "";
             var dialog = new OpenFileDialog
                 {
                     Filter = "Text Files (*.txt)|*.txt|Comma-Separated Values (.csv)|*.csv"
@@ -30,17 +29,16 @@ namespace PMKS_Silverlight_App
             if (dialog.ShowDialog() == true)
                 using (var reader = dialog.File.OpenText())
                 {
-                    JointsViewModel jInfo = null;
-                    if (JointsViewModel.ConvertTextToData(reader.ReadToEnd(), out jInfo))
+                    List<JointData> jointDataList = null;
+                    if (JointData.ConvertTextToData(reader.ReadToEnd(), out jointDataList))
                     {
-                        PMKSControl.JointsInfo = jInfo;
-                        PMKSControl.ParseData();
-                    }
+                        ClearButton_Click(null, null);
+                        foreach (var j in jointDataList)  ((MainPage)Parent).JointsInfo.Data.Add(j);
+                      }
                 }
         }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            string data = "";
             var dialog = new SaveFileDialog()
             {
                 Filter = "Text Files (*.txt)|*.txt|Comma-Separated Values (.csv)|*.csv"
@@ -48,25 +46,32 @@ namespace PMKS_Silverlight_App
             if (dialog.ShowDialog() == true)
                 using (var stream = dialog.OpenFile())
                 using (var writer = new StreamWriter(stream))
-                    writer.Write(JointsViewModel.ConvertDataToText(PMKSControl.JointsInfo));
+                    writer.Write(JointData.ConvertDataToText(((MainPage)Parent).JointsInfo.Data));
         }
 
-        private void AddButton_Click(object sender, RoutedEventArgs e)
+        internal void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            PMKSControl.JointsInfo.Data.Add(new JointData());
+            ((MainPage)Parent).JointsInfo.Data.Add(new JointData());
         }
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
+            ((MainPage)Parent).JointsInfo.Data.Clear();
 
         }
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-
+        var data=    ((MainPage)Parent).JointsInfo.Data;
+            var table = ((MainPage) Parent).jointInputTable.dataGrid;
+          if (table.SelectedItem==null)  data.RemoveAt(data.Count-1);
+          else
+          {
+              data.RemoveAt(table.SelectedIndex);
+          }
         }
 
         private void SimulateButton_Click(object sender, RoutedEventArgs e)
         {
-            PMKSControl.ParseData();
+            ((MainPage)Parent).ParseData();
         }
 
     }

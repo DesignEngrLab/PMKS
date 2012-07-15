@@ -9,9 +9,10 @@
     d:DesignHeight="674" d:DesignWidth="855">
     <UserControl.Resources>
         <src:JointsViewModel x:Name="JointsInfo" />
+        <src:LinksViewModel x:Name="LinksJointsInfo" />
     </UserControl.Resources>
 
-    <Grid x:Name="BigGrid" Drop="LayoutRoot_Drop_1">
+    <Grid x:Name="BigGrid" >
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                 <GradientStop Color="#FF9DB9B8" Offset="1"/>

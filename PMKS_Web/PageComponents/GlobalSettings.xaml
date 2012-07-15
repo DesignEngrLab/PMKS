@@ -6,7 +6,7 @@
             <Border Padding="8,3">
                 <StackPanel  >
                     <TextBlock Text="Speed"/>
-                    <TextBox MinHeight="30" MinWidth="60" Name="speedBox" LostFocus="speedBox_LostFocus" />
+                    <TextBox MinHeight="30" MinWidth="60" Name="speedBox"  />
                 </StackPanel>
             </Border>
             <Border Padding="8,3">
@@ -15,11 +15,11 @@
                     <StackPanel Orientation="Horizontal" >
                         <Border BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                             <StackPanel  >
-                                <RadioButton Content="Angle" Name="AngleCheckBox" Checked="AngleCheckBox_Checked" />
-                                <RadioButton Content="% error" Name="ErrorCheckBox" Checked="ErrorCheckBox_Checked" />
+                                <RadioButton Content="Angle" Name="AngleCheckBox"  />
+                                <RadioButton Content="% error" Name="ErrorCheckBox" />
                             </StackPanel>
                         </Border>
-                        <TextBox MinWidth="60" Name="AngleErrorBox" LostFocus="AngleErrorBox_LostFocus"/>
+                        <TextBox MinWidth="60" Name="AngleErrorBox" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -29,14 +29,14 @@
                     <StackPanel Orientation="Horizontal"  >
                         <Border BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                             <StackPanel>
-                                <RadioButton Content="Metric [mm]" Name="MetricCheckBox" Checked="MetricCheckBox_Checked" />
-                                <RadioButton Content="Inches [in]" Name="InchesCheckBox" Checked="InchesCheckBox_Checked" />
+                                <RadioButton Content="Metric [mm]" Name="MetricCheckBox"  />
+                                <RadioButton Content="Inches [in]" Name="InchesCheckBox" />
                             </StackPanel>
                         </Border>
                         <Border BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                             <StackPanel  >
-                                <RadioButton Content="Radians" Name="RadiansCheckBox" Checked="RadiansCheckBox_Checked" />
-                                <RadioButton Content="Degrees" Name="DegreesCheckBox" Checked="DegreesCheckBox_Checked"/>
+                                <RadioButton Content="Radians" Name="RadiansCheckBox" />
+                                <RadioButton Content="Degrees" Name="DegreesCheckBox"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
