@@ -9,7 +9,7 @@
     d:DesignHeight="674" d:DesignWidth="855">
     <UserControl.Resources>
         <src:JointsViewModel x:Name="JointsInfo" />
-        <src:LinksViewModel x:Name="LinksJointsInfo" />
+        <src:LinksViewModel x:Name="LinksInfo" />
     </UserControl.Resources>
 
     <Grid x:Name="BigGrid" >
@@ -31,10 +31,9 @@
             <src:EditButtons HorizontalAlignment="Left" Margin="10,25" Grid.RowSpan="2" Width="292" x:Name="editButtons"/>
             <src:JointInputTable Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
             <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top" Height="64" Width="407" x:Name="globalSettings" />
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="38" Width="239"  >
-                <src:LinkInputTable x:Name="linkInputTable"/>
-                <src:OutputStatus x:Name="outputStatus"/>
-            </StackPanel>
+            <src:LinkInputTable Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+            <src:OutputStatus Grid.Row="1" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+
         </Grid>
     </Grid>
 </UserControl>

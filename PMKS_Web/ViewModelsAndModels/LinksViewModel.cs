@@ -13,7 +13,7 @@ using System.Windows.Shapes;
 
 namespace PMKS_Silverlight_App
 {
-    public class LinksViewModel :DependencyObject
+    public class LinksViewModel : DependencyObject
     {
         public LinksViewModel()
         {

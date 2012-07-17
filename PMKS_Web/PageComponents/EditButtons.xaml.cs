@@ -15,10 +15,11 @@ namespace PMKS_Silverlight_App
 {
     public partial class EditButtons : UserControl
     {
+        public MainPage main { private get; set; }
         public EditButtons()
         {
             InitializeComponent();
-        } 
+        }
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
@@ -33,8 +34,8 @@ namespace PMKS_Silverlight_App
                     if (JointData.ConvertTextToData(reader.ReadToEnd(), out jointDataList))
                     {
                         ClearButton_Click(null, null);
-                        foreach (var j in jointDataList)  ((MainPage)Parent).JointsInfo.Data.Add(j);
-                      }
+                        foreach (var j in jointDataList) main.JointsInfo.Data.Add(j);
+                    }
                 }
         }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -46,32 +47,32 @@ namespace PMKS_Silverlight_App
             if (dialog.ShowDialog() == true)
                 using (var stream = dialog.OpenFile())
                 using (var writer = new StreamWriter(stream))
-                    writer.Write(JointData.ConvertDataToText(((MainPage)Parent).JointsInfo.Data));
+                    writer.Write(JointData.ConvertDataToText(main.JointsInfo.Data));
         }
 
         internal void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainPage)Parent).JointsInfo.Data.Add(new JointData());
+            main.JointsInfo.Data.Add(new JointData());
         }
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainPage)Parent).JointsInfo.Data.Clear();
+            main.JointsInfo.Data.Clear();
 
         }
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-        var data=    ((MainPage)Parent).JointsInfo.Data;
-            var table = ((MainPage) Parent).jointInputTable.dataGrid;
-          if (table.SelectedItem==null)  data.RemoveAt(data.Count-1);
-          else
-          {
-              data.RemoveAt(table.SelectedIndex);
-          }
+            var data = main.JointsInfo.Data;
+            var table = main.jointInputTable.dataGrid;
+            if (table.SelectedItem == null) data.RemoveAt(data.Count - 1);
+            else
+            {
+                data.RemoveAt(table.SelectedIndex);
+            }
         }
 
         private void SimulateButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainPage)Parent).ParseData();
+            main.ParseData();
         }
 
     }

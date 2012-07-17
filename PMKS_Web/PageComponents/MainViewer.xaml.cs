@@ -26,7 +26,7 @@ namespace PMKS_Silverlight_App
             var minima = new double[4];
             var maxima = new double[4];
 
-            defineJointParamLimits( JointParameters,minima, maxima);
+            defineJointParamLimits(JointParameters, minima, maxima);
             var biggerDim = Math.Max(maxima[0] - minima[0], maxima[1] - minima[1]);
             var penThick = Constants.PenThicknessRatio * biggerDim;
             var velocityFactor = Constants.VelocityLengthRatio * biggerDim / maxima[2];
@@ -40,6 +40,7 @@ namespace PMKS_Silverlight_App
                     var x = JointParameters.Parameters[j][i, 0];
                     var y = JointParameters.Parameters[j][i, 1];
                     pCollect.Add(new Point(x, y));
+                    //new LineGeometry
                     MainCanvas.Children.Add(new Line
                     {
                         X1 = x,
@@ -66,38 +67,38 @@ namespace PMKS_Silverlight_App
                         Fill = new SolidColorBrush { Color = Colors.Green }
                     });
                 }
-                //var start = pCollect[0];
-                //pCollect.RemoveAt(0);
-                //canvas.Children.Add(new Path
-                //    {
-                //        Data = new PathGeometry
-                //            {
-                //                Figures =
-                //                    new PathFigureCollection
-                //                        {
-                //                            new PathFigure
-                //                                {
-                //                                    StartPoint = start,
-                //                                    Segments =
-                //                                        new PathSegmentCollection
-                //                                            {new PolyQuadraticBezierSegment {Points = pCollect}},
-                //                                            IsClosed = false
-                //                                }
-                //                        }
-                //            },
-                //        StrokeThickness = penThick,
-                //        Stroke = new SolidColorBrush { Color = Colors.Green }
-                //    });
-                var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * Constants.Buffer) / (maxima[0] - minima[0]),
-                                           (((Grid)Parent).ActualHeight - 2 * Constants.Buffer) / (maxima[1] - minima[1]));
-                MainCanvas.RenderTransform = new MatrixTransform
-                {
-                    Matrix =
-                        new Matrix(ScaleFactor, 0, 0, -ScaleFactor, Constants.Buffer - ScaleFactor * minima[0],
-                                   ScaleFactor * maxima[1] + Constants.Buffer)
-                };
-                MainCanvas.Margin = new Thickness(Constants.Buffer);
+                var start = pCollect[0];
+                pCollect.RemoveAt(0);
+                MainCanvas.Children.Add(new Path
+                    {
+                        Data = new PathGeometry
+                            {
+                                Figures =
+                                    new PathFigureCollection
+                                        {
+                                            new PathFigure
+                                                {
+                                                    StartPoint = start,
+                                                    Segments =
+                                                        new PathSegmentCollection
+                                                            {new PolyQuadraticBezierSegment {Points = pCollect}},
+                                                            IsClosed = false
+                                                }
+                                        }
+                            },
+                        StrokeThickness = penThick,
+                        Stroke = new SolidColorBrush { Color = Colors.Green }
+                    });
             }
+            var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * Constants.Buffer) / (maxima[0] - minima[0]),
+                                       (((Grid)Parent).ActualHeight - 2 * Constants.Buffer) / (maxima[1] - minima[1]));
+            MainCanvas.RenderTransform = new MatrixTransform
+            {
+                Matrix =
+                    new Matrix(ScaleFactor, 0, 0, -ScaleFactor, Constants.Buffer - ScaleFactor * minima[0],
+                               ScaleFactor * maxima[1] + Constants.Buffer)
+            };
+            MainCanvas.Margin = new Thickness(Constants.Buffer);
         }
 
         private static void defineJointParamLimits(TimeSortedList JointParameters, double[] minima, double[] maxima)

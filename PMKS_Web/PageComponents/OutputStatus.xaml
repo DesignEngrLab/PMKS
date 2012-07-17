@@ -3,5 +3,5 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk"
     xmlns:now="clr-namespace:PMKS_Silverlight_App" >
- <TextBox Name="StatusBox" MinWidth="120" VerticalScrollBarVisibility="Visible" Background="#19FFFFFF" />
+ <TextBox Name="StatusBox" MinWidth="320" VerticalScrollBarVisibility="Visible" Background="#19FFFFFF" />
 </UserControl>

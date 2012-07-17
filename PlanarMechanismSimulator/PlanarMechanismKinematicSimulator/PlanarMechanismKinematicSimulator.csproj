@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B9D2F588-3399-433F-AF0C-6D7F3FB6072A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PlanarMechanismKinematicSimulator</RootNamespace>
+    <AssemblyName>PlanarMechanismKinematicSimulator</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile2</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Constants.cs">
+      <Link>Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\Dyadic\circleDiagramItem.cs">
+      <Link>circleDiagramItem.cs</Link>
+    </Compile>
+    <Compile Include="..\Dyadic\DynamicMatrixTerm.cs">
+      <Link>DynamicMatrixTerm.cs</Link>
+    </Compile>
+    <Compile Include="..\Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs">
+      <Link>PlanarMechanismSimulator.Dyadic.Acceleration.cs</Link>
+    </Compile>
+    <Compile Include="..\Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs">
+      <Link>PlanarMechanismSimulator.Dyadic.Position.cs</Link>
+    </Compile>
+    <Compile Include="..\Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs">
+      <Link>PlanarMechanismSimulator.Dyadic.Velocity.cs</Link>
+    </Compile>
+    <Compile Include="..\joint.cs">
+      <Link>joint.cs</Link>
+    </Compile>
+    <Compile Include="..\link.cs">
+      <Link>link.cs</Link>
+    </Compile>
+    <Compile Include="..\NonDyadic\LinkLengthFunction.cs">
+      <Link>LinkLengthFunction.cs</Link>
+    </Compile>
+    <Compile Include="..\NonDyadic\NonDyadicPositionFinder.cs">
+      <Link>NonDyadicPositionFinder.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator.FindFullMovement.cs">
+      <Link>PlanarMechanismSimulator.FindFullMovement.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator.Main.cs">
+      <Link>PlanarMechanismSimulator.Main.cs</Link>
+    </Compile>
+    <Compile Include="..\PlanarMechanismSimulator.Numerical.cs">
+      <Link>PlanarMechanismSimulator.Numerical.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="OptimizationToolbox">
+      <HintPath>..\..\Resources\OptimizationToolbox.dll</HintPath>
+    </Reference>
+    <Reference Include="StarMath">
+      <HintPath>..\..\Resources\StarMath.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

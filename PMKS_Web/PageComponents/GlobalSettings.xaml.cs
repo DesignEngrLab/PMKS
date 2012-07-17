@@ -24,34 +24,6 @@ namespace PMKS_Silverlight_App
             ErrorCheckBox.IsEnabled = false;
             AngleCheckBox.IsChecked = true;
             //////////////////////////////////////////////////////////////
-            var main = (MainPage)Parent;
-            var binding = new Binding
-            {
-                Source=speedBox,
-                Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(TextBox.TextProperty),
-                Converter=new TextToDoubleConverter()
-            };
-            main.SetBinding(MainPage.SpeedProperty, binding);
-
-            binding = new Binding
-            {
-                Source = RadiansCheckBox,
-                Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(ToggleButton.IsCheckedProperty),
-                Converter = new BooleanToAngleTypeConverter()
-            };
-            main.SetBinding(MainPage.AngleUnitsProperty, binding);
-
-            binding = new Binding
-            {
-                Source = MetricCheckBox,
-                Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(ToggleButton.IsCheckedProperty),
-                Converter = new BooleanToLengthTypeConverter()
-            };
-            main.SetBinding(MainPage.AngleUnitsProperty, binding);
-
         }
     }
 

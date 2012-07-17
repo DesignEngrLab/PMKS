@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using PlanarMechanismSimulator;
+using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
@@ -72,6 +74,7 @@ namespace PMKS_Silverlight_App
         public MainPage()
         {
             InitializeComponent();
+            jointInputTable.main = editButtons.main = this;
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -84,6 +87,58 @@ namespace PMKS_Silverlight_App
             };
             jointInputTable.dataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
 
+            binding = new Binding
+            {
+                Source = LinksInfo,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(LinksViewModel.DataCollectionProperty)
+            };
+            linkInputTable.linkDataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
+
+            binding = new Binding
+            {
+                Source = JointsInfo,
+                Mode = BindingMode.OneWay,
+                Path = new PropertyPath(LinksViewModel.DataCollectionProperty),
+                Converter = new JointDataToLinkListConverter(LinksInfo)
+            };
+            BindingOperations.SetBinding(LinksInfo, LinksViewModel.DataCollectionProperty, binding);
+
+            binding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(MainPage.SpeedProperty),
+                Converter = new TextToDoubleConverter()
+            };
+            globalSettings.speedBox.SetBinding(TextBox.TextProperty, binding);
+
+            binding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(MainPage.AngleIncrementProperty),
+                Converter = new TextToDoubleConverter()
+            };
+            globalSettings.AngleErrorBox.SetBinding(TextBox.TextProperty, binding);
+
+            binding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(MainPage.AngleUnitsProperty),
+                Converter = new BooleanToAngleTypeConverter()
+            };
+            globalSettings.RadiansCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
+
+            binding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(MainPage.LengthUnitsProperty),
+                Converter = new BooleanToLengthTypeConverter()
+            };
+            globalSettings.MetricCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
         }
         #region PMKS Controller Functions
         internal void ParseData()
@@ -92,7 +147,8 @@ namespace PMKS_Silverlight_App
             numJoints = TrimEmptyJoints();
             if (SameTopology() && SameParameters())
             {
-                mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                if (pmks != null)
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
                 return;
             }
 
@@ -114,8 +170,14 @@ namespace PMKS_Silverlight_App
                 {
                     pmks.DeltaAngle = AngleIncrement;
                     pmks.InputSpeed = Speed;
+                    status("Analyzing...");
+                    var now = DateTime.Now;
                     pmks.FindFullMovement();
+                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                    status("Drawing...");
+                    now = DateTime.Now;
                     mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 }
             }
             catch (Exception e)
@@ -128,18 +190,20 @@ namespace PMKS_Silverlight_App
         {
             for (int i = 0; i < JointsInfo.Data.Count; i++)
                 if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointType)) return i;
-            return -1;
+            return JointsInfo.Data.Count;
         }
 
         private bool SameParameters()
         {
+            double angle;
             if (numJoints != JointTypes.Count) return false;
             for (int i = 0; i < numJoints; i++)
             {
                 if (Math.Abs(InitPositions[i][0] - Double.Parse(JointsInfo.Data[i].XPos)) > Constants.epsilon) return false;
                 if (Math.Abs(InitPositions[i][1] - Double.Parse(JointsInfo.Data[i].YPos)) > Constants.epsilon) return false;
-                if (!(InitPositions[i].GetLength(0) == 2 && string.IsNullOrWhiteSpace(JointsInfo.Data[i].Angle))
-                    && Math.Abs(InitPositions[i][2] - Double.Parse(JointsInfo.Data[i].Angle)) > Constants.epsilon) return false;
+                if (InitPositions[i].GetLength(0) == 2 && Double.TryParse(JointsInfo.Data[i].Angle, out angle)) return false;
+                if (InitPositions[i].GetLength(0) == 3 && Double.TryParse(JointsInfo.Data[i].Angle, out angle))
+                    if (Math.Abs(InitPositions[i][2] - angle) > Constants.epsilon) return false;
             }
             return true;
         }
@@ -191,6 +255,7 @@ namespace PMKS_Silverlight_App
 
         private Boolean DefinePositions()
         {
+            double angle;
             InitPositions.Clear();
             for (int i = 0; i < numJoints; i++)
             {

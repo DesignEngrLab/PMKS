@@ -14,20 +14,19 @@ namespace PMKS_Silverlight_App
 {
     public partial class JointInputTable : UserControl
     {
-        private MainPage main;
+        public MainPage main { private get; set; }
         public JointInputTable()
         {
             InitializeComponent();
-            main = (MainPage) Parent;
         }
         private void dataGrid_RowEditEnded(object sender, DataGridRowEditEndedEventArgs e)
         {
-            main.ParseData();
+            main.editButtons.AddButton_Click(null, null);
         }
 
         private void dataGrid_CellEditEnded(object sender, DataGridCellEditEndedEventArgs e)
         {
-            main.editButtons.AddButton_Click(null, null);
+            main.ParseData();
         }
     }
 }

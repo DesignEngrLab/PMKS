@@ -159,7 +159,7 @@ namespace PlanarMechanismSimulator
                                 var kPIndex1 = joints.IndexOf(knownJoint1);
                                 var kPIndex2 = joints.IndexOf(knownJoint2);
                                 double angleChange;
-                                point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, jIndex, kPIndex1, kPIndex2, currentJointParams, 
+                                point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, jIndex, kPIndex1, kPIndex2, currentJointParams,
                                     oldJointParams, currentLinkParams, oldLinkParams, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
                                     out angleChange);
                                 if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
@@ -218,8 +218,8 @@ namespace PlanarMechanismSimulator
 
                         case JointTypes.RP:
                             #region R-RP-R&P
-                             if (FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions,unknownLinkAngles)
-                                && FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1) )
+                            if (FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles)
+                               && FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1))
                             {
 
                             }
@@ -277,8 +277,8 @@ namespace PlanarMechanismSimulator
                             break;
                     }
                 }
-            } while (unknownPositions.Count > 0 || initUnkCount == unknownPositions.Count);
-            if (initUnkCount == unknownPositions.Count)
+            } while (initUnkCount > 0 && (unknownPositions.Count > 0 || initUnkCount == unknownPositions.Count));
+            if (initUnkCount > 0 && initUnkCount == unknownPositions.Count)
                 return NDPS.Run_PositionsAreClose(currentJointParams, currentLinkParams, oldJointParams, oldLinkParams);
             return true;
         }
@@ -648,7 +648,7 @@ namespace PlanarMechanismSimulator
             if (knownJoint != null) return true;
             return false;
         }
-        private bool FindKnownPositionAndSlopeOnLink(link link, List<joint> unknownPositions,List<link> unknownLinkAngles)
+        private bool FindKnownPositionAndSlopeOnLink(link link, List<joint> unknownPositions, List<link> unknownLinkAngles)
         {
             if (unknownLinkAngles.Contains(link)) return false;
             return link.joints.Any(j => !unknownPositions.Contains(j) &&
