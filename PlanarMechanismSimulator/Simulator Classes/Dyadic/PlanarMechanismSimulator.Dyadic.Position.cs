@@ -22,13 +22,13 @@ namespace PlanarMechanismSimulator
             unknownPositions.RemoveAll(j => j.Link2 == null);
             if (inputpivot.jointType == JointTypes.R)
                 setLinkPositionFromRotate(inputpivot, inputJointIndex, inputLinkIndex, unknownPositions, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, delta);
-            else if (inputpivot.jointType == JointTypes.R)
-                setLinkPositionFromRotate(inputpivot, inputJointIndex, inputLinkIndex, unknownPositions, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, delta);
+            else if (inputpivot.jointType == JointTypes.P)
+                setLinkPositionFromSlide(inputpivot, inputJointIndex, inputLinkIndex, unknownPositions, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
             else throw new Exception("Input is not of type R or P (as currently required at the beginning of DefineNewPositions");
 
             var unknownLinkAngles = new List<link>(links);
-            setLinkAngles(0.0, groundLink, unknownLinkAngles, currentLinkParams, oldLinkParams);
-            setLinkAngles(delta, inputLink, unknownLinkAngles, currentLinkParams, oldLinkParams);
+            setLinkAngles(0.0, groundLink, unknownLinkAngles, currentLinkParams, oldLinkParams, inputpivot);
+            setLinkAngles(delta, inputLink, unknownLinkAngles, currentLinkParams, oldLinkParams, inputpivot);
             // add any links to !unknownLinkAngles which are P to input or ground (don't forget to update currentLinkParams
             int initUnkCount;
             do
@@ -59,11 +59,11 @@ namespace PlanarMechanismSimulator
                                 var angleChange = solveAngleChange(sJPoint, jIndex, knownPoint1, kPIndex1, oldJointParams);
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                                                           currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 angleChange = solveAngleChange(sJPoint, jIndex, knownPoint2, kPIndex2, oldJointParams);
                                 setLinkPositionFromRotate(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region R-R-P
@@ -81,10 +81,10 @@ namespace PlanarMechanismSimulator
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                     currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region P-R-R
@@ -102,10 +102,10 @@ namespace PlanarMechanismSimulator
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                     currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region P-R-P
@@ -118,10 +118,10 @@ namespace PlanarMechanismSimulator
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link1), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             break;
@@ -146,10 +146,10 @@ namespace PlanarMechanismSimulator
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromRotate(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
                                                                           currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                                                           currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region R-P-P
@@ -168,10 +168,10 @@ namespace PlanarMechanismSimulator
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
                                     currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region P-P-R
@@ -189,10 +189,10 @@ namespace PlanarMechanismSimulator
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link2), unknownPositions,
                                     currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromSlide(knownJoint2, kPIndex2, links.IndexOf(j.Link1), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region P-P-P
@@ -208,10 +208,10 @@ namespace PlanarMechanismSimulator
                                     return false;
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link1), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, knownJoint1);
-                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                                 setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, knownJoint2);
-                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams);
+                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             break;
@@ -303,9 +303,9 @@ namespace PlanarMechanismSimulator
         }
         private point solveViaIntersectingLines(double slopeA, double offsetA, point ptA, double slopeB, double offsetB, point ptB)
         {
-            if (double.IsNaN(slopeA))
+            if (double.IsNaN(slopeA) || double.IsInfinity(slopeA))
                 return new point(ptA.X, slopeB * ptA.X + (ptB.Y - slopeB * ptB.X));
-            if (double.IsNaN(slopeB))
+            if (double.IsNaN(slopeB) || double.IsInfinity(slopeB))
                 return new point(ptB.X, slopeA * ptB.X + (ptA.Y - slopeA * ptA.X));
             if (Constants.sameCloseZero(ptA.X, ptB.X) && Constants.sameCloseZero(ptA.Y, ptB.Y)) return ptA;
             if (Constants.sameCloseZero(slopeA, slopeB)) return new point(double.NaN, double.NaN);
@@ -319,15 +319,16 @@ namespace PlanarMechanismSimulator
         {
             var jPoint = new point(oldJointParams[jIndex, 0], oldJointParams[jIndex, 1]);
             var kPIndex1 = joints.IndexOf(knownJoint);
+            var thisLink = (j.Link1.joints.Contains(knownJoint)) ? j.Link1 : j.Link2;
             /* the next 8 lines of code is just to determine plusOrMinus - which side of the line is the point on? */
             var ptA = new point(oldJointParams[kPIndex1, 0], oldJointParams[kPIndex1, 1]);
             var thetaA = slideAngle(knownJoint, oldLinkParams);
             slope = Math.Tan(thetaA);
             offset = ptA.Y - slope * ptA.X;
-            var dist1 = j.Link1.lengthBetween(j, knownJoint);
-            if (!knownJoint.LinkIsSlide(j.Link1))
-                dist1 *= Math.Sin(2 * Math.PI - thetaA - Constants.angle(ptA, jPoint));
-            var plusOrMinus = (double.IsNaN(slope)) ? ((jPoint.X < 0) ? +1 : -1) : Math.Sign(jPoint.Y - slope * jPoint.X - offset);
+            var dist1 = thisLink.lengthBetween(j, knownJoint);
+            if (!knownJoint.LinkIsSlide(thisLink))
+                dist1 *= Math.Sin(thetaA + Constants.angle(ptA, jPoint));
+            var plusOrMinus = (double.IsNaN(slope) || double.IsInfinity(slope)) ? ((jPoint.X < 0) ? +1 : -1) : Math.Sign(jPoint.Y - slope * jPoint.X - offset);
             /* now solve the current slope, offset and known point */
             ptA = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 1]);
             thetaA = slideAngle(knownJoint, currentLinkParams);
@@ -335,6 +336,7 @@ namespace PlanarMechanismSimulator
             offset = ptA.Y - slope * ptA.X;
             ptA.X = ptA.X + dist1 * Math.Cos(thetaA + plusOrMinus * Math.PI / 2);
             ptA.Y = ptA.Y + dist1 * Math.Sin(thetaA + plusOrMinus * Math.PI / 2);
+            offset = ptA.Y - slope * ptA.X;
             return ptA;
         }
 
@@ -565,15 +567,16 @@ namespace PlanarMechanismSimulator
 
         #region set link position and angles
         private void setLinkAngles(double angleChange, link thisLink, List<link> unknownLinkAngles,
-            double[,] currentLinkParams, double[,] oldLinkParams)
+            double[,] currentLinkParams, double[,] oldLinkParams, joint from)
         {
             unknownLinkAngles.Remove(thisLink);
             foreach (var j in thisLink.joints)
             {
-                if (j.jointType != JointTypes.P) continue;
+                if (j.jointType != JointTypes.P || j == from) continue;
                 var newLink = (j.Link1 == thisLink) ? j.Link2 : j.Link1;
                 var newLinkIndex = links.IndexOf(newLink);
                 currentLinkParams[newLinkIndex, 0] = oldLinkParams[newLinkIndex, 0] + angleChange;
+                setLinkAngles(angleChange, newLink, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                 unknownLinkAngles.Remove(newLink);
             }
         }

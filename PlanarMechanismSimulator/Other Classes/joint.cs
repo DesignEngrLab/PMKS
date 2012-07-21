@@ -29,15 +29,15 @@ namespace PlanarMechanismSimulator
     {
         public readonly Boolean isGround;
         public readonly JointTypes jointType;
-        public  double initX;
-        public  double initY;
+        public double initX;
+        public double initY;
 
         public link Link1 { get; internal set; }
         public link Link2 { get; internal set; }
         public double SlideAngle = double.NaN;
         // how to plan for future cam shapes
 
-        
+
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition)
         {
             isGround = IsGround;
@@ -49,14 +49,12 @@ namespace PlanarMechanismSimulator
             {
                 if (jointType == JointTypes.P || jointType == JointTypes.RP)
                 {
-                    if (currentJointPosition.GetLength(0) == 0 || currentJointPosition.GetLength(0) == 2)
+                    //if (currentJointPosition.GetLength(0) == 0 || currentJointPosition.GetLength(0) == 2)
+                    if (currentJointPosition.GetLength(0) < 3)
                         throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
-                    else SlideAngle = currentJointPosition[0];
-                    if (currentJointPosition.GetLength(0) >= 3)
-                    {
-                        initX = currentJointPosition[1];
-                        initY = currentJointPosition[2];
-                    }
+                    initX = currentJointPosition[0];
+                    initY = currentJointPosition[1];
+                    SlideAngle = currentJointPosition[2];
                 }
                 else
                 {
