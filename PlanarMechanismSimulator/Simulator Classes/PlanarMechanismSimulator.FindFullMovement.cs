@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using OptimizationToolbox;
 
@@ -91,7 +92,25 @@ namespace PlanarMechanismSimulator
             }
             #endregion
 #if SILVERLIGHT
-            loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams,true);
+
+            loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true); 
+            //var forwardThread = new Thread(delegate()
+            //    {
+            //        loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true);
+            //        forwardDone.Set();
+            //    });
+            //var backwardThread = new Thread(delegate()
+            //    {
+            //        loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false);
+            //        backwardDone.Set();
+            //    });
+            //forwardThread.Start(); backwardThread.Start();  
+            //if (forwardDone.WaitOne() && backwardDone.WaitOne())
+            //{
+            //    forwardDone = new AutoResetEvent(false);
+            //    backwardDone = new AutoResetEvent(false);
+            //}
+
 #else
             Parallel.Invoke(
                 /*** Stepping Forward in Time ***/
@@ -100,6 +119,8 @@ namespace PlanarMechanismSimulator
                 () => loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false));
 #endif
         }
+        private static AutoResetEvent forwardDone = new AutoResetEvent(false);
+        private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
         private Boolean microPerturbForFiniteDifferenceOfVelocityAndAcceleration(double smallTimeStep, double[,] currentJointParams, double[,] currentLinkParams,
             double[,] initPivotParams, double[,] initLinkParams)

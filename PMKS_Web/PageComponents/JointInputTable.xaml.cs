@@ -28,5 +28,11 @@ namespace PMKS_Silverlight_App
         {
             main.ParseData();
         }
+
+        internal void HighlightMissingAngle(int i)
+        {
+            //dataGrid.row
+            //throw new NotImplementedException();
+        }
     }
 }

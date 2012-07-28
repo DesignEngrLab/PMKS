@@ -255,13 +255,13 @@ namespace PlanarMechanismSimulator
                 inputpivot = joints[0];
                 if (inputpivot.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
                 if (inputpivot.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
-                //if (!inputpivot.Link1.isGround)
-                //{
-                //    if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
-                //    var tempLinkRef = inputpivot.Link1;
-                //    inputpivot.Link1 = inputpivot.Link2;
-                //    inputpivot.Link2 = tempLinkRef;
-                //}
+                if (!inputpivot.Link1.isGround)
+                {
+                    if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
+                    var tempLinkRef = inputpivot.Link1;
+                    inputpivot.Link1 = inputpivot.Link2;
+                    inputpivot.Link2 = tempLinkRef;
+                }
                 /* reorder links, move input link and ground link to back of list */
                 inputLink = (inputpivot.Link2.isGround) ? inputpivot.Link1 : inputpivot.Link2;
                 links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list

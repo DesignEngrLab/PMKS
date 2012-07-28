@@ -88,24 +88,24 @@ namespace PlanarMechanismSimulator
                             }
                             #endregion
                             #region P-R-R
-                            else if (FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint1)
-                                && FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
+                                && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint2))
                             {
-                                int kPIndex1 = joints.IndexOf(knownJoint1);
+                                int kPIndex2 = joints.IndexOf(knownJoint2);
                                 double angleChange;
-                                var sJPoint = solveViaCircleAndLineIntersection(j, jIndex, j.Link1.lengthBetween(j, knownJoint1), kPIndex1,
-                                    knownJoint2, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]),
+                                var sJPoint = solveViaCircleAndLineIntersection(j, jIndex, j.Link2.lengthBetween(j, knownJoint2), kPIndex2,
+                                    knownJoint1, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 2]),
                                     out angleChange);
                                 if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) || double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
                                     return false;
                                 currentJointParams[jIndex, 0] = sJPoint.X;
                                 currentJointParams[jIndex, 1] = sJPoint.Y;
-                                setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
+                                setLinkPositionFromRotate(knownJoint2, kPIndex2, links.IndexOf(j.Link2), unknownPositions,
                                     currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, angleChange);
-                                setLinkAngles(angleChange, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
-                                setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link2), unknownPositions,
+                                setLinkAngles(angleChange, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
+                                setLinkPositionFromSlide(j, jIndex, links.IndexOf(j.Link1), unknownPositions,
                                                                          currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
-                                setLinkAngles(0.0, j.Link2, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
+                                setLinkAngles(0.0, j.Link1, unknownLinkAngles, currentLinkParams, oldLinkParams, j);
                             }
                             #endregion
                             #region P-R-P
@@ -310,8 +310,10 @@ namespace PlanarMechanismSimulator
             if (Constants.sameCloseZero(ptA.X, ptB.X) && Constants.sameCloseZero(ptA.Y, ptB.Y)) return ptA;
             if (Constants.sameCloseZero(slopeA, slopeB)) return new point(double.NaN, double.NaN);
 
-            var y = (offsetB - offsetA) / (slopeA - slopeB);
-            var x = (y - offsetA) / slopeA;
+            //var y = (offsetB - offsetA) / (slopeA - slopeB);
+            //var x = (y - offsetA) / slopeA;
+            var x = (offsetB - offsetA) / (slopeA - slopeB);
+            var y = slopeA*x+offsetA;
             return new point(x, y);
         }
         private point defineParallelLineThroughJoint(joint j, int jIndex, joint knownJoint,

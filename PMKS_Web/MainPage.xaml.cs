@@ -145,19 +145,18 @@ namespace PMKS_Silverlight_App
         {
             if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
-            if (SameTopology() && SameParameters())
+            if (pmks != null && SameTopology() && SameParameters())
             {
-                if (pmks != null)
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
                 return;
             }
 
-            if (SameTopology())
+            if (pmks != null && SameTopology() && DataListsSameLength())
             {
                 DefinePositions();
                 pmks.AssignPositions(InitPositions);
             }
-            else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList())) return;
+            else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
             //try
             //{
             pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
@@ -185,6 +184,7 @@ namespace PMKS_Silverlight_App
             //    status(e.Message);
             //}
         }
+
 
         private int TrimEmptyJoints()
         {
@@ -274,6 +274,23 @@ namespace PMKS_Silverlight_App
             return true;
         }
 
+        private bool DataListsSameLength()
+        {
+            var numRows = LinkIDs.Count;
+            if (numRows != InitPositions.Count || numRows != JointTypes.Count) return false;
+            for (int i = 0; i < numRows; i++)
+            {
+                var jStr = JointTypes[i];
+                if (InitPositions[i].GetLength(0) != 3 &&
+                    (jStr.Split(',', ' ')[0].Equals("p", StringComparison.InvariantCultureIgnoreCase) ||
+                    jStr.Split(',', ' ')[0].Equals("rp", StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    jointInputTable.HighlightMissingAngle(i);
+                    return false;
+                }
+            }
+            return true;
+        }
 
         #endregion
 
