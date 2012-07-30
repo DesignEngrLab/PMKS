@@ -73,5 +73,12 @@ namespace PlanarMechanismSimulator
                 && (jointType == JointTypes.P || jointType == JointTypes.RP
                 || (jointType == JointTypes.G && double.IsNaN(SlideAngle))));
         }
+
+        internal link OtherLink(link thislink)
+        {
+            if (Link1 == thislink) return Link2;
+            if (Link2 == thislink) return Link1; 
+            throw new Exception("the link provided to joint->OtherLink is not attached to this joint.");
+        }
     }
 }

@@ -441,7 +441,7 @@ namespace PlanarMechanismSimulator
             double range;
             lock (InputRange)
             {
-                range = InputRange[0] - InputRange[1];
+                range = Math.Abs(InputRange[0] - InputRange[1]);
             }
             return range < 2 * Math.PI;
         }
@@ -566,6 +566,6 @@ namespace PlanarMechanismSimulator
         }
 
 
-        public int[] JointReOrdering { get;private set; }
+        public int[] JointReOrdering { get; private set; }
     }
 }
