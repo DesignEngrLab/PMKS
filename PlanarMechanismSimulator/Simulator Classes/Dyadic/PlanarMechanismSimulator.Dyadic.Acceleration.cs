@@ -1,8 +1,7 @@
 ﻿#region
 using System;
-using System.Linq;
 using OptimizationToolbox;
-using StarMathLib;
+
 #endregion
 
 namespace PlanarMechanismSimulator

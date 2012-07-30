@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using OptimizationToolbox;
 
@@ -117,8 +116,8 @@ namespace PlanarMechanismSimulator
                 do
                 {
                     var determined = unknownPositions.FirstOrDefault(j =>
-                        (j.Link1.joints.Count(jj => knownPositions.Contains(jj))
-                        + j.Link2.joints.Count(jj => knownPositions.Contains(jj)) >= 2));
+                        (j.Link1.joints.Count(knownPositions.Contains)
+                        + j.Link2.joints.Count(knownPositions.Contains) >= 2));
                     if (determined == null) return false;
                     knownPositions.Add(determined);
                     unknownPositions.Remove(determined);
@@ -139,13 +138,15 @@ namespace PlanarMechanismSimulator
         /// <param name="InitPositions">The init positions.</param>
         public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, IList<double[]> InitPositions = null)
         {
-            InputSpeed = 1.0;
+           // InputSpeed = 1.0;
             CreateLinkAndPositionDetails(LinkIDs, JointTypes, InitPositions);
+            NDPS = new NonDyadicPositionSolver(links, joints, firstInputJointIndex,
+                        inputJointIndex, inputLinkIndex, epsilon);
         }
 
         public Simulator(string data)
         {
-            InputSpeed = 1.0;
+          //  InputSpeed = 1.0;
             var positions = new List<double[]>();
             var jointTypes = new List<string>();
             var pivotSentences = data.Split('\n').ToList();
@@ -181,8 +182,6 @@ namespace PlanarMechanismSimulator
                 linkIDs.Add(words);
             }
             CreateLinkAndPositionDetails(linkIDs, jointTypes, positions);
-            NDPS = new NonDyadicPositionSolver(links, joints, firstInputJointIndex,
-                        inputJointIndex, inputLinkIndex, epsilon);
         }
 
 
@@ -208,7 +207,6 @@ namespace PlanarMechanismSimulator
                             linkID[i] = "ground";
                 var linkNames = LinkIDs.SelectMany(a => a).Distinct().ToList();
 
-                numLinks = linkNames.Count; //count the number of links in the system
                 var newLinkIDs = new List<List<string>>();
                 /* create the pivots */
                 joints = new List<joint>(); //create an arry of pivots
@@ -235,10 +233,9 @@ namespace PlanarMechanismSimulator
                             newLinkIDs.Add(new List<string> { LinkIDs[i][j], LinkIDs[i][j + 1] });
                         }
                 }
-                numJoints = joints.Count; //count the number of pivots in the system
                 /* now onto the links */
                 links = new List<link>(); //create an array of LINKS
-                for (int k = 0; k < numLinks; k++)
+                for (int k = 0; k < linkNames.Count; k++)
                 {
                     var pivotIndices =
                         newLinkIDs.Where(lid => lid.Contains(linkNames[k])).Select(lid => newLinkIDs.IndexOf(lid));
@@ -262,12 +259,15 @@ namespace PlanarMechanismSimulator
                     inputpivot.Link1 = inputpivot.Link2;
                     inputpivot.Link2 = tempLinkRef;
                 }
+                inferAdditionalGearLinks();
+                numLinks = links.Count; //count the number of links in the system
+                numJoints = joints.Count; //count the number of pivots in the system
                 /* reorder links, move input link and ground link to back of list */
                 inputLink = (inputpivot.Link2.isGround) ? inputpivot.Link1 : inputpivot.Link2;
                 links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list
                 groundLink = links.First(c => c.isGround);
                 links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
-                inputLinkIndex = links.Count - 2;
+                inputLinkIndex = numLinks - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
                 var origOrder = new List<joint>(joints);
                 joints.Remove(inputpivot);
@@ -292,6 +292,43 @@ namespace PlanarMechanismSimulator
                     e);
             }
         }
+
+        private void inferAdditionalGearLinks()
+        {
+            if (!joints.Any(j => j.jointType == JointTypes.G)) return;
+            gearsData = new Dictionary<joint, gearData>();
+            const string nameBase = "auto_generated_gear_connect_";
+            for (int i = joints.Count-1; i >=0; i--)
+            {
+                var j = joints[i];
+                if (j.jointType != JointTypes.G) continue;
+                var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
+                var gearCenter2 =
+                    j.Link2.joints.FirstOrDefault(
+                        jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)));
+                if (gearCenter2 != null)
+                {
+                    var connectingRod = gearCenter2.OtherLink(j.Link2);
+                    var gearCenter1 =
+                        connectingRod.joints.FirstOrDefault(jj => jj.OtherLink(connectingRod) == j.Link1);
+                    gearsData.Add(j, new gearData(j, connectingRod, gearCenter1, gearCenter2));
+                }
+                if (double.IsNaN(j.SlideAngle))
+                    throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
+                gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointTypes.R);
+                var newJoint1 = new joint(false, "p", new[] { j.initX, j.initY,j.SlideAngle });
+                if (gearCenter2 == null) throw new Exception("No pivot (R joint) for "+ j.Link2.name); 
+                var newJoint2 = new joint(false, "r", new[] { gearCenter2.initX, gearCenter2.initY });
+                var connectLink = new link(nameBase + links.Count, new List<joint> { newJoint1, newJoint2 }, false);
+                newJoint1.Link1 = j.Link1;
+                newJoint2.Link1 = j.Link2;
+                newJoint1.Link2 = newJoint2.Link2 = connectLink;
+                joints.Add(newJoint1); joints.Add(newJoint2); links.Add(connectLink);
+                gearsData.Add(j,new gearData(j,connectLink,newJoint1,newJoint2));
+            }
+        }
+
+        private Dictionary<joint, gearData> gearsData;
 
         #endregion
 

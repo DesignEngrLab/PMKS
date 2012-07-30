@@ -225,7 +225,7 @@ namespace PlanarMechanismSimulator
                                 // (this is likely to come up again for gears). The loop is iterating through unknown positions only, and the 
                                 // convergence is also dependent on that. 
                                 var kPIndex1 = joints.IndexOf(knownJoint1);
-                                var kPIndex2 = joints.IndexOf(knownJoint2);
+                                joints.IndexOf(knownJoint2);
                                 var angleChange = solveRotateSlotToPin(j, jIndex, kPIndex1, currentJointParams, oldJointParams, currentLinkParams, oldLinkParams, new point(currentJointParams[jIndex, 0], currentJointParams[jIndex, 1]));
                                 if (double.IsNaN(angleChange)) return false;
                                 setLinkPositionFromRotate(knownJoint1, kPIndex1, links.IndexOf(j.Link1), unknownPositions,
@@ -258,68 +258,39 @@ namespace PlanarMechanismSimulator
                             break;
 
                         case JointTypes.G:
-                            if (!double.IsNaN(j.SlideAngle))
-                            { // if the user specifies a slideAngle than the gear is a rack-and-pinion
-                                // knownJoint1 is always the rack and knownJoint2 is always the pinion
-                                #region R-G-R&P and R&P-G-R
-                                if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1)
-                                    && FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
-                                {
-                                }
-                                #endregion
-                                #region
-                                if (FindKnownPositionAndSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint2)
-                                    && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint1))
-                                {
-
-                                }
-                                #endregion
-                                #region P-G-R&P
-                                if (FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
-                                    && FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
-                                {
-
-                                }
-                                #endregion
-                                #region R&P-G-P
-                                if (FindKnownPositionAndSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
-                                    && FindKnownSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
-                                {
-
-                                }
-                                #endregion
-                            }
-                            else
+                            #region R-G-R&P
+                            if (FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1)
+                                && FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
                             {
-                                #region R-G-R&P or R&P-G-R
-                                if ((FindKnownPositionOnLink(j.Link1, unknownPositions, out knownJoint1)
-                                    && FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
-                                    || (FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint1)
-                                    && FindKnownPositionAndSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint2)))
-                                {
-                                    var neighborLinks = j.Link1.joints.Select(j => j.OtherLink(j.Link1)).ToList();
-                                    var connectingRod = neighborLinks.Find(c=> 
-                                    neighborLinks.Remove(j.Link2);
-                                    // position is determined proportional distance between R's (gear centers) - note could be an inverted gear
-                                    // need to look at prev. data point to determine
-                                    // this is needed first to determine amount of angle that j.Link1 undergoes
-                                }
+                                var gData = gearsData[j];
 
-                                #endregion
-                                #region P-G-R&P or R&P-G-P
-                                if ((FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
-                                    && FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
-                                    || (FindKnownPositionAndSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
-                                    && FindKnownSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2)))
-                                {
-
-                                }
-                                #endregion
                             }
+                            #endregion
+                            #region R&P-G-R
+                            if (FindKnownPositionAndSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint2)
+                                && FindKnownPositionOnLink(j.Link2, unknownPositions, out knownJoint1))
+                            {
+
+                            }
+                            #endregion
+                            #region P-G-R&P
+                            if (FindKnownSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
+                                && FindKnownPositionAndSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
+                            {
+
+                            }
+                            #endregion
+                            #region R&P-G-P
+                            if (FindKnownPositionAndSlopeOnLink(j.Link1, unknownPositions, unknownLinkAngles, out knownJoint1)
+                                && FindKnownSlopeOnLink(j.Link2, unknownPositions, unknownLinkAngles, out knownJoint2))
+                            {
+
+                            }
+                            #endregion
                             break;
                     }
                 }
-            } while (initUnkCount > 0 && (unknownPositions.Count > 0 || initUnkCount == unknownPositions.Count));
+            } while (initUnkCount > 0 && unknownPositions.Count < initUnkCount);
             if (initUnkCount > 0 && initUnkCount == unknownPositions.Count)
                 return NDPS.Run_PositionsAreClose(currentJointParams, currentLinkParams, oldJointParams, oldLinkParams);
             return true;
@@ -397,7 +368,7 @@ namespace PlanarMechanismSimulator
             ptA = new point(currentJointParams[kPIndex1, 0], currentJointParams[kPIndex1, 1]);
             thetaA = slideAngle(knownJoint, currentLinkParams);
             slope = Math.Tan(thetaA);
-            offset = ptA.Y - slope * ptA.X;
+            //offset = ptA.Y - slope * ptA.X;
             ptA.X = ptA.X + dist1 * Math.Cos(thetaA + plusOrMinus * Math.PI / 2);
             ptA.Y = ptA.Y + dist1 * Math.Sin(thetaA + plusOrMinus * Math.PI / 2);
             offset = ptA.Y - slope * ptA.X;

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace PlanarMechanismSimulator
 {
@@ -45,26 +43,15 @@ namespace PlanarMechanismSimulator
             if (Enum.TryParse(pTypeStr, true, out pType)) jointType = pType;
             else throw new Exception("Unable to cast joint type " + pTypeStr + " as a recognized JointType.");
 
-            if (currentJointPosition != null)
-            {
-                if (jointType == JointTypes.P || jointType == JointTypes.RP)
-                {
-                    //if (currentJointPosition.GetLength(0) == 0 || currentJointPosition.GetLength(0) == 2)
-                    if (currentJointPosition.GetLength(0) < 3)
-                        throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
-                    initX = currentJointPosition[0];
-                    initY = currentJointPosition[1];
-                    SlideAngle = currentJointPosition[2];
-                }
-                else
-                {
-                    if (currentJointPosition.GetLength(0) >= 2)
-                    {
-                        initX = currentJointPosition[0];
-                        initY = currentJointPosition[1];
-                    }
-                }
-            }
+            if (currentJointPosition == null) return;
+            if (currentJointPosition.GetLength(0) < 2)
+                throw new Exception("Values for x and y must be provided for joint.");
+            initX = currentJointPosition[0];
+            initY = currentJointPosition[1];
+            if (currentJointPosition.GetLength(0) >= 3 && jointType!=JointTypes.R)
+                SlideAngle = currentJointPosition[2];
+            else if (jointType == JointTypes.P || jointType == JointTypes.RP)
+                throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
         public Boolean LinkIsSlide(link link0)
@@ -77,7 +64,7 @@ namespace PlanarMechanismSimulator
         internal link OtherLink(link thislink)
         {
             if (Link1 == thislink) return Link2;
-            if (Link2 == thislink) return Link1; 
+            if (Link2 == thislink) return Link1;
             throw new Exception("the link provided to joint->OtherLink is not attached to this joint.");
         }
     }

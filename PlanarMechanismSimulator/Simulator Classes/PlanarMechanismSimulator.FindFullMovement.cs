@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OptimizationToolbox;
@@ -10,7 +9,7 @@ namespace PlanarMechanismSimulator
     {
         public void FindFullMovement()
         {
-            if ((double.IsNaN(this.DeltaAngle)) && (double.IsNaN(this.FixedTimeStep)))
+            if ((double.IsNaN(DeltaAngle)) && (double.IsNaN(FixedTimeStep)))
                 throw new Exception(
                     "Either the angle delta or the time step must be specified.");
 
@@ -39,10 +38,10 @@ namespace PlanarMechanismSimulator
             {
                 var ForwardJointParams = (double[,])initPivotParams.Clone();
                 var ForwardLinkParams = (double[,])initLinkParams.Clone();
-                var forwardSuccess = false;
+                bool forwardSuccess = false;
                 var BackwardJointParams = (double[,])initPivotParams.Clone();
                 var BackwardLinkParams = (double[,])initLinkParams.Clone();
-                var backwardSuccess = false;
+                bool backwardSuccess = false;
                 var smallTimeStep = 0.003 * InputSpeed * FixedTimeStep;
 #if SILVERLIGHT
                     forwardSuccess =

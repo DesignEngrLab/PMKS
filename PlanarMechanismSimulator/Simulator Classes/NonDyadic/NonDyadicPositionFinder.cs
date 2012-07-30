@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OptimizationToolbox;
-using StarMathLib;
 
 namespace PlanarMechanismSimulator
 {
@@ -80,7 +78,7 @@ namespace PlanarMechanismSimulator
                     llf.SetJointPosition(i, newJointParams[i, 0], newJointParams[i, 1]);
 
             double[] xStar;
-            var result = optMethod.Run(out xStar, xInit);
+            optMethod.Run(out xStar, xInit);
             if (SolutionFound())
             {
                 for (int i = 0; i < numUnknownPivots; i++)
@@ -105,7 +103,7 @@ namespace PlanarMechanismSimulator
             var r = new Random();
             var fStar = double.PositiveInfinity;
             double[] xStar = null;
-            long numFEvals = 0;
+            NumEvals = 0;
             int k = 0;
             var xMin = joints.Min(j => j.initX);
             var xMax = joints.Max(j => j.initX);
@@ -116,7 +114,7 @@ namespace PlanarMechanismSimulator
             var offset = (xMin + xMax + yMin + yMax) / 4 - (range / 2);
             do
             {
-                numFEvals += optMethod.numEvals;
+                NumEvals += optMethod.numEvals;
                 optMethod.ResetFunctionEvaluationDatabase();
                 var xInit = new double[2 * numUnknownPivots]; //need to check if this is always true. If input is a ternary link it could be less.
 

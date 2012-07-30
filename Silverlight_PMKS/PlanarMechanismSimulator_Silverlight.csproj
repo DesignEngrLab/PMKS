@@ -60,6 +60,9 @@
     <Compile Include="..\PlanarMechanismSimulator\Other Classes\Constants.cs">
       <Link>Other Classes\Constants.cs</Link>
     </Compile>
+    <Compile Include="..\PlanarMechanismSimulator\Other Classes\gearData.cs">
+      <Link>Other Classes\gearData.cs</Link>
+    </Compile>
     <Compile Include="..\PlanarMechanismSimulator\Other Classes\joint.cs">
       <Link>Other Classes\joint.cs</Link>
     </Compile>

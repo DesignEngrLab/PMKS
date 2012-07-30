@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Other Classes\Constants.cs" />
+    <Compile Include="Other Classes\gearData.cs" />
     <Compile Include="Other Classes\joint.cs" />
     <Compile Include="Other Classes\link.cs" />
     <Compile Include="Other Classes\TimeSortedList.cs" />

@@ -20,7 +20,6 @@
  *     at http://ooot.codeplex.com/.
  *************************************************************************/
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 
 namespace OptimizationToolbox
@@ -63,7 +62,7 @@ namespace OptimizationToolbox
         public MaxTimeConvergence(DateTime timeToStop)
         {
             maxTime = timeToStop - DateTime.Now;
-            this.maxTime = maxTime;
+            maxTime = maxTime;
 #if SILVERLIGHT
             timer = DateTime.Now;
 #else

@@ -167,8 +167,8 @@ namespace PMKS_Silverlight_App
             status("Degrees of freedom = " + dof);
             if (dof == 1)
             {
-                pmks.DeltaAngle = AngleIncrement;
                 pmks.InputSpeed = Speed;
+                pmks.DeltaAngle = AngleIncrement;
                 status("Analyzing...");
                 var now = DateTime.Now;
                 pmks.FindFullMovement();
