@@ -216,9 +216,8 @@ namespace PMKS_Silverlight_App
                 if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
                 var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
-                if (LinkIDs[i].Any(linkID => !newLinkIDS.Remove(linkID)))
+                if (newLinkIDS.Where((t, j) => t != LinkIDs[i][j]).Any())
                     return false;
-                if (newLinkIDS.Count > 0) return false;
             }
             return true;
         }

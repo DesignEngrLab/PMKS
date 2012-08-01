@@ -138,7 +138,7 @@ namespace PlanarMechanismSimulator
         /// <param name="InitPositions">The init positions.</param>
         public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, IList<double[]> InitPositions = null)
         {
-           // InputSpeed = 1.0;
+            // InputSpeed = 1.0;
             CreateLinkAndPositionDetails(LinkIDs, JointTypes, InitPositions);
             NDPS = new NonDyadicPositionSolver(links, joints, firstInputJointIndex,
                         inputJointIndex, inputLinkIndex, epsilon);
@@ -146,7 +146,7 @@ namespace PlanarMechanismSimulator
 
         public Simulator(string data)
         {
-          //  InputSpeed = 1.0;
+            //  InputSpeed = 1.0;
             var positions = new List<double[]>();
             var jointTypes = new List<string>();
             var pivotSentences = data.Split('\n').ToList();
@@ -260,6 +260,7 @@ namespace PlanarMechanismSimulator
                     inputpivot.Link2 = tempLinkRef;
                 }
                 inferAdditionalGearLinks();
+                addReferencePivotsToSlideOnlyLinks();
                 numLinks = links.Count; //count the number of links in the system
                 numJoints = joints.Count; //count the number of pivots in the system
                 /* reorder links, move input link and ground link to back of list */
@@ -293,12 +294,25 @@ namespace PlanarMechanismSimulator
             }
         }
 
+        private void addReferencePivotsToSlideOnlyLinks()
+        {
+            foreach (var c in links)
+            {
+                if (c.joints.Count(j =>j.FixedWithRespectToLink(c)) > 0) continue;
+                var newJoint1 = new joint(false, "r",
+                    new[] { c.joints.Sum(j => j.initX) / c.joints.Count, c.joints.Sum(j => j.initY) / c.joints.Count });
+                newJoint1.Link1 = c;
+                c.joints.Add(newJoint1);
+                joints.Add(newJoint1);
+            }
+        }
+
         private void inferAdditionalGearLinks()
         {
-            if (!joints.Any(j => j.jointType == JointTypes.G)) return;
+            if (joints.All(j => j.jointType != JointTypes.G)) return;
             gearsData = new Dictionary<joint, gearData>();
             const string nameBase = "auto_generated_gear_connect_";
-            for (int i = joints.Count-1; i >=0; i--)
+            for (int i = joints.Count - 1; i >= 0; i--)
             {
                 var j = joints[i];
                 if (j.jointType != JointTypes.G) continue;
@@ -316,15 +330,15 @@ namespace PlanarMechanismSimulator
                 if (double.IsNaN(j.SlideAngle))
                     throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
                 gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointTypes.R);
-                var newJoint1 = new joint(false, "p", new[] { j.initX, j.initY,j.SlideAngle });
-                if (gearCenter2 == null) throw new Exception("No pivot (R joint) for "+ j.Link2.name); 
+                var newJoint1 = new joint(false, "p", new[] { j.initX, j.initY, j.SlideAngle });
+                if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
                 var newJoint2 = new joint(false, "r", new[] { gearCenter2.initX, gearCenter2.initY });
                 var connectLink = new link(nameBase + links.Count, new List<joint> { newJoint1, newJoint2 }, false);
                 newJoint1.Link1 = j.Link1;
                 newJoint2.Link1 = j.Link2;
                 newJoint1.Link2 = newJoint2.Link2 = connectLink;
                 joints.Add(newJoint1); joints.Add(newJoint2); links.Add(connectLink);
-                gearsData.Add(j,new gearData(j,connectLink,newJoint1,newJoint2));
+                gearsData.Add(j, new gearData(j, connectLink, newJoint1, newJoint2));
             }
         }
 
@@ -348,6 +362,7 @@ namespace PlanarMechanismSimulator
                         joints[JointReOrdering[i]].initY = InitPositions[i][1];
                     }
                 }
+                throw new NotImplementedException("The next line of code is incomplete. See all code preceding other call to DetermineLengthsAndReferences().");
                 foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
@@ -585,12 +600,7 @@ namespace PlanarMechanismSimulator
                 linkParams[inputLinkIndex, 1] = 0.0;
                 linkParams[inputLinkIndex, 2] = 0.0;
 
-                var angle = inputpivot.SlideAngle;
-                /* need to offset the angle by the rotation of either the input link or ground.
-                 * both are probably zero, but just in case. */
-                if (inputpivot.Link1 == inputLink) angle += linkParams[inputLinkIndex, 0];
-                else angle += linkParams[inputLinkIndex + 1, 0];
-
+                var angle =slideAngle(inputpivot,linkParams);
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {
                     /* position will be changed by the setLinkPosition function. */

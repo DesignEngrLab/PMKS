@@ -57,7 +57,7 @@ namespace PlanarMechanismSimulator
 
         internal void DetermineLengthsAndReferences()
         {
-            var fixedJoints = joints.Where(j => !j.LinkIsSlide(this) && j.jointType != JointTypes.G).ToList();
+            var fixedJoints = joints.Where(j => j.FixedWithRespectToLink(this)).ToList();
             if (fixedJoints.Count < 2 || fixedJoints.Count(j => j.isGround) > 1) Angle = 0.0;
             else if (fixedJoints.Count(j => j.isGround) == 1)
             {
@@ -77,14 +77,15 @@ namespace PlanarMechanismSimulator
                 {
                     var iJoint = joints[i];
                     var jJoint = joints[j];
-                    if (iJoint.LinkIsSlide(this) && jJoint.LinkIsSlide(this))
+                    if (iJoint.SlidingWithRespectToLink(this) && jJoint.SlidingWithRespectToLink(this))
                         if (Constants.sameCloseZero(iJoint.SlideAngle, jJoint.SlideAngle))
-                            lengths[lengthIndex++] = Constants.distance(iJoint, jJoint);
+                            lengths[lengthIndex++] = Constants.distance(findOrthoPoint(iJoint, jJoint), jJoint);
                         else lengths[lengthIndex++] = 0.0;
-                    else if (!iJoint.LinkIsSlide(this) && !jJoint.LinkIsSlide(this))
-                        lengths[lengthIndex++] = Constants.distance(iJoint, jJoint);
-                    else if (iJoint.LinkIsSlide(this)) lengths[lengthIndex++] = findOrthoPoint(iJoint, jJoint);
-                    else if (jJoint.LinkIsSlide(this)) lengths[lengthIndex++] = findOrthoPoint(jJoint, iJoint);
+                    else if (iJoint.SlidingWithRespectToLink(this))
+                        lengths[lengthIndex++] = Constants.distance(findOrthoPoint(iJoint, jJoint), jJoint);
+                    else if (jJoint.SlidingWithRespectToLink(this))
+                        lengths[lengthIndex++] = Constants.distance(findOrthoPoint(jJoint, iJoint), iJoint);
+                    else lengths[lengthIndex++] = Constants.distance(iJoint, jJoint);
                 }
             // ** see comments under lengths declaration for reason why this is commented.**
             //int linkIndex = 0;
@@ -105,28 +106,24 @@ namespace PlanarMechanismSimulator
             //}
             foreach (var j in joints)
             {  /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
-                if (j.LinkIsSlide(this)) j.SlideAngle -= Angle;
+                if (j.SlidingWithRespectToLink(this)) j.SlideAngle -= Angle;
                 while (j.SlideAngle < -Math.PI / 2) j.SlideAngle += Math.PI;
                 while (j.SlideAngle > Math.PI / 2) j.SlideAngle -= Math.PI;
             }
         }
 
-        private double findOrthoPoint(joint slideJoint, joint fixedJoint)
+        internal static point findOrthoPoint(joint slideJoint, joint fixedJoint)
         {
-            point orthoPoint;
             if (Constants.sameCloseZero(slideJoint.SlideAngle))
-                orthoPoint = new point(fixedJoint.initX, slideJoint.initY);
-            else if (Constants.sameCloseZero(Math.Abs(slideJoint.SlideAngle), Math.PI / 2))
-                orthoPoint = new point(slideJoint.initX, fixedJoint.initY);
-            else
-            {
-                var slope = Math.Tan(slideJoint.SlideAngle);
-                var x = (slope * slope * slideJoint.initX + fixedJoint.initX + slope * (fixedJoint.initX - slideJoint.initX)) /
-                        (slope * slope + 1);
-                var y = slope * x + (slideJoint.initY - slope * slideJoint.initX);
-                orthoPoint = new point(x, y);
-            }
-            return Constants.distance(orthoPoint, fixedJoint);
+                return new point(fixedJoint.initX, slideJoint.initY);
+            if (Constants.sameCloseZero(Math.Abs(slideJoint.SlideAngle), Math.PI / 2))
+                return new point(slideJoint.initX, fixedJoint.initY);
+
+            var slope = Math.Tan(slideJoint.SlideAngle);
+            var x = (slope * slope * slideJoint.initX + fixedJoint.initX + slope * (fixedJoint.initX - slideJoint.initX)) /
+                    (slope * slope + 1);
+            var y = slope * x + (slideJoint.initY - slope * slideJoint.initX);
+            return new point(x, y);
         }
         internal double lengthBetween(joint joint1, joint joint2)
         {

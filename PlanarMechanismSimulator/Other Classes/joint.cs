@@ -54,11 +54,18 @@ namespace PlanarMechanismSimulator
                 throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
-        public Boolean LinkIsSlide(link link0)
+        public Boolean SlidingWithRespectToLink(link link0)
         {
             return (Link1 == link0
                 && (jointType == JointTypes.P || jointType == JointTypes.RP
                 || (jointType == JointTypes.G && double.IsNaN(SlideAngle))));
+        }
+        public Boolean FixedWithRespectToLink(link link0)
+        {
+            if (jointType == JointTypes.R) return true;
+            if  (jointType == JointTypes.G) return false;
+            /* then joint is either P or RP, so... */
+            return (Link2 == link0);
         }
 
         internal link OtherLink(link thislink)

@@ -108,7 +108,7 @@ namespace PlanarMechanismSimulator
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return timeKeys.Count; }
         }
 
         public bool IsReadOnly

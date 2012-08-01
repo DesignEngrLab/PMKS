@@ -81,7 +81,7 @@ namespace PMKS_Silverlight_App
                                                     StartPoint = start,
                                                     Segments =
                                                         new PathSegmentCollection
-                                                            {new PolyQuadraticBezierSegment {Points = pCollect}},
+                                                            {new PolyLineSegment() {Points = pCollect}},
                                                             IsClosed = false
                                                 }
                                         }

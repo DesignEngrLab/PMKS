@@ -92,23 +92,23 @@ namespace PlanarMechanismSimulator
             #endregion
 #if SILVERLIGHT
 
-            //loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true); 
-            var forwardThread = new Thread(delegate()
-                {
-                    loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true);
-                    forwardDone.Set();
-                });
-            var backwardThread = new Thread(delegate()
-                {
-                    loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false);
-                    backwardDone.Set();
-                });
-            forwardThread.Start(); backwardThread.Start();  
-            if (forwardDone.WaitOne() && backwardDone.WaitOne())
-            {
-                forwardDone = new AutoResetEvent(false);
-                backwardDone = new AutoResetEvent(false);
-            }
+            loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true); 
+            //var forwardThread = new Thread(delegate()
+            //    {
+            //        loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true);
+            //        forwardDone.Set();
+            //    });
+            //var backwardThread = new Thread(delegate()
+            //    {
+            //        loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false);
+            //        backwardDone.Set();
+            //    });
+            //forwardThread.Start(); backwardThread.Start();  
+            //if (forwardDone.WaitOne() && backwardDone.WaitOne())
+            //{
+            //    forwardDone = new AutoResetEvent(false);
+            //    backwardDone = new AutoResetEvent(false);
+            //}
 
 #else
             Parallel.Invoke(
