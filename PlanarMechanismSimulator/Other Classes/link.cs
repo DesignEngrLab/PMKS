@@ -24,6 +24,7 @@ namespace PlanarMechanismSimulator
         /// </summary>
         public readonly Boolean isGround;
 
+        internal Boolean AngleIsUnknown;
 
         // internal List<point> referencePts;
         //  private List<LinkPointType> pointTypes;

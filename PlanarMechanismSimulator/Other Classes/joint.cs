@@ -35,6 +35,9 @@ namespace PlanarMechanismSimulator
         public double SlideAngle = double.NaN;
         // how to plan for future cam shapes
 
+        internal Boolean AngleIsUnknown;
+        internal Boolean PositionIsUnknown;
+
 
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition)
         {
