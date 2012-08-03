@@ -100,6 +100,8 @@ namespace PlanarMechanismSimulator
         private int inputLinkIndex;
         private link inputLink;
         private link groundLink;
+        private List<joint> additionalRefjoints;
+        private const string nameBaseForGearConnector = "auto_generated_gear_connect_";
 
         /// <summary>
         /// Gets a value indicating whether this instance is dyadic.
@@ -284,6 +286,8 @@ namespace PlanarMechanismSimulator
                 JointReOrdering = new int[numJoints];
                 for (int i = 0; i < numJoints; i++)
                     JointReOrdering[i] = joints.IndexOf(origOrder[i]);
+                setAdditionalReferencePositions();
+                setGearData();
                 foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
@@ -296,49 +300,84 @@ namespace PlanarMechanismSimulator
 
         private void addReferencePivotsToSlideOnlyLinks()
         {
+            if (links.All(c => c.joints.Count(j => j.FixedWithRespectToLink(c)) > 0)) return;
+            additionalRefjoints = new List<joint>();
             foreach (var c in links)
             {
-                if (c.joints.Count(j =>j.FixedWithRespectToLink(c)) > 0) continue;
-                var newJoint1 = new joint(false, "r",
-                    new[] { c.joints.Sum(j => j.initX) / c.joints.Count, c.joints.Sum(j => j.initY) / c.joints.Count });
-                newJoint1.Link1 = c;
-                c.joints.Add(newJoint1);
-                joints.Add(newJoint1);
+                if (c.joints.Count(j => j.FixedWithRespectToLink(c)) > 0) continue;
+                var newJoint = new joint(false, "r");
+                newJoint.Link1 = c;
+                c.joints.Add(newJoint);
+                joints.Add(newJoint);
+                additionalRefjoints.Add(newJoint);
+            }
+        }
+        private void setAdditionalReferencePositions()
+        {
+            if (additionalRefjoints == null) return;
+            foreach (var thisAdditionalJoint in additionalRefjoints)
+            {
+                var xSum = 0.0;
+                var ySum = 0.0;
+                foreach (var otherJoint in thisAdditionalJoint.Link1.joints)
+                {
+                    if (otherJoint == thisAdditionalJoint) continue;
+                    xSum += otherJoint.initX;
+                    ySum += otherJoint.initY;
+                }
+                thisAdditionalJoint.initX = xSum / thisAdditionalJoint.Link1.joints.Count - 1;
+                thisAdditionalJoint.initY = ySum / thisAdditionalJoint.Link1.joints.Count - 1;
             }
         }
 
         private void inferAdditionalGearLinks()
         {
             if (joints.All(j => j.jointType != JointTypes.G)) return;
-            gearsData = new Dictionary<joint, gearData>();
-            const string nameBase = "auto_generated_gear_connect_";
-            for (int i = joints.Count - 1; i >= 0; i--)
+            var counter = 0;
+            foreach (var j in joints)
             {
-                var j = joints[i];
                 if (j.jointType != JointTypes.G) continue;
                 var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
-                var gearCenter2 =
-                    j.Link2.joints.FirstOrDefault(
-                        jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)));
-                if (gearCenter2 != null)
-                {
-                    var connectingRod = gearCenter2.OtherLink(j.Link2);
-                    var gearCenter1 =
-                        connectingRod.joints.FirstOrDefault(jj => jj.OtherLink(connectingRod) == j.Link1);
-                    gearsData.Add(j, new gearData(j, connectingRod, gearCenter1, gearCenter2));
-                }
+                if (j.Link2.joints.Any(
+                           jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)))) continue;
                 if (double.IsNaN(j.SlideAngle))
                     throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
-                gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointTypes.R);
                 var newJoint1 = new joint(false, "p", new[] { j.initX, j.initY, j.SlideAngle });
+                var gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointTypes.R);
                 if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
                 var newJoint2 = new joint(false, "r", new[] { gearCenter2.initX, gearCenter2.initY });
-                var connectLink = new link(nameBase + links.Count, new List<joint> { newJoint1, newJoint2 }, false);
+                var connectLink = new link(nameBaseForGearConnector + (counter++), new List<joint> { newJoint1, newJoint2 }, false);
                 newJoint1.Link1 = j.Link1;
                 newJoint2.Link1 = j.Link2;
                 newJoint1.Link2 = newJoint2.Link2 = connectLink;
                 joints.Add(newJoint1); joints.Add(newJoint2); links.Add(connectLink);
-                gearsData.Add(j, new gearData(j, connectLink, newJoint1, newJoint2));
+            }
+        }
+
+
+        private void setGearData()
+        {
+            if (joints.All(j => j.jointType != JointTypes.G)) return;
+            gearsData = new Dictionary<joint, gearData>();
+            foreach (var j in joints)
+            {
+                if (j.jointType != JointTypes.G) continue;
+                var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
+                var gearCenter2 =
+                    j.Link2.joints.First(jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)));
+                var connectingRod = gearCenter2.OtherLink(j.Link2);
+                var gearCenter1 =
+                    connectingRod.joints.First(jj => jj.OtherLink(connectingRod) == j.Link1);
+                if (connectingRod.name.StartsWith(nameBaseForGearConnector))
+                {
+                    gearCenter1.initX = j.initX;
+                    gearCenter1.initY = j.initY;
+                    var trueGearCenter2 = j.Link2.joints.First(jj => jj != j && jj.jointType == JointTypes.R);
+                    gearCenter2.initX = trueGearCenter2.initX;
+                    gearCenter2.initY = trueGearCenter2.initY;
+                }
+                gearsData.Add(j, new gearData(j, connectingRod,links.IndexOf(connectingRod), gearCenter1,joints.IndexOf(gearCenter1),
+                    gearCenter2, joints.IndexOf(gearCenter2)));
             }
         }
 
@@ -362,7 +401,8 @@ namespace PlanarMechanismSimulator
                         joints[JointReOrdering[i]].initY = InitPositions[i][1];
                     }
                 }
-                throw new NotImplementedException("The next line of code is incomplete. See all code preceding other call to DetermineLengthsAndReferences().");
+                setAdditionalReferencePositions();
+                setGearData();
                 foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
@@ -600,7 +640,7 @@ namespace PlanarMechanismSimulator
                 linkParams[inputLinkIndex, 1] = 0.0;
                 linkParams[inputLinkIndex, 2] = 0.0;
 
-                var angle =slideAngle(inputpivot,linkParams);
+                var angle = slideAngle(inputpivot, linkParams);
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {
                     /* position will be changed by the setLinkPosition function. */

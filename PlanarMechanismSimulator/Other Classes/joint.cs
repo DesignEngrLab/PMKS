@@ -39,7 +39,7 @@ namespace PlanarMechanismSimulator
         internal Boolean PositionIsUnknown;
 
 
-        internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition)
+        internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
         {
             isGround = IsGround;
             JointTypes pType;
@@ -51,7 +51,7 @@ namespace PlanarMechanismSimulator
                 throw new Exception("Values for x and y must be provided for joint.");
             initX = currentJointPosition[0];
             initY = currentJointPosition[1];
-            if (currentJointPosition.GetLength(0) >= 3 && jointType!=JointTypes.R)
+            if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
                 SlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)
                 throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
@@ -66,7 +66,7 @@ namespace PlanarMechanismSimulator
         public Boolean FixedWithRespectToLink(link link0)
         {
             if (jointType == JointTypes.R) return true;
-            if  (jointType == JointTypes.G) return false;
+            if (jointType == JointTypes.G) return false;
             /* then joint is either P or RP, so... */
             return (Link2 == link0);
         }
