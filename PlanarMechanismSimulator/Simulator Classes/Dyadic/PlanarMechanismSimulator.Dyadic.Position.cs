@@ -13,21 +13,20 @@ namespace PlanarMechanismSimulator
         private Boolean DefineNewPositions(double delta, double[,] currentJointParams, double[,] currentLinkParams,
             double[,] oldJointParams, double[,] oldLinkParams)
         {
+            var fixedGndJointIndex = -1;
             for (int i = 0; i < numJoints; i++)
             {
-                if (i <= inputJointIndex)
-                    joints[i].PositionIsUnknown = joints[i].AngleIsUnknown = true;
-                else
+                if (i >= inputJointIndex && joints[i].FixedWithRespectToLink(groundLink))
                 {
-                    joints[i].PositionIsUnknown = joints[i].AngleIsUnknown = false;
-                    currentJointParams[i, 0] = oldJointParams[i, 0];
-                    currentJointParams[i, 1] = oldJointParams[i, 1];
+                    fixedGndJointIndex = i;
+                    joints[i].PositionIsUnknown = joints[i].SlideLineIsUnknown = false;
                 }
+                else joints[i].PositionIsUnknown = joints[i].SlideLineIsUnknown = true;
             }
-            for (int i = 0; i < numLinks; i++)
-            {
-                links[i].AngleIsUnknown = true;
-            }
+            for (int i = 0; i < numLinks; i++) links[i].AngleIsUnknown = true;
+
+            setLinkPositionFromRotate(joints[fixedGndJointIndex], fixedGndJointIndex, inputLinkIndex + 1,
+                currentJointParams, oldJointParams, currentLinkParams, oldLinkParams);
             setLinkAngles(0.0, groundLink, inputLinkIndex + 1, currentLinkParams, oldLinkParams, inputpivot);
             if (inputpivot.jointType == JointTypes.R)
                 setLinkPositionFromRotate(inputpivot, inputJointIndex, inputLinkIndex,
@@ -36,14 +35,14 @@ namespace PlanarMechanismSimulator
                 setLinkPositionFromSlideTranslation(inputLinkIndex, currentJointParams, oldJointParams,
                         delta, delta, slideAngle(inputpivot, currentLinkParams));
             else throw new Exception("Input is not of type R or P (as currently required at the beginning of DefineNewPositions");
-            int initUnkCount = joints.Count(j => j.AngleIsUnknown || j.PositionIsUnknown) +
+            int initUnkCount = joints.Count(j => j.SlideLineIsUnknown || j.PositionIsUnknown) +
                                links.Count(c => c.AngleIsUnknown);
             Boolean nonDyadic = false;
             while (initUnkCount > 0)
             {
                 for (int jIndex = 0; jIndex < numJoints; jIndex++)
                 {
-                    if (!joints[jIndex].PositionIsUnknown) continue;
+                    if (!joints[jIndex].PositionIsUnknown || joints[jIndex].Link2 == null) continue;
                     var j = joints[jIndex];
                     joint knownJoint1;
                     joint knownJoint2;
@@ -88,8 +87,7 @@ namespace PlanarMechanismSimulator
                             #endregion
                             #region R-R-P
 
-                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1)
-                                     &&
+                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
                                      FindKnownSlopeOnLink(j.Link2, out knownJoint2))
                             {
                                 int kPIndex1 = joints.IndexOf(knownJoint1);
@@ -141,7 +139,6 @@ namespace PlanarMechanismSimulator
                                                                     currentJointParams, oldJointParams, deltaX, deltaY);
                             }
                             #endregion
-
                             #region P-R-P
 
                             else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
@@ -159,12 +156,9 @@ namespace PlanarMechanismSimulator
                                                                     currentJointParams, oldJointParams, deltaX, deltaY);
                             }
                             #endregion
-
                             break;
-
                         case JointTypes.P:
                             #region R-P-R
-
                             if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
                                     FindKnownPositionOnLink(j.Link2, out knownJoint2))
                             {
@@ -239,8 +233,7 @@ namespace PlanarMechanismSimulator
                             #endregion
                             #region R-P-P
 
-                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1)
-                                     &&
+                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
                                      FindKnownSlopeOnLink(j.Link2, out knownJoint2))
                             {
                                 /* in this case, the slide is on the rotating link and the block is on the sliding link */
@@ -270,11 +263,8 @@ namespace PlanarMechanismSimulator
                                                                     currentJointParams, oldJointParams, deltaX, deltaY);
                             }
                             #endregion
-
                             #region P-P-P
-
-                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                               && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1) && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2, currentJointParams,
                                                                         currentLinkParams);
@@ -300,11 +290,8 @@ namespace PlanarMechanismSimulator
                                                                     currentJointParams, oldJointParams, deltaX, deltaY);
                             }
                             #endregion
-
                             break;
-
                         case JointTypes.RP:
-
                             #region R-RP-R&P
 
                             if (FindKnownPositionOnLink(j.Link1, out knownJoint1)
@@ -329,7 +316,6 @@ namespace PlanarMechanismSimulator
                             }
 
                             #endregion
-
                             #region R&P-RP-R
 
                             if (FindKnownPositionAndSlopeOnLink(j.Link1,
@@ -340,7 +326,6 @@ namespace PlanarMechanismSimulator
                             }
 
                             #endregion
-
                             #region P-RP-R&P
 
                             if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
@@ -353,7 +338,6 @@ namespace PlanarMechanismSimulator
                             }
 
                             #endregion
-
                             #region R&P-RP-P
 
                             if (FindKnownPositionAndSlopeOnLink(j.Link1,
@@ -364,38 +348,36 @@ namespace PlanarMechanismSimulator
                             }
 
                             #endregion
-
                             break;
-
                         case JointTypes.G:
-
                             #region R-G-R&P
-
-                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1)
-                                &&
-                                FindKnownPositionAndSlopeOnLink(j.Link2,
-                                                                out knownJoint2))
+                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
+                                FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
                             {
-                                //var gData = gearsData[j];
-                                //if (knownJoint1 == gData.gearCenter1)
-                                //{
-                                //    var armAngleChange = Constants.angle(currentJointParams[])
-                                //}
-                            }
-
+                                double angleChange;
+                                var sJPoint = solveGearAngleAndPos_R_G_RP(j, currentJointParams, oldJointParams,
+                                                                                currentLinkParams, oldLinkParams, out angleChange);
+                                if (double.IsInfinity(sJPoint.X) || double.IsInfinity(sJPoint.Y) ||
+                                    double.IsNaN(sJPoint.X) || double.IsNaN(sJPoint.Y))
+                                    return false;
+                                //need to plan how to displace rack (use setLinkPositionFromSlideTranslation)
+                                var deltaX = sJPoint.X - oldJointParams[jIndex, 0];
+                                var deltaY = sJPoint.Y - oldJointParams[jIndex, 1];
+                                currentJointParams[jIndex, 0] = sJPoint.X;
+                                currentJointParams[jIndex, 1] = sJPoint.Y;
+                                setLinkPositionFromRotate(knownJoint1, joints.IndexOf(knownJoint1), links.IndexOf(j.Link1),
+                                                          currentJointParams, oldJointParams, currentLinkParams,
+                                                          oldLinkParams, angleChange);
+                                }
                             #endregion
-
                             #region R&P-G-R
-
                             if (FindKnownPositionAndSlopeOnLink(j.Link1,
                                                                 out knownJoint2)
                                 && FindKnownPositionOnLink(j.Link2, out knownJoint1))
                             {
 
                             }
-
                             #endregion
-
                             #region P-G-R&P
 
                             if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
@@ -407,7 +389,6 @@ namespace PlanarMechanismSimulator
                             }
 
                             #endregion
-
                             #region R&P-G-P
 
                             if (FindKnownPositionAndSlopeOnLink(j.Link1,
@@ -418,15 +399,21 @@ namespace PlanarMechanismSimulator
                             }
 
                             #endregion
-
                             break;
                     }
                 }
                 for (int cIndex = 0; cIndex < numLinks; cIndex++)
                 {
+                    if (links[cIndex].AngleIsUnknown)
+                    {
+                        var knownJoints =
+                            links[cIndex].joints.Where(j => !j.PositionIsUnknown || !j.SlideLineIsUnknown).ToList();
+                        if (knownJoints.Count<=1)continue;
+                        
+                    var j = joints[jIndex];
 
                 }
-                var newUnkCount = joints.Count(j => j.AngleIsUnknown || j.PositionIsUnknown) +
+                var newUnkCount = joints.Count(j => j.SlideLineIsUnknown || j.PositionIsUnknown) +
                                   links.Count(c => c.AngleIsUnknown);
                 if (initUnkCount > newUnkCount)
                 {
@@ -439,6 +426,35 @@ namespace PlanarMechanismSimulator
             if (nonDyadic)
                 return NDPS.Run_PositionsAreClose(currentJointParams, currentLinkParams, oldJointParams, oldLinkParams);
             return true;
+        }
+
+        private point solveGearAngleAndPos_R_G_RP(joint j, double[,] currentJointParams, double[,] oldJointParams, double[,] currentLinkParams, double[,] oldLinkParams,
+            out double angleChange)
+        {
+            var gData = gearsData[j];
+            //if (knownJoint1 == gData.gearCenter1)
+            //{
+            angleChange = Constants.angle(currentJointParams[gData.gearCenter1Index, 0],
+                                          currentJointParams[gData.gearCenter1Index, 1],
+                                          currentJointParams[gData.gearCenter2Index, 0],
+                                          currentJointParams[gData.gearCenter2Index, 1]);
+            angleChange -= Constants.angle(oldJointParams[gData.gearCenter1Index, 0],
+                                           oldJointParams[gData.gearCenter1Index, 1],
+                                           oldJointParams[gData.gearCenter2Index, 0],
+                                           oldJointParams[gData.gearCenter2Index, 1]);
+            if (gData.gearCenter1.jointType != JointTypes.P)
+            {
+                var g2LinkIndex = links.IndexOf(j.Link2);
+                var g2AngleChange = currentLinkParams[g2LinkIndex, 0] -
+                                    oldLinkParams[g2LinkIndex, 0];
+                angleChange -= gData.radius2 * g2AngleChange / gData.radius1;
+            }
+            var ratio = gData.radius1 / (gData.radius1 + gData.radius2);
+            var x = currentJointParams[gData.gearCenter1Index, 0];
+            x += ratio * (currentJointParams[gData.gearCenter1Index, 0] - x);
+            var y = currentJointParams[gData.gearCenter1Index, 1];
+            y += ratio * (currentJointParams[gData.gearCenter1Index, 1] - 1);
+            return new point(x, y);
         }
 
         private double solveRotateSlotToPin(joint j, int jIndex, int kpIndex, double[,] currentJointParams, double[,] oldJointParams,
@@ -747,8 +763,8 @@ namespace PlanarMechanismSimulator
             foreach (var j in thisLink.joints.Where(j => j != knownJoint && j.PositionIsUnknown))
             {
                 if (j.SlidingWithRespectToLink(thisLink))
-                    j.AngleIsUnknown = false;
-                else j.AngleIsUnknown = j.PositionIsUnknown = false;
+                    j.SlideLineIsUnknown = false;
+                else j.SlideLineIsUnknown = j.PositionIsUnknown = false;
                 var jIndex = joints.IndexOf(j);
                 var length = thisLink.lengthBetween(j, knownJoint);
                 var angle = Constants.angle(oldJointParams[knownIndex, 0], oldJointParams[knownIndex, 1],
@@ -780,8 +796,8 @@ namespace PlanarMechanismSimulator
             foreach (var j in thisLink.joints.Where(j => j.PositionIsUnknown))
             {
                 if (j.SlidingWithRespectToLink(thisLink))
-                    j.AngleIsUnknown = false;
-                else j.AngleIsUnknown = j.PositionIsUnknown = false;
+                    j.SlideLineIsUnknown = false;
+                else j.SlideLineIsUnknown = j.PositionIsUnknown = false;
                 var jIndex = joints.IndexOf(j);
                 currentJointParams[jIndex, 0] = oldJointParams[jIndex, 0] + deltaX;
                 currentJointParams[jIndex, 1] = oldJointParams[jIndex, 1] + deltaY;
@@ -796,8 +812,8 @@ namespace PlanarMechanismSimulator
             foreach (var j in thisLink.joints.Where(j => j.PositionIsUnknown))
             {
                 if (j.SlidingWithRespectToLink(thisLink))
-                    j.AngleIsUnknown = false;
-                else j.AngleIsUnknown = j.PositionIsUnknown = false;
+                    j.SlideLineIsUnknown = false;
+                else j.SlideLineIsUnknown = j.PositionIsUnknown = false;
                 var jIndex = joints.IndexOf(j);
                 currentJointParams[jIndex, 0] = oldJointParams[jIndex, 0] + deltaX * Math.Cos(angle);
                 currentJointParams[jIndex, 1] = oldJointParams[jIndex, 1] + deltaY * Math.Sin(angle);
@@ -824,7 +840,7 @@ namespace PlanarMechanismSimulator
             knownJoint = null;
             if (link.AngleIsUnknown) return false;
             //knownJoint = link.joints.FirstOrDefault(j => !unknownPositions.Contains(j) && j.jointType == JointTypes.P && j.Link2 != null);
-            knownJoint = link.joints.FirstOrDefault(j => !j.AngleIsUnknown);
+            knownJoint = link.joints.FirstOrDefault(j => !j.SlideLineIsUnknown);
             if (knownJoint != null) return true;
             return false;
         }
