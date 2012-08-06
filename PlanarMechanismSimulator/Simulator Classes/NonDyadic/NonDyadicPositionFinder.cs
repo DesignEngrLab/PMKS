@@ -30,7 +30,6 @@ namespace PlanarMechanismSimulator
             linkFunctions = new List<LinkLengthFunction>();
             foreach (var c in links)
             {
-                int lengthIndex = 0;
                 for (int i = 0; i < c.joints.Count - 1; i++)
                     for (int j = i + 1; j < c.joints.Count; j++)
                     {
@@ -41,12 +40,12 @@ namespace PlanarMechanismSimulator
                         if ((!double.IsNaN(p0.initX)) && (!double.IsNaN(p0.initY)) &&
                             (!double.IsNaN(p1.initX)) && (!double.IsNaN(p1.initY)))
                             linkFunctions.Add(new LinkLengthFunction(p0Index, p0.initX, p0.initY, p1Index, p1.initX, p1.initY));
-                        else if ((!double.IsNaN(p0.initX)) && (!double.IsNaN(p0.initY)) && (!double.IsNaN(c.lengths[lengthIndex])))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.initX, p0.initY, p1Index, c.lengths[lengthIndex]));
-                        else if ((!double.IsNaN(p1.initX)) && (!double.IsNaN(p1.initY)) && (!double.IsNaN(c.lengths[lengthIndex])))
-                            linkFunctions.Add(new LinkLengthFunction(p1Index, p1.initX, p1.initY, p0Index, c.lengths[lengthIndex]));
-                        else if (!double.IsNaN(c.lengths[lengthIndex]))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p1Index, c.lengths[lengthIndex]));
+                        else if ((!double.IsNaN(p0.initX)) && (!double.IsNaN(p0.initY)) && (!double.IsNaN(c.lengthBetween(p0,p1))))
+                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.initX, p0.initY, p1Index, c.lengthBetween(p0, p1)));
+                        else if ((!double.IsNaN(p1.initX)) && (!double.IsNaN(p1.initY)) && (!double.IsNaN(c.lengthBetween(p0, p1))))
+                            linkFunctions.Add(new LinkLengthFunction(p1Index, p1.initX, p1.initY, p0Index, c.lengthBetween(p0, p1)));
+                        else if (!double.IsNaN(c.lengthBetween(p0, p1)))
+                            linkFunctions.Add(new LinkLengthFunction(p0Index, p1Index, c.lengthBetween(p0, p1)));
                         else throw new Exception("Links is not well-specified (in constructor of NonDyadicPositionFinder).");
                     }
                 //todo: note how all the lengths above are lengths[0] need to fix s.t. they correspond to proper values.
@@ -109,7 +108,7 @@ namespace PlanarMechanismSimulator
             var xMax = joints.Max(j => j.initX);
             var yMin = joints.Min(j => j.initY);
             var yMax = joints.Max(j => j.initY);
-            var maxLength = links.Max(l0 => l0.lengths.Max());
+            var maxLength = links.Max(l0 => l0.Lengths.Max());
             var range = Constants.rangeMultiplier * (new[] { xMax - xMin, yMax - yMin, maxLength }).Max();
             var offset = (xMin + xMax + yMin + yMax) / 4 - (range / 2);
             do

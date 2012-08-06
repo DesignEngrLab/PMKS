@@ -25,7 +25,7 @@ namespace PlanarMechanismSimulator
         private readonly NonDyadicPositionSolver NDPS;
         private double _deltaAngle = double.NaN;
         private double _fixedTimeStep = double.NaN;
-        private double _eps = double.NaN;
+        private double _maxSmoothingError = double.NaN;
         /// <summary>
         /// Gets or sets the epsilon.
         /// </summary>
@@ -34,14 +34,7 @@ namespace PlanarMechanismSimulator
         /// </value>
         public double epsilon
         {
-            get { return (double.IsNaN(_eps)) ? Constants.epsilon : _eps; }
-            set
-            {
-                _eps = value;
-                _deltaAngle = double.NaN;
-                InputSpeed = double.NaN;
-                _fixedTimeStep = double.NaN;
-            }
+            get { return Constants.epsilon; }
         }
 
         /// <summary>
@@ -56,7 +49,6 @@ namespace PlanarMechanismSimulator
             set
             {
                 _deltaAngle = value;
-                // _eps = double.NaN;
                 _fixedTimeStep = _deltaAngle / InputSpeed;
             }
         }
@@ -73,8 +65,24 @@ namespace PlanarMechanismSimulator
             set
             {
                 _fixedTimeStep = value;
-                //_eps = double.NaN;
                 _deltaAngle = InputSpeed * _fixedTimeStep;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the fixed time step.
+        /// </summary>
+        /// <value>
+        /// The fixed time step.
+        /// </value>
+        public double MaxSmoothingError
+        {
+            get { return _maxSmoothingError; }
+            set
+            {
+                _fixedTimeStep = _deltaAngle = double.NaN;
+                _maxSmoothingError = value;
             }
         }
 
@@ -96,7 +104,7 @@ namespace PlanarMechanismSimulator
         public List<joint> joints { get; private set; }
         private int firstInputJointIndex;
         public int inputJointIndex;
-        private joint inputpivot;
+        private joint inputJoint;
         private int inputLinkIndex;
         private link inputLink;
         private link groundLink;
@@ -251,29 +259,29 @@ namespace PlanarMechanismSimulator
                     if (newLinkIDs[i].Count > 1)
                         joints[i].Link2 = links[linkNames.IndexOf(newLinkIDs[i][1])];
                 }
-                inputpivot = joints[0];
-                if (inputpivot.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
-                if (inputpivot.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
-                if (!inputpivot.Link1.isGround)
+                inputJoint = joints[0];
+                if (inputJoint.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
+                if (inputJoint.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
+                if (!inputJoint.Link1.isGround)
                 {
-                    if (!inputpivot.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
-                    var tempLinkRef = inputpivot.Link1;
-                    inputpivot.Link1 = inputpivot.Link2;
-                    inputpivot.Link2 = tempLinkRef;
+                    if (!inputJoint.Link2.isGround) throw new Exception("Input must be connected to ground (2 DOF inputs are not allowed).");
+                    var tempLinkRef = inputJoint.Link1;
+                    inputJoint.Link1 = inputJoint.Link2;
+                    inputJoint.Link2 = tempLinkRef;
                 }
                 inferAdditionalGearLinks();
                 addReferencePivotsToSlideOnlyLinks();
                 numLinks = links.Count; //count the number of links in the system
                 numJoints = joints.Count; //count the number of pivots in the system
                 /* reorder links, move input link and ground link to back of list */
-                inputLink = (inputpivot.Link2.isGround) ? inputpivot.Link1 : inputpivot.Link2;
+                inputLink = (inputJoint.Link2.isGround) ? inputJoint.Link1 : inputJoint.Link2;
                 links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list
                 groundLink = links.First(c => c.isGround);
                 links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
                 inputLinkIndex = numLinks - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
                 var origOrder = new List<joint>(joints);
-                joints.Remove(inputpivot);
+                joints.Remove(inputJoint);
                 var groundPivots = joints.Where(j => j.isGround).ToList();
                 joints.RemoveAll(j => j.isGround);
                 var connectedInputJoints = joints.Where(inputLink.joints.Contains).ToList();
@@ -281,7 +289,7 @@ namespace PlanarMechanismSimulator
                 firstInputJointIndex = joints.Count;
                 joints.AddRange(connectedInputJoints);
                 inputJointIndex = joints.Count;
-                joints.Add(inputpivot);
+                joints.Add(inputJoint);
                 joints.AddRange(groundPivots);
                 JointReOrdering = new int[numJoints];
                 for (int i = 0; i < numJoints; i++)
@@ -300,11 +308,11 @@ namespace PlanarMechanismSimulator
 
         private void addReferencePivotsToSlideOnlyLinks()
         {
-            if (links.All(c => c.joints.Count(j => j.FixedWithRespectToLink(c)) > 0)) return;
+            if (links.All(c => c.joints.Count(j => j.FixedWithRespectTo(c)) > 0)) return;
             additionalRefjoints = new List<joint>();
             foreach (var c in links)
             {
-                if (c.joints.Count(j => j.FixedWithRespectToLink(c)) > 0) continue;
+                if (c.joints.Count(j => j.FixedWithRespectTo(c)) > 0) continue;
                 var newJoint = new joint(false, "r");
                 newJoint.Link1 = c;
                 c.joints.Add(newJoint);
@@ -428,7 +436,7 @@ namespace PlanarMechanismSimulator
                     var link0 = links.FirstOrDefault(l => l.joints.Contains(p1) && l.joints.Contains(p2));
                     var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
                     pivotIndices.Sort();
-                    link0.lengths[pivotIndices[0] * 2 + pivotIndices[1] - 1] = Lengths[i][2];
+                    link0.setLength(p1,p2, Lengths[i][2]);
                 }
             }
             catch (Exception e)
@@ -449,15 +457,16 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                if (links.Any(a => a.lengths.Any(double.IsNaN)))
+                if (links.Any(a => a.Lengths.Any(double.IsNaN)))
                     throw new Exception("Link lengths for all links need to be set first.");
-                var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputpivot)) ??
-                                links.FirstOrDefault(a => a.joints.Contains(inputpivot));
-                if (!Constants.sameCloseZero(inputLink.lengths[0], Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
+                var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
+                                links.FirstOrDefault(a => a.joints.Contains(inputJoint));
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint,joints[inputJointIndex+1]),
+                    Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
-                                        inputLink.lengths[0]);
-                inputpivot.initX = inputX;
-                inputpivot.initY = inputY;
+                                        inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]));
+                inputJoint.initX = inputX;
+                inputJoint.initY = inputY;
                 joints[inputJointIndex + 1].initX = gnd1X;
                 joints[inputJointIndex + 1].initY = gnd1Y;
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
@@ -481,14 +490,14 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                if (links.Any(a => a.lengths.Any(double.IsNaN)))
+                if (links.Any(a => a.Lengths.Any(double.IsNaN)))
                     throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
-                var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputpivot)) ??
-                                links.FirstOrDefault(a => a.joints.Contains(inputpivot));
-                inputpivot.initX = inputX;
-                inputpivot.initY = inputY;
-                joints[inputJointIndex + 1].initX = inputX + Math.Cos(AngleToGnd1) * inputLink.lengths[0];
-                joints[inputJointIndex + 1].initY = inputY + Math.Sin(AngleToGnd1) * inputLink.lengths[0];
+                var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
+                                links.FirstOrDefault(a => a.joints.Contains(inputJoint));
+                inputJoint.initX = inputX;
+                inputJoint.initY = inputY;
+                joints[inputJointIndex + 1].initX = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
+                joints[inputJointIndex + 1].initY = inputY + Math.Sin(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -528,7 +537,7 @@ namespace PlanarMechanismSimulator
 
         private Boolean lessThanFullRotation()
         {
-            if (inputpivot.jointType == JointTypes.P) return true; // if the input is a sliding block, then there is no limit 
+            if (inputJoint.jointType == JointTypes.P) return true; // if the input is a sliding block, then there is no limit 
             // eventually, links will reach invalid positions in both directions. 
             double range;
             lock (InputRange)
@@ -611,10 +620,10 @@ namespace PlanarMechanismSimulator
             linkParams[inputLinkIndex + 1, 1] = 0.0;
             linkParams[inputLinkIndex + 1, 2] = 0.0;
 
-            if (!inputpivot.isGround) return;
+            if (!inputJoint.isGround) return;
             /* uh-oh, if the input is not connected to ground, we can't assume any values for
              * the x&y velocities or accelerations. */
-            if (inputpivot.jointType == JointTypes.R)
+            if (inputJoint.jointType == JointTypes.R)
             {
                 /* otherwise, input is rotating at a constant speed. */
                 linkParams[inputLinkIndex, 1] = InputSpeed;
@@ -627,20 +636,20 @@ namespace PlanarMechanismSimulator
 
                 for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 {
-                    var length = inputLink.lengthBetween(inputpivot, joints[i]);
+                    var length = inputLink.lengthBetween(inputJoint, joints[i]);
                     var theta = Constants.angle(xInputJoint, yInputJoint, jointParams[i, 0], jointParams[i, 1]);
                     jointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
                     jointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
                     jointParams[i, 4] = jointParams[i, 5] = 0.0;
                 }
             }
-            else if (inputpivot.jointType == JointTypes.P)
+            else if (inputJoint.jointType == JointTypes.P)
             {
                 /* the block input does not rotate therefore the angular velocity, and angular accelerations are all zero. */
                 linkParams[inputLinkIndex, 1] = 0.0;
                 linkParams[inputLinkIndex, 2] = 0.0;
 
-                var angle = slideAngle(inputpivot, linkParams);
+                var angle = slideAngle(inputJoint, linkParams);
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {
                     /* position will be changed by the setLinkPosition function. */

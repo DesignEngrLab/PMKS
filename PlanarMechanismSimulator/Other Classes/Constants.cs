@@ -36,14 +36,6 @@ namespace PlanarMechanismSimulator
         {
             return distanceSqared(point1.X, point1.Y, point2.X, point2.Y);
         }
-        internal static double distanceSqared(point point1, joint joint2)
-        {
-            return distanceSqared(point1.X, point1.Y, joint2.initX, joint2.initY);
-        }
-        internal static double distanceSqared(joint joint1, joint joint2)
-        {
-            return distanceSqared(joint1.initX, joint1.initY, joint2.initX, joint2.initY);
-        }
         #endregion
 
         #region Distance
@@ -55,14 +47,6 @@ namespace PlanarMechanismSimulator
         {
             return distance(point1.X, point1.Y, point2.X, point2.Y);
         }
-        internal static double distance(point point1, joint joint2)
-        {
-            return distance(point1.X, point1.Y, joint2.initX, joint2.initY);
-        }
-        internal static double distance(joint joint1, joint joint2)
-        {
-            return distance(joint1.initX, joint1.initY, joint2.initX, joint2.initY);
-        }
         #endregion
 
         #region Angle
@@ -71,10 +55,6 @@ namespace PlanarMechanismSimulator
             return angle(start.X, start.Y, end.X, end.Y);
         }
 
-        internal static double angle(joint start, joint end)
-        {
-            return angle(start.initX, start.initY, end.initX, end.initY);
-        }
 
         internal static double angle(double startX, double startY, double endX, double endY)
         {
@@ -82,5 +62,39 @@ namespace PlanarMechanismSimulator
         }
         #endregion
 
+        #region point to line interactions
+        internal static point findOrthoPoint(point p, point lineRef, double lineAngle)
+        {
+            if (sameCloseZero(lineAngle))
+                return new point(p.X, lineRef.Y);
+            if (sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
+                return new point(lineRef.X, p.Y);
+            var slope = Math.Tan(lineAngle);
+            var offset = (lineRef.Y - slope * lineRef.X);
+            var x = (p.X + slope * (p.Y - offset)) / (slope * slope + 1);
+            var y = slope * x + offset;
+            return new point(x, y);
+        }
+
+        internal static point findOrthoPoint(double pX, double pY, double lineRefX, double lineRefY, double lineAngle, out Boolean pointOnHigherOffset)
+        {
+            if (sameCloseZero(lineAngle))
+            {
+                pointOnHigherOffset = (pY > lineRefY);
+                return new point(pX, lineRefY);
+            }
+            if (sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
+            {
+                pointOnHigherOffset = (pX * lineAngle < 0);
+                return new point(lineRefX, pY);
+            }
+            var slope = Math.Tan(lineAngle);
+            var offset = (lineRefY - slope*lineRefX);
+            var x = (pX + slope * (pY - offset)) /(slope * slope + 1);
+            var y = slope * x + offset;
+            pointOnHigherOffset = ((pY - slope*pX) > offset);
+            return new point(x, y);
+        }
+#endregion
     }
 }

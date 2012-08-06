@@ -33,11 +33,11 @@ namespace PMKS_Silverlight_App
             Data = new ObservableCollection<JointData>()
                 {
                     new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
-                    new JointData {JointType = "r", XPos = "0.0", YPos = "2.0", Angle="0", LinkNames = "input coupler"},
+                    new JointData {JointType = "rp", XPos = "0.2", YPos = "0.0", Angle="0", LinkNames = "input coupler"},
                     new JointData
-                        {JointType = "R (pin joint)", XPos = "5.0", YPos = "3.0", LinkNames = "coupler,output "},
+                        {JointType = "R (pin joint)", XPos = "5.0", YPos = "0.0", LinkNames = "coupler,ground "},
                     new JointData
-                        {JointType = "r", XPos = "5.0", YPos = "0.0", LinkNames = "ground, output"},
+                        {JointType = "r", XPos = "4.0", YPos = "4.0", LinkNames = "coupler"},
                                         new JointData()
                     //new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
                     //new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "8.0", LinkNames = "input coupler"},

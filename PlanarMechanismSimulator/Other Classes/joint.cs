@@ -11,7 +11,14 @@ namespace PlanarMechanismSimulator
         // non-slip roll, like rack and pinion - although this challenges the 2 DOF nature of just gear teeth
         // cabling or belt or chain
     };
-    public struct point
+
+    internal enum KnownState
+    {
+        Unknown,
+        Partially,
+        Fully
+    };
+    public class point
     {
         /// <summary>
         /// 
@@ -34,9 +41,9 @@ namespace PlanarMechanismSimulator
         public link Link2 { get; internal set; }
         public double SlideAngle = double.NaN;
         // how to plan for future cam shapes
-
-        internal Boolean SlideLineIsUnknown = true;
-        internal Boolean PositionIsUnknown = true;
+        internal KnownState knownState;
+       // internal Boolean SlideLineIsUnknown = true;
+     //   internal Boolean PositionIsUnknown = true;
 
 
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
@@ -57,13 +64,13 @@ namespace PlanarMechanismSimulator
                 throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
-        public Boolean SlidingWithRespectToLink(link link0)
+        public Boolean SlidingWithRespectTo(link link0)
         {
             return (Link1 == link0
                 && (jointType == JointTypes.P || jointType == JointTypes.RP
                 || (jointType == JointTypes.G && double.IsNaN(SlideAngle))));
         }
-        public Boolean FixedWithRespectToLink(link link0)
+        public Boolean FixedWithRespectTo(link link0)
         {
             if (jointType == JointTypes.R) return true;
             if (jointType == JointTypes.G) return false;
@@ -77,5 +84,10 @@ namespace PlanarMechanismSimulator
             if (Link2 == thislink) return Link1;
             throw new Exception("the link provided to joint->OtherLink is not attached to this joint.");
         }
+        public static implicit operator point(joint j)
+        {
+            return new point(j.initX,j.initY);
+        }
+
     }
 }
