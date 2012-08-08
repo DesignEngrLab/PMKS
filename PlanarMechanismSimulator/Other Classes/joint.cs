@@ -23,27 +23,35 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// 
         /// </summary>
-        public double X, Y;
+        public double x, y;
         public point(double x, double y)
         {
-            X = x;
-            Y = y;
+            this.x = x;
+            this.y = y;
         }
     }
+
     public class joint
     {
         public readonly Boolean isGround;
         public readonly JointTypes jointType;
-        public double initX;
-        public double initY;
+        public double xInitial;
+        public double yInitial;
+        public double InitSlideAngle = Double.NaN;
+        internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
 
+        internal double x { get; set; }
+        internal double y { get; set; }
+        internal double xNumerical { get; set; }
+        internal double yNumerical { get; set; }
+        internal double xLast { get; set; }
+        internal double yLast { get; set; }
         public link Link1 { get; internal set; }
         public link Link2 { get; internal set; }
-        public double SlideAngle = double.NaN;
         // how to plan for future cam shapes
         internal KnownState knownState;
-       // internal Boolean SlideLineIsUnknown = true;
-     //   internal Boolean PositionIsUnknown = true;
+        // internal Boolean SlideLineIsUnknown = true;
+        //   internal Boolean PositionIsUnknown = true;
 
 
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
@@ -56,10 +64,10 @@ namespace PlanarMechanismSimulator
             if (currentJointPosition == null) return;
             if (currentJointPosition.GetLength(0) < 2)
                 throw new Exception("Values for x and y must be provided for joint.");
-            initX = currentJointPosition[0];
-            initY = currentJointPosition[1];
+            xInitial = currentJointPosition[0];
+            yInitial = currentJointPosition[1];
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
-                SlideAngle = currentJointPosition[2];
+                InitSlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)
                 throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
@@ -67,9 +75,10 @@ namespace PlanarMechanismSimulator
         public Boolean SlidingWithRespectTo(link link0)
         {
             return (Link1 == link0
-                && (jointType == JointTypes.P || jointType == JointTypes.RP
-                || (jointType == JointTypes.G && double.IsNaN(SlideAngle))));
+                    && (jointType == JointTypes.P || jointType == JointTypes.RP
+                        || (jointType == JointTypes.G && Double.IsNaN(InitSlideAngle))));
         }
+
         public Boolean FixedWithRespectTo(link link0)
         {
             if (jointType == JointTypes.R) return true;
@@ -84,10 +93,13 @@ namespace PlanarMechanismSimulator
             if (Link2 == thislink) return Link1;
             throw new Exception("the link provided to joint->OtherLink is not attached to this joint.");
         }
+
         public static implicit operator point(joint j)
         {
-            return new point(j.initX,j.initY);
+            return new point(j.x, j.y);
         }
-
     }
+
+    internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
+    
 }

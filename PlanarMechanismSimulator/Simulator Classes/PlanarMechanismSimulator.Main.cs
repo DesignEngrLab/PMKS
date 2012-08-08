@@ -330,11 +330,11 @@ namespace PlanarMechanismSimulator
                 foreach (var otherJoint in thisAdditionalJoint.Link1.joints)
                 {
                     if (otherJoint == thisAdditionalJoint) continue;
-                    xSum += otherJoint.initX;
-                    ySum += otherJoint.initY;
+                    xSum += otherJoint.xInitial;
+                    ySum += otherJoint.yInitial;
                 }
-                thisAdditionalJoint.initX = xSum / thisAdditionalJoint.Link1.joints.Count - 1;
-                thisAdditionalJoint.initY = ySum / thisAdditionalJoint.Link1.joints.Count - 1;
+                thisAdditionalJoint.xInitial = xSum / thisAdditionalJoint.Link1.joints.Count - 1;
+                thisAdditionalJoint.yInitial = ySum / thisAdditionalJoint.Link1.joints.Count - 1;
             }
         }
 
@@ -348,12 +348,12 @@ namespace PlanarMechanismSimulator
                 var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
                 if (j.Link2.joints.Any(
                            jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)))) continue;
-                if (double.IsNaN(j.SlideAngle))
+                if (double.IsNaN(j.InitSlideAngle))
                     throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
-                var newJoint1 = new joint(false, "p", new[] { j.initX, j.initY, j.SlideAngle });
+                var newJoint1 = new joint(false, "p", new[] { j.xInitial, j.yInitial, j.InitSlideAngle });
                 var gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointTypes.R);
                 if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
-                var newJoint2 = new joint(false, "r", new[] { gearCenter2.initX, gearCenter2.initY });
+                var newJoint2 = new joint(false, "r", new[] { gearCenter2.xInitial, gearCenter2.yInitial });
                 var connectLink = new link(nameBaseForGearConnector + (counter++), new List<joint> { newJoint1, newJoint2 }, false);
                 newJoint1.Link1 = j.Link1;
                 newJoint2.Link1 = j.Link2;
@@ -378,11 +378,11 @@ namespace PlanarMechanismSimulator
                     connectingRod.joints.First(jj => jj.OtherLink(connectingRod) == j.Link1);
                 if (connectingRod.name.StartsWith(nameBaseForGearConnector))
                 {
-                    gearCenter1.initX = j.initX;
-                    gearCenter1.initY = j.initY;
+                    gearCenter1.xInitial = j.xInitial;
+                    gearCenter1.yInitial = j.yInitial;
                     var trueGearCenter2 = j.Link2.joints.First(jj => jj != j && jj.jointType == JointTypes.R);
-                    gearCenter2.initX = trueGearCenter2.initX;
-                    gearCenter2.initY = trueGearCenter2.initY;
+                    gearCenter2.xInitial = trueGearCenter2.xInitial;
+                    gearCenter2.yInitial = trueGearCenter2.yInitial;
                 }
                 gearsData.Add(j, new gearData(j, connectingRod, links.IndexOf(connectingRod), gearCenter1, joints.IndexOf(gearCenter1),
                     gearCenter2, joints.IndexOf(gearCenter2)));
@@ -405,8 +405,8 @@ namespace PlanarMechanismSimulator
                 {
                     if (InitPositions[i] != null)
                     {
-                        joints[JointReOrdering[i]].initX = InitPositions[i][0];
-                        joints[JointReOrdering[i]].initY = InitPositions[i][1];
+                        joints[JointReOrdering[i]].xInitial = InitPositions[i][0];
+                        joints[JointReOrdering[i]].yInitial = InitPositions[i][1];
                     }
                 }
                 setAdditionalReferencePositions();
@@ -465,10 +465,10 @@ namespace PlanarMechanismSimulator
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
                                         inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]));
-                inputJoint.initX = inputX;
-                inputJoint.initY = inputY;
-                joints[inputJointIndex + 1].initX = gnd1X;
-                joints[inputJointIndex + 1].initY = gnd1Y;
+                inputJoint.xInitial = inputX;
+                inputJoint.yInitial = inputY;
+                joints[inputJointIndex + 1].xInitial = gnd1X;
+                joints[inputJointIndex + 1].yInitial = gnd1Y;
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -494,10 +494,10 @@ namespace PlanarMechanismSimulator
                     throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
                 var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
                                 links.FirstOrDefault(a => a.joints.Contains(inputJoint));
-                inputJoint.initX = inputX;
-                inputJoint.initY = inputY;
-                joints[inputJointIndex + 1].initX = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
-                joints[inputJointIndex + 1].initY = inputY + Math.Sin(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
+                inputJoint.xInitial = inputX;
+                inputJoint.yInitial = inputY;
+                joints[inputJointIndex + 1].xInitial = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
+                joints[inputJointIndex + 1].yInitial = inputY + Math.Sin(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -649,7 +649,7 @@ namespace PlanarMechanismSimulator
                 linkParams[inputLinkIndex, 1] = 0.0;
                 linkParams[inputLinkIndex, 2] = 0.0;
 
-                var angle = slideAngle(inputJoint, linkParams);
+                var angle = inputJoint.SlideAngle;
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {
                     /* position will be changed by the setLinkPosition function. */

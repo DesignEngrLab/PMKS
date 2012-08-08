@@ -22,14 +22,14 @@ namespace PlanarMechanismSimulator
             var initPivotParams = new double[numJoints,6];
             for (int i = 0; i < numJoints; i++)
             {
-                initPivotParams[i, 0] = joints[i].initX;
-                initPivotParams[i, 1] = joints[i].initY;
+                initPivotParams[i, 0] = joints[i].xInitial;
+                initPivotParams[i, 1] = joints[i].yInitial;
             }
             var initLinkParams = new double[numLinks,3];
             for (int i = 0; i < numLinks; i++)
-                initLinkParams[i, 0] = links[i].Angle;
+                initLinkParams[i, 0] = links[i].AngleInitial;
             InitializeGroundAndInputSpeedAndAcceleration(initPivotParams, initLinkParams);
-            InputRange = new[] {inputLink.Angle, inputLink.Angle};
+            InputRange = new[] {inputLink.AngleInitial, inputLink.AngleInitial};
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
             /* attempt to find velocities and accelerations at initial point analytically
@@ -165,7 +165,6 @@ namespace PlanarMechanismSimulator
                 var delta = InputSpeed*timeStep;
                 validPosition = DefineNewPositions(delta, currentPivotParams, currentLinkParams,
                                                    lastPivotParams, lastLinkParams);
-
                 #endregion
 
                 if (validPosition)

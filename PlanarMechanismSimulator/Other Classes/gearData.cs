@@ -22,19 +22,19 @@ namespace PlanarMechanismSimulator
             this.gearCenter1Index = gearCenter1Index;
             this.gearCenter2 = gearCenter2;
             this.gearCenter2Index = gearCenter2Index;
-            var dx1 = gearCenter1.initX - j.initX;
-            var dy1 = gearCenter1.initY - j.initY;
-            var dx2 = gearCenter2.initX - j.initX;
-            var dy2 = gearCenter2.initY - j.initY;
+            var dx1 = gearCenter1.xInitial - j.xInitial;
+            var dy1 = gearCenter1.yInitial - j.yInitial;
+            var dx2 = gearCenter2.xInitial - j.xInitial;
+            var dy2 = gearCenter2.yInitial - j.yInitial;
             if (gearCenter1.jointType == JointTypes.P)
             {
                 radius1 = Constants.distance(j, gearCenter1);
                 radius2 = Constants.distance(j, gearCenter2);
-                gearCenter1.SlideAngle = j.SlideAngle = Math.Atan2(-dx2, dy2);
+                gearCenter1.InitSlideAngle = j.InitSlideAngle = Math.Atan2(-dx2, dy2);
             }
             else
             {
-                gearCenter1.SlideAngle = j.SlideAngle = double.NaN;
+                gearCenter1.InitSlideAngle = j.InitSlideAngle = double.NaN;
                 if (dx1 != 0 && dx2 != 0)
                 {
                     if (!Constants.sameCloseZero(dy1 / dx1, dy2 / dx2))

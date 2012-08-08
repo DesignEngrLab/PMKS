@@ -34,7 +34,7 @@ namespace PlanarMechanismSimulator
         }
         internal static double distanceSqared(point point1, point point2)
         {
-            return distanceSqared(point1.X, point1.Y, point2.X, point2.Y);
+            return distanceSqared(point1.x, point1.y, point2.x, point2.y);
         }
         #endregion
 
@@ -45,14 +45,14 @@ namespace PlanarMechanismSimulator
         }
         public static double distance(point point1, point point2)
         {
-            return distance(point1.X, point1.Y, point2.X, point2.Y);
+            return distance(point1.x, point1.y, point2.x, point2.y);
         }
         #endregion
 
         #region Angle
         internal static double angle(point start, point end)
         {
-            return angle(start.X, start.Y, end.X, end.Y);
+            return angle(start.x, start.y, end.x, end.y);
         }
 
 
@@ -61,40 +61,5 @@ namespace PlanarMechanismSimulator
             return Math.Atan2(endY - startY, endX - startX);
         }
         #endregion
-
-        #region point to line interactions
-        internal static point findOrthoPoint(point p, point lineRef, double lineAngle)
-        {
-            if (sameCloseZero(lineAngle))
-                return new point(p.X, lineRef.Y);
-            if (sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
-                return new point(lineRef.X, p.Y);
-            var slope = Math.Tan(lineAngle);
-            var offset = (lineRef.Y - slope * lineRef.X);
-            var x = (p.X + slope * (p.Y - offset)) / (slope * slope + 1);
-            var y = slope * x + offset;
-            return new point(x, y);
-        }
-
-        internal static point findOrthoPoint(double pX, double pY, double lineRefX, double lineRefY, double lineAngle, out Boolean pointOnHigherOffset)
-        {
-            if (sameCloseZero(lineAngle))
-            {
-                pointOnHigherOffset = (pY > lineRefY);
-                return new point(pX, lineRefY);
-            }
-            if (sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
-            {
-                pointOnHigherOffset = (pX * lineAngle < 0);
-                return new point(lineRefX, pY);
-            }
-            var slope = Math.Tan(lineAngle);
-            var offset = (lineRefY - slope*lineRefX);
-            var x = (pX + slope * (pY - offset)) /(slope * slope + 1);
-            var y = slope * x + offset;
-            pointOnHigherOffset = ((pY - slope*pX) > offset);
-            return new point(x, y);
-        }
-#endregion
     }
 }
