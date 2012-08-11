@@ -16,19 +16,19 @@ namespace PlanarMechanismSimulator
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
 
-        internal static Boolean sameCloseZero(double x1)
+        public static Boolean sameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilon;
         }
 
-        internal static Boolean sameCloseZero(double x1, double x2)
+        public static Boolean sameCloseZero(double x1, double x2)
         {
             return sameCloseZero(x1 - x2);
         }
 
 
         #region DistanceSquared
-        public static double distanceSqared(double x1, double y1, double x2=0, double y2=0)
+        public static double distanceSqared(double x1, double y1, double x2 = 0, double y2 = 0)
         {
             return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
         }
@@ -39,11 +39,11 @@ namespace PlanarMechanismSimulator
         #endregion
 
         #region Distance
-        public static double distance(double x1, double y1, double x2 = 0, double y2 = 0)
+        internal static double distance(double x1, double y1, double x2 = 0, double y2 = 0)
         {
             return Math.Sqrt(distanceSqared(x1, y1, x2, y2));
         }
-        public static double distance(point point1, point point2)
+        internal static double distance(point point1, point point2)
         {
             return distance(point1.x, point1.y, point2.x, point2.y);
         }
@@ -61,5 +61,21 @@ namespace PlanarMechanismSimulator
             return Math.Atan2(endY - startY, endX - startX);
         }
         #endregion
+
+        internal static point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
+        {
+            if (sameCloseZero(ptA.x, ptB.x) && sameCloseZero(ptA.y, ptB.y)) return ptA;
+            if (sameCloseZero(slopeA, slopeB)) return new point(Double.NaN, Double.NaN);
+            var offsetA = ptA.y - slopeA * ptA.x;
+            var offsetB = ptB.y - slopeB * ptB.x;
+            if (Double.IsNaN(slopeA) || Double.IsInfinity(slopeA))
+                return new point(ptA.x, slopeB * ptA.x + offsetB);
+            if (Double.IsNaN(slopeB) || Double.IsInfinity(slopeB))
+                return new point(ptB.x, slopeA * ptB.x + offsetA);
+
+            var x = (offsetB - offsetA) / (slopeA - slopeB);
+            var y = slopeA * x + offsetA;
+            return new point(x, y);
+        }
     }
 }

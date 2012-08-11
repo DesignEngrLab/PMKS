@@ -195,12 +195,14 @@ namespace PMKS_Silverlight_App
 
         private bool SameParameters()
         {
-            double angle;
+            double angle, xpos, ypos;
             if (numJoints != JointTypes.Count) return false;
             for (int i = 0; i < numJoints; i++)
             {
-                if (Math.Abs(InitPositions[i][0] - Double.Parse(JointsInfo.Data[i].XPos)) > Constants.epsilon) return false;
-                if (Math.Abs(InitPositions[i][1] - Double.Parse(JointsInfo.Data[i].YPos)) > Constants.epsilon) return false;
+                if (Double.TryParse(JointsInfo.Data[i].XPos, out xpos) &&
+                    Math.Abs(InitPositions[i][0] - xpos) > Constants.epsilon) return false;
+                if (Double.TryParse(JointsInfo.Data[i].YPos, out ypos) &&
+                    Math.Abs(InitPositions[i][1] - ypos) > Constants.epsilon) return false;
                 if (InitPositions[i].GetLength(0) == 2 && Double.TryParse(JointsInfo.Data[i].Angle, out angle)) return false;
                 if (InitPositions[i].GetLength(0) == 3 && Double.TryParse(JointsInfo.Data[i].Angle, out angle))
                     if (Math.Abs(InitPositions[i][2] - angle) > Constants.epsilon) return false;

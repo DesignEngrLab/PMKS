@@ -32,6 +32,7 @@ namespace PlanarMechanismSimulator
 
 
         private Dictionary<int, double> lengths;
+        private Dictionary<int, point> orthoPoints;
 
         public double[] Lengths
         {
@@ -41,7 +42,7 @@ namespace PlanarMechanismSimulator
                 int i = 0;
                 foreach (var length in lengths.Values)
                     result[i++] = length;
-                while (i< result.GetLength(0))
+                while (i < result.GetLength(0))
                     result[i++] = Double.NaN;
                 return result;
             }
@@ -73,6 +74,7 @@ namespace PlanarMechanismSimulator
             }
             else AngleInitial = Constants.angle(fixedJoints[0], fixedJoints[1]);
             lengths = new Dictionary<int, double>();
+            orthoPoints = new Dictionary<int, point>();
             for (int i = 0; i < joints.Count - 1; i++)
                 for (int j = i + 1; j < joints.Count; j++)
                 {
@@ -80,15 +82,39 @@ namespace PlanarMechanismSimulator
                     var jJoint = joints[j];
                     var key = numJoints * i + j;
                     if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
-                        lengths.Add(key,
-                                    Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle)
-                                        ? Constants.distance(findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle), iJoint)
-                                        : 0.0);
+                        if (Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle))
+                        {
+                            var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
+                            orthoPoints.Add(key, orthoPt);
+                            lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
+                        }
+                        else
+                        {
+                            orthoPoints.Add(key, Constants.solveViaIntersectingLines(Math.Tan(iJoint.InitSlideAngle),
+                                new point(iJoint.xInitial, iJoint.yInitial), Math.Tan(jJoint.InitSlideAngle),
+                                new point(jJoint.xInitial, jJoint.yInitial)));
+                            lengths.Add(key, 0.0);
+                        }
                     else if (iJoint.SlidingWithRespectTo(this))
-                        lengths.Add(key, Constants.distance(findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle), jJoint));
+                    {
+                        var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle);
+                        orthoPoints.Add(key, orthoPt);
+                        lengths.Add(key, Constants.distance(orthoPt.x,orthoPt.y,jJoint.xInitial,jJoint.yInitial));
+                    }
                     else if (jJoint.SlidingWithRespectTo(this))
-                        lengths.Add(key, Constants.distance(findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle), iJoint));
-                    else lengths.Add(key, Constants.distance(iJoint, jJoint));
+                    {
+                        var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
+                        orthoPoints.Add(key, orthoPt);
+                        lengths.Add(key, Constants.distance(orthoPt.x,orthoPt.y,iJoint.xInitial,iJoint.yInitial));
+                        }
+                    else
+                    {
+                        lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
+                        if (jJoint.jointType == JointTypes.P && jJoint.SlidingWithRespectTo(jJoint.OtherLink(this)))
+                            orthoPoints.Add(key, findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle));
+                        if (iJoint.jointType == JointTypes.P && iJoint.SlidingWithRespectTo(iJoint.OtherLink(this)))
+                            orthoPoints.Add(numJoints*j+i, findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle));
+                    }
                 }
             foreach (var j in joints)
             {  /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
@@ -119,34 +145,35 @@ namespace PlanarMechanismSimulator
             else lengths[numJoints * i + j] = length;
         }
 
-        internal static point findOrthoPoint(point p, point lineRef, double lineAngle, out Boolean pointOnHigherOffset)
+        internal  point findOrthoPoint(joint refJoint, joint slideJoint, out Boolean pointOnHigherOffset)
         {
+            double lineAngle = slideJoint.SlideAngle;
             if (Constants.sameCloseZero(lineAngle))
             {
-                pointOnHigherOffset = (p.y > lineRef.y);
-                return new point(p.x, lineRef.y);
+                pointOnHigherOffset = (refJoint.y > slideJoint.y);
+                return new point(refJoint.x, slideJoint.y);
             }
             if (Constants.sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
             {
-                pointOnHigherOffset = (p.x * lineAngle < 0);
-                return new point(lineRef.x, p.y);
+                pointOnHigherOffset = (refJoint.x * lineAngle < 0);
+                return new point(slideJoint.x, refJoint.y);
             }
             var slope = Math.Tan(lineAngle);
-            var offset = (lineRef.y - slope * lineRef.x);
-            var x = (p.x + slope * (p.y - offset)) / (slope * slope + 1);
+            var offset = (slideJoint.y - slope * slideJoint.x);
+            var x = (refJoint.x + slope * (refJoint.y - offset)) / (slope * slope + 1);
             var y = slope * x + offset;
-            pointOnHigherOffset = ((p.y - slope * p.x) > offset);
+            pointOnHigherOffset = ((refJoint.y - slope * refJoint.x) > offset);
             return new point(x, y);
         }
-        internal static point findOrthoPoint(point p, point lineRef, double lineAngle)
+        private static point findOrthoPoint(joint p, joint lineRef, double lineAngle)
         {
             if (Constants.sameCloseZero(lineAngle))
-                return new point(p.x, lineRef.y);
+                return new point(p.xInitial, lineRef.yInitial);
             if (Constants.sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
-                return new point(lineRef.x, p.y);
+                return new point(lineRef.xInitial, p.yInitial);
             var slope = Math.Tan(lineAngle);
-            var offset = (lineRef.y - slope * lineRef.x);
-            var x = (p.x + slope * (p.y - offset)) / (slope * slope + 1);
+            var offset = (lineRef.yInitial - slope * lineRef.xInitial);
+            var x = (p.xInitial + slope * (p.yInitial - offset)) / (slope * slope + 1);
             var y = slope * x + offset;
             return new point(x, y);
         }
@@ -155,7 +182,7 @@ namespace PlanarMechanismSimulator
         {
             // todo: this should be stored from constructor calls - at the beginning. It will also be used to set up constraints for the
             //       nondyadic solver.
-            var result = blockjoint.SlideAngle - Constants.angle(blockjoint.xLast, blockjoint.yLast,referenceJoint.xLast,referenceJoint.yLast);
+            var result = blockjoint.SlideAngle - Constants.angle(blockjoint.xLast, blockjoint.yLast, referenceJoint.xLast, referenceJoint.yLast);
             while (result < 0) result += Math.PI;
             while (result > Math.PI) result -= Math.PI;
             return result;

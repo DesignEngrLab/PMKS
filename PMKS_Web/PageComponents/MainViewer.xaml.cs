@@ -109,6 +109,7 @@ namespace PMKS_Silverlight_App
                 minima[k] = double.PositiveInfinity;
                 maxima[k] = double.NegativeInfinity;
             }
+            maxima[2] = maxima[3] = Constants.epsilon;
             for (int j = 0; j < JointParameters.Size; j++)
                 for (int i = 0; i < numJoints; i++)
                 {
@@ -134,7 +135,5 @@ namespace PMKS_Silverlight_App
             minima[3] = Math.Sqrt(minima[3]);
             maxima[3] = Math.Sqrt(maxima[3]);
         }
-
-
     }
 }
