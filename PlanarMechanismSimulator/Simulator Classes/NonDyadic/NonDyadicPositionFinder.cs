@@ -63,7 +63,7 @@ namespace PlanarMechanismSimulator
         {
             return optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit);
         }
-        internal bool Run_PositionsAreClose(double[,] newJointParams, double[,] newLinkParams, double[,] oldJointParams, double[,] oldLinkParams)
+        internal bool Run_PositionsAreClose()
         {
             optMethod.ResetFunctionEvaluationDatabase();
             var xInit = new double[2 * numUnknownPivots]; //need to check if this is always true. If input is a ternary link it could be less.
