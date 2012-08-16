@@ -16,39 +16,42 @@ namespace PlanarMechanismSimulator
         private readonly int numUnknownLinks;
         private readonly IList<link> links;
         private readonly IList<joint> joints;
-
+        private readonly IList<int> unkJointIndices;
         internal long NumEvals { get; private set; }
 
-        internal NonDyadicPositionSolver(IList<link> links, IList<joint> joints, int numUnknownPivots,
-            int beginGndJointsIndex, int numUnknownLinks, double epsilon)
+        internal NonDyadicPositionSolver(IList<link> links, IList<joint> joints, double epsilon)
         {
             this.links = links;
             this.joints = joints;
-            this.numUnknownPivots = numUnknownPivots;
-            this.beginGndJointsIndex = beginGndJointsIndex;
-            this.numUnknownLinks = numUnknownLinks;
             linkFunctions = new List<LinkLengthFunction>();
-            foreach (var c in links)
+            unkJointIndices = new List<int>();
+            for (int i = 0; i < joints.Count; i++)
             {
-                for (int i = 0; i < c.joints.Count - 1; i++)
-                    for (int j = i + 1; j < c.joints.Count; j++)
-                    {
-                        var p0 = c.joints[i];
-                        var p0Index = joints.IndexOf(p0);
-                        var p1 = c.joints[j];
-                        var p1Index = joints.IndexOf(p1);
-                        if ((!double.IsNaN(p0.xInitial)) && (!double.IsNaN(p0.yInitial)) &&
-                            (!double.IsNaN(p1.xInitial)) && (!double.IsNaN(p1.yInitial)))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.xInitial, p0.yInitial, p1Index, p1.xInitial, p1.yInitial));
-                        else if ((!double.IsNaN(p0.xInitial)) && (!double.IsNaN(p0.yInitial)) && (!double.IsNaN(c.lengthBetween(p0,p1))))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p0.xInitial, p0.yInitial, p1Index, c.lengthBetween(p0, p1)));
-                        else if ((!double.IsNaN(p1.xInitial)) && (!double.IsNaN(p1.yInitial)) && (!double.IsNaN(c.lengthBetween(p0, p1))))
-                            linkFunctions.Add(new LinkLengthFunction(p1Index, p1.xInitial, p1.yInitial, p0Index, c.lengthBetween(p0, p1)));
-                        else if (!double.IsNaN(c.lengthBetween(p0, p1)))
-                            linkFunctions.Add(new LinkLengthFunction(p0Index, p1Index, c.lengthBetween(p0, p1)));
-                        else throw new Exception("Links is not well-specified (in constructor of NonDyadicPositionFinder).");
-                    }
-                //todo: note how all the lengths above are lengths[0] need to fix s.t. they correspond to proper values.
+var                j = joints[i];
+                if (j.knownState != KnownState.Fully)
+                                    if (j.jointType != JointTypes.R)
+                        throw new Exception("Cannot currently handle non R-joints in Non-Dyadic Analysis.");
+                unkJointIndices.Add(i);
+                }
+            numUnknownPivots = unkJointIndices.Count;
+            for (int i = 0; i < numUnknownPivots; i++)
+            {
+                var p0 = joints[unkJointIndices[i]];
+                var p0Index = joints.IndexOf(p0);
+                foreach (var p1 in p0.Link1.joints)
+                {
+                    if (p1 == p0) continue;
+                    var p1Index = joints.IndexOf(p1);
+                    var p1UnkListIndex = unkJointIndices.IndexOf(p1Index);
+                    linkFunctions.Add(new LinkLengthFunction(i, p0.xInitial, p0.yInitial, p1UnkListIndex, p1.xInitial, p1.yInitial));
+                }
+                foreach (var p1 in p0.Link2.joints)
+                {
+                    if (p1 == p0) continue;
+                    var p1Index = joints.IndexOf(p1);
+                    var p1UnkListIndex = unkJointIndices.IndexOf(p1Index);
+                    linkFunctions.Add(new LinkLengthFunction(i, p0.xInitial, p0.yInitial, p1UnkListIndex, p1.xInitial, p1.yInitial));
+                }
             }
             optMethod = new NewtonMethod();
             optMethod.Add(this);
