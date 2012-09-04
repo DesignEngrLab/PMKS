@@ -17,22 +17,26 @@ namespace PlanarMechanismSimulator
         private readonly IList<link> links;
         private readonly IList<joint> joints;
         private readonly IList<int> unkJointIndices;
+        private Simulator simulator;
         internal long NumEvals { get; private set; }
 
-        internal NonDyadicPositionSolver(IList<link> links, IList<joint> joints, double epsilon)
+
+        public NonDyadicPositionSolver(Simulator simulator)
         {
-            this.links = links;
-            this.joints = joints;
+            // TODO: Complete member initialization
+            this.simulator = simulator;
+            this.links = simulator.links;
+            this.joints = simulator.joints;
             linkFunctions = new List<LinkLengthFunction>();
             unkJointIndices = new List<int>();
             for (int i = 0; i < joints.Count; i++)
             {
-var                j = joints[i];
+                var j = joints[i];
                 if (j.knownState != KnownState.Fully)
-                                    if (j.jointType != JointTypes.R)
+                    if (j.jointType != JointTypes.R)
                         throw new Exception("Cannot currently handle non R-joints in Non-Dyadic Analysis.");
                 unkJointIndices.Add(i);
-                }
+            }
             numUnknownPivots = unkJointIndices.Count;
             for (int i = 0; i < numUnknownPivots; i++)
             {
@@ -43,23 +47,26 @@ var                j = joints[i];
                     if (p1 == p0) continue;
                     var p1Index = joints.IndexOf(p1);
                     var p1UnkListIndex = unkJointIndices.IndexOf(p1Index);
-                    linkFunctions.Add(new LinkLengthFunction(i, p0.xInitial, p0.yInitial, p1UnkListIndex, p1.xInitial, p1.yInitial));
+                    linkFunctions.Add(new LinkLengthFunction(i, unkJointIndices[i], p0.xInitial, p0.yInitial,
+                       p1UnkListIndex, p1Index, p1.xInitial, p1.yInitial));
                 }
+                if (p0.Link2 == null) continue;
                 foreach (var p1 in p0.Link2.joints)
                 {
                     if (p1 == p0) continue;
                     var p1Index = joints.IndexOf(p1);
                     var p1UnkListIndex = unkJointIndices.IndexOf(p1Index);
-                    linkFunctions.Add(new LinkLengthFunction(i, p0.xInitial, p0.yInitial, p1UnkListIndex, p1.xInitial, p1.yInitial));
+                    linkFunctions.Add(new LinkLengthFunction(i, unkJointIndices[i], p0.xInitial, p0.yInitial,
+                       p1UnkListIndex, p1Index, p1.xInitial, p1.yInitial));
                 }
             }
             optMethod = new NewtonMethod();
             optMethod.Add(this);
-            ConvergedWithinLimit = new ToKnownBestFConvergence(0, epsilon);
+            ConvergedWithinLimit = new ToKnownBestFConvergence(0, simulator.epsilon);
             optMethod.Add(ConvergedWithinLimit);
-            optMethod.Add(new FixedOrGoldenSection(5 * epsilon, 0));
+            optMethod.Add(new FixedOrGoldenSection(5 * simulator.epsilon, 0));
             optMethod.Add(new MaxIterationsConvergence(300));
-            optMethod.Add(new DeltaFConvergence(0.5 * epsilon));
+            optMethod.Add(new DeltaFConvergence(0.5 * simulator.epsilon));
         }
 
         internal Boolean SolutionFound()
@@ -72,32 +79,29 @@ var                j = joints[i];
             var xInit = new double[2 * numUnknownPivots]; //need to check if this is always true. If input is a ternary link it could be less.
             for (int i = 0; i < numUnknownPivots; i++)
             {
-                xInit[2 * i] = newJointParams[i, 0];
-                xInit[2 * i + 1] = newJointParams[i, 1];
-            }
-            for (int i = numUnknownPivots; i < beginGndJointsIndex; i++)
+                var xPosStart = joints[unkJointIndices[i]].xNumerical;
+                var yPosStart = joints[unkJointIndices[i]].yNumerical;
+                xInit[2 * i] = xPosStart;
+                xInit[2 * i + 1] = yPosStart;
                 foreach (var llf in linkFunctions)
-                    llf.SetJointPosition(i, newJointParams[i, 0], newJointParams[i, 1]);
+                    llf.SetJointPosition(unkJointIndices[i], xPosStart, yPosStart);
+            }
 
             double[] xStar;
             optMethod.Run(out xStar, xInit);
-            if (SolutionFound())
+            if (!SolutionFound()) return false;
+
+            for (int i = 0; i < numUnknownPivots; i++)
             {
-                for (int i = 0; i < numUnknownPivots; i++)
-                {
-                    newJointParams[i, 0] = xStar[2 * i];
-                    newJointParams[i, 1] = xStar[2 * i + 1];
-                }
-                for (int i = 0; i < numUnknownLinks; i++)
-                {
-                    var joint0Index = joints.IndexOf(links[i].joints[0]);
-                    var joint1Index = joints.IndexOf(links[i].joints[1]);
-                    newLinkParams[i, 0] = Constants.angle(newJointParams[joint0Index, 0], newJointParams[joint0Index, 1],
-                       newJointParams[joint1Index, 0], newJointParams[joint1Index, 1]);
-                }
-                return true;
+                var j = joints[unkJointIndices[i]];
+                j.x = xStar[2 * i];
+                j.y = xStar[2 * i + 1];
+                j.knownState = KnownState.Fully;
             }
-            return false;
+            foreach (var c in links)
+                if (!c.AngleIsKnown)
+                    simulator.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
+            return true;
         }
 
         internal double Run_PositionsAreUnknown(double[,] newJointParams, double[,] newLinkParams)
