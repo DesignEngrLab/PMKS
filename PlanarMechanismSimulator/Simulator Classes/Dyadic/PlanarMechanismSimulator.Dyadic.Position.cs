@@ -225,8 +225,7 @@ namespace PlanarMechanismSimulator
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
             {
                 if (NDPS == null)
-                    NDPS = new NonDyadicPositionSolver(links, joints, firstInputJointIndex,
-                                inputJointIndex, inputLinkIndex, epsilon);
+                    NDPS = new NonDyadicPositionSolver(this);
                 if (!NDPS.Run_PositionsAreClose()) return false;
             }
             WriteValuesToMatrices(currentJointParams, currentLinkParams);
@@ -610,42 +609,57 @@ namespace PlanarMechanismSimulator
             }
         }
 
+        /* ugh, this function is taking the most time.
+         * knownJoint does not have to be KnownState.Fully - rather it is never Unknown, but can be Partially
+         * in the case of coming from a slide joint.*/
 
-        private void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
+        internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
-            if (knownJoint.knownState != KnownState.Fully) throw new Exception("not a knownstate assigned to knownJoint.");
-            if (knownJoint.SlidingWithRespectTo(thisLink))
-            {
-                knownJoint = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState == KnownState.Fully
-                        && j.FixedWithRespectTo(thisLink));
-                if (knownJoint == null) return;
-            }
-            if (thisLink.AngleIsKnown) return;
             if (double.IsNaN(angleChange))
             {
-                var otherKnownPosition = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown
+                //var j1 = knownJoint;
+                if (knownJoint.SlidingWithRespectTo(thisLink))
+                {
+                    knownJoint = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState == KnownState.Fully
+                            && j.FixedWithRespectTo(thisLink));
+                    if (knownJoint == null) return;
+                }
+                var j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown
                     && j.FixedWithRespectTo(thisLink));
-                if (otherKnownPosition == null)
-                    otherKnownPosition = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
-                if (otherKnownPosition == null) return;
-                var new_j2j_Angle = Constants.angle(knownJoint, otherKnownPosition);
-                var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, otherKnownPosition.xLast, otherKnownPosition.yLast);
+                if (j2 == null)
+                    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
+                if (j2 == null) return;
+                var new_j2j_Angle = Constants.angle(knownJoint, j2);
+                var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
                 angleChange = new_j2j_Angle - old_j2j_Angle;
-                if (otherKnownPosition.SlidingWithRespectTo(thisLink))
-                    angleChange += solveRotateSlotToPin(knownJoint, otherKnownPosition, thisLink);
+                if (j2.SlidingWithRespectTo(thisLink))
+                    angleChange += solveRotateSlotToPin(knownJoint, j2, thisLink);
             }
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = true;
-            foreach (var j in thisLink.joints.Where(j => j.knownState != KnownState.Fully))
+
+            if (knownJoint.FixedWithRespectTo(thisLink) && knownJoint.knownState == KnownState.Fully)
             {
-                var length = thisLink.lengthBetween(j, knownJoint);
-                var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
-                angle += angleChange;
-                assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
-                                    knownJoint.y + length * Math.Sin(angle));
-                var otherLink = j.OtherLink(thisLink);
-                if (otherLink != null && j.knownState == KnownState.Fully)
-                    setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
+                foreach (var j in thisLink.joints.Where(j => j.knownState != KnownState.Fully))
+                {
+                    var length = thisLink.lengthBetween(j, knownJoint);
+                    var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
+                    angle += angleChange;
+                    assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
+                                        knownJoint.y + length * Math.Sin(angle));
+                    var otherLink = j.OtherLink(thisLink);
+                    if (otherLink != null)
+                        setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
+                }
+            }
+            else
+            {
+                foreach (var j in thisLink.joints.Where(j => j.knownState != KnownState.Fully))
+                {
+                    var otherLink = j.OtherLink(thisLink);
+                    if (otherLink != null && j.jointType == JointTypes.P)
+                        setLinkPositionFromRotate(j, otherLink, angleChange);
+                }
             }
         }
 
@@ -677,7 +691,7 @@ namespace PlanarMechanismSimulator
         private static bool FindKnownPositionOnLink(link link, out joint knownJoint)
         {
             knownJoint = null;//knownJoint = link.joints.FirstOrDefault(j => !unknownPositions.Contains(j) && j.jointType == JointTypes.R && j.Link2 != null);
-            knownJoint = link.joints.FirstOrDefault(j => j.knownState == KnownState.Fully);
+            knownJoint = link.joints.FirstOrDefault(j => j.knownState == KnownState.Fully && j.FixedWithRespectTo(link));
             if (knownJoint != null) return true;
             return false;
         }
