@@ -4,9 +4,9 @@ namespace PlanarMechanismSimulator
 {
     internal class gearData
     {
-        internal readonly link connectingRod;
-        internal readonly joint gearCenter1;
-        internal readonly joint gearCenter2;
+        private readonly link connectingRod;
+        private readonly joint gearCenter1;
+        private readonly joint gearCenter2;
         internal readonly double radius1;
         internal readonly double radius2;
         internal readonly int connectingRodIndex;

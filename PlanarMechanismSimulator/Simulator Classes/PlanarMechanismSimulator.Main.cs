@@ -364,9 +364,11 @@ namespace PlanarMechanismSimulator
         private void setGearData()
         {
             if (joints.All(j => j.jointType != JointTypes.G)) return;
-            gearsData = new Dictionary<joint, gearData>();
+            gearsData = new Dictionary<int, gearData>();
+            int index = -1;
             foreach (var j in joints)
             {
+                index++;
                 if (j.jointType != JointTypes.G) continue;
                 var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
                 var gearCenter2 =
@@ -382,12 +384,12 @@ namespace PlanarMechanismSimulator
                     gearCenter2.xInitial = trueGearCenter2.xInitial;
                     gearCenter2.yInitial = trueGearCenter2.yInitial;
                 }
-                gearsData.Add(j, new gearData(j, connectingRod, links.IndexOf(connectingRod), gearCenter1, joints.IndexOf(gearCenter1),
+                gearsData.Add(index, new gearData(j, connectingRod, links.IndexOf(connectingRod), gearCenter1, joints.IndexOf(gearCenter1),
                     gearCenter2, joints.IndexOf(gearCenter2)));
             }
         }
 
-        private Dictionary<joint, gearData> gearsData;
+        private Dictionary<int, gearData> gearsData;
 
         #endregion
 
