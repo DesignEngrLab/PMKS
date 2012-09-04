@@ -12,13 +12,7 @@
         <src:LinksViewModel x:Name="LinksInfo" />
     </UserControl.Resources>
 
-    <Grid x:Name="BigGrid" >
-        <Grid.Background>
-            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <GradientStop Color="#FF9DB9B8" Offset="1"/>
-                <GradientStop Color="White"/>
-            </LinearGradientBrush>
-        </Grid.Background>
+    <Grid x:Name="BigGrid" Background="White" >
 
         <src:MainViewer x:Name="mainViewer"/>
         <Grid>
