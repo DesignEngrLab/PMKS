@@ -81,7 +81,7 @@ namespace PlanarMechanismSimulator
                     var iJoint = joints[i];
                     var jJoint = joints[j];
                     var key = numJoints * i + j;
-                    if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
+                    if (!iJoint.FixedWithRespectTo(this) && !jJoint.FixedWithRespectTo(this))
                         if (Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle))
                         {
                             var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
@@ -95,13 +95,13 @@ namespace PlanarMechanismSimulator
                                 new point(jJoint.xInitial, jJoint.yInitial)));
                             lengths.Add(key, 0.0);
                         }
-                    else if (iJoint.SlidingWithRespectTo(this))
+                    else if (!iJoint.FixedWithRespectTo(this))
                     {
                         var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle);
                         orthoPoints.Add(key, orthoPt);
                         lengths.Add(key, Constants.distance(orthoPt.x,orthoPt.y,jJoint.xInitial,jJoint.yInitial));
                     }
-                    else if (jJoint.SlidingWithRespectTo(this))
+                    else if (!jJoint.FixedWithRespectTo(this))
                     {
                         var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
                         orthoPoints.Add(key, orthoPt);
@@ -110,15 +110,15 @@ namespace PlanarMechanismSimulator
                     else
                     {
                         lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                        if (jJoint.jointType == JointTypes.P && jJoint.SlidingWithRespectTo(jJoint.OtherLink(this)))
+                        if (jJoint.jointType == JointTypes.P && !jJoint.FixedWithRespectTo(jJoint.OtherLink(this)))
                             orthoPoints.Add(key, findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle));
-                        if (iJoint.jointType == JointTypes.P && iJoint.SlidingWithRespectTo(iJoint.OtherLink(this)))
+                        if (iJoint.jointType == JointTypes.P && !iJoint.FixedWithRespectTo(iJoint.OtherLink(this)))
                             orthoPoints.Add(numJoints*j+i, findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle));
                     }
                 }
             foreach (var j in joints)
             {  /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
-                if (j.SlidingWithRespectTo(this)) j.InitSlideAngle -= AngleInitial;
+                if (!j.FixedWithRespectTo(this)) j.InitSlideAngle -= AngleInitial;
                 while (j.InitSlideAngle < -Math.PI / 2) j.InitSlideAngle += Math.PI;
                 while (j.InitSlideAngle > Math.PI / 2) j.InitSlideAngle -= Math.PI;
             }
