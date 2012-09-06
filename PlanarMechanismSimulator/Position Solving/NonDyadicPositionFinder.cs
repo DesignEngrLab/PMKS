@@ -17,16 +17,15 @@ namespace PlanarMechanismSimulator
         private readonly IList<link> links;
         private readonly IList<joint> joints;
         private readonly IList<int> unkJointIndices;
-        private Simulator simulator;
+        private PositionFinder posFinder;
         internal long NumEvals { get; private set; }
 
 
-        public NonDyadicPositionSolver(Simulator simulator)
+        public NonDyadicPositionSolver(PositionFinder posFinder)
         {
-            // TODO: Complete member initialization
-            this.simulator = simulator;
-            this.links = simulator.links;
-            this.joints = simulator.joints;
+            this.posFinder = posFinder;
+            this.links = posFinder.links;
+            this.joints = posFinder.joints;
             linkFunctions = new List<LinkLengthFunction>();
             unkJointIndices = new List<int>();
             for (int i = 0; i < joints.Count; i++)
@@ -41,7 +40,6 @@ namespace PlanarMechanismSimulator
             for (int i = 0; i < numUnknownPivots; i++)
             {
                 var p0 = joints[unkJointIndices[i]];
-                var p0Index = joints.IndexOf(p0);
                 foreach (var p1 in p0.Link1.joints)
                 {
                     if (p1 == p0) continue;
@@ -62,11 +60,11 @@ namespace PlanarMechanismSimulator
             }
             optMethod = new NewtonMethod();
             optMethod.Add(this);
-            ConvergedWithinLimit = new ToKnownBestFConvergence(0, simulator.epsilon);
+            ConvergedWithinLimit = new ToKnownBestFConvergence(0, Constants.epsilon);
             optMethod.Add(ConvergedWithinLimit);
-            optMethod.Add(new FixedOrGoldenSection(5 * simulator.epsilon, 0));
+            optMethod.Add(new FixedOrGoldenSection(5 * Constants.epsilon, 0));
             optMethod.Add(new MaxIterationsConvergence(300));
-            optMethod.Add(new DeltaFConvergence(0.5 * simulator.epsilon));
+            optMethod.Add(new DeltaFConvergence(0.5 * Constants.epsilon));
         }
 
         internal Boolean SolutionFound()
@@ -100,7 +98,7 @@ namespace PlanarMechanismSimulator
             }
             foreach (var c in links)
                 if (!c.AngleIsKnown)
-                    simulator.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
+                    posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
             return true;
         }
 

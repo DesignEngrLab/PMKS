@@ -33,8 +33,8 @@ namespace PlanarMechanismSimulator
 
     public class joint
     {
-        public readonly Boolean isGround;
-        public readonly JointTypes jointType;
+        public Boolean isGround;
+        public JointTypes jointType;
         public double xInitial;
         public double yInitial;
         public double InitSlideAngle = Double.NaN;
@@ -72,6 +72,8 @@ namespace PlanarMechanismSimulator
                 throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
+        private joint(){}
+
         //public Boolean SlidingWithRespectTo(link link0)
         //{
         //    return (Link1 == link0
@@ -98,8 +100,28 @@ namespace PlanarMechanismSimulator
         {
             return new point(j.x, j.y);
         }
+
+        internal joint copy()
+        {
+            return new joint
+            {
+                InitSlideAngle = InitSlideAngle,
+                Link1 = Link1,
+                Link2 = Link2,
+                x = x,
+                xInitial = xInitial,
+                xLast = xLast,
+                xNumerical = xNumerical,
+                y = y,
+                yInitial = yInitial,
+                yLast = yLast,
+                yNumerical = yNumerical,
+                isGround = isGround,
+                jointType = jointType
+            };
+        }
     }
 
     internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
-    
+
 }

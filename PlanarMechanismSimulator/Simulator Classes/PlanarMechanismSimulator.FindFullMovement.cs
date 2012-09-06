@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OptimizationToolbox;
@@ -19,62 +21,52 @@ namespace PlanarMechanismSimulator
             JointParameters = new TimeSortedList();
             LinkParameters = new TimeSortedList();
 
-            var initPivotParams = new double[numJoints,6];
+            var initPivotParams = new double[numJoints, 6];
             for (int i = 0; i < numJoints; i++)
             {
                 initPivotParams[i, 0] = joints[i].xInitial;
                 initPivotParams[i, 1] = joints[i].yInitial;
             }
-            var initLinkParams = new double[numLinks,3];
+            var initLinkParams = new double[numLinks, 3];
             for (int i = 0; i < numLinks; i++)
                 initLinkParams[i, 0] = links[i].AngleInitial;
             InitializeGroundAndInputSpeedAndAcceleration(initPivotParams, initLinkParams);
-            InputRange = new[] {inputLink.AngleInitial, inputLink.AngleInitial};
+            InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
+            posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+            var posFinderBackwards = setUpBackwardsPositionFinder();
             /* attempt to find velocities and accelerations at initial point analytically
              * there is no point in trying numerically as this is the first point and the numerical methods
              * perform finite difference of current and last time steps. */
             if (!(findVelocitiesThroughICMethod(0.0, true) && findAccelerationAnalytically(0.0, true)))
             {
-                var ForwardJointParams = (double[,]) initPivotParams.Clone();
-                var ForwardLinkParams = (double[,]) initLinkParams.Clone();
+                var ForwardJointParams = (double[,])initPivotParams.Clone();
+                var ForwardLinkParams = (double[,])initLinkParams.Clone();
                 bool forwardSuccess = false;
-                var BackwardJointParams = (double[,]) initPivotParams.Clone();
-                var BackwardLinkParams = (double[,]) initLinkParams.Clone();
+                var BackwardJointParams = (double[,])initPivotParams.Clone();
+                var BackwardLinkParams = (double[,])initLinkParams.Clone();
                 bool backwardSuccess = false;
-                var smallTimeStep = 0.003*InputSpeed*FixedTimeStep;
-#if SILVERLIGHT
+                var smallTimeStep = 0.003 * InputSpeed * FixedTimeStep;
                 forwardSuccess =
                     microPerturbForFiniteDifferenceOfVelocityAndAcceleration(smallTimeStep,
                                                                              ForwardJointParams, ForwardLinkParams,
-                                                                             initPivotParams, initLinkParams);
+                                                                             initPivotParams, initLinkParams, posFinder);
                 /*** Stepping Backward in Time ***/
                 backwardSuccess = microPerturbForFiniteDifferenceOfVelocityAndAcceleration(-smallTimeStep,
                                                                                            BackwardJointParams,
                                                                                            BackwardLinkParams,
                                                                                            initPivotParams,
-                                                                                           initLinkParams);
-
-#else
-                Parallel.Invoke(
-                    /*** Stepping Forward in Time ***/
-                    () => forwardSuccess =
-                          microPerturbForFiniteDifferenceOfVelocityAndAcceleration(smallTimeStep,
-                          ForwardJointParams, ForwardLinkParams, initPivotParams, initLinkParams),
-                    /*** Stepping Backward in Time ***/
-                    () => backwardSuccess = microPerturbForFiniteDifferenceOfVelocityAndAcceleration(-smallTimeStep,
-                      BackwardJointParams, BackwardLinkParams, initPivotParams, initLinkParams));
-#endif
+                                                                                           initLinkParams, posFinderBackwards);
                 if (forwardSuccess && backwardSuccess)
                 {
                     /* central difference puts values in init parameters. */
                     for (int i = 0; i < numJoints; i++)
                         for (int j = 2; j < 6; j++)
-                            initPivotParams[i, j] = (ForwardJointParams[i, j] + BackwardJointParams[i, j])/2;
+                            initPivotParams[i, j] = (ForwardJointParams[i, j] + BackwardJointParams[i, j]) / 2;
                     for (int i = 0; i < numLinks; i++)
                         for (int j = 1; j < 3; j++)
-                            initLinkParams[i, j] = (ForwardLinkParams[i, j] + BackwardLinkParams[i, j])/2;
+                            initLinkParams[i, j] = (ForwardLinkParams[i, j] + BackwardLinkParams[i, j]) / 2;
                 }
                 else if (forwardSuccess)
                 {
@@ -101,44 +93,55 @@ namespace PlanarMechanismSimulator
             #endregion
 
 #if SILVERLIGHT
-
-            loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true);
-            //var forwardThread = new Thread(delegate()
-            //    {
-            //        loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true);
-            //        forwardDone.Set();
-            //    });
-            //var backwardThread = new Thread(delegate()
-            //    {
-            //        loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false);
-            //        backwardDone.Set();
-            //    });
-            //forwardThread.Start(); backwardThread.Start();  
-            //if (forwardDone.WaitOne() && backwardDone.WaitOne())
-            //{
-            //    forwardDone = new AutoResetEvent(false);
-            //    backwardDone = new AutoResetEvent(false);
-            //}
-
+            var forwardThread = new Thread(delegate()
+                {
+                    loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
+                    forwardDone.Set();
+                });
+            var backwardThread = new Thread(delegate()
+                {
+                    loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards);
+                    backwardDone.Set();
+                });
+            forwardThread.Start(); backwardThread.Start();
+            if (forwardDone.WaitOne() && backwardDone.WaitOne())
+            {
+                forwardDone = new AutoResetEvent(false);
+                backwardDone = new AutoResetEvent(false);
+            }
 #else
             Parallel.Invoke(
                 /*** Stepping Forward in Time ***/
-                () => loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true),
+                () => loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder),
                 /*** Stepping Backward in Time ***/
-                () => loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false));
+                () => loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards));
 #endif
+        }
+
+        private PositionFinder setUpBackwardsPositionFinder()
+        {
+            var backwardJoints = joints.Select(j => j.copy()).ToList();
+            var backwardLinks = links.Select(c => c.copy()).ToList();
+            foreach (var j in backwardJoints)
+            {
+                var newLink = backwardLinks[links.IndexOf(j.Link1)];
+                j.Link1 = newLink;
+                newLink.joints.Add(j);
+                if (j.Link2 == null) continue;
+                newLink = backwardLinks[links.IndexOf(j.Link2)];
+                j.Link2 = newLink;
+                newLink.joints.Add(j);
+            }
+            return new PositionFinder(backwardJoints, backwardLinks, gearsData, inputJointIndex);
         }
 
         private static AutoResetEvent forwardDone = new AutoResetEvent(false);
         private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
-        private Boolean microPerturbForFiniteDifferenceOfVelocityAndAcceleration(double smallTimeStep,
-                                                                                 double[,] currentJointParams,
-                                                                                 double[,] currentLinkParams,
-                                                                                 double[,] initPivotParams,
-                                                                                 double[,] initLinkParams)
+        private bool microPerturbForFiniteDifferenceOfVelocityAndAcceleration(double smallTimeStep, double[,] currentJointParams,
+            double[,] currentLinkParams, double[,] initPivotParams, double[,] initLinkParams, PositionFinder posFinder)
         {
-            if (!DefineNewPositions(smallTimeStep*InputSpeed, currentJointParams, currentLinkParams, initPivotParams,
+            if (!posFinder.DefineNewPositions(smallTimeStep * InputSpeed, currentJointParams, currentLinkParams, initPivotParams,
                                     initLinkParams))
                 return false;
             InitializeGroundAndInputSpeedAndAcceleration(currentJointParams, currentLinkParams);
@@ -149,21 +152,21 @@ namespace PlanarMechanismSimulator
         }
 
         private void loopWithFixedDelta(double timeStep, double[,] lastPivotParams, double[,] lastLinkParams,
-                                        Boolean Forward)
+                                        Boolean Forward, PositionFinder posFinder)
         {
             var currentTime = 0.0;
             Boolean validPosition;
             do
             {
-                var currentLinkParams = new double[numLinks,3];
-                var currentPivotParams = new double[numJoints,6];
+                var currentLinkParams = new double[numLinks, 3];
+                var currentPivotParams = new double[numJoints, 6];
 
                 #region Find Next Positions
 
                 NumericalPosition(timeStep, currentPivotParams, currentLinkParams,
                                   lastPivotParams, lastLinkParams);
-                var delta = InputSpeed*timeStep;
-                validPosition = DefineNewPositions(delta, currentPivotParams, currentLinkParams,
+                var delta = InputSpeed * timeStep;
+                validPosition = posFinder.DefineNewPositions(delta, currentPivotParams, currentLinkParams,
                                                    lastPivotParams, lastLinkParams);
                 #endregion
 

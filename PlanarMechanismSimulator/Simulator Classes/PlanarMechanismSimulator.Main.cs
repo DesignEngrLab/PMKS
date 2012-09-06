@@ -21,8 +21,9 @@ namespace PlanarMechanismSimulator
         /// </summary>
         public string Status { get; private set; }
 
+        private PositionFinder posFinder; 
+
         public double[] InputRange;
-        private  NonDyadicPositionSolver NDPS;
         private double _deltaAngle = double.NaN;
         private double _fixedTimeStep = double.NaN;
         private double _maxSmoothingError = double.NaN;
@@ -512,6 +513,7 @@ namespace PlanarMechanismSimulator
         {
             LinkAngles = new double[numLinks, 1];
             JointPositions = new double[numJoints, 2];
+          var  NDPS = new NonDyadicPositionSolver(posFinder);
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
 

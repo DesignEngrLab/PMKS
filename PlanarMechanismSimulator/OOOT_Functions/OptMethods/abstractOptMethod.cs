@@ -225,7 +225,7 @@ namespace OptimizationToolbox
         /// <param name="function">The object, function.</param>
         public virtual void Add(object function)
         {
-#if !SILVERLIGHT
+#if withProblemDefinition
             if (function is ProblemDefinition)
                 readInProblemDefinition((ProblemDefinition)function);
             else 
@@ -478,7 +478,7 @@ namespace OptimizationToolbox
 
         #endregion
 
-#if !SILVERLIGHT
+#if withProblemDefinition
         #region from/to Problem Definition
 
         private void readInProblemDefinition(ProblemDefinition pd)

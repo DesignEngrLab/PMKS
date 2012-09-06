@@ -7,14 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanarMechanismSimulator", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelPlanarMechSimulator", "ExcelPlanarMechSimulator\ExcelPlanarMechSimulator.csproj", "{0273A1EF-2543-4117-843F-FBB833B1681C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanarMechanismSimulator_Silverlight", "Silverlight_PMKS\PlanarMechanismSimulator_Silverlight.csproj", "{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMKS_Web", "PMKS_Web\PMKS_Web.csproj", "{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A1B00454-D63E-4C59-B48F-65C81404290B}"
 	ProjectSection(SolutionItems) = preProject
 		HTMLPage1.html = HTMLPage1.html
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanarMechanismSimulator_Silverlight", "PlanarMechanismSimulator\PlanarMechanismSimulator_Silverlight.csproj", "{86BD7C7A-AE19-4ED2-BE7B-86E30EBB5DE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,8 +78,8 @@ Global
 		{8EC9B59A-84E4-4C91-8C14-00CCBB24AE80}.Release|x86.ActiveCfg = Release|Any CPU
 		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|x86.ActiveCfg = Debug|x86
 		{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}.Debug|x86.Build.0 = Debug|x86

@@ -57,51 +57,15 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\PlanarMechanismSimulator\Other Classes\Constants.cs">
-      <Link>Other Classes\Constants.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Other Classes\gearData.cs">
-      <Link>Other Classes\gearData.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Other Classes\joint.cs">
-      <Link>Other Classes\joint.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Other Classes\link.cs">
-      <Link>Other Classes\link.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Other Classes\TimeSortedList.cs">
-      <Link>Other Classes\TimeSortedList.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\circleDiagramItem.cs">
-      <Link>Simulator Classes\Dyadic\circleDiagramItem.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\DynamicMatrixTerm.cs">
-      <Link>Simulator Classes\Dyadic\DynamicMatrixTerm.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs">
-      <Link>Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Acceleration.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs">
-      <Link>Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Position.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs">
-      <Link>Simulator Classes\Dyadic\PlanarMechanismSimulator.Dyadic.Velocity.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\NonDyadic\LinkLengthFunction.cs">
-      <Link>Simulator Classes\NonDyadic\LinkLengthFunction.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\NonDyadic\NonDyadicPositionFinder.cs">
-      <Link>Simulator Classes\NonDyadic\NonDyadicPositionFinder.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs">
-      <Link>Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\PlanarMechanismSimulator.Main.cs">
-      <Link>Simulator Classes\PlanarMechanismSimulator.Main.cs</Link>
-    </Compile>
-    <Compile Include="..\PlanarMechanismSimulator\Simulator Classes\PlanarMechanismSimulator.Numerical.cs">
-      <Link>Simulator Classes\PlanarMechanismSimulator.Numerical.cs</Link>
-    </Compile>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="circleDiagramItem.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="DynamicMatrixTerm.cs" />
+    <Compile Include="gearData.cs" />
+    <Compile Include="joint.cs" />
+    <Compile Include="link.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\abstractConvergenceClasses.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\DeltaFConvergence.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\DeltaGradFConvergence.cs" />
@@ -140,6 +104,15 @@
     <Compile Include="OOOT_Functions\SearchDirection\PowellsMethod.cs" />
     <Compile Include="OOOT_Functions\SearchDirection\SteepestDescent.cs" />
     <Compile Include="OOOT_Functions\SearchIO.cs" />
+    <Compile Include="PlanarMechanismKinematicSimulator\Properties\AssemblyInfo.cs" />
+    <Compile Include="Position Solving\LinkLengthFunction.cs" />
+    <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
+    <Compile Include="Position Solving\PositionSolver.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Main.cs" />
+    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Numerical.cs" />
     <Compile Include="StarMath_Functions\3D transforms.cs" />
     <Compile Include="StarMath_Functions\add subtract multiply.cs" />
     <Compile Include="StarMath_Functions\find functions.cs" />
@@ -148,9 +121,12 @@
     <Compile Include="StarMath_Functions\norm functions.cs" />
     <Compile Include="StarMath_Functions\print functions.cs" />
     <Compile Include="StarMath_Functions\solve.cs" />
+    <Compile Include="TimeSortedList.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <Content Include="HTMLPage1.html" />
+    <Content Include="PlanarMechanismKinematicSimulator\PlanarMechanismKinematicSimulator.csproj" />
+    <Content Include="PlanarMechanismSimulator.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions>

@@ -155,13 +155,13 @@
     <Folder Include="Viewing Classes\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Silverlight_PMKS\PlanarMechanismSimulator_Silverlight.csproj">
+    <Content Include="Properties\AppManifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismSimulator_Silverlight.csproj">
       <Project>{86bd7c7a-ae19-4ed2-be7b-86e30ebb5de6}</Project>
       <Name>PlanarMechanismSimulator_Silverlight</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Properties\AppManifest.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

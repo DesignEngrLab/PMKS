@@ -27,12 +27,8 @@ namespace PlanarMechanismSimulator
 
         internal Boolean AngleIsKnown;
 
-        // internal List<point> referencePts;
-        //  private List<LinkPointType> pointTypes;
-
-
         private Dictionary<int, double> lengths;
-        private Dictionary<int, point> orthoPoints;
+        //private Dictionary<int, point> orthoPoints;
 
         public double[] Lengths
         {
@@ -61,6 +57,8 @@ namespace PlanarMechanismSimulator
             isGround = IsGround;
         }
 
+        private link() { }
+
         internal void DetermineLengthsAndReferences()
         {
             numJoints = joints.Count;
@@ -74,7 +72,7 @@ namespace PlanarMechanismSimulator
             }
             else AngleInitial = Constants.angle(fixedJoints[0], fixedJoints[1]);
             lengths = new Dictionary<int, double>();
-            orthoPoints = new Dictionary<int, point>();
+            //orthoPoints = new Dictionary<int, point>();
             for (int i = 0; i < joints.Count - 1; i++)
                 for (int j = i + 1; j < joints.Count; j++)
                 {
@@ -84,36 +82,36 @@ namespace PlanarMechanismSimulator
                     if (!iJoint.FixedWithRespectTo(this) && !jJoint.FixedWithRespectTo(this))
                         if (Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle))
                         {
-                            var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
-                            orthoPoints.Add(key, orthoPt);
+                            //var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
+                            //orthoPoints.Add(key, orthoPt);
                             lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
                         }
                         else
                         {
-                            orthoPoints.Add(key, Constants.solveViaIntersectingLines(Math.Tan(iJoint.InitSlideAngle),
-                                new point(iJoint.xInitial, iJoint.yInitial), Math.Tan(jJoint.InitSlideAngle),
-                                new point(jJoint.xInitial, jJoint.yInitial)));
+                            //orthoPoints.Add(key, Constants.solveViaIntersectingLines(Math.Tan(iJoint.InitSlideAngle),
+                            //    new point(iJoint.xInitial, iJoint.yInitial), Math.Tan(jJoint.InitSlideAngle),
+                            //    new point(jJoint.xInitial, jJoint.yInitial)));
                             lengths.Add(key, 0.0);
                         }
                     else if (!iJoint.FixedWithRespectTo(this))
                     {
                         var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle);
-                        orthoPoints.Add(key, orthoPt);
-                        lengths.Add(key, Constants.distance(orthoPt.x,orthoPt.y,jJoint.xInitial,jJoint.yInitial));
+                        //orthoPoints.Add(key, orthoPt);
+                        lengths.Add(key, Constants.distance(orthoPt.x, orthoPt.y, jJoint.xInitial, jJoint.yInitial));
                     }
                     else if (!jJoint.FixedWithRespectTo(this))
                     {
                         var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
-                        orthoPoints.Add(key, orthoPt);
-                        lengths.Add(key, Constants.distance(orthoPt.x,orthoPt.y,iJoint.xInitial,iJoint.yInitial));
-                        }
+                        //orthoPoints.Add(key, orthoPt);
+                        lengths.Add(key, Constants.distance(orthoPt.x, orthoPt.y, iJoint.xInitial, iJoint.yInitial));
+                    }
                     else
                     {
                         lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                        if (jJoint.jointType == JointTypes.P && !jJoint.FixedWithRespectTo(jJoint.OtherLink(this)))
-                            orthoPoints.Add(key, findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle));
-                        if (iJoint.jointType == JointTypes.P && !iJoint.FixedWithRespectTo(iJoint.OtherLink(this)))
-                            orthoPoints.Add(numJoints*j+i, findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle));
+                        //if (jJoint.jointType == JointTypes.P && !jJoint.FixedWithRespectTo(jJoint.OtherLink(this)))
+                        //    orthoPoints.Add(key, findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle));
+                        //if (iJoint.jointType == JointTypes.P && !iJoint.FixedWithRespectTo(iJoint.OtherLink(this)))
+                        //    orthoPoints.Add(numJoints*j+i, findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle));
                     }
                 }
             foreach (var j in joints)
@@ -145,7 +143,7 @@ namespace PlanarMechanismSimulator
             else lengths[numJoints * i + j] = length;
         }
 
-        internal  point findOrthoPoint(joint refJoint, joint slideJoint, out Boolean pointOnHigherOffset)
+        internal point findOrthoPoint(joint refJoint, joint slideJoint, out Boolean pointOnHigherOffset)
         {
             double lineAngle = slideJoint.SlideAngle;
             if (Constants.sameCloseZero(lineAngle))
@@ -186,6 +184,22 @@ namespace PlanarMechanismSimulator
             while (result < 0) result += Math.PI;
             while (result > Math.PI) result -= Math.PI;
             return result;
+        }
+
+        internal link copy()
+        {
+            return new link
+                {
+                    Angle = Angle,
+                    AngleInitial = AngleInitial,
+                    AngleLast = AngleLast,
+                    AngleIsKnown = AngleIsKnown,
+                    AngleNumerical = AngleNumerical,
+                    joints = new List<joint>(), //since this is only used in setUpBackwardsPositionFinder
+                    numJoints = numJoints,
+                    lengths = new Dictionary<int, double>(lengths),
+                    name = name
+                };
         }
     }
 }

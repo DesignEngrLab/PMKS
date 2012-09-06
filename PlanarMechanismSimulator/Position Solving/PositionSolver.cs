@@ -8,14 +8,38 @@ namespace PlanarMechanismSimulator
     /// <summary>
     /// 
     /// </summary>
-    public partial class Simulator : IDependentAnalysis
+    internal class PositionFinder
     {
         private double positionError;
         internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
+        private NonDyadicPositionSolver NDPS;
 
         private PositionAnalysisResults posResult;
         private const double BranchRatio = 0.5;
-        private Boolean DefineNewPositions(double positionChange, double[,] currentJointParams, double[,] currentLinkParams,
+        internal readonly List<joint> joints;
+        internal readonly List<link> links;
+        private readonly Dictionary<int, gearData> gearsData;
+        private readonly int numJoints;
+        private readonly int numLinks;
+        private readonly int inputJointIndex;
+        private readonly link inputLink;
+        private readonly link groundLink;
+        private readonly joint inputJoint;
+
+        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData,  int inputJointIndex)
+        {
+            this.joints = joints;
+            numJoints = joints.Count;
+            this.inputJointIndex = inputJointIndex;
+            inputJoint = joints[inputJointIndex];
+            this.links = links;
+            numLinks = links.Count;
+            inputLink = links[numLinks - 2];
+            groundLink = links[numLinks - 1];
+            this.gearsData = gearsData;
+        }
+
+        internal Boolean DefineNewPositions(double positionChange, double[,] currentJointParams, double[,] currentLinkParams,
             double[,] oldJointParams, double[,] oldLinkParams)
         {
             InitializeJointsAndLinks(positionChange, currentJointParams, currentLinkParams, oldJointParams, oldLinkParams);
@@ -250,8 +274,7 @@ namespace PlanarMechanismSimulator
                      numUnknownJoints > 0);
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
             {
-                if (NDPS == null)
-                    NDPS = new NonDyadicPositionSolver(this);
+                if (NDPS == null) NDPS = new NonDyadicPositionSolver(this);
                 if (!NDPS.Run_PositionsAreClose()) return false;
             }
             WriteValuesToMatrices(currentJointParams, currentLinkParams);
@@ -807,5 +830,6 @@ namespace PlanarMechanismSimulator
             return knownJoint != null;
         }
         #endregion
+
     }
 }

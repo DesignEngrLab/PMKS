@@ -29,11 +29,8 @@ namespace OptimizationToolbox
     /// </summary>
     public class MaxTimeConvergence : abstractConvergence
     {
-#if SILVERLIGHT
         private readonly DateTime timer;
-#else
-        private readonly StopWatch timer;
-#endif
+
         #region Constructor
 
         /// <summary>
@@ -47,13 +44,8 @@ namespace OptimizationToolbox
         /// <param name="maxTime">The max time.</param>
         public MaxTimeConvergence(TimeSpan maxTime)
         {
-            this.maxTime = maxTime;
-#if SILVERLIGHT
             timer = DateTime.Now;
-#else
-            timer = Stopwatch.StartNew();
-#endif
-        }
+            }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxTimeConvergence"/> class.
@@ -63,11 +55,7 @@ namespace OptimizationToolbox
         {
             maxTime = timeToStop - DateTime.Now;
             maxTime = maxTime;
-#if SILVERLIGHT
             timer = DateTime.Now;
-#else
-            timer = Stopwatch.StartNew();
-#endif
         }
 
         #endregion
@@ -94,12 +82,7 @@ namespace OptimizationToolbox
         /// </returns>
         public override bool converged(long iteration = -1, long numFnEvals = -1, double fBest = double.NaN, IList<double> xBest = null, IList<double[]> population = null, IList<double> gradF = null)
         {
-#if SILVERLIGHT
             return (-timer.Subtract(DateTime.Now) >= maxTime);
-#else
-           return (timer.Elapsed >= maxTime);
-#endif
-
         }
     }
 }
