@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using OptimizationToolbox;
 
 namespace PlanarMechanismSimulator
 {
@@ -26,7 +25,7 @@ namespace PlanarMechanismSimulator
         private readonly link groundLink;
         private readonly joint inputJoint;
 
-        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData,  int inputJointIndex)
+        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData, int inputJointIndex)
         {
             this.joints = joints;
             numJoints = joints.Count;
@@ -109,18 +108,13 @@ namespace PlanarMechanismSimulator
                             else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
                                      FindPartiallyKnownGearOnLink(j.Link2, out knownJoint2) &&
                                      FindPartiallyKnownGearOnLink(j.Link2, out knownJoint3, knownJoint2))
-                            {
-                                var sJPoint = solveGearCenterFromTwoGears(j, j.Link2, knownJoint1, knownJoint2, knownJoint3, out angleChange);
-                                assignJointPosition(j, j.Link1, sJPoint);
-                                if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromRotate(j, j.Link1); // angleChange for how much the gear (j.Link2) rotates - altho, this value
-                                // was found at some point.
-                                //need specialized update function to the gear and its two gear joints (knownJoint2 and knownJoint3)
-                                throw new NotImplementedException("need to complete R-R-G/G");
-                            }
+                                solveGearCenterFromTwoGears(j.Link1, j, knownJoint1, j.Link2, knownJoint2, knownJoint3);
                             #endregion
                             #region G/G-R-R
-                            // do opposite of above
+                            else if (FindKnownPositionOnLink(j.Link2, out knownJoint1) &&
+                                             FindPartiallyKnownGearOnLink(j.Link1, out knownJoint2) &&
+                                             FindPartiallyKnownGearOnLink(j.Link1, out knownJoint3, knownJoint2))
+                                solveGearCenterFromTwoGears(j.Link2, j, knownJoint1, j.Link1, knownJoint2, knownJoint3);
                             #endregion
                             #region R-R-RP/RP
                             else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
@@ -204,7 +198,7 @@ namespace PlanarMechanismSimulator
                             if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) &&
                                 FindKnownPositionOnLink(j.Link2, out knownJoint2))
                             {
-                                var sJPoint = solveRotatePinToSlot(j, knownJoint1, knownJoint2, out angleChange);
+                                var sJPoint = solveRotatePinToSlot(j, knownJoint2, out angleChange);
                                 assignJointPosition(j, j.Link2, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
                                 setLinkPositionFromRotate(j, j.Link2, angleChange);
@@ -225,43 +219,30 @@ namespace PlanarMechanismSimulator
                             break;
                         case JointTypes.G:
                             #region R-G-R&P
-                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
-                            {
-                                var sJPoint = solveGearAngleAndPos_R_G_R_and_P(j, knownJoint1, knownJoint2, out angleChange);
-                                assignJointPosition(j, j.Link1, sJPoint);
-                                if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromRotate(j, j.Link1, angleChange);
-                            }
+                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1) && FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
+                                solveGearAngleAndPos_R_G_R_and_P(j, j.Link1, knownJoint1, knownJoint2);
                             #endregion
                             #region R&P-G-R
-                            if (FindKnownPositionAndSlopeOnLink(j.Link1,
-                                    out knownJoint2)
-    && FindKnownPositionOnLink(j.Link2, out knownJoint1))
-                            {
-
-                            }
+                            if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) && FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                                solveGearAngleAndPos_R_G_R_and_P(j, j.Link2, knownJoint2, knownJoint1);
                             #endregion
 
                             #region P-G-R&P
 
                             if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                                &&
-                                FindKnownPositionAndSlopeOnLink(j.Link2,
-                                                                out knownJoint2))
+                                && FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
                             {
-
+                                throw new NotImplementedException("The dyad solver for P-G-R&P has not been implemented yet.");
                             }
 
                             #endregion
 
                             #region R&P-G-P
 
-                            if (FindKnownPositionAndSlopeOnLink(j.Link1,
-                                                                out knownJoint1)
+                            if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1)
                                 && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
                             {
-
+                                throw new NotImplementedException("The dyad solver for R&P-P-G has not been implemented yet.");
                             }
 
                             #endregion
@@ -556,79 +537,48 @@ namespace PlanarMechanismSimulator
 
         #region Gear Solving Methods
 
-        private point solveGearCenterFromTwoGears(joint gearCenter, link gearLink, joint centerPivot, joint gearTeeth1, joint gearTeeth2,
-            out double angleChange)
+        private void solveGearCenterFromTwoGears(link armLink, joint gearCenter, joint centerPivot, link gearLink, joint gearTeeth1, joint gearTeeth2)
         {
-            var gData = gearsData[joints.IndexOf(gearTeeth1)];
-            double rKnownGear, rUnkGear;
-            int knownGearCenterIndex;
-            if (joints[gData.gearCenter1Index] == gearCenter)
-            {
-                knownGearCenterIndex = gData.gearCenter2Index;
-                rKnownGear = gData.radius2;
-                rUnkGear = gData.radius1;
-            }
-            else
-            {
-                knownGearCenterIndex = gData.gearCenter1Index;
-                rKnownGear = gData.radius1;
-                rUnkGear = gData.radius2;
-            }
-            double angle1 = findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth1);
-            angleChange = -(rUnkGear / rKnownGear) * angle1;
-
-            gData = gearsData[joints.IndexOf(gearTeeth2)];
-            if (joints[gData.gearCenter1Index] == gearCenter)
-            {
-                knownGearCenterIndex = gData.gearCenter2Index;
-                rKnownGear = gData.radius2;
-                rUnkGear = gData.radius1;
-            }
-            else
-            {
-                knownGearCenterIndex = gData.gearCenter1Index;
-                rKnownGear = gData.radius1;
-                rUnkGear = gData.radius2;
-            }
-            double angle2 = findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth1);
-            angleChange -= (rUnkGear / rKnownGear) * angle2;
-
-            var connectingRodAngleChange = (angle1 + angle2) / 2;
+            double rKnownGear1, rKnownGear2, rUnkGear1, rUnkGear2;
+            int othergearIndex1, othergearIndex2;
+            double gearAngle1 = findAngleChangeBetweenGears(gearTeeth1, gearLink, out rUnkGear1, out rKnownGear1, out othergearIndex1);
+            double inputAngle1 = -(rKnownGear1 / rUnkGear1) * gearAngle1;
+            double gearAngle2 = findAngleChangeBetweenGears(gearTeeth2, gearLink, out rUnkGear2, out rKnownGear2, out othergearIndex2);
+            double inputAngle2 = -(rKnownGear2 / rUnkGear2) * gearAngle2;
+            var armAngleChange = (inputAngle1 + inputAngle2) / 2;
             var dist = Constants.distance(centerPivot.xLast, centerPivot.yLast, gearCenter.xLast, gearCenter.yLast);
-            var x = centerPivot.x + dist * Math.Cos(connectingRodAngleChange);
-            var y = centerPivot.y + dist * Math.Sin(connectingRodAngleChange);
-            return new point(x, y);
+            assignJointPosition(gearCenter, armLink, centerPivot.x + dist * Math.Cos(armLink.Angle+armAngleChange),
+                   centerPivot.y + dist * Math.Sin(armLink.Angle+armAngleChange));
+            setLinkPositionFromRotate(gearCenter, armLink, armAngleChange);
+            setLinkPositionFromRotate(gearCenter, gearLink, gearAngle1 + gearAngle2);
+            assignRealGearPosition(gearTeeth1,
+                                   gearCenter.x +
+                                   rUnkGear1 * (joints[othergearIndex1].x - gearCenter.x) / (rUnkGear1 + rKnownGear1),
+                                   gearCenter.y +
+                                   rUnkGear1 * (joints[othergearIndex1].y - gearCenter.y) / (rUnkGear1 + rKnownGear1));
+            assignRealGearPosition(gearTeeth2,
+                                   gearCenter.x +
+                                   rUnkGear2 * (joints[othergearIndex2].x - gearCenter.x) / (rUnkGear2 + rKnownGear2),
+                                   gearCenter.y +
+                                   rUnkGear2 * (joints[othergearIndex2].y - gearCenter.y) / (rUnkGear2 + rKnownGear2));
         }
 
 
-        private point solveGearAngleAndPos_R_G_R_and_P(joint gearTeeth, joint gearCenterUnkRotate, joint gearCenterKnown, out double angleChange)
+        private void solveGearAngleAndPos_R_G_R_and_P(joint gearTeeth, link unknownGear, joint gearCenterUnkRotate, joint gearCenterKnown)
         {
-            var gData = gearsData[joints.IndexOf(gearTeeth)];
             double rKnownGear, rUnkGear;
-            if (joints[gData.gearCenter1Index] == gearCenterUnkRotate)
-            {
-                rUnkGear = gData.radius1;
-                rKnownGear = gData.radius2;
-            }
-            else
-            {
-                rUnkGear = gData.radius2;
-                rKnownGear = gData.radius1;
-            }
-            var ratio = rUnkGear / (rUnkGear + rKnownGear);
-
-            double knownGearAngleChange = findAngleChangeBetweenJoints(gearCenterKnown, gearTeeth);
-            angleChange = -(rUnkGear / rKnownGear) * knownGearAngleChange;
+            var angleChange = findAngleChangeBetweenGears(gearTeeth, unknownGear, out rUnkGear, out rKnownGear);
             double connectingRodAngleChange = findAngleChangeBetweenJoints(gearCenterKnown, gearCenterUnkRotate);
-            angleChange += (1 / ratio) * connectingRodAngleChange;
+            var ratio = rUnkGear / (rKnownGear + rUnkGear);
+            angleChange += connectingRodAngleChange / ratio;
             //if (gearCenterUnkRotate.jointType != JointTypes.P)
             //{
             //    var g2AngleChange = gearTeeth.Link2.AngleNumerical - gearTeeth.Link2.AngleLast;
             //    angleChange -= gData.radius2 * g2AngleChange / gData.radius1;
             //}
-            var x = gearCenterUnkRotate.x + ratio * (gearCenterKnown.x - gearCenterUnkRotate.x);
-            var y = gearCenterUnkRotate.y + ratio * (gearCenterKnown.y - gearCenterUnkRotate.y);
-            return new point(x, y);
+            setLinkPositionFromRotate(gearCenterUnkRotate, unknownGear, angleChange);
+            assignRealGearPosition(gearTeeth, gearCenterUnkRotate.x + ratio * (gearCenterKnown.x - gearCenterUnkRotate.x),
+                gearCenterUnkRotate.y + ratio * (gearCenterKnown.y - gearCenterUnkRotate.y));
         }
 
         private double findAngleChangeBetweenJoints(joint From, joint To)
@@ -636,13 +586,37 @@ namespace PlanarMechanismSimulator
             return Constants.angle(From.x, From.y, To.x, To.y) -
                    Constants.angle(From.xLast, From.yLast, To.xLast, To.yLast);
         }
+
+        private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear)
+        {
+            int knownGearCenterIndex;
+            return findAngleChangeBetweenGears(gearTeeth, unknownGear,out rUnkGear,out rKnownGear,out knownGearCenterIndex);
+        }
+
+        private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear,
+            out int knownGearCenterIndex)
+        {
+            var gData = gearsData[joints.IndexOf(gearTeeth)];
+            if (unknownGear.joints.Contains(joints[gData.gearCenter1Index]))
+            {
+                knownGearCenterIndex = gData.gearCenter2Index;
+                rKnownGear = gData.radius2;
+                rUnkGear = gData.radius1;
+            }
+            else
+            {
+                knownGearCenterIndex = gData.gearCenter1Index;
+                rKnownGear = gData.radius1;
+                rUnkGear = gData.radius2;
+            }
+            return -(rUnkGear / rKnownGear) * findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth);
+        }
         #endregion
 
         #region RP Solving Methods
-        private point solveRotatePinToSlot(joint j, joint fixedJoint, joint circleCenterJoint, out double angleChange)
+        private point solveRotatePinToSlot(joint j, joint circleCenterJoint, out double angleChange)
         {
             var circleLink = j.Link2;
-            var fixedLink = j.Link1;
             var r1 = circleLink.lengthBetween(j, circleCenterJoint);
             double slopeB = Math.Tan(j.SlideAngle);
 
@@ -724,6 +698,15 @@ namespace PlanarMechanismSimulator
                 }
             }
         }
+        private void assignRealGearPosition(joint j, double xNew, double yNew)
+        {
+            j.x = xNew;
+            j.y = yNew;
+            j.knownState = KnownState.Fully;
+            xNew -= j.xNumerical;
+            yNew -= j.yNumerical;
+            positionError += xNew * xNew + yNew * yNew;
+        }
 
         /* ugh, this function is taking the most time.
          * knownJoint does not have to be KnownState.Fully - rather it is never Unknown, but can be Partially
@@ -731,6 +714,7 @@ namespace PlanarMechanismSimulator
 
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
+            if (thisLink.AngleIsKnown) return; //this sometimes happen as the process recurses, esp. around RP and G joints
             if (double.IsNaN(angleChange))
             {
                 //var j1 = knownJoint;
@@ -764,7 +748,7 @@ namespace PlanarMechanismSimulator
                     assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
                                         knownJoint.y + length * Math.Sin(angle));
                     var otherLink = j.OtherLink(thisLink);
-                    if (otherLink != null)
+                    if (otherLink != null && j.knownState==KnownState.Fully)
                         setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
                 }
             }
@@ -819,8 +803,9 @@ namespace PlanarMechanismSimulator
         private bool FindPartiallyKnownRPSlotOnLink(link link, out joint knownJoint, joint notJoint = null)
         {
             knownJoint = null;
-            knownJoint = link.joints.FirstOrDefault(j => j.knownState != KnownState.Unknown && j.jointType == JointTypes.RP
-               && !j.FixedWithRespectTo(link) && j != notJoint);
+            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.RP && j != notJoint
+                && ((j.knownState == KnownState.Fully && !j.FixedWithRespectTo(link))
+                || (j.knownState == KnownState.Partially && j.FixedWithRespectTo(link))));
             return knownJoint != null;
         }
         private bool FindPartiallyKnownGearOnLink(link link, out joint knownJoint, joint notJoint = null)

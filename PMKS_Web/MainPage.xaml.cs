@@ -143,46 +143,47 @@ namespace PMKS_Silverlight_App
         #region PMKS Controller Functions
         internal void ParseData()
         {
-            if (JointsInfo == null) return;
-            numJoints = TrimEmptyJoints();
-            if (pmks != null && SameTopology() && SameParameters())
+            try
             {
-                mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
-                return;
-            }
+                if (JointsInfo == null) return;
+                numJoints = TrimEmptyJoints();
+                if (pmks != null && SameTopology() && SameParameters())
+                {
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                    return;
+                }
 
-            if (pmks != null && SameTopology() && DataListsSameLength())
-            {
-                DefinePositions();
-                pmks.AssignPositions(InitPositions);
-            }
-            else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
-            //try
-            //{
-            pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
+                if (pmks != null && SameTopology() && DataListsSameLength())
+                {
+                    DefinePositions();
+                    pmks.AssignPositions(InitPositions);
+                }
+                else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
 
-            if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
-            else status("The mechanism has non-dyadic loops.");
-            int dof = pmks.DegreesOfFreedom;
-            status("Degrees of freedom = " + dof);
-            if (dof == 1)
-            {
-                pmks.InputSpeed = Speed;
-                pmks.DeltaAngle = AngleIncrement;
-                status("Analyzing...");
-                var now = DateTime.Now;
-                pmks.FindFullMovement();
-                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                status("Drawing...");
-                now = DateTime.Now;
-                mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
-                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
+
+                if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
+                else status("The mechanism has non-dyadic loops.");
+                int dof = pmks.DegreesOfFreedom;
+                status("Degrees of freedom = " + dof);
+                if (dof == 1)
+                {
+                    pmks.InputSpeed = Speed;
+                    pmks.DeltaAngle = AngleIncrement;
+                    status("Analyzing...");
+                    var now = DateTime.Now;
+                    pmks.FindFullMovement();
+                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                    status("Drawing...");
+                    now = DateTime.Now;
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                }
             }
-            //}
-            //catch (Exception e)
-            //{
-            //    status(e.Message);
-            //}
+            catch (Exception e)
+            {
+                status(e.Message);
+            }
         }
 
 

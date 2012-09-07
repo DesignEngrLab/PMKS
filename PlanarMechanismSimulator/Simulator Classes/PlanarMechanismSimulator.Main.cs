@@ -366,27 +366,41 @@ namespace PlanarMechanismSimulator
         {
             if (joints.All(j => j.jointType != JointTypes.G)) return;
             gearsData = new Dictionary<int, gearData>();
-            int index = -1;
-            foreach (var j in joints)
+            int index = 0;
+            foreach (var gearTeethJoint in joints)
             {
-                index++;
-                if (j.jointType != JointTypes.G) continue;
-                var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
-                var gearCenter2 =
-                    j.Link2.joints.First(jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)));
-                var connectingRod = gearCenter2.OtherLink(j.Link2);
-                var gearCenter1 =
-                    connectingRod.joints.First(jj => jj.OtherLink(connectingRod) == j.Link1);
-                if (connectingRod.name.StartsWith(nameBaseForGearConnector))
+                if (gearTeethJoint.jointType == JointTypes.G)
                 {
-                    gearCenter1.xInitial = j.xInitial;
-                    gearCenter1.yInitial = j.yInitial;
-                    var trueGearCenter2 = j.Link2.joints.First(jj => jj != j && jj.jointType == JointTypes.R);
-                    gearCenter2.xInitial = trueGearCenter2.xInitial;
-                    gearCenter2.yInitial = trueGearCenter2.yInitial;
+                    var gear1 = gearTeethJoint.Link1;
+                    var gear2 = gearTeethJoint.Link2;
+                    var otherGear1Joints = gear1.joints.Where(j => j != gearTeethJoint);
+                    var neighboringGear1Links = otherGear1Joints.Select(j => j.OtherLink(gear1));
+                    var otherGear2Joints = gear2.joints.Where(j => j != gearTeethJoint);
+                    var neighboringGear2Links = otherGear2Joints.Select(j => j.OtherLink(gear2));
+                    var possibleConnectingRods = neighboringGear1Links.Union(neighboringGear2Links);
+                    // TODO
+                    // here's the problem! the triple pivot at the center of the planetary gears is going to be problematic
+                    //
+                    var link1Neighbors = gearTeethJoint.Link1.joints.Select(jj => jj.OtherLink(gearTeethJoint.Link1)).ToList();
+                    var gearCenter2 =
+                        gearTeethJoint.Link2.joints.First(jj => jj != gearTeethJoint && link1Neighbors.Contains(jj.OtherLink(gearTeethJoint.Link2)));
+                    var connectingRod = gearCenter2.OtherLink(gearTeethJoint.Link2);
+                    var gearCenter1 =
+                        connectingRod.joints.First(jj => jj.OtherLink(connectingRod) == gearTeethJoint.Link1);
+                    if (connectingRod.name.StartsWith(nameBaseForGearConnector))
+                    {
+                        gearCenter1.xInitial = gearTeethJoint.xInitial;
+                        gearCenter1.yInitial = gearTeethJoint.yInitial;
+                        var trueGearCenter2 = gearTeethJoint.Link2.joints.First(jj => jj != gearTeethJoint && jj.jointType == JointTypes.R);
+                        gearCenter2.xInitial = trueGearCenter2.xInitial;
+                        gearCenter2.yInitial = trueGearCenter2.yInitial;
+                    }
+                    gearsData.Add(index,
+                                  new gearData(gearTeethJoint, connectingRod, links.IndexOf(connectingRod), gearCenter1,
+                                               joints.IndexOf(gearCenter1),
+                                               gearCenter2, joints.IndexOf(gearCenter2)));
                 }
-                gearsData.Add(index, new gearData(j, connectingRod, links.IndexOf(connectingRod), gearCenter1, joints.IndexOf(gearCenter1),
-                    gearCenter2, joints.IndexOf(gearCenter2)));
+                index++;
             }
         }
 

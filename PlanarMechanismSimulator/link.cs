@@ -79,7 +79,7 @@ namespace PlanarMechanismSimulator
                     var iJoint = joints[i];
                     var jJoint = joints[j];
                     var key = numJoints * i + j;
-                    if (!iJoint.FixedWithRespectTo(this) && !jJoint.FixedWithRespectTo(this))
+                    if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                         if (Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle))
                         {
                             //var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
@@ -93,13 +93,13 @@ namespace PlanarMechanismSimulator
                             //    new point(jJoint.xInitial, jJoint.yInitial)));
                             lengths.Add(key, 0.0);
                         }
-                    else if (!iJoint.FixedWithRespectTo(this))
+                    else if (iJoint.SlidingWithRespectTo(this))
                     {
                         var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle);
                         //orthoPoints.Add(key, orthoPt);
                         lengths.Add(key, Constants.distance(orthoPt.x, orthoPt.y, jJoint.xInitial, jJoint.yInitial));
                     }
-                    else if (!jJoint.FixedWithRespectTo(this))
+                    else if (jJoint.SlidingWithRespectTo(this))
                     {
                         var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
                         //orthoPoints.Add(key, orthoPt);
@@ -116,7 +116,7 @@ namespace PlanarMechanismSimulator
                 }
             foreach (var j in joints)
             {  /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
-                if (!j.FixedWithRespectTo(this)) j.InitSlideAngle -= AngleInitial;
+                if (j.SlidingWithRespectTo(this)) j.InitSlideAngle -= AngleInitial;
                 while (j.InitSlideAngle < -Math.PI / 2) j.InitSlideAngle += Math.PI;
                 while (j.InitSlideAngle > Math.PI / 2) j.InitSlideAngle -= Math.PI;
             }
@@ -186,7 +186,7 @@ namespace PlanarMechanismSimulator
             return result;
         }
 
-        internal link copy()
+        internal link copy(List<joint> oldJoints, List<joint> newJoints)
         {
             return new link
                 {
@@ -195,11 +195,11 @@ namespace PlanarMechanismSimulator
                     AngleLast = AngleLast,
                     AngleIsKnown = AngleIsKnown,
                     AngleNumerical = AngleNumerical,
-                    joints = new List<joint>(), //since this is only used in setUpBackwardsPositionFinder
+                    joints = joints.Select(j => newJoints[oldJoints.IndexOf(j)]).ToList(),
                     numJoints = numJoints,
                     lengths = new Dictionary<int, double>(lengths),
                     name = name
                 };
         }
-    }
+        }
 }

@@ -35,7 +35,7 @@ namespace PlanarMechanismSimulator
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
             posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var posFinderBackwards = setUpBackwardsPositionFinder();
+            var posFinderBackwards = setUpNewPositionFinder();
             /* attempt to find velocities and accelerations at initial point analytically
              * there is no point in trying numerically as this is the first point and the numerical methods
              * perform finite difference of current and last time steps. */
@@ -118,21 +118,17 @@ namespace PlanarMechanismSimulator
 #endif
         }
 
-        private PositionFinder setUpBackwardsPositionFinder()
+        private PositionFinder setUpNewPositionFinder()
         {
-            var backwardJoints = joints.Select(j => j.copy()).ToList();
-            var backwardLinks = links.Select(c => c.copy()).ToList();
-            foreach (var j in backwardJoints)
+            var newwJoints = joints.Select(j => j.copy()).ToList();
+            var newLinks = links.Select(c => c.copy(joints, newwJoints)).ToList();
+            foreach (var j in newwJoints)
             {
-                var newLink = backwardLinks[links.IndexOf(j.Link1)];
-                j.Link1 = newLink;
-                newLink.joints.Add(j);
-                if (j.Link2 == null) continue;
-                newLink = backwardLinks[links.IndexOf(j.Link2)];
-                j.Link2 = newLink;
-                newLink.joints.Add(j);
+                j.Link1 = newLinks[links.IndexOf(j.Link1)];
+                if (j.Link2 != null)
+                    j.Link2 = newLinks[links.IndexOf(j.Link2)];
             }
-            return new PositionFinder(backwardJoints, backwardLinks, gearsData, inputJointIndex);
+            return new PositionFinder(newwJoints, newLinks, gearsData, inputJointIndex);
         }
 
         private static AutoResetEvent forwardDone = new AutoResetEvent(false);

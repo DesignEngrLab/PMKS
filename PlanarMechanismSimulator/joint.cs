@@ -74,12 +74,12 @@ namespace PlanarMechanismSimulator
 
         private joint(){}
 
-        //public Boolean SlidingWithRespectTo(link link0)
-        //{
-        //    return (Link1 == link0
-        //            && (jointType == JointTypes.P || jointType == JointTypes.RP
-        //                || (jointType == JointTypes.G && Double.IsNaN(InitSlideAngle))));
-        //}
+        public Boolean SlidingWithRespectTo(link link0)
+        {
+            return (Link1 == link0
+                    && (jointType == JointTypes.P || jointType == JointTypes.RP
+                        || (jointType == JointTypes.G && !Double.IsNaN(InitSlideAngle))));
+        }
 
         public Boolean FixedWithRespectTo(link link0)
         {
