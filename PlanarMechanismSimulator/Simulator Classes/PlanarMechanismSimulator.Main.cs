@@ -21,7 +21,7 @@ namespace PlanarMechanismSimulator
         /// </summary>
         public string Status { get; private set; }
 
-        private PositionFinder posFinder; 
+        private PositionFinder posFinder;
 
         public double[] InputRange;
         private double _deltaAngle = double.NaN;
@@ -35,7 +35,7 @@ namespace PlanarMechanismSimulator
         /// </value>
         public double epsilon
         {
-            get { return Constants.epsilon; }
+            get { return Constants.epsilonSame; }
         }
 
         /// <summary>
@@ -373,20 +373,25 @@ namespace PlanarMechanismSimulator
                 {
                     var gear1 = gearTeethJoint.Link1;
                     var gear2 = gearTeethJoint.Link2;
-                    var otherGear1Joints = gear1.joints.Where(j => j != gearTeethJoint);
-                    var neighboringGear1Links = otherGear1Joints.Select(j => j.OtherLink(gear1));
-                    var otherGear2Joints = gear2.joints.Where(j => j != gearTeethJoint);
-                    var neighboringGear2Links = otherGear2Joints.Select(j => j.OtherLink(gear2));
-                    var possibleConnectingRods = neighboringGear1Links.Union(neighboringGear2Links);
-                    // TODO
-                    // here's the problem! the triple pivot at the center of the planetary gears is going to be problematic
-                    //
-                    var link1Neighbors = gearTeethJoint.Link1.joints.Select(jj => jj.OtherLink(gearTeethJoint.Link1)).ToList();
-                    var gearCenter2 =
-                        gearTeethJoint.Link2.joints.First(jj => jj != gearTeethJoint && link1Neighbors.Contains(jj.OtherLink(gearTeethJoint.Link2)));
-                    var connectingRod = gearCenter2.OtherLink(gearTeethJoint.Link2);
-                    var gearCenter1 =
-                        connectingRod.joints.First(jj => jj.OtherLink(connectingRod) == gearTeethJoint.Link1);
+                    var otherGear1Joints = gear1.joints.Where(j => j != gearTeethJoint && j.jointType!=JointTypes.G).ToList();
+                    var neighboringGear1Links = otherGear1Joints.Select(j => new List<link> { j.OtherLink(gear1) }).ToList();
+                    for (int i = 0; i < otherGear1Joints.Count; i++)
+                        neighboringGear1Links[i].AddRange(LinksFromSharedJoints(otherGear1Joints[i], neighboringGear1Links[i][0]));
+                    var otherGear2Joints = gear2.joints.Where(j => j != gearTeethJoint && j.jointType != JointTypes.G).ToList();
+                    var neighboringGear2Links = otherGear2Joints.Select(j => new List<link> { j.OtherLink(gear2) }).ToList();
+                    for (int i = 0; i < otherGear2Joints.Count; i++)
+                        neighboringGear2Links[i].AddRange(LinksFromSharedJoints(otherGear2Joints[i], neighboringGear2Links[i][0]));
+
+
+                    var connectingRod =
+                        neighboringGear1Links.SelectMany(c => c).Intersect(neighboringGear2Links.SelectMany(c => c)).
+                            First();
+                    int k = 0;
+                    while (!neighboringGear1Links[k].Contains(connectingRod)) k++;
+                    var gearCenter1 = otherGear1Joints[k];
+                    k = 0;
+                    while (!neighboringGear2Links[k].Contains(connectingRod)) k++;
+                    var gearCenter2 = otherGear2Joints[k];
                     if (connectingRod.name.StartsWith(nameBaseForGearConnector))
                     {
                         gearCenter1.xInitial = gearTeethJoint.xInitial;
@@ -402,6 +407,19 @@ namespace PlanarMechanismSimulator
                 }
                 index++;
             }
+        }
+
+        private IEnumerable<link> LinksFromSharedJoints(joint joint, link link)
+        {
+            var samePositionJoints =
+                link.joints.Where(j => j != joint && j.jointType == JointTypes.R &&
+                    Constants.sameCloseZero(j.xInitial, joint.xInitial) &&
+                    Constants.sameCloseZero(j.yInitial, joint.yInitial)).ToList();
+            if (samePositionJoints.Count == 0) return new link[0];
+            var newLinks = samePositionJoints.Select(j => j.OtherLink(link)).ToList();
+            for (int i = samePositionJoints.Count - 1; i >= 0; i--)
+                newLinks.AddRange(LinksFromSharedJoints(samePositionJoints[i], samePositionJoints[i].OtherLink(link)));
+            return newLinks;
         }
 
         private Dictionary<int, gearData> gearsData;
@@ -451,7 +469,7 @@ namespace PlanarMechanismSimulator
                     var link0 = links.FirstOrDefault(l => l.joints.Contains(p1) && l.joints.Contains(p2));
                     var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
                     pivotIndices.Sort();
-                    link0.setLength(p1,p2, Lengths[i][2]);
+                    link0.setLength(p1, p2, Lengths[i][2]);
                 }
             }
             catch (Exception e)
@@ -476,7 +494,7 @@ namespace PlanarMechanismSimulator
                     throw new Exception("Link lengths for all links need to be set first.");
                 var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
                                 links.FirstOrDefault(a => a.joints.Contains(inputJoint));
-                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint,joints[inputJointIndex+1]),
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
                                         inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]));
@@ -527,7 +545,7 @@ namespace PlanarMechanismSimulator
         {
             LinkAngles = new double[numLinks, 1];
             JointPositions = new double[numJoints, 2];
-          var  NDPS = new NonDyadicPositionSolver(posFinder);
+            var NDPS = new NonDyadicPositionSolver(posFinder);
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
 

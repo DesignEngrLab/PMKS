@@ -11,13 +11,11 @@ namespace PMKS_Silverlight_App
     {
         mm, inches
     }
-    public static class Constants
+    public static class DisplayConstants
     {
         public const double Buffer = 50.0;
         public const double PenThicknessRatio = 0.001;
         public const double VelocityLengthRatio = 0.3;
-        public static double epsilon
-        { get { return PlanarMechanismSimulator.Constants.epsilon; } }
         public const double AccelLengthRatio = 0.5;
     }
     public class JointTypeProvider

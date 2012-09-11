@@ -28,9 +28,9 @@ namespace PMKS_Silverlight_App
 
             defineJointParamLimits(JointParameters, minima, maxima);
             var biggerDim = Math.Max(maxima[0] - minima[0], maxima[1] - minima[1]);
-            var penThick = Constants.PenThicknessRatio * biggerDim;
-            var velocityFactor = Constants.VelocityLengthRatio * biggerDim / maxima[2];
-            var accelFactor = Constants.AccelLengthRatio * biggerDim / maxima[3];
+            var penThick = DisplayConstants.PenThicknessRatio * biggerDim;
+            var velocityFactor = DisplayConstants.VelocityLengthRatio * biggerDim / maxima[2];
+            var accelFactor = DisplayConstants.AccelLengthRatio * biggerDim / maxima[3];
 
             for (int i = 0; i < inputJointIndex; i++)
             {
@@ -90,15 +90,15 @@ namespace PMKS_Silverlight_App
                         Stroke = new SolidColorBrush { Color = Colors.Green }
                     });
             }
-            var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * Constants.Buffer) / (maxima[0] - minima[0]),
-                                       (((Grid)Parent).ActualHeight - 2 * Constants.Buffer) / (maxima[1] - minima[1]));
+            var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / (maxima[0] - minima[0]),
+                                       (((Grid)Parent).ActualHeight - 2 * DisplayConstants.Buffer) / (maxima[1] - minima[1]));
             MainCanvas.RenderTransform = new MatrixTransform
             {
                 Matrix =
-                    new Matrix(ScaleFactor, 0, 0, -ScaleFactor, Constants.Buffer - ScaleFactor * minima[0],
-                               ScaleFactor * maxima[1] + Constants.Buffer)
+                    new Matrix(ScaleFactor, 0, 0, -ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0],
+                               ScaleFactor * maxima[1] + DisplayConstants.Buffer)
             };
-            MainCanvas.Margin = new Thickness(Constants.Buffer);
+            MainCanvas.Margin = new Thickness(DisplayConstants.Buffer);
         }
 
         private static void defineJointParamLimits(TimeSortedList JointParameters, double[] minima, double[] maxima)
@@ -109,7 +109,7 @@ namespace PMKS_Silverlight_App
                 minima[k] = double.PositiveInfinity;
                 maxima[k] = double.NegativeInfinity;
             }
-            maxima[2] = maxima[3] = Constants.epsilon;
+            maxima[2] = maxima[3] =Constants.epsilonSame;
             for (int j = 0; j < JointParameters.Size; j++)
                 for (int i = 0; i < numJoints; i++)
                 {
@@ -121,11 +121,11 @@ namespace PMKS_Silverlight_App
                         minima[1] = JointParameters.Parameters[j][i, 1];
                     if (maxima[1] < JointParameters.Parameters[j][i, 1])
                         maxima[1] = JointParameters.Parameters[j][i, 1];
-                    var velSize = PlanarMechanismSimulator.Constants.distanceSqared(JointParameters.Parameters[j][i, 2],
+                    var velSize = Constants.distanceSqared(JointParameters.Parameters[j][i, 2],
                                                      JointParameters.Parameters[j][i, 3]);
                     if (minima[2] > velSize) minima[2] = velSize;
                     if (maxima[2] < velSize) maxima[2] = velSize;
-                    var accelSize = PlanarMechanismSimulator.Constants.distanceSqared(JointParameters.Parameters[j][i, 4],
+                    var accelSize = Constants.distanceSqared(JointParameters.Parameters[j][i, 4],
                                                      JointParameters.Parameters[j][i, 5]);
                     if (minima[3] > accelSize) minima[3] = accelSize;
                     if (maxima[3] < accelSize) maxima[3] = accelSize;
