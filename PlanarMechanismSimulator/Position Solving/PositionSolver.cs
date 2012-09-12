@@ -223,14 +223,14 @@ namespace PlanarMechanismSimulator
                                 solveGearAngleAndPos_R_G_R_and_P(j, j.Link1, knownJoint1, knownJoint2);
                             #endregion
                             #region R&P-G-R
-                            if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) && FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) && FindKnownPositionOnLink(j.Link2, out knownJoint2))
                                 solveGearAngleAndPos_R_G_R_and_P(j, j.Link2, knownJoint2, knownJoint1);
                             #endregion
 
                             #region P-G-R&P
 
-                            if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                                && FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
+                          && FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
                             {
                                 throw new NotImplementedException("The dyad solver for P-G-R&P has not been implemented yet.");
                             }
@@ -239,8 +239,8 @@ namespace PlanarMechanismSimulator
 
                             #region R&P-G-P
 
-                            if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1)
-                                && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1)
+                             && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
                             {
                                 throw new NotImplementedException("The dyad solver for R&P-P-G has not been implemented yet.");
                             }
@@ -542,13 +542,13 @@ namespace PlanarMechanismSimulator
             double rKnownGear1, rKnownGear2, rUnkGear1, rUnkGear2;
             int othergearIndex1, othergearIndex2;
             double gearAngle1 = findAngleChangeBetweenGears(gearTeeth1, gearLink, out rUnkGear1, out rKnownGear1, out othergearIndex1);
-            double inputAngle1 = -(rKnownGear1 / rUnkGear1) * gearAngle1;
+            double inputAngle1 = -(rUnkGear1 / rKnownGear1) * gearAngle1;
             double gearAngle2 = findAngleChangeBetweenGears(gearTeeth2, gearLink, out rUnkGear2, out rKnownGear2, out othergearIndex2);
-            double inputAngle2 = -(rKnownGear2 / rUnkGear2) * gearAngle2;
+            double inputAngle2 = -(rUnkGear2 / rKnownGear2) * gearAngle2;
             var armAngleChange = (inputAngle1 + inputAngle2) / 2;
             var dist = Constants.distance(centerPivot.xLast, centerPivot.yLast, gearCenter.xLast, gearCenter.yLast);
-            assignJointPosition(gearCenter, armLink, centerPivot.x + dist * Math.Cos(armLink.Angle+armAngleChange),
-                   centerPivot.y + dist * Math.Sin(armLink.Angle+armAngleChange));
+            assignJointPosition(gearCenter, armLink, centerPivot.x + dist * Math.Cos(armLink.Angle + armAngleChange),
+                   centerPivot.y + dist * Math.Sin(armLink.Angle + armAngleChange));
             setLinkPositionFromRotate(gearCenter, armLink, armAngleChange);
             setLinkPositionFromRotate(gearCenter, gearLink, gearAngle1 + gearAngle2);
             assignRealGearPosition(gearTeeth1,
@@ -590,7 +590,7 @@ namespace PlanarMechanismSimulator
         private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear)
         {
             int knownGearCenterIndex;
-            return findAngleChangeBetweenGears(gearTeeth, unknownGear,out rUnkGear,out rKnownGear,out knownGearCenterIndex);
+            return findAngleChangeBetweenGears(gearTeeth, unknownGear, out rUnkGear, out rKnownGear, out knownGearCenterIndex);
         }
 
         private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear,
@@ -609,7 +609,7 @@ namespace PlanarMechanismSimulator
                 rKnownGear = gData.radius1;
                 rUnkGear = gData.radius2;
             }
-            return -(rUnkGear / rKnownGear) * findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth);
+            return -(rKnownGear / rUnkGear) * findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth);
         }
         #endregion
 
@@ -748,7 +748,7 @@ namespace PlanarMechanismSimulator
                     assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
                                         knownJoint.y + length * Math.Sin(angle));
                     var otherLink = j.OtherLink(thisLink);
-                    if (otherLink != null && j.knownState==KnownState.Fully)
+                    if (otherLink != null && j.knownState == KnownState.Fully)
                         setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
                 }
             }

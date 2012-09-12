@@ -1,0 +1,4 @@
+ground, input,R,0,0.00
+input coupler,rp,2,0.00,0.00
+coupler ground ,R,5,0.00
+coupler,r,4,4.00

@@ -1,0 +1,4 @@
+ground, input,R,20,220.00
+input coupler,R,20,228.00
+coupler,output ,R,210,2212.00
+ground, output,R,210,220.00

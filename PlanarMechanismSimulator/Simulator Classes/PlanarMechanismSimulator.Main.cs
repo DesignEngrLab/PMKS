@@ -373,11 +373,13 @@ namespace PlanarMechanismSimulator
                 {
                     var gear1 = gearTeethJoint.Link1;
                     var gear2 = gearTeethJoint.Link2;
-                    var otherGear1Joints = gear1.joints.Where(j => j != gearTeethJoint && j.jointType!=JointTypes.G).ToList();
+                    var otherGear1Joints = gear1.joints.Where(j => j != gearTeethJoint && j.jointType != JointTypes.G
+                        && j.Link2 != null).ToList();
                     var neighboringGear1Links = otherGear1Joints.Select(j => new List<link> { j.OtherLink(gear1) }).ToList();
                     for (int i = 0; i < otherGear1Joints.Count; i++)
                         neighboringGear1Links[i].AddRange(LinksFromSharedJoints(otherGear1Joints[i], neighboringGear1Links[i][0]));
-                    var otherGear2Joints = gear2.joints.Where(j => j != gearTeethJoint && j.jointType != JointTypes.G).ToList();
+                    var otherGear2Joints = gear2.joints.Where(j => j != gearTeethJoint && j.jointType != JointTypes.G
+                        && j.Link2 != null).ToList();
                     var neighboringGear2Links = otherGear2Joints.Select(j => new List<link> { j.OtherLink(gear2) }).ToList();
                     for (int i = 0; i < otherGear2Joints.Count; i++)
                         neighboringGear2Links[i].AddRange(LinksFromSharedJoints(otherGear2Joints[i], neighboringGear2Links[i][0]));

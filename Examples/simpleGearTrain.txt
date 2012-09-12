@@ -1,0 +1,5 @@
+ground, input,R,0,0.00
+input, output,G,4,0.00
+output ground,R,10,0.00
+input,R,4,0.00
+output,R,4,0.00
