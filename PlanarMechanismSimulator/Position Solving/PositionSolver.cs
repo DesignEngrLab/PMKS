@@ -727,12 +727,13 @@ namespace PlanarMechanismSimulator
                 var j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown
                     && j.FixedWithRespectTo(thisLink));
                 if (j2 == null)
-                    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
+                    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState == KnownState.Fully);
+                    //j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
                 if (j2 == null) return;
                 var new_j2j_Angle = Constants.angle(knownJoint, j2);
                 var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
                 angleChange = new_j2j_Angle - old_j2j_Angle;
-                if (!j2.FixedWithRespectTo(thisLink))
+                if (j2.SlidingWithRespectTo(thisLink))
                     angleChange += solveRotateSlotToPin(knownJoint, j2, thisLink);
             }
             thisLink.Angle = thisLink.AngleLast + angleChange;
