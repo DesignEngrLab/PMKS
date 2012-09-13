@@ -5,15 +5,17 @@ namespace PlanarMechanismSimulator
 {
     internal class LinkLengthFunction : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {
+        private readonly int jointListIndex1;
+        private readonly int jointListIndex2;
         private readonly int varListIndex1;
         private readonly int varListIndex2;
+        private readonly double origLengthSquared;
         private readonly double origLength;
 
         private double x1;
         private double y1;
         private double x2;
         private double y2;
-        private int jointListIndex2;
 
         private double deltaX
         {
@@ -32,27 +34,35 @@ namespace PlanarMechanismSimulator
 
         private double newLength
         {
-            get { return Math.Sqrt(newLengthSqared); }
+            get
+            {
+                //if (newLengthSqared == 0)
+                //    return Constants.epsilonSame;
+                return Math.Sqrt(newLengthSqared);
+            }
         }
 
-        public LinkLengthFunction(int varListIndex1, int jointListIndex1, double X1, double Y1, int varListIndex2, int jointListIndex2, double X2, double Y2)
+        public LinkLengthFunction(int varListIndex1, int jointListIndex1,double X1, double Y1, int varListIndex2, int jointListIndex2, double X2, double Y2)
         {
             this.jointListIndex1 = jointListIndex1;
             this.jointListIndex2 = jointListIndex2;
+            this.varListIndex1 = varListIndex1;
+            this.varListIndex2 = varListIndex2;
 
             x1 = X1;
             y1 = Y1;
             x2 = X2;
             y2 = Y2;
-            this.varListIndex1 = varListIndex1;
-            this.varListIndex2 = varListIndex2;
-            origLength = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+            origLengthSquared = deltaX * deltaX + deltaY * deltaY;
+            origLength = Math.Sqrt(origLengthSquared);
         }
 
         public double calculate(double[] x)
         {
             assignPositions(x);
-            return newLengthSqared - 2 * origLength * newLength + origLength * origLength;
+            //return newLengthSqared - 2 * origLength * newLength + origLengthSquared;
+            var f= newLengthSqared - 2 * origLength * newLength + origLengthSquared;
+            return f;
         }
 
         public double deriv_wrt_xi(double[] x, int i)
@@ -111,12 +121,12 @@ namespace PlanarMechanismSimulator
 
         private void assignPositions(double[] x)
         {
-            if (varListIndex1 > 0 && x.GetLength(0) > 2 * varListIndex1 + 1)
+            if (varListIndex1 >= 0)// && x.GetLength(0) > 2 * varListIndex1 + 1)
             {
                 x1 = x[2 * varListIndex1];
                 y1 = x[2 * varListIndex1 + 1];
             }
-            if (varListIndex2 > 0 && x.GetLength(0) > 2 * varListIndex2 + 1)
+            if (varListIndex2 >= 0)// && x.GetLength(0) > 2 * varListIndex2 + 1)
             {
                 x2 = x[2 * varListIndex2];
                 y2 = x[2 * varListIndex2 + 1];
@@ -137,6 +147,5 @@ namespace PlanarMechanismSimulator
             }
         }
 
-        public int jointListIndex1 { get; set; }
     }
 }

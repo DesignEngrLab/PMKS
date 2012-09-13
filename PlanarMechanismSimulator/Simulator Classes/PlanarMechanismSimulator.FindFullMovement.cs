@@ -41,58 +41,74 @@ namespace PlanarMechanismSimulator
              * perform finite difference of current and last time steps. */
             if (!(findVelocitiesThroughICMethod(0.0, true) && findAccelerationAnalytically(0.0, true)))
             {
-                var ForwardJointParams = (double[,])initPivotParams.Clone();
-                var ForwardLinkParams = (double[,])initLinkParams.Clone();
+                var ForwardJointParams = (double[,]) initPivotParams.Clone();
+                var ForwardLinkParams = (double[,]) initLinkParams.Clone();
                 bool forwardSuccess = false;
-                var BackwardJointParams = (double[,])initPivotParams.Clone();
-                var BackwardLinkParams = (double[,])initLinkParams.Clone();
+                var BackwardJointParams = (double[,]) initPivotParams.Clone();
+                var BackwardLinkParams = (double[,]) initLinkParams.Clone();
                 bool backwardSuccess = false;
-                var smallTimeStep = 0.003 * InputSpeed * FixedTimeStep;
+                var smallTimeStep = 0.003*InputSpeed*FixedTimeStep;
                 forwardSuccess =
                     microPerturbForFiniteDifferenceOfVelocityAndAcceleration(smallTimeStep,
                                                                              ForwardJointParams, ForwardLinkParams,
                                                                              initPivotParams, initLinkParams, posFinder);
+                if (forwardSuccess)
+                    NumericalVelocity(smallTimeStep, ForwardJointParams, ForwardLinkParams, initPivotParams,
+                                      initLinkParams);
                 /*** Stepping Backward in Time ***/
                 backwardSuccess = microPerturbForFiniteDifferenceOfVelocityAndAcceleration(-smallTimeStep,
                                                                                            BackwardJointParams,
                                                                                            BackwardLinkParams,
                                                                                            initPivotParams,
-                                                                                           initLinkParams, posFinderBackwards);
+                                                                                           initLinkParams,
+                                                                                           posFinderBackwards);
+                if (backwardSuccess)
+                    NumericalVelocity(-smallTimeStep, BackwardJointParams, BackwardLinkParams, initPivotParams,
+                                      initLinkParams);
+
+
                 if (forwardSuccess && backwardSuccess)
                 {
                     /* central difference puts values in init parameters. */
-                    for (int i = 0; i < numJoints; i++)
-                        for (int j = 2; j < 6; j++)
-                            initPivotParams[i, j] = (ForwardJointParams[i, j] + BackwardJointParams[i, j]) / 2;
-                    for (int i = 0; i < numLinks; i++)
-                        for (int j = 1; j < 3; j++)
-                            initLinkParams[i, j] = (ForwardLinkParams[i, j] + BackwardLinkParams[i, j]) / 2;
+                    for (int i = 0; i < firstInputJointIndex; i++)
+                    {
+                        initPivotParams[i, 2] = (ForwardJointParams[i, 2] + BackwardJointParams[i, 2])/2;
+                        initPivotParams[i, 3] = (ForwardJointParams[i, 3] + BackwardJointParams[i, 3])/2;
+                        initPivotParams[i, 4] = (ForwardJointParams[i, 2] - BackwardJointParams[i, 2])/(2*smallTimeStep);
+                        initPivotParams[i, 5] = (ForwardJointParams[i, 3] - BackwardJointParams[i, 3])/(2*smallTimeStep);
+                    }
+                    for (int i = 0; i < inputLinkIndex; i++)
+                    {
+                        initLinkParams[i, 1] = (ForwardLinkParams[i, 1] + BackwardLinkParams[i, 1])/2;
+                        initLinkParams[i, 2] = (ForwardLinkParams[i, 1] - BackwardLinkParams[i, 1])/(2*smallTimeStep);
+                    }
                 }
                 else if (forwardSuccess)
                 {
-                    /* forward difference puts values in init parameters. */
-                    for (int i = 0; i < numJoints; i++)
-                        for (int j = 2; j < 6; j++)
-                            initPivotParams[i, j] = ForwardJointParams[i, j];
-                    for (int i = 0; i < numLinks; i++)
-                        for (int j = 1; j < 3; j++)
-                            initLinkParams[i, j] = ForwardLinkParams[i, j];
+                    for (int i = 0; i < firstInputJointIndex; i++)
+                    {
+                        initPivotParams[i, 2] = ForwardJointParams[i, 2];
+                        initPivotParams[i, 3] = ForwardJointParams[i, 3];
+                    }
+                    for (int i = 0; i < inputLinkIndex; i++)
+                        initLinkParams[i, 1] = ForwardLinkParams[i, 1];
                 }
                 else if (backwardSuccess)
                 {
-                    /* Backward difference puts values in init parameters. */
-                    for (int i = 0; i < numJoints; i++)
-                        for (int j = 2; j < 6; j++)
-                            initPivotParams[i, j] = BackwardJointParams[i, j];
-                    for (int i = 0; i < numLinks; i++)
-                        for (int j = 1; j < 3; j++)
-                            initLinkParams[i, j] = BackwardLinkParams[i, j];
+                    for (int i = 0; i < firstInputJointIndex; i++)
+                    {
+                        initPivotParams[i, 2] = BackwardJointParams[i, 2];
+                        initPivotParams[i, 3] = BackwardJointParams[i, 3];
+                    }
+                    for (int i = 0; i < inputLinkIndex; i++)
+                        initLinkParams[i, 1] = BackwardLinkParams[i, 1];
                 }
             }
 
             #endregion
-
-#if SILVERLIGHT
+#if DEBUGSERIAL
+            loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
+#elif SILVERLIGHT
             var forwardThread = new Thread(delegate()
                 {
                     loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
@@ -120,15 +136,15 @@ namespace PlanarMechanismSimulator
 
         private PositionFinder setUpNewPositionFinder()
         {
-            var newwJoints = joints.Select(j => j.copy()).ToList();
-            var newLinks = links.Select(c => c.copy(joints, newwJoints)).ToList();
-            foreach (var j in newwJoints)
+            var newJoints = joints.Select(j => j.copy()).ToList();
+            var newLinks = links.Select(c => c.copy(joints, newJoints)).ToList();
+            foreach (var j in newJoints)
             {
                 j.Link1 = newLinks[links.IndexOf(j.Link1)];
                 if (j.Link2 != null)
                     j.Link2 = newLinks[links.IndexOf(j.Link2)];
             }
-            return new PositionFinder(newwJoints, newLinks, gearsData, inputJointIndex);
+            return new PositionFinder(newJoints, newLinks, gearsData, inputJointIndex);
         }
 
         private static AutoResetEvent forwardDone = new AutoResetEvent(false);
@@ -140,10 +156,7 @@ namespace PlanarMechanismSimulator
             if (!posFinder.DefineNewPositions(smallTimeStep * InputSpeed, currentJointParams, currentLinkParams, initPivotParams,
                                     initLinkParams))
                 return false;
-            InitializeGroundAndInputSpeedAndAcceleration(currentJointParams, currentLinkParams);
-            NumericalVelocity(smallTimeStep, currentJointParams, currentLinkParams, initPivotParams, initLinkParams);
-            NumericalAcceleration(smallTimeStep, currentJointParams, currentLinkParams, initPivotParams,
-                                  initLinkParams);
+
             return true;
         }
 

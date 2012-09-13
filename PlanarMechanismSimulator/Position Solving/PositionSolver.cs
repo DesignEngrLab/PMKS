@@ -728,7 +728,7 @@ namespace PlanarMechanismSimulator
                     && j.FixedWithRespectTo(thisLink));
                 if (j2 == null)
                     j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState == KnownState.Fully);
-                    //j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
+                //j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
                 if (j2 == null) return;
                 var new_j2j_Angle = Constants.angle(knownJoint, j2);
                 var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
@@ -739,28 +739,24 @@ namespace PlanarMechanismSimulator
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = true;
 
-            if (knownJoint.FixedWithRespectTo(thisLink) && knownJoint.knownState == KnownState.Fully)
+            foreach (var j in thisLink.joints.Where(j => j.knownState != KnownState.Fully))
             {
-                foreach (var j in thisLink.joints.Where(j => j.knownState != KnownState.Fully))
+
+                if (knownJoint.FixedWithRespectTo(thisLink) && knownJoint.knownState == KnownState.Fully)
                 {
                     var length = thisLink.lengthBetween(j, knownJoint);
                     var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
                     angle += angleChange;
                     assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
                                         knownJoint.y + length * Math.Sin(angle));
-                    var otherLink = j.OtherLink(thisLink);
-                    if (otherLink != null && j.knownState == KnownState.Fully)
-                        setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
                 }
-            }
-            else
-            {
-                foreach (var j in thisLink.joints.Where(j => j.knownState != KnownState.Fully))
-                {
-                    var otherLink = j.OtherLink(thisLink);
-                    if (otherLink != null && j.jointType == JointTypes.P)
-                        setLinkPositionFromRotate(j, otherLink, angleChange);
-                }
+                var otherLink = j.OtherLink(thisLink);
+                if (otherLink == null) continue;
+
+                if (j.knownState == KnownState.Fully)
+                    setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
+                else if (j.jointType == JointTypes.P)
+                    setLinkPositionFromRotate(j, otherLink, angleChange);
             }
         }
 

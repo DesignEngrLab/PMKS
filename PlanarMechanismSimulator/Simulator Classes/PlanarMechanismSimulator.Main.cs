@@ -676,7 +676,8 @@ namespace PlanarMechanismSimulator
                     var theta = Constants.angle(xInputJoint, yInputJoint, jointParams[i, 0], jointParams[i, 1]);
                     jointParams[i, 2] = -InputSpeed * length * Math.Sin(theta);
                     jointParams[i, 3] = InputSpeed * length * Math.Cos(theta);
-                    jointParams[i, 4] = jointParams[i, 5] = 0.0;
+                    jointParams[i, 4] = -InputSpeed * InputSpeed * length * Math.Cos(theta);
+                    jointParams[i, 5] = -InputSpeed * InputSpeed * length * Math.Sin(theta);
                 }
             }
             else if (inputJoint.jointType == JointTypes.P)

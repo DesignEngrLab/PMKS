@@ -74,6 +74,7 @@ namespace OptimizationToolbox
         #region Calculate f, g, h helper functions
         public double calculate(IOptFunction function, double[] point)
         {
+            return function.calculate(point);
             double fValue;
             double[] pointClone = (double[])point.Clone();
             if (functionData[function].TryGetValue(pointClone, out fValue))
