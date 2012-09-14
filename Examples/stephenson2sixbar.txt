@@ -1,7 +1,7 @@
-input gnd,r,0.0,-6.65
-ground, output, r,10.1390,-5.9360
-input, tern1,r,	0.0,-2.751
-tern1, top,r,1.3970,0.2370
-tern1,bottom,r,2.7960,-2.6260
-top,output,r,8.1040,1.3580
-bottom, output,r,5.5810,0.0
+input,gnd,r,0.18,-6.65
+ground,output,r,10.139,-5.94
+input,tern1,r,0,-2.75
+tern1,top,r,1.397,0.24
+tern1,bottom,r,2.796,-2.63
+top,output,r,8.104,1.36
+bottom,output,r,5.581,0.00

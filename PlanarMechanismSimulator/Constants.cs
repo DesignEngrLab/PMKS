@@ -15,6 +15,7 @@ namespace PlanarMechanismSimulator
 
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
+        public const double SmallPerturbationFraction=1;
 
         public static Boolean sameCloseZero(double x1)
         {

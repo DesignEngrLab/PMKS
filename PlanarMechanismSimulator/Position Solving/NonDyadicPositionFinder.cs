@@ -57,7 +57,7 @@ namespace PlanarMechanismSimulator
             optMethod.Add(ConvergedWithinLimit);
             optMethod.Add(new FixedOrGoldenSection(0.1 * Constants.epsilonSame, 0));
             optMethod.Add(new MaxIterationsConvergence(300));
-            optMethod.Add(new DeltaFConvergence(0.01 * Constants.epsilonSame));
+          //  optMethod.Add(new DeltaFConvergence(0.01 * Constants.epsilonSame));
         }
 
         internal Boolean SolutionFound()

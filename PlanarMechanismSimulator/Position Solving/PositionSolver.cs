@@ -255,7 +255,8 @@ namespace PlanarMechanismSimulator
                      numUnknownJoints > 0);
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
             {
-                if (NDPS == null) NDPS = new NonDyadicPositionSolver(this);
+                //if (NDPS == null)
+                    NDPS = new NonDyadicPositionSolver(this);
                 if (!NDPS.Run_PositionsAreClose()) return false;
             }
             WriteValuesToMatrices(currentJointParams, currentLinkParams);

@@ -41,13 +41,13 @@ namespace PlanarMechanismSimulator
              * perform finite difference of current and last time steps. */
             if (!(findVelocitiesThroughICMethod(0.0, true) && findAccelerationAnalytically(0.0, true)))
             {
-                var ForwardJointParams = (double[,]) initPivotParams.Clone();
-                var ForwardLinkParams = (double[,]) initLinkParams.Clone();
+                var ForwardJointParams = (double[,])initPivotParams.Clone();
+                var ForwardLinkParams = (double[,])initLinkParams.Clone();
                 bool forwardSuccess = false;
-                var BackwardJointParams = (double[,]) initPivotParams.Clone();
-                var BackwardLinkParams = (double[,]) initLinkParams.Clone();
+                var BackwardJointParams = (double[,])initPivotParams.Clone();
+                var BackwardLinkParams = (double[,])initLinkParams.Clone();
                 bool backwardSuccess = false;
-                var smallTimeStep = 0.003*InputSpeed*FixedTimeStep;
+                var smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
                 forwardSuccess =
                     microPerturbForFiniteDifferenceOfVelocityAndAcceleration(smallTimeStep,
                                                                              ForwardJointParams, ForwardLinkParams,
@@ -72,15 +72,15 @@ namespace PlanarMechanismSimulator
                     /* central difference puts values in init parameters. */
                     for (int i = 0; i < firstInputJointIndex; i++)
                     {
-                        initPivotParams[i, 2] = (ForwardJointParams[i, 2] + BackwardJointParams[i, 2])/2;
-                        initPivotParams[i, 3] = (ForwardJointParams[i, 3] + BackwardJointParams[i, 3])/2;
-                        initPivotParams[i, 4] = (ForwardJointParams[i, 2] - BackwardJointParams[i, 2])/(2*smallTimeStep);
-                        initPivotParams[i, 5] = (ForwardJointParams[i, 3] - BackwardJointParams[i, 3])/(2*smallTimeStep);
+                        initPivotParams[i, 2] = (ForwardJointParams[i, 2] + BackwardJointParams[i, 2]) / 2;
+                        initPivotParams[i, 3] = (ForwardJointParams[i, 3] + BackwardJointParams[i, 3]) / 2;
+                        initPivotParams[i, 4] = (ForwardJointParams[i, 2] - BackwardJointParams[i, 2]) / (2 * smallTimeStep);
+                        initPivotParams[i, 5] = (ForwardJointParams[i, 3] - BackwardJointParams[i, 3]) / (2 * smallTimeStep);
                     }
                     for (int i = 0; i < inputLinkIndex; i++)
                     {
-                        initLinkParams[i, 1] = (ForwardLinkParams[i, 1] + BackwardLinkParams[i, 1])/2;
-                        initLinkParams[i, 2] = (ForwardLinkParams[i, 1] - BackwardLinkParams[i, 1])/(2*smallTimeStep);
+                        initLinkParams[i, 1] = (ForwardLinkParams[i, 1] + BackwardLinkParams[i, 1]) / 2;
+                        initLinkParams[i, 2] = (ForwardLinkParams[i, 1] - BackwardLinkParams[i, 1]) / (2 * smallTimeStep);
                     }
                 }
                 else if (forwardSuccess)
@@ -107,16 +107,16 @@ namespace PlanarMechanismSimulator
 
             #endregion
 #if DEBUGSERIAL
-            loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
+            SimulateWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
 #elif SILVERLIGHT
             var forwardThread = new Thread(delegate()
                 {
-                    loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
+                    SimulateWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
                     forwardDone.Set();
                 });
             var backwardThread = new Thread(delegate()
                 {
-                    loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards);
+                    SimulateWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards);
                     backwardDone.Set();
                 });
             forwardThread.Start(); backwardThread.Start();
@@ -128,9 +128,9 @@ namespace PlanarMechanismSimulator
 #else
             Parallel.Invoke(
                 /*** Stepping Forward in Time ***/
-                () => loopWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder),
+                () => SimulateWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder),
                 /*** Stepping Backward in Time ***/
-                () => loopWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards));
+                () => SimulateWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards));
 #endif
         }
 
@@ -150,18 +150,17 @@ namespace PlanarMechanismSimulator
         private static AutoResetEvent forwardDone = new AutoResetEvent(false);
         private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
-        private bool microPerturbForFiniteDifferenceOfVelocityAndAcceleration(double smallTimeStep, double[,] currentJointParams,
+        private bool microPerturbForFiniteDifferenceOfVelocityAndAcceleration(double[,] currentJointParams,
             double[,] currentLinkParams, double[,] initPivotParams, double[,] initLinkParams, PositionFinder posFinder)
         {
-            if (!posFinder.DefineNewPositions(smallTimeStep * InputSpeed, currentJointParams, currentLinkParams, initPivotParams,
-                                    initLinkParams))
+            if (!posFinder.DefineNewPositions(Constants.SmallPerturbationFraction * FixedTimeStep * InputSpeed,
+                currentJointParams, currentLinkParams, initPivotParams, initLinkParams))
                 return false;
 
             return true;
         }
 
-        private void loopWithFixedDelta(double timeStep, double[,] lastPivotParams, double[,] lastLinkParams,
-                                        Boolean Forward, PositionFinder posFinder)
+        private void SimulateWithFixedDelta(double[,] lastPivotParams, double[,] lastLinkParams, Boolean Forward, PositionFinder posFinder)
         {
             var currentTime = 0.0;
             Boolean validPosition;
@@ -172,9 +171,9 @@ namespace PlanarMechanismSimulator
 
                 #region Find Next Positions
 
-                NumericalPosition(timeStep, currentPivotParams, currentLinkParams,
+                NumericalPosition(FixedTimeStep, currentPivotParams, currentLinkParams,
                                   lastPivotParams, lastLinkParams);
-                var delta = InputSpeed * timeStep;
+                var delta = InputSpeed * FixedTimeStep;
                 validPosition = posFinder.DefineNewPositions(delta, currentPivotParams, currentLinkParams,
                                                    lastPivotParams, lastLinkParams);
                 #endregion
@@ -198,7 +197,7 @@ namespace PlanarMechanismSimulator
                     if (!findVelocitiesThroughICMethod(currentTime, true))
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
-                        NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
+                        NumericalVelocity(FixedTimeStep, currentPivotParams, currentLinkParams,
                                           lastPivotParams, lastLinkParams);
                     }
 
@@ -209,13 +208,13 @@ namespace PlanarMechanismSimulator
                     if (!findAccelerationAnalytically(currentTime, true))
                     {
                         Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                        NumericalAcceleration(timeStep, currentPivotParams, currentLinkParams,
+                        NumericalAcceleration(FixedTimeStep, currentPivotParams, currentLinkParams,
                                               lastPivotParams, lastLinkParams);
                     }
 
                     #endregion
 
-                    currentTime += timeStep;
+                    currentTime += FixedTimeStep;
                     if (Forward)
                     {
                         lock (JointParameters)
