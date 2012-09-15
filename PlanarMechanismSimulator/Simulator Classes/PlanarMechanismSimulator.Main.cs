@@ -24,7 +24,7 @@ namespace PlanarMechanismSimulator
         private PositionFinder posFinder;
 
         public double[] InputRange;
-        private double _deltaAngle = double.NaN;
+        private double _deltaAngle = Constants.DefaultStepSize;
         private double _fixedTimeStep = double.NaN;
         private double _maxSmoothingError = double.NaN;
         /// <summary>
@@ -50,7 +50,8 @@ namespace PlanarMechanismSimulator
             set
             {
                 _deltaAngle = value;
-                _fixedTimeStep = _deltaAngle / InputSpeed;
+                _maxSmoothingError = double.NaN;
+                // _fixedTimeStep = _deltaAngle / InputSpeed;
             }
         }
 
@@ -60,15 +61,15 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The fixed time step.
         /// </value>
-        public double FixedTimeStep
-        {
-            get { return _fixedTimeStep; }
-            set
-            {
-                _fixedTimeStep = value;
-                _deltaAngle = InputSpeed * _fixedTimeStep;
-            }
-        }
+        public double FixedTimeStep { get { return _deltaAngle / InputSpeed; } }
+        //{
+        //    get { return _fixedTimeStep; }
+        //    set
+        //    {
+        //        _fixedTimeStep = value;
+        //        _deltaAngle = InputSpeed * _fixedTimeStep;
+        //    }
+        //}
 
 
         /// <summary>
@@ -77,15 +78,7 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The fixed time step.
         /// </value>
-        public double MaxSmoothingError
-        {
-            get { return _maxSmoothingError; }
-            set
-            {
-                _fixedTimeStep = _deltaAngle = double.NaN;
-                _maxSmoothingError = value;
-            }
-        }
+        public double MaxSmoothingError { get; set; }
 
         /// <summary>
         /// Gets or sets the input angular speed.
@@ -94,6 +87,8 @@ namespace PlanarMechanismSimulator
         /// The input angular speed.
         /// </value>
         public double InputSpeed { get; set; }
+
+        internal double AverageLength { get; private set; }
 
         #endregion
 
@@ -295,7 +290,15 @@ namespace PlanarMechanismSimulator
                     JointReOrdering[i] = joints.IndexOf(origOrder[i]);
                 setAdditionalReferencePositions();
                 setGearData();
-                foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
+                var totalLength = 0.0;
+                int numLengths = 0;
+                foreach (var eachLink in links)
+                {
+                    eachLink.DetermineLengthsAndReferences();
+                    totalLength += eachLink.Lengths.Sum();
+                    numLengths += eachLink.joints.Count * (eachLink.joints.Count - 1) / 2;
+                }
+                AverageLength = totalLength / numLengths;
             }
             catch (Exception e)
             {

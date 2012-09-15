@@ -201,5 +201,5 @@ namespace PlanarMechanismSimulator
                     name = name
                 };
         }
-        }
+    }
 }

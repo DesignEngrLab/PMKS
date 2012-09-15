@@ -19,11 +19,7 @@ namespace PMKS_Silverlight_App
         public GlobalSettings()
         {
             InitializeComponent();
-            // todo:Disable the error approach (which automatically adjusts step size) has yet to be implemented, 
-            // we add these two lines.
-            ErrorCheckBox.IsEnabled = false;
-            AngleCheckBox.IsChecked = true;
-            //////////////////////////////////////////////////////////////
+            ErrorCheckBox.IsChecked = true;
         }
     }
 

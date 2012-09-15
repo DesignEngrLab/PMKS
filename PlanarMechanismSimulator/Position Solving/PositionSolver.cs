@@ -9,7 +9,16 @@ namespace PlanarMechanismSimulator
     /// </summary>
     internal class PositionFinder
     {
-        private double positionError;
+        public double PositionError
+        {
+            get { return _posError; }
+            private set
+            {
+                if (!ignorePositionError && _posError < value) _posError = value;
+            }
+        }
+        double _posError = 0.0;
+        private bool ignorePositionError;
         internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
         private NonDyadicPositionSolver NDPS;
 
@@ -256,7 +265,7 @@ namespace PlanarMechanismSimulator
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
             {
                 //if (NDPS == null)
-                    NDPS = new NonDyadicPositionSolver(this);
+                NDPS = new NonDyadicPositionSolver(this);
                 if (!NDPS.Run_PositionsAreClose()) return false;
             }
             WriteValuesToMatrices(currentJointParams, currentLinkParams);
@@ -281,7 +290,8 @@ namespace PlanarMechanismSimulator
         private void InitializeJointsAndLinks(double positionChange, double[,] currentJointParams, double[,] currentLinkParams,
             double[,] oldJointParams, double[,] oldLinkParams)
         {
-            positionError = 0.0;
+            _posError = 0.0;
+            ignorePositionError = true;
             joint fixedGndJoint = null;
             for (int i = 0; i < numJoints; i++)
             {
@@ -313,6 +323,7 @@ namespace PlanarMechanismSimulator
                 setLinkPositionFromTranslation(inputJoint, inputLink, positionChange, positionChange,
                     inputJoint.SlideAngle);
             else throw new Exception("Input is not of type R or P (as currently required at the beginning of DefineNewPositions");
+            ignorePositionError = false;
         }
 
         #region Dyad Solving Methods
@@ -695,7 +706,7 @@ namespace PlanarMechanismSimulator
                     j.knownState = KnownState.Fully;
                     xNew -= j.xNumerical;
                     yNew -= j.yNumerical;
-                    positionError += xNew * xNew + yNew * yNew;
+                    PositionError = xNew * xNew + yNew * yNew;
                 }
             }
         }
@@ -706,7 +717,7 @@ namespace PlanarMechanismSimulator
             j.knownState = KnownState.Fully;
             xNew -= j.xNumerical;
             yNew -= j.yNumerical;
-            positionError += xNew * xNew + yNew * yNew;
+            PositionError = xNew * xNew + yNew * yNew;
         }
 
         /* ugh, this function is taking the most time.

@@ -11,10 +11,10 @@ namespace PlanarMechanismSimulator
     {
         public void FindFullMovement()
         {
-            if ((double.IsNaN(DeltaAngle)) && (double.IsNaN(FixedTimeStep)))
+            if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
                 throw new Exception(
-                    "Either the angle delta or the time step must be specified.");
-
+                    "Either the smoothing errorm angle delta or the time step must be specified.");
+            var useErrorMethod = !double.IsNaN(MaxSmoothingError);
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
             SetUpDyadicVelocityObjects();
@@ -48,24 +48,15 @@ namespace PlanarMechanismSimulator
                 var BackwardLinkParams = (double[,])initLinkParams.Clone();
                 bool backwardSuccess = false;
                 var smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
-                forwardSuccess =
-                    microPerturbForFiniteDifferenceOfVelocityAndAcceleration(smallTimeStep,
-                                                                             ForwardJointParams, ForwardLinkParams,
-                                                                             initPivotParams, initLinkParams, posFinder);
+                forwardSuccess = posFinder.DefineNewPositions(Constants.SmallPerturbationFraction * FixedTimeStep * InputSpeed,
+                ForwardJointParams, ForwardLinkParams, initPivotParams, initLinkParams);
                 if (forwardSuccess)
-                    NumericalVelocity(smallTimeStep, ForwardJointParams, ForwardLinkParams, initPivotParams,
-                                      initLinkParams);
+                    NumericalVelocity(smallTimeStep, ForwardJointParams, ForwardLinkParams, initPivotParams, initLinkParams);
                 /*** Stepping Backward in Time ***/
-                backwardSuccess = microPerturbForFiniteDifferenceOfVelocityAndAcceleration(-smallTimeStep,
-                                                                                           BackwardJointParams,
-                                                                                           BackwardLinkParams,
-                                                                                           initPivotParams,
-                                                                                           initLinkParams,
-                                                                                           posFinderBackwards);
+                backwardSuccess = posFinder.DefineNewPositions(-Constants.SmallPerturbationFraction * FixedTimeStep * InputSpeed,
+                BackwardJointParams, BackwardLinkParams, initPivotParams, initLinkParams);
                 if (backwardSuccess)
-                    NumericalVelocity(-smallTimeStep, BackwardJointParams, BackwardLinkParams, initPivotParams,
-                                      initLinkParams);
-
+                    NumericalVelocity(-smallTimeStep, BackwardJointParams, BackwardLinkParams, initPivotParams, initLinkParams);
 
                 if (forwardSuccess && backwardSuccess)
                 {
@@ -106,17 +97,19 @@ namespace PlanarMechanismSimulator
             }
 
             #endregion
+            if (useErrorMethod)
+            {
 #if DEBUGSERIAL
-            SimulateWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
+            SimulateWithinError(initPivotParams, initLinkParams, true, posFinder);
 #elif SILVERLIGHT
             var forwardThread = new Thread(delegate()
                 {
-                    SimulateWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder);
+                    SimulateWithinError( initPivotParams, initLinkParams, true, posFinder);
                     forwardDone.Set();
                 });
             var backwardThread = new Thread(delegate()
                 {
-                    SimulateWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards);
+                    SimulateWithinError(initPivotParams, initLinkParams, false, posFinderBackwards);
                     backwardDone.Set();
                 });
             forwardThread.Start(); backwardThread.Start();
@@ -126,12 +119,42 @@ namespace PlanarMechanismSimulator
                 backwardDone = new AutoResetEvent(false);
             }
 #else
-            Parallel.Invoke(
-                /*** Stepping Forward in Time ***/
-                () => SimulateWithFixedDelta(FixedTimeStep, initPivotParams, initLinkParams, true, posFinder),
-                /*** Stepping Backward in Time ***/
-                () => SimulateWithFixedDelta(-FixedTimeStep, initPivotParams, initLinkParams, false, posFinderBackwards));
+                Parallel.Invoke(
+                    /*** Stepping Forward in Time ***/
+                    () => SimulateWithinError(initPivotParams, initLinkParams, true, posFinder),
+                    /*** Stepping Backward in Time ***/
+                    () => SimulateWithinError(initPivotParams, initLinkParams, false, posFinderBackwards));
 #endif
+            }
+            else
+            {
+#if DEBUGSERIAL
+            SimulateWithFixedDelta( initPivotParams, initLinkParams, true, posFinder);
+#elif SILVERLIGHT
+            var forwardThread = new Thread(delegate()
+                {
+                    SimulateWithFixedDelta( initPivotParams, initLinkParams, true, posFinder);
+                    forwardDone.Set();
+                });
+            var backwardThread = new Thread(delegate()
+                {
+                    SimulateWithFixedDelta(initPivotParams, initLinkParams, false, posFinderBackwards);
+                    backwardDone.Set();
+                });
+            forwardThread.Start(); backwardThread.Start();
+            if (forwardDone.WaitOne() && backwardDone.WaitOne())
+            {
+                forwardDone = new AutoResetEvent(false);
+                backwardDone = new AutoResetEvent(false);
+            }
+#else
+                Parallel.Invoke(
+                    /*** Stepping Forward in Time ***/
+                    () => SimulateWithFixedDelta(initPivotParams, initLinkParams, true, posFinder),
+                    /*** Stepping Backward in Time ***/
+                    () => SimulateWithFixedDelta(initPivotParams, initLinkParams, false, posFinderBackwards));
+#endif
+            }
         }
 
         private PositionFinder setUpNewPositionFinder()
@@ -150,30 +173,20 @@ namespace PlanarMechanismSimulator
         private static AutoResetEvent forwardDone = new AutoResetEvent(false);
         private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
-        private bool microPerturbForFiniteDifferenceOfVelocityAndAcceleration(double[,] currentJointParams,
-            double[,] currentLinkParams, double[,] initPivotParams, double[,] initLinkParams, PositionFinder posFinder)
-        {
-            if (!posFinder.DefineNewPositions(Constants.SmallPerturbationFraction * FixedTimeStep * InputSpeed,
-                currentJointParams, currentLinkParams, initPivotParams, initLinkParams))
-                return false;
-
-            return true;
-        }
 
         private void SimulateWithFixedDelta(double[,] lastPivotParams, double[,] lastLinkParams, Boolean Forward, PositionFinder posFinder)
         {
+            var timeStep = Forward ? FixedTimeStep : -FixedTimeStep;
             var currentTime = 0.0;
             Boolean validPosition;
             do
             {
                 var currentLinkParams = new double[numLinks, 3];
                 var currentPivotParams = new double[numJoints, 6];
-
                 #region Find Next Positions
-
-                NumericalPosition(FixedTimeStep, currentPivotParams, currentLinkParams,
+                NumericalPosition(timeStep, currentPivotParams, currentLinkParams,
                                   lastPivotParams, lastLinkParams);
-                var delta = InputSpeed * FixedTimeStep;
+                var delta = InputSpeed * timeStep;
                 validPosition = posFinder.DefineNewPositions(delta, currentPivotParams, currentLinkParams,
                                                    lastPivotParams, lastLinkParams);
                 #endregion
@@ -197,7 +210,7 @@ namespace PlanarMechanismSimulator
                     if (!findVelocitiesThroughICMethod(currentTime, true))
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
-                        NumericalVelocity(FixedTimeStep, currentPivotParams, currentLinkParams,
+                        NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
                                           lastPivotParams, lastLinkParams);
                     }
 
@@ -208,13 +221,13 @@ namespace PlanarMechanismSimulator
                     if (!findAccelerationAnalytically(currentTime, true))
                     {
                         Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                        NumericalAcceleration(FixedTimeStep, currentPivotParams, currentLinkParams,
+                        NumericalAcceleration(timeStep, currentPivotParams, currentLinkParams,
                                               lastPivotParams, lastLinkParams);
                     }
 
                     #endregion
 
-                    currentTime += FixedTimeStep;
+                    currentTime += timeStep;
                     if (Forward)
                     {
                         lock (JointParameters)
@@ -236,12 +249,101 @@ namespace PlanarMechanismSimulator
         }
 
 
-        private void loopWithSmoothingError(double smoothError, double[,] lastPivotParams, double[,] lastLinkParams,
-                                            Boolean Forward)
+        private void SimulateWithinError(double[,] lastPivotParams, double[,] lastLinkParams, Boolean Forward, PositionFinder posFinder)
         {
-            //if (!double.IsNaN(MaxSmoothingError) && positionError >= MaxSmoothingError)
-            //    posResult = PositionAnalysisResults.ErrorExceeded;
-            //else
+            var startingPosChange = Forward ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
+            var prevStep = startingPosChange;
+            if (inputJoint.jointType == JointTypes.P) startingPosChange *= AverageLength;
+            var maxLengthError = MaxSmoothingError * AverageLength;
+            var currentTime = 0.0;
+            double timeStep;
+            Boolean validPosition;
+            do
+            {
+                var currentLinkParams = new double[numLinks, 3];
+                var currentPivotParams = new double[numJoints, 6];
+
+                #region Find Next Positions
+                var upperError = double.PositiveInfinity;
+                var k = 0;
+                do
+                {
+                    timeStep = startingPosChange / InputSpeed;
+                    NumericalPosition(timeStep, currentPivotParams, currentLinkParams,
+                                      lastPivotParams, lastLinkParams);
+                    validPosition = posFinder.DefineNewPositions(startingPosChange, currentPivotParams, currentLinkParams,
+                                                       lastPivotParams, lastLinkParams);
+                        upperError = posFinder.PositionError - maxLengthError;
+                    if (validPosition && upperError<0)
+                    {
+                        startingPosChange /= Constants.ConservativeErrorEstimation;
+                       // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
+                    }
+                    else startingPosChange*= Constants.ConservativeErrorEstimation*0.5;
+
+                } while (upperError > 0 && k++ < Constants.MaxItersInPositionError);
+                //var tempStep = startingPosChange;
+                //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
+                //prevStep = tempStep;
+                #endregion
+
+                if (validPosition)
+                {
+                    if (Forward)
+                        lock (InputRange)
+                        {
+                            InputRange[1] = currentLinkParams[inputLinkIndex, 0];
+                        }
+                    else
+                        lock (InputRange)
+                        {
+                            InputRange[0] = currentLinkParams[inputLinkIndex, 0];
+                        }
+                    InitializeGroundAndInputSpeedAndAcceleration(currentPivotParams, currentLinkParams);
+
+                    #region Find Velocities for Current Position
+
+                    if (!findVelocitiesThroughICMethod(currentTime, true))
+                    {
+                        Status += "Instant Centers could not be found at" + currentTime + ".";
+                        NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
+                                          lastPivotParams, lastLinkParams);
+                    }
+
+                    #endregion
+
+                    #region Find Accelerations for Current Position
+
+                    if (!findAccelerationAnalytically(currentTime, true))
+                    {
+                        Status += "Analytical acceleration could not be found at" + currentTime + ".";
+                        NumericalAcceleration(timeStep, currentPivotParams, currentLinkParams,
+                                              lastPivotParams, lastLinkParams);
+                    }
+
+                    #endregion
+
+                    currentTime += timeStep;
+                    if (Forward)
+                    {
+                        lock (JointParameters)
+                            JointParameters.AddNearEnd(currentTime, currentPivotParams);
+                        lock (LinkParameters)
+                            LinkParameters.AddNearEnd(currentTime, currentLinkParams);
+                    }
+                    else
+                    {
+                        lock (JointParameters)
+                            JointParameters.AddNearBegin(currentTime, currentPivotParams);
+                        lock (LinkParameters)
+                            LinkParameters.AddNearBegin(currentTime, currentLinkParams);
+                    }
+                    lastPivotParams = currentPivotParams;
+                    lastLinkParams = currentLinkParams;
+                }
+            } while (validPosition && lessThanFullRotation());
         }
+
+
     }
 }
