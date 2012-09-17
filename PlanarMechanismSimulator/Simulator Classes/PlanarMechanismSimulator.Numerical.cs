@@ -6,7 +6,7 @@ namespace PlanarMechanismSimulator
     {
         private void NumericalPosition(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
         {
-            for (int i = 0; i < firstInputJointIndex; i++)
+            for (int i = 0; i < numJoints; i++)
             {
                 newJointParams[i, 0] = lastJointParams[i, 0] + lastJointParams[i, 2] * deltaTime +
                     0.5 * lastJointParams[i, 4] * deltaTime * deltaTime;

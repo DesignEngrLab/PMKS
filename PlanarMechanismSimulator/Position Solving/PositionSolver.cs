@@ -14,11 +14,10 @@ namespace PlanarMechanismSimulator
             get { return _posError; }
             private set
             {
-                if (!ignorePositionError && _posError < value) _posError = value;
+                if (_posError < value) _posError = value;
             }
         }
         double _posError = 0.0;
-        private bool ignorePositionError;
         internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
         private NonDyadicPositionSolver NDPS;
 
@@ -88,7 +87,7 @@ namespace PlanarMechanismSimulator
                                 assignJointPosition(j, j.Link1, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
                                 setLinkPositionFromRotate(j, j.Link1, angleChange);
-                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y);
+                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-R-R
@@ -99,7 +98,7 @@ namespace PlanarMechanismSimulator
                                 assignJointPosition(j, j.Link1, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
                                 setLinkPositionFromRotate(j, j.Link2, angleChange);
-                                setLinkPositionFromTranslation(j, j.Link1, sJPoint.x, sJPoint.y);
+                                setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-R-P
@@ -109,8 +108,8 @@ namespace PlanarMechanismSimulator
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link1, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromTranslation(j, j.Link1, sJPoint.x, sJPoint.y);
-                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y);
+                                setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
+                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region R-R-G/G
@@ -154,8 +153,9 @@ namespace PlanarMechanismSimulator
                                 var sJPoint = solveViaSlopeToCircleIntersectionPPR(j, knownJoint1, knownJoint2, out angleChange);
                                 assignJointPosition(j, j.Link2, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x, sJPoint.y, j.SlideAngle);
-                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y);
+                                setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast,
+                                    j.SlideAngle);
+                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region R-P-P
@@ -167,7 +167,7 @@ namespace PlanarMechanismSimulator
                                 assignJointPosition(j, j.Link2, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
                                 setLinkPositionFromRotate(knownJoint1, j.Link1, angleChange);
-                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y);
+                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-P-P
@@ -177,7 +177,8 @@ namespace PlanarMechanismSimulator
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link1, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x, sJPoint.y, knownJoint1.SlideAngle);
+                                setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast,
+                                    knownJoint1.SlideAngle);
                                 setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y, j.SlideAngle);
                             }
                             #endregion
@@ -222,7 +223,7 @@ namespace PlanarMechanismSimulator
                                 var sJPoint = solveViaIntersectingLines(j, j, knownJoint2);
                                 assignJointPosition(j, j.Link1, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y, j.SlideAngle);
+                                setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast, j.SlideAngle);
                             }
                             #endregion
                             break;
@@ -266,7 +267,9 @@ namespace PlanarMechanismSimulator
             {
                 //if (NDPS == null)
                 NDPS = new NonDyadicPositionSolver(this);
-                if (!NDPS.Run_PositionsAreClose()) return false;
+                var NDPSError = 0.0;
+                if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
+                PositionError = NDPSError;
             }
             WriteValuesToMatrices(currentJointParams, currentLinkParams);
             return true;
@@ -291,7 +294,6 @@ namespace PlanarMechanismSimulator
             double[,] oldJointParams, double[,] oldLinkParams)
         {
             _posError = 0.0;
-            ignorePositionError = true;
             joint fixedGndJoint = null;
             for (int i = 0; i < numJoints; i++)
             {
@@ -323,7 +325,6 @@ namespace PlanarMechanismSimulator
                 setLinkPositionFromTranslation(inputJoint, inputLink, positionChange, positionChange,
                     inputJoint.SlideAngle);
             else throw new Exception("Input is not of type R or P (as currently required at the beginning of DefineNewPositions");
-            ignorePositionError = false;
         }
 
         #region Dyad Solving Methods
@@ -403,12 +404,9 @@ namespace PlanarMechanismSimulator
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
         {
             var thetaA = slopeJoint.SlideAngle;
-            Boolean higherOffset;
-            var orthoPt = thisLink.findOrthoPoint(positionJoint, slopeJoint, out higherOffset);
-            var distance = Constants.distance(orthoPt, positionJoint);
-            int plusOrMinus = (higherOffset) ? +1 : -1;
-            return new point(slopeJoint.x + distance * Math.Cos(thetaA + plusOrMinus * Math.PI / 2),
-                slopeJoint.y + distance * Math.Sin(thetaA + plusOrMinus * Math.PI / 2));
+            var distance = thisLink.signedLengthBetween(positionJoint, slopeJoint);
+            return new point(slopeJoint.x + distance * Math.Cos(thetaA + Math.PI / 2),
+                slopeJoint.y + distance * Math.Sin(thetaA + Math.PI / 2));
         }
 
         // the basis of R-P-R dyad determination method is the complex little function
@@ -666,19 +664,16 @@ namespace PlanarMechanismSimulator
 
         private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink)
         {
-            Boolean higherOffset;
-            var thetaA = slideJoint.SlideAngle;
-            thisLink.findOrthoPoint(fixedJoint, slideJoint, out higherOffset);
             var distanceBetweenJoints = Constants.distance(fixedJoint, slideJoint);
-            var oldDistance = Constants.distance(fixedJoint.xLast, fixedJoint.yLast,
-                slideJoint.xLast, slideJoint.yLast);
             var dist2Slide = thisLink.lengthBetween(fixedJoint, slideJoint);
             if (dist2Slide > distanceBetweenJoints)
             {
                 posResult = PositionAnalysisResults.InvalidPosition;
                 return double.NaN;
             }
-            if (thetaA > 0) return Math.Acos(dist2Slide / distanceBetweenJoints) - Math.Acos(dist2Slide / oldDistance);
+            var oldDistance = Constants.distance(fixedJoint.xLast, fixedJoint.yLast,
+                slideJoint.xLast, slideJoint.yLast);
+            if (slideJoint.SlideAngle > 0) return Math.Acos(dist2Slide / distanceBetweenJoints) - Math.Acos(dist2Slide / oldDistance);
             return Math.Acos(dist2Slide / oldDistance) - Math.Acos(dist2Slide / distanceBetweenJoints);
         }
         #endregion

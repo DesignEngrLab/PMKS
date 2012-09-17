@@ -273,13 +273,13 @@ namespace PlanarMechanismSimulator
                                       lastPivotParams, lastLinkParams);
                     validPosition = posFinder.DefineNewPositions(startingPosChange, currentPivotParams, currentLinkParams,
                                                        lastPivotParams, lastLinkParams);
-                        upperError = posFinder.PositionError - maxLengthError;
-                    if (validPosition && upperError<0)
+                    upperError = posFinder.PositionError - maxLengthError;
+                    if (validPosition && upperError < 0)
                     {
-                        startingPosChange /= Constants.ConservativeErrorEstimation;
-                       // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
+                        startingPosChange *= Constants.ErrorSizeIncrease;
+                        // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
                     }
-                    else startingPosChange*= Constants.ConservativeErrorEstimation*0.5;
+                    else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
 
                 } while (upperError > 0 && k++ < Constants.MaxItersInPositionError);
                 //var tempStep = startingPosChange;

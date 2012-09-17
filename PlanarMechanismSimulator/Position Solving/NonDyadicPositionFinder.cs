@@ -64,8 +64,9 @@ namespace PlanarMechanismSimulator
         {
             return optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit);
         }
-        internal bool Run_PositionsAreClose()
+        internal bool Run_PositionsAreClose(out double posError)
         {
+            posError = 0.0;
             optMethod.ResetFunctionEvaluationDatabase();
             var xInit = new double[2 * numUnknownPivots];
             for (int i = 0; i < joints.Count; i++)
@@ -96,6 +97,10 @@ namespace PlanarMechanismSimulator
                 j.x = xStar[2 * i];
                 j.y = xStar[2 * i + 1];
                 j.knownState = KnownState.Fully;
+
+                var tempError = (xStar[2 * i] - xInit[2 * i]) * (xStar[2 * i] - xInit[2 * i]) + 
+                    (xStar[2 * i+1] - xInit[2 * i+1]) * (xStar[2 * i+1] - xInit[2 * i+1]);
+                if (posError < tempError) posError = tempError;
             }
             foreach (var c in links)
                 if (!c.AngleIsKnown)

@@ -37,7 +37,7 @@ namespace PlanarMechanismSimulator
                 var result = new double[numJoints * (numJoints - 1) / 2];
                 int i = 0;
                 foreach (var length in lengths.Values)
-                    result[i++] = length;
+                    result[i++] = Math.Abs(length);
                 while (i < result.GetLength(0))
                     result[i++] = Double.NaN;
                 return result;
@@ -79,40 +79,30 @@ namespace PlanarMechanismSimulator
                     var iJoint = joints[i];
                     var jJoint = joints[j];
                     var key = numJoints * i + j;
+                    double distance;
+                    int signForDistance = 1;
                     if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
+                    {
                         if (Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle))
-                        {
-                            //var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
-                            //orthoPoints.Add(key, orthoPt);
-                            lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                        }
-                        else
-                        {
-                            //orthoPoints.Add(key, Constants.solveViaIntersectingLines(Math.Tan(iJoint.InitSlideAngle),
-                            //    new point(iJoint.xInitial, iJoint.yInitial), Math.Tan(jJoint.InitSlideAngle),
-                            //    new point(jJoint.xInitial, jJoint.yInitial)));
-                            lengths.Add(key, 0.0);
-                        }
+                            distance = Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial);
+                        else distance = 0.0;
+                    }
                     else if (iJoint.SlidingWithRespectTo(this))
                     {
-                        var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle);
-                        //orthoPoints.Add(key, orthoPt);
-                        lengths.Add(key, Constants.distance(orthoPt.x, orthoPt.y, jJoint.xInitial, jJoint.yInitial));
+                        Boolean belowLinePositiveSlope;
+                        var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle, out  belowLinePositiveSlope);
+                        if (belowLinePositiveSlope) signForDistance = -1;
+                        distance = Constants.distance(orthoPt.x, orthoPt.y, jJoint.xInitial, jJoint.yInitial);
                     }
                     else if (jJoint.SlidingWithRespectTo(this))
                     {
-                        var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle);
-                        //orthoPoints.Add(key, orthoPt);
-                        lengths.Add(key, Constants.distance(orthoPt.x, orthoPt.y, iJoint.xInitial, iJoint.yInitial));
+                        Boolean belowLinePositiveSlope;
+                        var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle, out  belowLinePositiveSlope);
+                        if (belowLinePositiveSlope) signForDistance = -1;
+                        distance = Constants.distance(orthoPt.x, orthoPt.y, iJoint.xInitial, iJoint.yInitial);
                     }
-                    else
-                    {
-                        lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                        //if (jJoint.jointType == JointTypes.P && !jJoint.FixedWithRespectTo(jJoint.OtherLink(this)))
-                        //    orthoPoints.Add(key, findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle));
-                        //if (iJoint.jointType == JointTypes.P && !iJoint.FixedWithRespectTo(iJoint.OtherLink(this)))
-                        //    orthoPoints.Add(numJoints*j+i, findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle));
-                    }
+                    else distance = Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial);
+                    lengths.Add(key, signForDistance * distance);
                 }
             foreach (var j in joints)
             {  /* this comes at the end s.t. the findOrthoPoint calls do not have to re-adjust */
@@ -123,6 +113,11 @@ namespace PlanarMechanismSimulator
         }
 
         internal double lengthBetween(joint joint1, joint joint2)
+        {
+            return Math.Abs(signedLengthBetween(joint1,joint2));
+        }
+
+        internal double signedLengthBetween(joint joint1, joint joint2)
         {
             if (joint1 == joint2) return 0.0;
             var i = joints.IndexOf(joint1);
@@ -143,36 +138,25 @@ namespace PlanarMechanismSimulator
             else lengths[numJoints * i + j] = length;
         }
 
-        internal point findOrthoPoint(joint refJoint, joint slideJoint, out Boolean pointOnHigherOffset)
-        {
-            double lineAngle = slideJoint.SlideAngle;
-            if (Constants.sameCloseZero(lineAngle))
-            {
-                pointOnHigherOffset = (refJoint.y > slideJoint.y);
-                return new point(refJoint.x, slideJoint.y);
-            }
-            if (Constants.sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
-            {
-                pointOnHigherOffset = (refJoint.x * lineAngle < 0);
-                return new point(slideJoint.x, refJoint.y);
-            }
-            var slope = Math.Tan(lineAngle);
-            var offset = (slideJoint.y - slope * slideJoint.x);
-            var x = (refJoint.x + slope * (refJoint.y - offset)) / (slope * slope + 1);
-            var y = slope * x + offset;
-            pointOnHigherOffset = ((refJoint.y - slope * refJoint.x) > offset);
-            return new point(x, y);
-        }
-        private static point findOrthoPoint(joint p, joint lineRef, double lineAngle)
+        private static point findOrthoPoint(joint p, joint lineRef, double lineAngle, out Boolean belowLinePositiveSlope)
         {
             if (Constants.sameCloseZero(lineAngle))
+            {
+                belowLinePositiveSlope = (p.yInitial < lineRef.yInitial);
                 return new point(p.xInitial, lineRef.yInitial);
-            if (Constants.sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
+            }
+            else if (Constants.sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
+            {
+                belowLinePositiveSlope = (p.xInitial > lineRef.xInitial);
                 return new point(lineRef.xInitial, p.yInitial);
+            }
             var slope = Math.Tan(lineAngle);
             var offset = (lineRef.yInitial - slope * lineRef.xInitial);
             var x = (p.xInitial + slope * (p.yInitial - offset)) / (slope * slope + 1);
             var y = slope * x + offset;
+            belowLinePositiveSlope = (slope > 0) ? (p.yInitial - slope * p.xInitial) < offset :
+                 (p.yInitial - slope * p.xInitial) > offset;
+
             return new point(x, y);
         }
 

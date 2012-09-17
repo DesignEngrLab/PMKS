@@ -278,8 +278,8 @@ namespace PlanarMechanismSimulator
                 joints.Remove(inputJoint);
                 var groundPivots = joints.Where(j => j.isGround).ToList();
                 joints.RemoveAll(j => j.isGround);
-                var connectedInputJoints = joints.Where(inputLink.joints.Contains).ToList();
-                joints.RemoveAll(inputLink.joints.Contains);
+                var connectedInputJoints = joints.Where(j => inputLink.joints.Contains(j) && j.FixedWithRespectTo(inputLink)).ToList();
+                joints.RemoveAll(connectedInputJoints.Contains);
                 firstInputJointIndex = joints.Count;
                 joints.AddRange(connectedInputJoints);
                 inputJointIndex = joints.Count;

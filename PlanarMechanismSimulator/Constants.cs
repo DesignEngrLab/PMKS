@@ -20,6 +20,7 @@ namespace PlanarMechanismSimulator
         public const int MaxItersInPositionError = 10;
         public const double ConservativeErrorEstimation = 0.9;
         public const double ErrorEstimateInertia=2.0;
+        public const double ErrorSizeIncrease=1.2;
 
         public static Boolean sameCloseZero(double x1)
         {
