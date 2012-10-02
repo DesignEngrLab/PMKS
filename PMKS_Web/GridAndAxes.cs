@@ -21,7 +21,7 @@ namespace Silverlight_PMKS
 
         public double GridSpacing
         {
-            get { return _gridSpacing; }
+            get { return _gridSpacing; } 
             set
             {
                 if (_gridSpacing == value) return;
