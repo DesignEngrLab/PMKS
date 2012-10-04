@@ -53,10 +53,10 @@ namespace PlanarMechanismSimulator
             }
             optMethod = new NewtonMethod();
             optMethod.Add(this);
-            ConvergedWithinLimit = new ToKnownBestFConvergence(0, 500 * Constants.epsilonSame);
+            ConvergedWithinLimit = new ToKnownBestFConvergence(0, Constants.epsilon);
             optMethod.Add(ConvergedWithinLimit);
             optMethod.Add(new FixedOrGoldenSection(0.1 * Constants.epsilonSame, 0));
-            optMethod.Add(new MaxIterationsConvergence(300));
+            optMethod.Add(new MaxIterationsConvergence(Constants.MaxItersInNonDyadicSolver));
           //  optMethod.Add(new DeltaFConvergence(0.01 * Constants.epsilonSame));
         }
 

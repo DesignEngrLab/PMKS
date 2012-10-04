@@ -1,10 +1,10 @@
+leg1, gnd,r,-5.0,0
 input gnd,r,-2.5,2.5
+leg2, gnd,r,0,0
+wing1,leg1,r,-9.24,4.24
+wing1, wing2,r,-5.9,9.3
+up1, wing1,r,-4.5,6.5
 input, up1,r,-5,4
 input, up2,r,0,4
-up1, wing1,r,-4.5,6.5
 up2,wing2,r,-0.134,8.717
-wing1, wing2,r,-5.9,9.3
-wing1,leg1,r,-9.24,4.24
 wing2,leg2,r,5.268,10,782
-leg2, gnd,r,0,0
-leg1, gnd,r,-5.0,0
