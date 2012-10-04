@@ -13,6 +13,7 @@ namespace PlanarMechanismSimulator
         /// </summary>
         public const double epsilonSame = 0.000000001;
 
+        public static double epsilon = 100.0*epsilonSame;
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
         public const double SmallPerturbationFraction = 0.003;
@@ -21,6 +22,7 @@ namespace PlanarMechanismSimulator
         public const double ConservativeErrorEstimation = 0.9;
         public const double ErrorEstimateInertia=2.0;
         public const double ErrorSizeIncrease=1.2;
+        public static long MaxItersInNonDyadicSolver=300;
 
         public static Boolean sameCloseZero(double x1)
         {
