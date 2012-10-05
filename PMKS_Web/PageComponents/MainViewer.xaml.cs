@@ -9,17 +9,21 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Collections.ObjectModel;
 using PlanarMechanismSimulator;
 
 namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
     {
+        private const int POSITION = 0;
+        private const int ACCELERATION = 1;
+        private const int VELOCITY = 2;
         public MainViewer()
         {
             InitializeComponent();
         }
-        public void UpdateVisuals(TimeSortedList JointParameters, TimeSortedList LinkParameters, int inputJointIndex)
+        public void UpdateVisuals(TimeSortedList JointParameters, TimeSortedList LinkParameters, int inputJointIndex, List<joint> joints, ObservableCollection<JointData> JointData)
         {
             if (LinkParameters == null || JointParameters == null) return;
             MainCanvas.Children.Clear();
@@ -35,37 +39,48 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < inputJointIndex; i++)
             {
                 var pCollect = new PointCollection();
+                bool velocityVis = CheckVelocityVisibilityCondition(joints[i], JointData, VELOCITY);
+                bool accelerationVis = CheckVelocityVisibilityCondition(joints[i], JointData, ACCELERATION);
+                bool positionVis = CheckVelocityVisibilityCondition(joints[i], JointData, POSITION);
                 for (int j = 0; j < JointParameters.Size; j++)
                 {
                     var x = JointParameters.Parameters[j][i, 0];
                     var y = JointParameters.Parameters[j][i, 1];
                     pCollect.Add(new Point(x, y));
-                    //new LineGeometry
-                    MainCanvas.Children.Add(new Line
+                    if (velocityVis)
                     {
-                        X1 = x,
-                        Y1 = y,
-                        X2 = x + velocityFactor * JointParameters.Parameters[j][i, 2],
-                        Y2 = y + velocityFactor * JointParameters.Parameters[j][i, 3],
-                        Stroke = new SolidColorBrush { Color = Colors.Brown },
-                        StrokeThickness = penThick
-                    });
-                    MainCanvas.Children.Add(new Line
+                        MainCanvas.Children.Add(new Line
+                        {
+                            X1 = x,
+                            Y1 = y,
+                            X2 = x + velocityFactor * JointParameters.Parameters[j][i, 2],
+                            Y2 = y + velocityFactor * JointParameters.Parameters[j][i, 3],
+                            Stroke = new SolidColorBrush { Color = Colors.Brown },
+                            StrokeThickness = penThick
+                        });
+                    }
+                    if (accelerationVis)
                     {
-                        X1 = x,
-                        Y1 = y,
-                        X2 = x + accelFactor * JointParameters.Parameters[j][i, 4],
-                        Y2 = y + accelFactor * JointParameters.Parameters[j][i, 5],
-                        Stroke = new SolidColorBrush { Color = Colors.Orange },
-                        StrokeThickness = penThick
-                    });
-                    MainCanvas.Children.Add(new Ellipse
+                        MainCanvas.Children.Add(new Line
+                        {
+                            X1 = x,
+                            Y1 = y,
+                            X2 = x + accelFactor * JointParameters.Parameters[j][i, 4],
+                            Y2 = y + accelFactor * JointParameters.Parameters[j][i, 5],
+                            Stroke = new SolidColorBrush { Color = Colors.Orange },
+                            StrokeThickness = penThick
+                        });
+                    }
+                    if (positionVis)
                     {
-                        Width = 5 * penThick,
-                        Height = 5 * penThick,
-                        RenderTransform = new TranslateTransform { X = x - 2.5 * penThick, Y = y - 2.5 * penThick },
-                        Fill = new SolidColorBrush { Color = Colors.Green }
-                    });
+                        MainCanvas.Children.Add(new Ellipse
+                        {
+                            Width = 5 * penThick,
+                            Height = 5 * penThick,
+                            RenderTransform = new TranslateTransform { X = x - 2.5 * penThick, Y = y - 2.5 * penThick },
+                            Fill = new SolidColorBrush { Color = Colors.Green }
+                        });
+                    }
                 }
                 var start = pCollect[0];
                 pCollect.RemoveAt(0);
@@ -99,6 +114,36 @@ namespace PMKS_Silverlight_App
                                ScaleFactor * maxima[1] + DisplayConstants.Buffer)
             };
             MainCanvas.Margin = new Thickness(DisplayConstants.Buffer);
+        }
+
+        private bool CheckVelocityVisibilityCondition(joint joint, ObservableCollection<JointData> jointData, int whichCheckBox)
+        {
+            for ( int index = 0; index < jointData.Count; index++)
+            {
+                JointData jdata = jointData[index];
+                bool checkBoxValue = false;
+                switch (whichCheckBox)
+                {
+                    case VELOCITY:
+                        checkBoxValue = jdata.VelocityVisible;
+                        break;
+                    case ACCELERATION:
+                        checkBoxValue = jdata.AccelerationVisible;
+                        break;
+                    case POSITION:
+                        checkBoxValue = jdata.PosVisible;
+                        break;
+
+                }
+                if (!checkBoxValue)
+                {
+                    string[] tokens = jdata.LinkNames.Split(new char[]{' ', ','}, StringSplitOptions.RemoveEmptyEntries);
+                    if (jdata.LinkNames.Contains(joint.Link1.name) &&  
+                        (joint.Link2 == null && tokens.Length == 1 || joint.Link2 != null && jdata.LinkNames.Contains(joint.Link2.name)) )
+                        return false;
+                }
+            }
+            return true;
         }
 
         private static void defineJointParamLimits(TimeSortedList JointParameters, double[] minima, double[] maxima)
