@@ -21,7 +21,7 @@ namespace PMKS_Silverlight_App
         }
         private void dataGrid_RowEditEnded(object sender, DataGridRowEditEndedEventArgs e)
         {
-            main.editButtons.AddButton_Click(null, null);
+            //main.editButtons.AddButton_Click(null, null);
         }
 
         private void dataGrid_CellEditEnded(object sender, DataGridCellEditEndedEventArgs e)
