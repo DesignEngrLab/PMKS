@@ -29,11 +29,6 @@ namespace OptimizationToolbox
     /// The abstract class that all convergence criteria must inherit from. There is one Boolean function
     /// that is returned from the class, called "converged", which takes up to five arguments.
     /// </summary>
-    [XmlInclude(typeof(DeltaFConvergence)), XmlInclude(typeof(DeltaGradFConvergence)),
-     XmlInclude(typeof(DeltaXConvergence)), XmlInclude(typeof(MaxAgeConvergence)),
-    XmlInclude(typeof(MaxFnEvalsConvergence)), XmlInclude(typeof(MaxIterationsConvergence)),
-    XmlInclude(typeof(MaxSpanInPopulationConvergence)), XmlInclude(typeof(MaxTimeConvergence)),
-     XmlInclude(typeof(ToKnownBestFConvergence)), XmlInclude(typeof(ToKnownBestXConvergence))]
     public abstract class abstractConvergence
     {
         /// <summary>

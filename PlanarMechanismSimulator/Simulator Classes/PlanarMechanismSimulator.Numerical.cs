@@ -12,12 +12,14 @@ namespace PlanarMechanismSimulator
                     0.5 * lastJointParams[i, 4] * deltaTime * deltaTime;
                 newJointParams[i, 1] = lastJointParams[i, 1] + lastJointParams[i, 3] * deltaTime +
                               0.5 * lastJointParams[i, 5] * deltaTime * deltaTime;
+                //newJointParams[i, 0] = lastJointParams[i, 0];
+                //newJointParams[i, 1] = lastJointParams[i, 1];
             }
             for (int i = 0; i < inputLinkIndex; i++)
             {
                 newLinkParams[i, 0] = lastLinkParams[i, 0] + lastLinkParams[i, 1] * deltaTime +
                     0.5 * lastLinkParams[i, 2] * deltaTime * deltaTime;
-
+                //newLinkParams[i, 0] = lastLinkParams[i, 0];
             }
         }
         private void NumericalVelocity(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)

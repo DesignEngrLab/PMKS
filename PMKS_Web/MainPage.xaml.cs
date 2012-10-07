@@ -145,11 +145,12 @@ namespace PMKS_Silverlight_App
         {
             try
             {
-                if (JointsInfo == null) return;
+                if (JointsInfo == null) 
+                    return;
                 numJoints = TrimEmptyJoints();
                 if (pmks != null && SameTopology() && SameParameters())
                 {
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data);
                     return;
                 }
 
@@ -173,7 +174,7 @@ namespace PMKS_Silverlight_App
                         pmks.MaxSmoothingError = AngleIncrement/100.0;
                     else
                     {
-                        pmks.DeltaAngle = AngleIncrement; 
+                        pmks.DeltaAngle = AngleIncrement;
                         pmks.MaxSmoothingError = double.NaN;
                     }
                     status("Analyzing...");
@@ -182,7 +183,7 @@ namespace PMKS_Silverlight_App
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                     status("Drawing...");
                     now = DateTime.Now;
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex);
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints,JointsInfo.Data);
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 }
             }

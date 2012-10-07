@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 
 namespace PMKS_Silverlight_App
@@ -29,7 +30,7 @@ namespace PMKS_Silverlight_App
 
         public string XPos
         {
-            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString(); }
+            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString(CultureInfo.InvariantCulture); }
             set
             {
                 if (!double.TryParse(value, out _xPos))
@@ -39,7 +40,7 @@ namespace PMKS_Silverlight_App
 
         public string YPos
         {
-            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString("N"); }
+            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString(CultureInfo.InvariantCulture); }
             set
             {
                 if (!double.TryParse(value, out _yPos))
@@ -49,7 +50,7 @@ namespace PMKS_Silverlight_App
 
         public string Angle
          {
-            get { return (double.IsNaN(_angle)) ? "" : _angle.ToString("N"); }
+            get { return (double.IsNaN(_angle)) ? "" : _angle.ToString(CultureInfo.InvariantCulture); }
             set
             {
                 if (!double.TryParse(value, out _angle))

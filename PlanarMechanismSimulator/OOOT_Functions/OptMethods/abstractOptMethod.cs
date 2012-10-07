@@ -260,25 +260,7 @@ namespace OptimizationToolbox
                 else ConvergenceMethods.Add((abstractConvergence)function);
             else if (function is double[])
                 xStart = (double[])function;
-            else if (function is DesignSpaceDescription)
-            {
-                spaceDescriptor = (DesignSpaceDescription)function;
-                n = spaceDescriptor.n;
-                for (int i = 0; i < n; i++)
-                {
-                    if (spaceDescriptor.DiscreteVarIndices.Contains(i)) continue;
-                    Add(new greaterThanConstant
-                    {
-                        constant = spaceDescriptor[i].LowerBound,
-                        index = i
-                    });
-                    Add(new lessThanConstant
-                    {
-                        constant = spaceDescriptor[i].UpperBound,
-                        index = i
-                    });
-                }
-            }
+
             else
                 throw (new Exception("Function, " + function + ", not of known type (needs "
                                      + "to inherit from inequality, equality, objectiveFunction, abstractLineSearch, " +
@@ -407,23 +389,6 @@ namespace OptimizationToolbox
             q = g.Count;
             m = p;
 
-            if (InequalitiesConvertedToEqualities && (q > 0))
-            {
-                var xnew = new double[n + q];
-                for (var i = 0; i != n; i++)
-                    xnew[i] = x[i];
-                for (var i = n; i != n + q; i++)
-                {
-                    var sSquared = calculate(g[i - n], x);
-                    if (sSquared < 0) xnew[i] = Math.Sqrt(-sSquared);
-                    else xnew[i] = 0;
-                    h.Add(new slackSquaredEqualityFromInequality(g[i - n], i, this));
-                }
-                x = xnew;
-                n = x.GetLength(0);
-                m = h.Count;
-                p = h.Count;
-            }
             if (n <= m)
             {
                 if (n == m)

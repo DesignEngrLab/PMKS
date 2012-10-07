@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
 using OptimizationToolbox;
 
 #endregion
@@ -16,12 +17,12 @@ namespace PlanarMechanismSimulator
         private void SetUpDyadicVelocityObjects()
         {
             //var numEqs = 0;
-            //foreach (var l in links) numEqs += l.Pivots.Count - 1;
+            //foreach (var l in links) numEqs += l.joints.Count - 1;
 
 
             //#region fill up link spots in CircleDiagram
 
-            //sizeofCDI = (n * (n - 1) / 2);
+            //sizeofCDI = (numLinks * (numLinks - 1) / 2);
             //circleDiagram = new circleDiagramItem[sizeofCDI]; //size is equal to no of instant centers
             ////code below gives the link indices for each circleDiagram Item and is assigning the instant 
             ////center pairs - these may not be necessarily starting from input - but in the way the graph
@@ -30,9 +31,9 @@ namespace PlanarMechanismSimulator
             ////the code below creates 12/13/14;23/24;34 - say for a 4 bar mechanism
             ////creates an ordered pair of instant centers
             //int q = 0;
-            //for (int ii = 0; ii != n - 1; ii++)
+            //for (int ii = 0; ii != numLinks - 1; ii++)
             //{
-            //    for (int j = ii + 1; j != n; j++)
+            //    for (int j = ii + 1; j != numLinks; j++)
             //    {
             //        circleDiagram[q] = new circleDiagramItem(); //coding requirement
             //        if (links[j] == groundLink)
@@ -65,14 +66,14 @@ namespace PlanarMechanismSimulator
             ////List<int> locationofPivot1 = new List<int>();
             ////int row = 0;
             ////int row2 = 0;
-            //for (int i = 0; i < n; i++)
+            //for (int i = 0; i < numLinks; i++)
             //{
             //    var link = links[i];
             //    int NOP = link.joints.Count;
             //    var pivot0 = link.joints[0];
 
             //    //we are not adding slider to acceleration determination - this will be copied from the velocity of slider_conn pivot
-            //    if (pivot0.jointType != jointType.P && pivot0 != jointType.RP)
+            //    if (pivot0.jointType != JointTypes.P && pivot0 != JointTypes.RP)
             //        addToUnknowns(pivot0, unknownsList);
 
             //    if (!link.isGround && !link.Contains("slider_conn"))
