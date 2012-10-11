@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Windows;
 
 namespace PMKS_Silverlight_App
 {
-    public class JointData
+    public class JointData : DependencyObject
     {
-        private bool _posVisible = true;
         private bool _velocityVisible = true;
         private bool _accelerationVisible = true;
         private double _xPos = double.NaN;
@@ -49,7 +49,7 @@ namespace PMKS_Silverlight_App
         }
 
         public string Angle
-         {
+        {
             get { return (double.IsNaN(_angle)) ? "" : _angle.ToString(CultureInfo.InvariantCulture); }
             set
             {
@@ -60,30 +60,35 @@ namespace PMKS_Silverlight_App
 
         public Boolean PosVisible
         {
-            get { return _posVisible; }
-            set
-            {
-                _posVisible = value;
-            }
+            get { return (Boolean)GetValue(PosVisibleProperty); }
+            set { SetValue(PosVisibleProperty, value); }
         }
+
+        public static readonly DependencyProperty PosVisibleProperty
+            = DependencyProperty.Register("PosVisible",
+                                          typeof(Boolean), typeof(JointData),
+                                          new PropertyMetadata(true));
 
         public Boolean VelocityVisible
         {
-            get { return _velocityVisible; }
-            set
-            {
-                _velocityVisible = value;
-            }
+            get { return (Boolean)GetValue(VelVisibleProperty); }
+            set { SetValue(VelVisibleProperty, value); }
         }
+
+        public static readonly DependencyProperty VelVisibleProperty = DependencyProperty.Register("VelVisible",
+                                          typeof(Boolean), typeof(JointData),
+                                          new PropertyMetadata(true));
 
         public Boolean AccelerationVisible
         {
-            get { return _accelerationVisible; }
-            set
-            {
-                _accelerationVisible = value;
-            }
+            get { return (Boolean)GetValue(AccelVisibleProperty); }
+            set { SetValue(AccelVisibleProperty, value); }
         }
+
+        public static readonly DependencyProperty AccelVisibleProperty = DependencyProperty.Register("AccelVisible",
+                                          typeof(Boolean), typeof(JointData),
+                                          new PropertyMetadata(true));
+
 
         internal static bool ConvertTextToData(string text, out List<JointData> jointsInfo)
         {
@@ -164,6 +169,8 @@ namespace PMKS_Silverlight_App
             }
             return text;
         }
+
+
     }
 }
 

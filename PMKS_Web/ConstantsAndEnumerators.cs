@@ -14,7 +14,7 @@ namespace PMKS_Silverlight_App
     public static class DisplayConstants
     {
         public const double Buffer = 50.0;
-        public const double PenThicknessRatio = 0.001;
+        public const double PenThicknessRatio = 1;
         public const double VelocityLengthRatio = 0.3;
         public const double AccelLengthRatio = 0.5;
     }

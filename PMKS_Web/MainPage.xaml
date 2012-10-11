@@ -23,11 +23,12 @@
             <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
             <src:TimeSlider Grid.Row="1" HorizontalAlignment="Right" Width="18" x:Name="timeSlider" />
             <src:EditButtons HorizontalAlignment="Left" Margin="10,25" Grid.RowSpan="2" Width="292" x:Name="editButtons"/>
-            <src:JointInputTable Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
             <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top" Height="64" Width="407" x:Name="globalSettings" />
             <src:LinkInputTable Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
             <src:OutputStatus Grid.Row="1" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-
+            <!--I thought that putting the JointInputTable last would cause it to be "on top" and always focused. Didn't change anything.-->
+           <src:JointInputTable Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
+ 
         </Grid>
     </Grid>
 </UserControl>

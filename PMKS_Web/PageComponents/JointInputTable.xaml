@@ -10,11 +10,11 @@
         <!--<src:JointsViewModel x:Name="JointsInfo" />-->
         <src:JointTypeProvider x:Name="jointTypeProvider"/>
     </UserControl.Resources>
-        <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True" 
-               
-                    CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All" RowEditEnded="dataGrid_RowEditEnded" CellEditEnded="dataGrid_CellEditEnded">
+    <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True" 
+                    CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All"
+                    RowEditEnded="dataGrid_RowEditEnded" CellEditEnded="dataGrid_CellEditEnded">
             <s:DataGrid.Columns>
-                <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110"/>
+                <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110" />
                 <s:DataGridTemplateColumn Header="Type of Joint">
                     <s:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

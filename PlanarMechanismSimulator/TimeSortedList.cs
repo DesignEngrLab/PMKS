@@ -11,7 +11,7 @@ namespace PlanarMechanismSimulator
         private readonly List<double[,]> parameterValues = new List<double[,]>();
         private readonly List<double> timeKeys = new List<double>();
 
-        public int Size
+        public int Count
         {
             get { return lastSpot + 1; }
         }
@@ -28,7 +28,7 @@ namespace PlanarMechanismSimulator
 
         internal void Add(double time, double[,] parameters)
         {
-            if (Size == 0 || time > Times[lastSpot])
+            if (Count == 0 || time > Times[lastSpot])
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
@@ -54,7 +54,7 @@ namespace PlanarMechanismSimulator
 
         internal void AddNearEnd(double time, double[,] parameters)
         {
-            if (Size == 0 || time > Times[lastSpot])
+            if (Count == 0 || time > Times[lastSpot])
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
@@ -71,7 +71,7 @@ namespace PlanarMechanismSimulator
 
         internal void AddNearBegin(double time, double[,] parameters)
         {
-            if (Size == 0 || time > Times[lastSpot])
+            if (Count == 0 || time > Times[lastSpot])
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
@@ -104,11 +104,6 @@ namespace PlanarMechanismSimulator
         public void CopyTo(KeyValuePair<double, double[,]>[] array, int arrayIndex)
         {
             throw new NotImplementedException();
-        }
-
-        public int Count
-        {
-            get { return timeKeys.Count; }
         }
 
         public bool IsReadOnly

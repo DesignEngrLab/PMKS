@@ -150,7 +150,8 @@ namespace PMKS_Silverlight_App
                 numJoints = TrimEmptyJoints();
                 if (pmks != null && SameTopology() && SameParameters())
                 {
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data);
+                    /* Given the new dynamic binding in UpdateVisuals, we should need to call this again if nothing has changed.*/
+                    //mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data,jointInputTable);
                     return;
                 }
 
@@ -207,12 +208,12 @@ namespace PMKS_Silverlight_App
             if (numJoints != JointTypes.Count) return false;
             for (int i = 0; i < numJoints; i++)
             {
-                if (Double.TryParse(JointsInfo.Data[i].XPos, out xpos) &&
-                    Constants.sameCloseZero(InitPositions[i][0], xpos)) return false;
-                if (Double.TryParse(JointsInfo.Data[i].YPos, out ypos) && Constants.sameCloseZero(InitPositions[i][1], ypos)) return false;
+                /* fixed a problem that was in this logic -- mc 10/11/2012 */
+                if (Double.TryParse(JointsInfo.Data[i].XPos, out xpos) && !Constants.sameCloseZero(InitPositions[i][0], xpos)) return false;
+                if (Double.TryParse(JointsInfo.Data[i].YPos, out ypos) && !Constants.sameCloseZero(InitPositions[i][1], ypos)) return false;
                 if (InitPositions[i].GetLength(0) == 2 && Double.TryParse(JointsInfo.Data[i].Angle, out angle)) return false;
                 if (InitPositions[i].GetLength(0) == 3 && Double.TryParse(JointsInfo.Data[i].Angle, out angle))
-                    if (Constants.sameCloseZero(InitPositions[i][2], angle)) return false;
+                    if (!Constants.sameCloseZero(InitPositions[i][2], angle)) return false;
             }
             return true;
         }

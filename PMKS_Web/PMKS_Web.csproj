@@ -90,6 +90,10 @@
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
     <Compile Include="PageComponents\PanAndZoom.cs" />
+    <Compile Include="Converters\CheckBoxVisibilityConverter.cs" />
+    <Compile Include="Shapes\AccelerationPath.cs" />
+    <Compile Include="Shapes\VelocityPath.cs" />
+    <Compile Include="Shapes\PositionPath.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />
     <Compile Include="PageComponents\LinkInputTable.xaml.cs">
