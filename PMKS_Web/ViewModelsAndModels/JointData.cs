@@ -38,6 +38,16 @@ namespace PMKS_Silverlight_App
             }
         }
 
+        public string[] LinkNamesList
+        {
+            get
+            {
+                if (LinkNames != null)
+                    return LinkNames.Split(',');
+                else return new string[0];
+            }
+        }
+
         public string YPos
         {
             get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString(CultureInfo.InvariantCulture); }
@@ -169,8 +179,6 @@ namespace PMKS_Silverlight_App
             }
             return text;
         }
-
-
     }
 }
 

@@ -20,7 +20,8 @@ namespace PMKS_Silverlight_App
             Data = new ObservableCollection<LinkData>()
             {
                 new LinkData {Name="ground", Visible=true},
-                new LinkData()
+                new LinkData {Name="coupler", Visible=true},
+                new LinkData {Name="input", Visible=true}
             };
         }
 
@@ -45,6 +46,7 @@ namespace PMKS_Silverlight_App
             get { return _visible; }
             set { _visible = value; }
         }
+
     }
 
 }

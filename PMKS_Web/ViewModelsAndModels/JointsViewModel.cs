@@ -37,8 +37,8 @@ namespace PMKS_Silverlight_App
                     new JointData
                         {JointType = "R (pin joint)", XPos = "5.0", YPos = "0.0", LinkNames = "coupler ground "},
                     new JointData
-                        {JointType = "r", XPos = "4.0", YPos = "4.0", LinkNames ="coupler"},
-                                        new JointData()
+                        {JointType = "r", XPos = "4.0", YPos = "4.0", LinkNames ="coupler"}
+                    //,new JointData()
                     //new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
                     //new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "8.0", LinkNames = "input coupler"},
                     //new JointData

@@ -95,14 +95,14 @@ namespace PMKS_Silverlight_App
             };
             linkInputTable.linkDataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
 
-            binding = new Binding
-            {
-                Source = JointsInfo,
-                Mode = BindingMode.OneWay,
-                Path = new PropertyPath(LinksViewModel.DataCollectionProperty),
-                Converter = new JointDataToLinkListConverter(LinksInfo)
-            };
-            BindingOperations.SetBinding(LinksInfo, LinksViewModel.DataCollectionProperty, binding);
+            //binding = new Binding
+            //{
+            //    Source = JointsInfo,
+            //    Mode = BindingMode.OneWay,
+            //    Path = new PropertyPath(LinksViewModel.DataCollectionProperty),
+            //    Converter = new JointDataToLinkListConverter(LinksInfo)
+            //};
+            //BindingOperations.SetBinding(LinksInfo, LinksViewModel.DataCollectionProperty, binding);
 
             binding = new Binding
             {

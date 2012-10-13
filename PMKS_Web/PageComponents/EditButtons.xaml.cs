@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Collections.ObjectModel;
 
 namespace PMKS_Silverlight_App
 {
@@ -61,13 +62,45 @@ namespace PMKS_Silverlight_App
         }
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            var data = main.JointsInfo.Data;
-            var table = main.jointInputTable.dataGrid;
-            if (table.SelectedItem == null) data.RemoveAt(data.Count - 1);
+            var jointData = main.JointsInfo.Data;
+            var LinkData = main.LinksInfo.Data;
+            var Jointstable = main.jointInputTable.dataGrid;
+            JointData removedJoint;
+            if (Jointstable.SelectedItem == null)
+            {
+                removedJoint = jointData[jointData.Count - 1];
+                jointData.RemoveAt(jointData.Count - 1);
+            }
             else
             {
-                data.RemoveAt(table.SelectedIndex);
+                removedJoint = jointData[Jointstable.SelectedIndex];
+                jointData.RemoveAt(Jointstable.SelectedIndex);
             }
+            UpdateLinksTable(jointData, LinkData, removedJoint);
+        }
+
+        private void UpdateLinksTable(ObservableCollection<JointData> JointData, ObservableCollection<LinkData> LinksData, JointData removedJoint)
+        {
+            foreach (string link in removedJoint.LinkNamesList)
+            {
+                bool found = false;
+                int index;
+                for (index = 0; index < JointData.Count && !found; index++)
+                    found = JointData[index].LinkNamesList.Contains(link);
+                if (!found)
+                    RemoveLink(LinksData, link);
+            }
+            
+        }
+
+        private void RemoveLink(ObservableCollection<LinkData> LinksData, string link)
+        {
+            for (int index = 0; index < LinksData.Count; index++)
+                if (LinksData[index].Name.Equals(link))
+                {
+                    LinksData.RemoveAt(index);
+                    return;
+                }
         }
 
         private void SimulateButton_Click(object sender, RoutedEventArgs e)
