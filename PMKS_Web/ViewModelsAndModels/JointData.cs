@@ -43,7 +43,7 @@ namespace PMKS_Silverlight_App
             get
             {
                 if (LinkNames != null)
-                    return LinkNames.Split(',');
+                    return LinkNames.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries);
                 else return new string[0];
             }
         }

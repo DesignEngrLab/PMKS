@@ -35,7 +35,11 @@ namespace PMKS_Silverlight_App
                     if (JointData.ConvertTextToData(reader.ReadToEnd(), out jointDataList))
                     {
                         ClearButton_Click(null, null);
-                        foreach (var j in jointDataList) main.JointsInfo.Data.Add(j);
+                        foreach (var j in jointDataList)
+                        {
+                            main.JointsInfo.Data.Add(j);
+                            main.linkInputTable.UpdateLinksTableAterAdd(j);
+                        }
                     }
                 }
         }
@@ -58,50 +62,30 @@ namespace PMKS_Silverlight_App
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             main.JointsInfo.Data.Clear();
+            main.LinksInfo.Data.Clear();
 
         }
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
             var jointData = main.JointsInfo.Data;
-            var LinkData = main.LinksInfo.Data;
             var Jointstable = main.jointInputTable.dataGrid;
-            JointData removedJoint;
-            if (Jointstable.SelectedItem == null)
+            if (jointData.Count > 0)
             {
-                removedJoint = jointData[jointData.Count - 1];
-                jointData.RemoveAt(jointData.Count - 1);
-            }
-            else
-            {
-                removedJoint = jointData[Jointstable.SelectedIndex];
-                jointData.RemoveAt(Jointstable.SelectedIndex);
-            }
-            UpdateLinksTable(jointData, LinkData, removedJoint);
-        }
-
-        private void UpdateLinksTable(ObservableCollection<JointData> JointData, ObservableCollection<LinkData> LinksData, JointData removedJoint)
-        {
-            foreach (string link in removedJoint.LinkNamesList)
-            {
-                bool found = false;
-                int index;
-                for (index = 0; index < JointData.Count && !found; index++)
-                    found = JointData[index].LinkNamesList.Contains(link);
-                if (!found)
-                    RemoveLink(LinksData, link);
-            }
-            
-        }
-
-        private void RemoveLink(ObservableCollection<LinkData> LinksData, string link)
-        {
-            for (int index = 0; index < LinksData.Count; index++)
-                if (LinksData[index].Name.Equals(link))
+                JointData removedJoint;                
+                if (Jointstable.SelectedItem == null)
                 {
-                    LinksData.RemoveAt(index);
-                    return;
+                    removedJoint = jointData[jointData.Count - 1];
+                    jointData.RemoveAt(jointData.Count - 1);
                 }
+                else
+                {
+                    removedJoint = jointData[Jointstable.SelectedIndex];
+                    jointData.RemoveAt(Jointstable.SelectedIndex);
+                }
+                main.linkInputTable.UpdateLinksTableAfterDeletion(removedJoint.LinkNamesList);
+            }
         }
+        
 
         private void SimulateButton_Click(object sender, RoutedEventArgs e)
         {

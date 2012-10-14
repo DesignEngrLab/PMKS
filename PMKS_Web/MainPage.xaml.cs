@@ -74,7 +74,7 @@ namespace PMKS_Silverlight_App
         public MainPage()
         {
             InitializeComponent();
-            jointInputTable.main = editButtons.main = this;
+            jointInputTable.main = editButtons.main = linkInputTable.main = this;
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)

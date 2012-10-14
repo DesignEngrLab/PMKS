@@ -27,6 +27,16 @@ namespace PMKS_Silverlight_App
         private void dataGrid_CellEditEnded(object sender, DataGridCellEditEndedEventArgs e)
         {
             main.ParseData();
+            if (e.Column.DisplayIndex == 0 || e.Column.Header.ToString().ToLower().Equals("links")) // in case if header is changed, we check the display index and vice versa
+            {
+                DataGridCell cell = e.Column.GetCellContent(e.Row.DataContext).Parent as DataGridCell;
+                JointData datacontext = cell.DataContext as JointData;
+                if (datacontext.LinkNamesList.Length > 0)
+                {
+                    main.linkInputTable.UpdateLinksTableAterAdd(datacontext);
+                }
+                
+            }
         }
 
         internal void HighlightMissingAngle(int i)
