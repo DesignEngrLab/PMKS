@@ -4,16 +4,16 @@
  *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     OOOT is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General public License as published by
+ *     it under the terms of the GNU General internal License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *  
  *     OOOT is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General public License for more details.
+ *     GNU General internal License for more details.
  *  
- *     You should have received a copy of the GNU General public License
+ *     You should have received a copy of the GNU General internal License
  *     along with OOOT.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     Please find further details and contact information on OOOT
@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace OptimizationToolbox
 {
-    public class ToKnownBestFConvergence : abstractConvergence
+    internal class ToKnownBestFConvergence : abstractConvergence
     {
         private double negTolerance = double.PositiveInfinity;
         private double posTolerance = double.PositiveInfinity;
@@ -32,13 +32,13 @@ namespace OptimizationToolbox
         /// Gets or sets the optimal f which the process should stop after reaching.
         /// </summary>
         /// <value>The f at optimal.</value>
-        public double fAtOptimal { get; set; }
+        internal double fAtOptimal { get; set; }
 
         /// <summary>
         /// Gets or sets the tolerance negative on the positive side of fAtOptimal.
         /// </summary>
         /// <value>The positive tolerance.</value>
-        public double positiveTolerance
+        internal double positiveTolerance
         {
             get { return posTolerance; }
             set { posTolerance = value; }
@@ -50,7 +50,7 @@ namespace OptimizationToolbox
         /// is taken to make the range about fAtOptimal.
         /// </summary>
         /// <value>The negative tolerance.</value>
-        public double negativeTolerance
+        internal double negativeTolerance
         {
             get { return negTolerance; }
             set { negTolerance = value; }
@@ -61,7 +61,7 @@ namespace OptimizationToolbox
         /// <summary>
         /// Initializes a new instance of the <see cref="ToKnownBestFConvergence"/> class.
         /// </summary>
-        public ToKnownBestFConvergence()
+        internal ToKnownBestFConvergence()
         {
         }
 
@@ -71,7 +71,7 @@ namespace OptimizationToolbox
         /// <param name="fAtOptimal">The f at optimal.</param>
         /// <param name="positiveTolerance">The positive tolerance.</param>
         /// <param name="negativeTolerance">The negative tolerance.</param>
-        public ToKnownBestFConvergence(double fAtOptimal, double positiveTolerance,
+        internal ToKnownBestFConvergence(double fAtOptimal, double positiveTolerance,
                                        double negativeTolerance = double.PositiveInfinity)
         {
             this.fAtOptimal = fAtOptimal;
@@ -96,7 +96,7 @@ namespace OptimizationToolbox
         /// <returns>
         /// true or false - has the process converged?
         /// </returns>
-        public override bool converged(long iteration = -1, long numFnEvals = -1, double fBest = double.NaN, IList<double> xBest = null, IList<double[]> population = null, IList<double> gradF = null)
+        internal override bool converged(long iteration = -1, long numFnEvals = -1, double fBest = double.NaN, IList<double> xBest = null, IList<double[]> population = null, IList<double> gradF = null)
         {
             if (double.IsNaN(fBest))
                 throw new Exception("ToKnownBestConvergence expected a double (in the second argument, YDouble) "

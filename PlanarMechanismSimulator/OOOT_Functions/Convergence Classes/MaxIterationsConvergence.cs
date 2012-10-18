@@ -4,16 +4,16 @@
  *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     OOOT is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General public License as published by
+ *     it under the terms of the GNU General internal License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *  
  *     OOOT is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General public License for more details.
+ *     GNU General internal License for more details.
  *  
- *     You should have received a copy of the GNU General public License
+ *     You should have received a copy of the GNU General internal License
  *     along with OOOT.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     Please find further details and contact information on OOOT
@@ -27,12 +27,12 @@ namespace OptimizationToolbox
     /// <summary>
     /// Given a value Kmax, this criteria will return true if the process reaches this many iterations.
     /// </summary>
-    public class MaxIterationsConvergence : abstractConvergence
+    internal class MaxIterationsConvergence : abstractConvergence
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MaxIterationsConvergence"/> class.
         /// </summary>
-        public MaxIterationsConvergence()
+        internal MaxIterationsConvergence()
         {
         }
 
@@ -40,7 +40,7 @@ namespace OptimizationToolbox
         /// Initializes a new instance of the <see cref="MaxIterationsConvergence"/> class.
         /// </summary>
         /// <param name="maxIterations">The max iterations.</param>
-        public MaxIterationsConvergence(long maxIterations)
+        internal MaxIterationsConvergence(long maxIterations)
         {
             this.maxIterations = maxIterations;
         }
@@ -49,7 +49,7 @@ namespace OptimizationToolbox
         /// Gets or sets the maximum number of iterations.
         /// </summary>
         /// <value>The max iterations.</value>
-        public long maxIterations { get; set; }
+        internal long maxIterations { get; set; }
 
         /// <summary>
         /// Given a value Kmax, this criteria will return true if the process reaches this many iterations.
@@ -63,7 +63,7 @@ namespace OptimizationToolbox
         /// <returns>
         /// true or false - has the process converged?
         /// </returns>
-        public override bool converged(long iteration, long numFnEvals, double fBest = double.NaN, IList<double> xBest = null, IList<double[]> population = null, IList<double> gradF = null)
+        internal override bool converged(long iteration, long numFnEvals, double fBest = double.NaN, IList<double> xBest = null, IList<double[]> population = null, IList<double> gradF = null)
         {
             if (iteration < 0)
                 throw new Exception(

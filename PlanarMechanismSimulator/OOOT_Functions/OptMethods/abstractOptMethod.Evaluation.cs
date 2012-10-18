@@ -5,26 +5,26 @@ using StarMathLib;
 
 namespace OptimizationToolbox
 {
-    public abstract partial class abstractOptMethod
+    internal abstract partial class abstractOptMethod
     {
 
         /// <summary>
         /// Gets or sets the number of active constraints.
         /// </summary>
         /// <value>The number of active constraints, m.</value>
-        public int m { get; set; }
+        internal int m { get; set; }
 
         /// <summary>
         /// Gets or sets the number of equality constraints.
         /// </summary>
         /// <value>The number of equality constraints, p.</value>
-        public int p { get; set; }
+        internal int p { get; set; }
 
         /// <summary>
         /// Gets or sets the number of inequality constraints.
         /// </summary>
         /// <value>The number of inequality constraints, q.</value>
-        public int q { get; set; }
+        internal int q { get; set; }
 
         /// <summary>
         /// Gets the number of function evaluations. This is actually the max of
@@ -32,67 +32,31 @@ namespace OptimizationToolbox
         /// the optimization run.
         /// </summary>
         /// <value>The num evals.</value>
-        public long numEvals
-        {
-            get
-            {
-                var numEvalList = new List<long>(functionData.Values.Select(a => a.numEvals));
-                return numEvalList.Max();
-            }
-        }
-        public List<IObjectiveFunction> f { get; private set; }
-        public List<IEquality> h { get; private set; }
-        public List<IInequality> g { get; private set; }
-        public List<IConstraint> active { get; private set; }
-        private readonly Dictionary<IOptFunction, optFunctionData> functionData;
-        private readonly sameCandidate sameCandComparer = new sameCandidate(sameTolerance);
-
-        public IDependentAnalysis dependentAnalysis { get; private set; }
+        internal long numEvals { get; private set; }
+        internal List<IObjectiveFunction> f { get; private set; }
+        internal List<IEquality> h { get; private set; }
+        internal List<IInequality> g { get; private set; }
+        internal List<IConstraint> active { get; private set; }
+        internal IDependentAnalysis dependentAnalysis { get; private set; }
         private double[] lastDependentAnalysis;
 
 
         private void calc_dependent_Analysis(double[] point)
         {
             if (dependentAnalysis == null) return;
-            if (sameCandComparer.Equals(point, lastDependentAnalysis)) return;
             dependentAnalysis.calculate(point);
             lastDependentAnalysis = (double[])point.Clone();
         }
 
 
-
-        /// <summary>
-        /// Resets the function evaluation database.
-        /// </summary>
-        public void ResetFunctionEvaluationDatabase()
-        {
-            foreach (var fd in functionData)
-                fd.Value.Clear();
-        }
-
-
         #region Calculate f, g, h helper functions
-        public double calculate(IOptFunction function, double[] point)
+        internal double calculate(IOptFunction function, double[] point)
         {
             return function.calculate(point);
-            double fValue;
-            double[] pointClone = (double[])point.Clone();
-            if (functionData[function].TryGetValue(pointClone, out fValue))
-                return fValue;
-
-            calc_dependent_Analysis(pointClone);
-            /**************************************************/
-            /*** This is the only function that should call ***/
-            /**********IOptFunction.calculate(x)***************/
-            fValue = function.calculate(pointClone);
-            /**************************************************/
-            functionData[function].Add(pointClone, fValue);
-            functionData[function].numEvals++;
-            return fValue;
         }
 
 
-        // the reason this function is public but the remainder are not, is because
+        // the reason this function is internal but the remainder are not, is because
         // this is called from other classes. Most notably, the line search methods, 
         // and the initial sampling in SA to get a temperature.
         /// <summary>
@@ -101,10 +65,11 @@ namespace OptimizationToolbox
         /// <param name="point">The point.</param>
         /// <param name="includeMeritPenalty">if set to <c>true</c> [include merit penalty].</param>
         /// <returns></returns>
-        public double calc_f(double[] point, Boolean includeMeritPenalty = false)
+        internal double calc_f(double[] point, Boolean includeMeritPenalty = false)
         {
             var penalty = ((g.Count + h.Count > 0) && (ConstraintsSolvedWithPenalties || includeMeritPenalty))
                 ? meritFunction.calcPenalty(point) : 0.0;
+            numEvals++;
             return calculate(f[0], point) + penalty;
         }
 
@@ -115,7 +80,7 @@ namespace OptimizationToolbox
         /// <param name="point">The point.</param>
         /// <param name="includeMeritPenalty">if set to <c>true</c> [include merit penalty].</param>
         /// <returns></returns>
-        public double[] calc_f_vector(double[] point, Boolean includeMeritPenalty = false)
+        internal double[] calc_f_vector(double[] point, Boolean includeMeritPenalty = false)
         { return f.Select(fi => calculate(fi, point)).ToArray(); }
         /// <summary>
         /// Calculates the h vector at the specified point.
@@ -257,7 +222,7 @@ namespace OptimizationToolbox
         /// </summary>
         /// <param name="point">The point.</param>
         /// <returns></returns>
-        public Boolean feasible(double[] point)
+        internal Boolean feasible(double[] point)
         {
             if (h.Any(a => !feasible(a, point)))
                 return false;
@@ -296,7 +261,7 @@ namespace OptimizationToolbox
         /// <param name="c">The c.</param>
         /// <param name="point">The point.</param>
         /// <returns></returns>
-        public bool feasible(IConstraint c, double[] point)
+        internal bool feasible(IConstraint c, double[] point)
         {
             if (c is IEquality)
                 return feasible((IEquality)c, point);
@@ -314,26 +279,9 @@ namespace OptimizationToolbox
         /// <param name="point">The point.</param>
         /// <param name="i">The index of the variable in x.</param>
         /// <returns></returns>
-        public double deriv_wrt_xi(IOptFunction function, double[] point, int i)
+        internal double deriv_wrt_xi(IOptFunction function, double[] point, int i)
         {
-            switch (functionData[function].findDerivBy)
-            {
-                case differentiate.Analytic:
                     return ((IDifferentiable)function).deriv_wrt_xi(point, i);
-                case differentiate.Back1:
-                    return calcBack1(function, functionData[function].finiteDiffStepSize, point, i);
-                case differentiate.Forward1:
-                    return calcForward1(function, functionData[function].finiteDiffStepSize, point, i);
-                case differentiate.Central2:
-                    return calcCentral2(function, functionData[function].finiteDiffStepSize, point, i);
-                case differentiate.Back2:
-                    return calcBack2(function, functionData[function].finiteDiffStepSize, point, i);
-                case differentiate.Forward2:
-                    return calcForward2(function, functionData[function].finiteDiffStepSize, point, i);
-                case differentiate.Central4:
-                    return calcCentral4(function, functionData[function].finiteDiffStepSize, point, i);
-            }
-            return double.NaN;
         }
 
 

@@ -4,16 +4,16 @@
  *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     OOOT is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General public License as published by
+ *     it under the terms of the GNU General internal License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *  
  *     OOOT is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General public License for more details.
+ *     GNU General internal License for more details.
  *  
- *     You should have received a copy of the GNU General public License
+ *     You should have received a copy of the GNU General internal License
  *     along with OOOT.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     Please find further details and contact information on OOOT
@@ -23,7 +23,7 @@ using System;
 
 namespace OptimizationToolbox
 {
-    public class FixedOrGoldenSection : abstractLineSearch
+    internal class FixedOrGoldenSection : abstractLineSearch
     {
         private const double golden62 = 0.61803398874989484820458683436564;
         private const double golden38 = 1 - golden62;
@@ -37,14 +37,14 @@ namespace OptimizationToolbox
         /// </summary>
         /// <param name="epsilon">The epsilon.</param>
         /// <param name="upperBound">The upper bound.</param>
-        public FixedOrGoldenSection(double epsilon, double upperBound)
+        internal FixedOrGoldenSection(double epsilon, double upperBound)
             : base(epsilon, upperBound, -1)
         {
         }
 
         #endregion
 
-        public override double findAlphaStar(double[] x, double[] dir)
+        internal override double findAlphaStar(double[] x, double[] dir)
         {
             var alphaLow = 0.0;
             var alphaHigh = stepSize;

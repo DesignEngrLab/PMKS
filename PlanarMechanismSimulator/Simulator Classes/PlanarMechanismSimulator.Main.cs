@@ -428,6 +428,10 @@ namespace PlanarMechanismSimulator
         }
 
         private Dictionary<int, gearData> gearsData;
+        private double[] targetT;
+        private double[] targetAngle;
+        private double[] targetY;
+        private double[] targetX;
 
         #endregion
 
@@ -497,7 +501,7 @@ namespace PlanarMechanismSimulator
             {
                 if (links.Any(a => a.Lengths.Any(double.IsNaN)))
                     throw new Exception("Link lengths for all links need to be set first.");
-                var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
+                inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
                                 links.FirstOrDefault(a => a.joints.Contains(inputJoint));
                 if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
@@ -595,41 +599,9 @@ namespace PlanarMechanismSimulator
         /// <param name="x">The x.</param>
         public void calculate(double[] x)
         {
-            throw new NotImplementedException();
+            FindFullMovement();
         }
 
-
-        /// <summary>
-        /// Finds the difference from target path.
-        /// </summary>
-        /// <param name="TargetPath">The target path.</param>
-        /// <returns></returns>
-        public double FindDifferenceFromTargetPath(double[, ,] TargetPath)
-        {
-            //todo
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Optimizes the positions for target path.
-        /// </summary>
-        /// <param name="TargetPath">The target path.</param>
-        /// <returns></returns>
-        public double OptimizePositionsForTargetPath(double[, ,] TargetPath)
-        {
-            //todo
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Optimizes the input crank.
-        /// </summary>
-        /// <returns></returns>
-        public double OptimizeInputCrank()
-        {
-            //todo
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// Gets the degrees of freedom.

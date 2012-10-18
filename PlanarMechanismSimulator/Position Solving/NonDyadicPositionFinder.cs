@@ -69,7 +69,6 @@ namespace PlanarMechanismSimulator
         internal bool Run_PositionsAreClose(out double posError)
         {
             posError = 0.0;
-            optMethod.ResetFunctionEvaluationDatabase();
             var xInit = new double[2 * numUnknownPivots];
             for (int i = 0; i < joints.Count; i++)
             {
@@ -127,7 +126,6 @@ namespace PlanarMechanismSimulator
             do
             {
                 NumEvals += optMethod.numEvals;
-                optMethod.ResetFunctionEvaluationDatabase();
                 var xInit = new double[2 * numUnknownPivots]; //need to check if this is always true. If input is a ternary link it could be less.
 
                 for (int i = 0; i < numUnknownPivots; i++)

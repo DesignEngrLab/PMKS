@@ -4,16 +4,16 @@
  *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     OOOT is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General public License as published by
+ *     it under the terms of the GNU General internal License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *  
  *     OOOT is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General public License for more details.
+ *     GNU General internal License for more details.
  *  
- *     You should have received a copy of the GNU General public License
+ *     You should have received a copy of the GNU General internal License
  *     along with OOOT.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     Please find further details and contact information on OOOT
@@ -23,10 +23,10 @@ using System;
 
 namespace OptimizationToolbox
 {
-    public static class SearchIO
+    internal static class SearchIO
     {
 
-        public static int verbosity { get; set; }
+        internal static int verbosity { get; set; }
 
 
         #region Outputting to sidebar Console
@@ -55,7 +55,7 @@ namespace OptimizationToolbox
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="verbosityLimit">The verbosity limit.</param>
-        public static Boolean output(object message, int verbosityLimit = 0)
+        internal static Boolean output(object message, int verbosityLimit = 0)
         {
             if ((verbosityLimit > verbosity)
                 || (string.IsNullOrEmpty(message.ToString())))
@@ -68,7 +68,7 @@ namespace OptimizationToolbox
         /// </summary>
         /// <param name="list">The list.</param>
         /// <returns></returns>
-        public static Boolean output(params object[] list)
+        internal static Boolean output(params object[] list)
         {
             if ((verbosity >= list.Length)
                 || (string.IsNullOrEmpty(list[verbosity].ToString())))
@@ -86,7 +86,7 @@ namespace OptimizationToolbox
         ///// </summary>
         ///// <param name = "message">The message.</param>
         ///// <param name = "verbosityLimit">The verbosity limit.</param>
-        //public static Boolean output(object message, int verbosityLimit = 0)
+        //internal static Boolean output(object message, int verbosityLimit = 0)
         //{
         //    if ((message == null) || (message.ToString() == "")) return true;
         //    if (verbosityLimit == 0)
@@ -112,7 +112,7 @@ namespace OptimizationToolbox
         /////   one for each verbosity level.
         ///// </summary>
         ///// <param name = "list">The list.</param>
-        //public static void output(params object[] list)
+        //internal static void output(params object[] list)
         //{
         //    var index = list.Length;
         //    while (index-- > 0 && !output(list[index], index))

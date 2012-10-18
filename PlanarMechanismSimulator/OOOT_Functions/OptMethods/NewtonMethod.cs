@@ -4,16 +4,16 @@
  *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     OOOT is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General public License as published by
+ *     it under the terms of the GNU General internal License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *  
  *     OOOT is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General public License for more details.
+ *     GNU General internal License for more details.
  *  
- *     You should have received a copy of the GNU General public License
+ *     You should have received a copy of the GNU General internal License
  *     along with OOOT.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     Please find further details and contact information on OOOT
@@ -25,7 +25,7 @@ using StarMathLib;
 
 namespace OptimizationToolbox
 {
-    public class NewtonMethod : abstractOptMethod
+    internal class NewtonMethod : abstractOptMethod
     {
         /* xk is the value of x at a particular iteration, k. xkLast is the previous
          * value. gradF is the gradient of f and dk is the search direction at iteration
@@ -40,7 +40,7 @@ namespace OptimizationToolbox
 
         #region Constructor
 
-        public NewtonMethod()
+        internal NewtonMethod()
         {
             RequiresObjectiveFunction = true;
             ConstraintsSolvedWithPenalties = true;

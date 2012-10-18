@@ -33,9 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OptimizationToolbox">
-      <HintPath>..\Resources\OptimizationToolbox.dll</HintPath>
-    </Reference>
     <Reference Include="StarMath">
       <HintPath>..\Resources\StarMath.dll</HintPath>
     </Reference>
@@ -52,22 +49,16 @@
     <Compile Include="OOOT_Functions\Convergence Classes\DeltaFConvergence.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\MaxIterationsConvergence.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\ToKnownBestFConvergence.cs" />
-    <Compile Include="OOOT_Functions\DesignSpaceDescription.cs" />
     <Compile Include="OOOT_Functions\Enumerators.cs" />
     <Compile Include="OOOT_Functions\LineSearch\abstractLineSearch.cs" />
     <Compile Include="OOOT_Functions\LineSearch\FixedOrGoldenSection.cs" />
     <Compile Include="OOOT_Functions\Objective Function Constraint Classes\candidate.cs" />
     <Compile Include="OOOT_Functions\Objective Function Constraint Classes\Interfaces.cs" />
-    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\optFunctionData.cs" />
-    <Compile Include="OOOT_Functions\Objective Function Constraint Classes\sameCandidate.cs" />
-    <Compile Include="OOOT_Functions\optimizeSort.cs" />
     <Compile Include="OOOT_Functions\OptMethods\abstractOptMethod.cs" />
     <Compile Include="OOOT_Functions\OptMethods\abstractOptMethod.Evaluation.cs" />
     <Compile Include="OOOT_Functions\OptMethods\NewtonMethod.cs" />
     <Compile Include="OOOT_Functions\SearchDirection\abstractSearchDirection.cs" />
     <Compile Include="OOOT_Functions\SearchIO.cs" />
-    <Compile Include="OOOT_Functions\VariableDescriptor.cs" />
-    <Compile Include="OOOT_Functions\VariableDescriptorEnum.cs" />
     <Compile Include="StarMath_Functions\3D transforms.cs" />
     <Compile Include="StarMath_Functions\add subtract multiply.cs" />
     <Compile Include="StarMath_Functions\find functions.cs" />

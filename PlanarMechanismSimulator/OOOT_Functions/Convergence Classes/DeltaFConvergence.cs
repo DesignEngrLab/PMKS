@@ -4,16 +4,16 @@
  *     Copyright 2010 Matthew Ira Campbell, PhD.
  *
  *     OOOT is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General public License as published by
+ *     it under the terms of the GNU General internal License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *  
  *     OOOT is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General public License for more details.
+ *     GNU General internal License for more details.
  *  
- *     You should have received a copy of the GNU General public License
+ *     You should have received a copy of the GNU General internal License
  *     along with OOOT.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     Please find further details and contact information on OOOT
@@ -25,18 +25,18 @@ using StarMathLib;
 
 namespace OptimizationToolbox
 {
-    public class DeltaFConvergence : abstractConvergence
+    internal class DeltaFConvergence : abstractConvergence
     {
         private double flast;
         private IList<double> xlast;
 
         #region Constructor
 
-        public DeltaFConvergence()
+        internal DeltaFConvergence()
         {
         }
 
-        public DeltaFConvergence(double minDifference, double toleranceForSame = double.NegativeInfinity)
+        internal DeltaFConvergence(double minDifference, double toleranceForSame = double.NegativeInfinity)
         {
             this.minDifference = minDifference;
             this.toleranceForSame = toleranceForSame;
@@ -48,14 +48,14 @@ namespace OptimizationToolbox
         /// Gets or sets the minimum difference.
         /// </summary>
         /// <value>The min difference.</value>
-        public double minDifference { get; set; }
+        internal double minDifference { get; set; }
         /// <summary>
         /// Gets or sets the tolerance for same x. If the x is the same as the last the condition is NOT checked (returns false).
         /// If this is not a desirable catch, then leave as the default (negative infinity). In fact any negative value for
         /// toleranceForSame will cause it to be ignored since the distance between any two points can at best be 0.
         /// </summary>
         /// <value>The tolerance for same.</value>
-        public double toleranceForSame { get; set; }
+        internal double toleranceForSame { get; set; }
 
         /// <summary>
         /// Given a value D (minimum difference), this criteria will return true, if the distance (absolute value of the difference) 
@@ -70,7 +70,7 @@ namespace OptimizationToolbox
         /// <returns>
         /// true or false - has the process converged?
         /// </returns>
-        public override bool converged(long iteration = -1, long numFnEvals = -1, double fBest = double.NaN,
+        internal override bool converged(long iteration = -1, long numFnEvals = -1, double fBest = double.NaN,
             IList<double> xBest = null, IList<double[]> population = null, IList<double> gradF = null)
         {
             if (double.IsNaN(fBest))

@@ -25,9 +25,10 @@ namespace PMKS_Silverlight_App
             if (LinkParameters == null || JointParameters == null) return;
 
             MainCanvas.Children.Clear();
+            if (JointParameters.Count < 2) return;
             double penThick, velocityFactor, accelFactor;
             defineDisplayConstants(JointParameters, out penThick, out velocityFactor, out accelFactor);
-            
+
             for (int i = 0; i < inputJointIndex; i++)
             {
                 /* make a shape (i.e. Path shape) for each joint for each of the 3:position, velocity, and acceleration */
@@ -76,6 +77,8 @@ namespace PMKS_Silverlight_App
 
             var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / (maxima[0] - minima[0]),
                                        (((Grid)Parent).ActualHeight - 2 * DisplayConstants.Buffer) / (maxima[1] - minima[1]));
+            if (ScaleFactor > 100) ScaleFactor = 100;
+            if (ScaleFactor < 0.01) ScaleFactor = 0.01;
             var biggerDim = Math.Max(maxima[0] - minima[0], maxima[1] - minima[1]);
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
             velocityFactor = DisplayConstants.VelocityLengthRatio * biggerDim / maxima[2];
