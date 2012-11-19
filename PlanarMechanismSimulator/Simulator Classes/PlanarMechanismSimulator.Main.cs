@@ -23,7 +23,7 @@ namespace PlanarMechanismSimulator
 
         private PositionFinder posFinder;
 
-        public double[] InputRange;
+        public double[] InputRange { get; private set; }
         private double _deltaAngle = Constants.DefaultStepSize;
         private double _fixedTimeStep = double.NaN;
         private double _maxSmoothingError = double.NaN;
@@ -139,7 +139,7 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// Initializes a new instance of the <see cref="Simulator"/> class.
         /// </summary>
-        /// <param name="LinkIDs">The link I ds.</param>
+        /// <param name="LinkIDs">The link IDs.</param>
         /// <param name="JointTypes">The pivot types.</param>
         /// <param name="InitPositions">The init positions.</param>
         public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, IList<double[]> InitPositions = null)
@@ -449,7 +449,35 @@ namespace PlanarMechanismSimulator
                     {
                         joints[JointReOrdering[i]].xInitial = InitPositions[i][0];
                         joints[JointReOrdering[i]].yInitial = InitPositions[i][1];
+                        if (InitPositions[i].GetLength(0) > 2)
+                            joints[JointReOrdering[i]].InitSlideAngle = InitPositions[i][2];
                     }
+                }
+                setAdditionalReferencePositions();
+                setGearData();
+                foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to assign positions to topology (see inner exeception).", e);
+            }
+        }
+        /// <summary>
+        /// Assigns the initial positions of all the pivots.
+        /// </summary>
+        /// <param name="InitPositions">The init positions.</param>
+        private void AssignPositions(double[] InitPositions)
+        {
+            try
+            {
+                var k = 0;
+                for (int i = 0; i < numJoints; i++)
+                {
+                    joints[JointReOrdering[i]].xInitial = InitPositions[k++];
+                    joints[JointReOrdering[i]].yInitial = InitPositions[k++];
+                    if (joints[JointReOrdering[i]].jointType == JointTypes.P ||
+                        joints[JointReOrdering[i]].jointType == JointTypes.RP)
+                        joints[JointReOrdering[i]].InitSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
                 setGearData();
@@ -597,8 +625,10 @@ namespace PlanarMechanismSimulator
         /// this is nearly the same as the function above it.
         /// </summary>
         /// <param name="x">The x.</param>
-        public void calculate(double[] x)
+        public void calculate(double[] x = null)
         {
+            if (x != null && x.GetLength(0) == numJoints)
+                AssignPositions(x);
             FindFullMovement();
         }
 
