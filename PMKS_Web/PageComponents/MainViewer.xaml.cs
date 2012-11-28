@@ -20,6 +20,19 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
         }
+
+        private double ScaleFactor
+        {
+            get;
+            set;
+        }
+
+        private MatrixParams MatrixParameters
+        {
+            get;
+            set;
+        }
+
         public void UpdateVisuals(TimeSortedList JointParameters, TimeSortedList LinkParameters, int inputJointIndex, List<joint> joints, ObservableCollection<JointData> JointData)
         {
             if (LinkParameters == null || JointParameters == null) return;
@@ -75,7 +88,7 @@ namespace PMKS_Silverlight_App
             maxima[3] = Math.Sqrt(maxima[3]);
 
 
-            var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / (maxima[0] - minima[0]),
+            ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / (maxima[0] - minima[0]),
                                        (((Grid)Parent).ActualHeight - 2 * DisplayConstants.Buffer) / (maxima[1] - minima[1]));
             if (ScaleFactor > 100) ScaleFactor = 100;
             if (ScaleFactor < 0.01) ScaleFactor = 0.01;
@@ -91,9 +104,65 @@ namespace PMKS_Silverlight_App
                     new Matrix(ScaleFactor, 0, 0, -ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0],
                                ScaleFactor * maxima[1] + DisplayConstants.Buffer)
             };
+            if (MatrixParameters == null)
+                MatrixParameters = new MatrixParams(ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0], ScaleFactor * maxima[1] + DisplayConstants.Buffer);
+            else
+            {
+                MatrixParameters.ScaleFactor = ScaleFactor;
+                MatrixParameters.XOffSet = DisplayConstants.Buffer - ScaleFactor * minima[0];
+                MatrixParameters.XOffSet = ScaleFactor * maxima[1] + DisplayConstants.Buffer;
+            }
+            
             /* this is just to debug the problem with the positioning and cropping. */
             MainCanvas.Background = new SolidColorBrush(Colors.LightGray);
             MainCanvas.Margin = new Thickness(DisplayConstants.Buffer);
         }
+
+        private void MainCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            /* commented out for now, not working properly, but the zooming mechanism should take place in this handler
+            if (e.Delta > 1)
+                RenderTransform = new MatrixTransform
+                {
+                    Matrix = new Matrix(1.01*MatrixParameters.ScaleFactor, 0, 0, -1.01*MatrixParameters.ScaleFactor, MatrixParameters.XOffSet, MatrixParameters.YOffSet)
+                };
+            else
+            {
+                RenderTransform = new MatrixTransform
+                {
+                    Matrix = new Matrix(0.99 * MatrixParameters.ScaleFactor, 0, 0, -0.99 * MatrixParameters.ScaleFactor, MatrixParameters.XOffSet, MatrixParameters.YOffSet)
+                };
+            }
+            */
+        }
+    }
+
+    internal class MatrixParams
+    {
+        public double ScaleFactor
+        {
+            get;
+            set;
+        }
+
+        public double XOffSet
+        {
+            get;
+            set;
+        }
+
+        public double YOffSet
+        {
+            get;
+            set;
+        }
+
+        public MatrixParams(double scaleFactor, double xOffSet, double yOffSet)
+        {
+            this.ScaleFactor = scaleFactor;
+            this.XOffSet = xOffSet;
+            this.YOffSet = yOffSet;
+        }
+
     }
 }

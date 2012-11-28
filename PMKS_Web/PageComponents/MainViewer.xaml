@@ -9,7 +9,7 @@
         </src:PanAndZoomViewer>-->
     <!--<ScrollViewer>
         <Viewbox >-->
-            <Canvas Name="MainCanvas" MinHeight="100" MinWidth="100" />
+            <Canvas Name="MainCanvas" MinHeight="100" MinWidth="100" MouseWheel="MainCanvas_MouseWheel" />
         <!--</Viewbox>
     </ScrollViewer>-->
 
