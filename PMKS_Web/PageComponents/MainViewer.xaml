@@ -1,16 +1,15 @@
 ﻿<UserControl x:Class="PMKS_Silverlight_App.MainViewer"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:src="clr-namespace:PMKS_Silverlight_App"  >
+    xmlns:src="clr-namespace:PMKS_Silverlight_App" MouseWheel="MainCanvas_MouseWheel"  >
     <!--<src:PanAndZoomViewer x:Name="zoomViewer" MinimumZoom="1" MaximumZoom="4">
         <Canvas x:Name="MainCanvas" Background="White" Width="994" Height="569">
             
         </Canvas>
         </src:PanAndZoomViewer>-->
-    <!--<ScrollViewer>
-        <Viewbox >-->
-            <Canvas Name="MainCanvas" MinHeight="100" MinWidth="100" MouseWheel="MainCanvas_MouseWheel" />
-        <!--</Viewbox>
-    </ScrollViewer>-->
+
+    <src:PanAndZoomViewer> <Canvas Name="MainCanvas" MinHeight="100" MinWidth="100" /></src:PanAndZoomViewer>
+       
+  
 
 </UserControl>

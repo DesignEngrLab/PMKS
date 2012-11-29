@@ -96,23 +96,27 @@ namespace PMKS_Silverlight_App
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
             velocityFactor = DisplayConstants.VelocityLengthRatio * biggerDim / maxima[2];
             accelFactor = DisplayConstants.AccelLengthRatio * biggerDim / maxima[3];
+            MainCanvas.RenderTransform = new ScaleTransform { ScaleX = 100, ScaleY = 100 };
+          
+            return;
             /* this function is going to impact pan and zoom. I'm not sure it is right. */
             /* Plus there is the matter of the cropping, which causes problems if the shapes have negative parts. */
-            MainCanvas.RenderTransform = new MatrixTransform
-            {
-                Matrix =
-                    new Matrix(ScaleFactor, 0, 0, -ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0],
-                               ScaleFactor * maxima[1] + DisplayConstants.Buffer)
-            };
+            MainCanvas.RenderTransform = new ScaleTransform { ScaleX = ScaleFactor, ScaleY = ScaleFactor };
+            //MainCanvas.RenderTransform = new MatrixTransform
+            //{
+            //    Matrix =
+            //        new Matrix(ScaleFactor, 0, 0, -ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0],
+            //                   ScaleFactor * maxima[1] + DisplayConstants.Buffer)
+            //};
             if (MatrixParameters == null)
                 MatrixParameters = new MatrixParams(ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0], ScaleFactor * maxima[1] + DisplayConstants.Buffer);
-            else
-            {
-                MatrixParameters.ScaleFactor = ScaleFactor;
-                MatrixParameters.XOffSet = DisplayConstants.Buffer - ScaleFactor * minima[0];
-                MatrixParameters.XOffSet = ScaleFactor * maxima[1] + DisplayConstants.Buffer;
-            }
-            
+            //else
+            //{
+            MatrixParameters.ScaleFactor = ScaleFactor;
+            //    MatrixParameters.XOffSet = DisplayConstants.Buffer - ScaleFactor * minima[0];
+            //    MatrixParameters.YOffSet = ScaleFactor * maxima[1] + DisplayConstants.Buffer;
+            //}
+
             /* this is just to debug the problem with the positioning and cropping. */
             MainCanvas.Background = new SolidColorBrush(Colors.LightGray);
             MainCanvas.Margin = new Thickness(DisplayConstants.Buffer);
@@ -120,20 +124,13 @@ namespace PMKS_Silverlight_App
 
         private void MainCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            /* commented out for now, not working properly, but the zooming mechanism should take place in this handler
+            return;
+            /* commented out for now, not working properly, but the zooming mechanism should take place in this handler*/
             if (e.Delta > 1)
-                RenderTransform = new MatrixTransform
-                {
-                    Matrix = new Matrix(1.01*MatrixParameters.ScaleFactor, 0, 0, -1.01*MatrixParameters.ScaleFactor, MatrixParameters.XOffSet, MatrixParameters.YOffSet)
-                };
-            else
-            {
-                RenderTransform = new MatrixTransform
-                {
-                    Matrix = new Matrix(0.99 * MatrixParameters.ScaleFactor, 0, 0, -0.99 * MatrixParameters.ScaleFactor, MatrixParameters.XOffSet, MatrixParameters.YOffSet)
-                };
-            }
-            */
+                ScaleFactor *= 1.01;
+            else ScaleFactor /= 1.01;
+            MainCanvas.RenderTransform = new ScaleTransform { ScaleX = ScaleFactor, ScaleY = ScaleFactor };
+
         }
     }
 
