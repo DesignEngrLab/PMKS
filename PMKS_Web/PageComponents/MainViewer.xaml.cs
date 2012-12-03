@@ -124,6 +124,7 @@ namespace PMKS_Silverlight_App
             if (ScaleFactor < 0.01) ScaleFactor = 0.01;
             var biggerDim = Math.Max(maxima[0] - minima[0], maxima[1] - minima[1]);
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
+            Dataclass.PenThick = penThick;
             velocityFactor = DisplayConstants.VelocityLengthRatio * biggerDim / maxima[2];
             accelFactor = DisplayConstants.AccelLengthRatio * biggerDim / maxima[3];
             MainCanvas.RenderTransform = new ScaleTransform { ScaleX = 100, ScaleY = 100 };
