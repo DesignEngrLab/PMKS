@@ -11,14 +11,38 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 using PlanarMechanismSimulator;
+using Binding_Classes;
 
 namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
     {
+
         public MainViewer()
         {
             InitializeComponent();
+        }
+
+        #region Properties
+        private TimeSliderDataClass _dataclass;
+        public TimeSliderDataClass Dataclass
+        {
+            get { return _dataclass; }
+            set { _dataclass = value; }
+        }
+
+        private double _val;
+        public double Val
+        {
+            get { return _val; }
+            set
+            {
+                if (_val != value)
+                {
+                    _val = value;
+                    setNewPathStateFromSliderValue(_val);
+                }
+            }
         }
 
         private double ScaleFactor
@@ -32,11 +56,17 @@ namespace PMKS_Silverlight_App
             get;
             set;
         }
+        #endregion
+
+        private void setNewPathStateFromSliderValue(double val)
+        {
+
+        }
 
         public void UpdateVisuals(TimeSortedList JointParameters, TimeSortedList LinkParameters, int inputJointIndex, List<joint> joints, ObservableCollection<JointData> JointData)
         {
             if (LinkParameters == null || JointParameters == null) return;
-
+            Dataclass.NumberOfPoints = inputJointIndex;
             MainCanvas.Children.Clear();
             if (JointParameters.Count < 2) return;
             double penThick, velocityFactor, accelFactor;
@@ -136,6 +166,7 @@ namespace PMKS_Silverlight_App
 
     internal class MatrixParams
     {
+        #region Properties
         public double ScaleFactor
         {
             get;
@@ -153,6 +184,7 @@ namespace PMKS_Silverlight_App
             get;
             set;
         }
+        #endregion
 
         public MatrixParams(double scaleFactor, double xOffSet, double yOffSet)
         {

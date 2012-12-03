@@ -9,18 +9,31 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.ComponentModel;
+using Binding_Classes;
 
 namespace PMKS_Silverlight_App
 {
-    public partial class TimeSlider : UserControl
+    public class TimeSlider : UserControl
     {
+        private TimeSliderDataClass _dataclass;
+        public TimeSliderDataClass Dataclass
+        {
+            get { return _dataclass; }
+            set { _dataclass = value; }
+        }
+
         public MainPage main
         { get; set; }
 
         public TimeSlider()
         {
             InitializeComponent();
+            Dataclass = new TimeSliderDataClass();
+            this.DataContext = Dataclass;
         }
+
+        
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -31,5 +44,6 @@ namespace PMKS_Silverlight_App
         {
             //MessageBox.Show(String.Format(" New value is {0}", TimeSliderGUI.Value),  "mouse left up", MessageBoxButton.OKCancel);
         }
+
     }
 }
