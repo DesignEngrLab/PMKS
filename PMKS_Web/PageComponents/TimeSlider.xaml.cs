@@ -32,18 +32,5 @@ namespace PMKS_Silverlight_App
             Dataclass = new TimeSliderDataClass();
             this.DataContext = Dataclass;
         }
-
-        
-
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            Console.WriteLine("Old value is {0}, New value is {1}", e.OldValue, e.NewValue);
-        }
-
-        private void Slider_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            //MessageBox.Show(String.Format(" New value is {0}", TimeSliderGUI.Value),  "mouse left up", MessageBoxButton.OKCancel);
-        }
-
     }
 }

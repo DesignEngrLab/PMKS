@@ -5,5 +5,5 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300" d:DesignWidth="400">
-    <Slider Name="TimeSliderGUI" Value="{Binding Val}" Orientation="Vertical" IsDirectionReversed="True" MouseLeftButtonUp="Slider_MouseLeftButtonUp" ValueChanged="Slider_ValueChanged"/>
+    <Slider Name="TimeSliderGUI" Value="{Binding Val}" Orientation="Vertical"/>
 </UserControl>
