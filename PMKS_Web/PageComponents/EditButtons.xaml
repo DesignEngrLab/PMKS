@@ -5,12 +5,12 @@
         <StackPanel Orientation="Horizontal" >
             <Button Content="Open Text File" Name="OpenButton" Click="OpenButton_Click"/>
             <Button Content="Save as Text File" Name="SaveButton" Click="SaveButton_Click"/>
-            <Button Content="Simulate" x:Name="SimulateButton" Margin="28,0,0,0" Click="SimulateButton_Click" />
+            <Button Content="Simulate" x:Name="SimulateButton" Margin="0,0,0,0" Click="SimulateButton_Click" RenderTransformOrigin="-0.055,0.682" Width="78" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" >
-            <Button Content="Add New Row" Name="AddButton" Click="AddButton_Click"/>
-            <Button Content="Clear All Rows" Name="ClearButton" Click="ClearButton_Click"/>
-            <Button Content="Remove Current Row" Name="RemoveButton" Click="RemoveButton_Click"/>
+            <Button Content="Add New Row" Name="AddButton" Click="AddButton_Click" Width="85"/>
+            <Button Content="Clear All Rows" Name="ClearButton" Click="ClearButton_Click" Width="99"/>
+            <Button Content="Remove Row" Name="RemoveButton" Click="RemoveButton_Click"/>
         </StackPanel>
     </StackPanel>
 </UserControl>

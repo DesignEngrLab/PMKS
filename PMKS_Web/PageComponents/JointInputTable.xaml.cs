@@ -44,5 +44,22 @@ namespace PMKS_Silverlight_App
             //dataGrid.row
             //throw new NotImplementedException();
         }
+
+        private void ClickMe_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Click Count: " + e.ClickCount);
+
+            if (e.ClickCount == 2)
+            {
+                main.editButtons.AddButton_Click(sender, e);
+            }
+
+        }
+
+        private void dataGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show("FACEBOOK");
+        }
+
     }
 }

@@ -11,9 +11,13 @@
         <src:JointTypeProvider x:Name="jointTypeProvider"/>
     </UserControl.Resources>
     <s:DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Background="Transparent" CanUserResizeColumns="True" 
-                    CanUserReorderColumns="True" CanUserSortColumns="False" HeadersVisibility="All"
-                    RowEditEnded="dataGrid_RowEditEnded" CellEditEnded="dataGrid_CellEditEnded">
-            <s:DataGrid.Columns>
+                CanUserReorderColumns="True" 
+                CanUserSortColumns="False" HeadersVisibility="All"
+                RowEditEnded="dataGrid_RowEditEnded" 
+                CellEditEnded="dataGrid_CellEditEnded" MaxHeight="500" 
+                MouseLeftButtonDown="ClickMe_MouseLeftButtonDown"
+                MouseRightButtonDown="dataGrid_MouseRightButtonDown">
+                <s:DataGrid.Columns>
                 <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110" />
                 <s:DataGridTemplateColumn Header="Type of Joint">
                     <s:DataGridTemplateColumn.CellTemplate>
@@ -31,9 +35,11 @@
                 <s:DataGridTextColumn Header="X Pos."  Binding="{Binding XPos}" />
                 <s:DataGridTextColumn Header="Y Pos." Binding="{Binding YPos}"/>
                 <s:DataGridTextColumn Header="Angle" Binding="{Binding Angle}"/>
-                <s:DataGridCheckBoxColumn Header="Position Visible?" Binding="{Binding PosVisible}" Width="30"/>
-                <s:DataGridCheckBoxColumn Header="Velocity?" Binding="{Binding VelocityVisible}" Width="30"/>
-                <s:DataGridCheckBoxColumn Header="Acceleration?" Binding="{Binding AccelerationVisible}" Width="30"/>
+            <s:DataGridCheckBoxColumn Header="P" Binding="{Binding PosVisible}" Width="30" >
+                
+            </s:DataGridCheckBoxColumn>
+            <s:DataGridCheckBoxColumn Header="V" Binding="{Binding VelocityVisible}" Width="30"/>
+                <s:DataGridCheckBoxColumn Header="A" Binding="{Binding AccelerationVisible}" Width="30"/>
             </s:DataGrid.Columns>
         </s:DataGrid>
 </UserControl>

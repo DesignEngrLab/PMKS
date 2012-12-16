@@ -14,7 +14,7 @@ using Binding_Classes;
 
 namespace PMKS_Silverlight_App
 {
-    public class TimeSlider : UserControl
+    public partial class TimeSlider : UserControl
     {
         private TimeSliderDataClass _dataclass;
         public TimeSliderDataClass Dataclass
