@@ -44,6 +44,7 @@
     <Compile Include="gearData.cs" />
     <Compile Include="joint.cs" />
     <Compile Include="link.cs" />
+    <Compile Include="noEqualSort.cs" />
     <Compile Include="OOOT_Functions\abstractMeritFunction.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\abstractConvergenceClasses.cs" />
     <Compile Include="OOOT_Functions\Convergence Classes\DeltaFConvergence.cs" />

@@ -78,6 +78,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Binding Classes\TimeSliderDataClass.cs" />
     <Compile Include="ConstantsAndEnumerators.cs" />
     <Compile Include="Converters\BooleanToAngleTypeConverter.cs" />
     <Compile Include="Converters\BooleanToLengthTypeConverter.cs" />
@@ -94,7 +95,6 @@
     <Compile Include="Shapes\AccelerationPath.cs" />
     <Compile Include="Shapes\VelocityPath.cs" />
     <Compile Include="Shapes\PositionPath.cs" />
-    <Compile Include="TimeSliderDataClass.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />
     <Compile Include="PageComponents\LinkInputTable.xaml.cs">

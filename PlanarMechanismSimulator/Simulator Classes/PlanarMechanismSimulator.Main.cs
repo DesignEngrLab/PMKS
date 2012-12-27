@@ -270,7 +270,10 @@ namespace PlanarMechanismSimulator
                 /* reorder links, move input link and ground link to back of list */
                 inputLink = (inputJoint.Link2.isGround) ? inputJoint.Link1 : inputJoint.Link2;
                 links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list
-                groundLink = links.First(c => c.isGround);
+                var groundLinks = links.FindAll(c => c.isGround);//move inputLink to back of list
+                if (groundLinks.Count != 1) throw new Exception("There can only be one ground link. In this case, there are "
+                      + groundLinks.Count);
+                groundLink = groundLinks[0];
                 links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
                 inputLinkIndex = numLinks - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
@@ -649,7 +652,8 @@ namespace PlanarMechanismSimulator
         }
 
 
-        private void InitializeGroundAndInputSpeedAndAcceleration(double[,] jointParams, double[,] linkParams)
+        private void InitializeGroundAndInputSpeedAndAcceleration(double[,] jointParams, double[,] linkParams,
+            circleDiagramItem[] initialCircleDiagram = null)
         {
             /* these are the ground joints, which are not moving. */
             for (int i = inputJointIndex + 1; i < numJoints; i++)
@@ -669,7 +673,11 @@ namespace PlanarMechanismSimulator
                 /* otherwise, input is rotating at a constant speed. */
                 linkParams[inputLinkIndex, 1] = InputSpeed;
                 linkParams[inputLinkIndex, 2] = 0.0;
-
+                if (initialCircleDiagram != null)
+                {
+                    initialCircleDiagram[circleDiagInputIndex].speed = InputSpeed;
+                    initialCircleDiagram[circleDiagInputIndex].angularAccel = 0.0;
+                }
                 var xInputJoint = jointParams[inputJointIndex, 0];
                 var yInputJoint = jointParams[inputJointIndex, 1];
                 jointParams[inputJointIndex, 2] = jointParams[inputJointIndex, 3] = 0.0;
@@ -691,6 +699,11 @@ namespace PlanarMechanismSimulator
                 linkParams[inputLinkIndex, 1] = 0.0;
                 linkParams[inputLinkIndex, 2] = 0.0;
 
+                if (initialCircleDiagram != null)
+                {
+                    initialCircleDiagram[circleDiagInputIndex].speed = 0.0;
+                    initialCircleDiagram[circleDiagInputIndex].angularAccel = 0.0;
+                }
                 var angle = inputJoint.SlideAngle;
                 for (int i = firstInputJointIndex; i <= inputJointIndex; i++)
                 {

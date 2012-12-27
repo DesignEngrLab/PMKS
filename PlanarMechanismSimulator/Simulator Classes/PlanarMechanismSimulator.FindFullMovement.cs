@@ -17,7 +17,6 @@ namespace PlanarMechanismSimulator
             var useErrorMethod = !double.IsNaN(MaxSmoothingError);
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
-            SetUpDyadicVelocityObjects();
             JointParameters = new TimeSortedList();
             LinkParameters = new TimeSortedList();
 
@@ -30,7 +29,9 @@ namespace PlanarMechanismSimulator
             var initLinkParams = new double[numLinks, 3];
             for (int i = 0; i < numLinks; i++)
                 initLinkParams[i, 0] = links[i].AngleInitial;
-            InitializeGroundAndInputSpeedAndAcceleration(initPivotParams, initLinkParams);
+
+            SetUpDyadicVelocityObjects();
+            InitializeGroundAndInputSpeedAndAcceleration(initPivotParams, initLinkParams, circleDiagram);
             InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
@@ -157,6 +158,7 @@ namespace PlanarMechanismSimulator
             }
         }
 
+
         private PositionFinder setUpNewPositionFinder()
         {
             var newJoints = joints.Select(j => j.copy()).ToList();
@@ -207,7 +209,7 @@ namespace PlanarMechanismSimulator
 
                     #region Find Velocities for Current Position
 
-                    if (!findVelocitiesThroughICMethod(currentTime, true))
+                    if (!findVelocitiesThroughICMethod(currentTime, currentPivotParams, currentLinkParams, Forward))
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
                         NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
