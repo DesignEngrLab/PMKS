@@ -593,34 +593,33 @@ namespace PlanarMechanismSimulator
             return circleDiagram.Where(cdi => cdi.found && (cdi.link1 == thisLink || cdi.link2 == thisLink)).ToList();
         }
 
-        private point findInstantCenter(circleDiagramItem cdi, List<Tuple<circleDiagramItem, circleDiagramItem>> connectedCDIs)
+        private Boolean findInstantCenter(circleDiagramItem cdi, List<Tuple<circleDiagramItem, circleDiagramItem>> connectedCDIs)
         {
-            var lines = new SortedList<double, point>(new noEqualSort());
+            var lines = new SortedList<double, point>(new slopeSort());
             foreach (var cCDI in connectedCDIs)
             {
-                var refPoint = (double.IsInfinity(cCDI.Item1.location.x)||double.IsInfinity(cCDI.Item1.location.y))
+                var refPoint = (double.IsInfinity(cCDI.Item1.location.x) || double.IsInfinity(cCDI.Item1.location.y))
                     ? new point(cCDI.Item2.location.x, cCDI.Item2.location.y)
                     : new point(cCDI.Item1.location.x, cCDI.Item1.location.y);
-                var slope = (Constants.sameCloseZero(cCDI.Item1.location.x , cCDI.Item2.location.x) ||double.IsInfinity(cCDI.Item1.location.y)
-                    ||double.IsInfinity(cCDI.Item2.location.y))
+                var slope = (Constants.sameCloseZero(cCDI.Item1.location.x, cCDI.Item2.location.x) || double.IsInfinity(cCDI.Item1.location.y)
+                    || double.IsInfinity(cCDI.Item2.location.y))
                     ? double.PositiveInfinity
                     : (cCDI.Item1.location.y - cCDI.Item2.location.y) / (cCDI.Item1.location.x - cCDI.Item2.location.x);
                 lines.Add(slope, refPoint);
             }
             while (lines.Count > 2)
             {
-                var removeCand = lines.FirstOrDefault(line=>(double.IsInfinity(line.Key) && double.IsInfinity(line.Value.x) && double.IsInfinity(line.Value.y)));
-                if (removeCand==null)
-                     removeCand = lines.FirstOrDefault(line=>(double.IsInfinity(line.Key) && (double.IsInfinity(line.Value.x) || double.IsInfinity(line.Value.y))));
-                if (removeCand==null)
-                     removeCand = lines.FirstOrDefault(line=>(double.IsInfinity(line.Value.x) || double.IsInfinity(line.Value.y)));
-                var removeIndex = (removeCand==null)?1:lines.IndexOfValue(removeCand);
+                var removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Key) && double.IsInfinity(line.Value.x) && double.IsInfinity(line.Value.y))).Value;
+                if (removeCand == null)
+                    removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Key) && (double.IsInfinity(line.Value.x) || double.IsInfinity(line.Value.y)))).Value;
+                if (removeCand == null)
+                    removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Value.x) || double.IsInfinity(line.Value.y))).Value;
+                var removeIndex = (removeCand == null) ? 1 : lines.IndexOfValue(removeCand);
                 lines.RemoveAt(removeIndex);
-              
+
             };
-          var ICpoint =  Constants.solveViaIntersectingLines(lines.Keys[0], lines.Values[0],lines.Keys[1], lines.Values[1]);
-        
-            // here!!! what to return true or false?
+           cdi.location=Constants.solveViaIntersectingLines(lines.Keys[0], lines.Values[0], lines.Keys[1], lines.Values[1]);
+           return true;
         }
 
         private double[] findInstantCenter(int[,] CDIRows, circleDiagramItem[] list1, circleDiagramItem[] list2,
@@ -1337,4 +1336,18 @@ namespace PlanarMechanismSimulator
 
         }
     }
+
+    /// <summary>
+    /// A comparer for optimization that can be used for either 
+    /// minimization or maximization.
+    /// </summary>
+    internal class slopeSort : IComparer<double>
+    {
+        public int Compare(double x, double y)
+        {
+            if (Math.Abs(x) > Math.Abs(y)) return -1;
+            else return 1;
+        }
+    }
+
 }
