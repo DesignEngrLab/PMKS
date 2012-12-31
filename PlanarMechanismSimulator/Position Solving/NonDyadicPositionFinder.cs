@@ -29,7 +29,7 @@ namespace PlanarMechanismSimulator
             linkFunctions = new List<LinkLengthFunction>();
             unkJoints = new List<joint>();
             foreach (var j in joints)
-                if (j.knownState != KnownState.Fully)
+                if (j.positionKnown != KnownState.Fully)
                 {
                     if (j.jointType != JointTypes.R)
                         throw new Exception("Cannot currently handle non R-joints in Non-Dyadic Analysis.");
@@ -73,7 +73,7 @@ namespace PlanarMechanismSimulator
             for (int i = 0; i < joints.Count; i++)
             {
                 var j = joints[i];
-                if (j.knownState == KnownState.Fully)
+                if (j.positionKnown == KnownState.Fully)
                     foreach (var llf in linkFunctions)
                         llf.SetJointPosition(i, j.x, j.y);
                 else
@@ -97,7 +97,7 @@ namespace PlanarMechanismSimulator
                 var j = unkJoints[i];
                 j.x = xStar[2 * i];
                 j.y = xStar[2 * i + 1];
-                j.knownState = KnownState.Fully;
+                j.positionKnown = KnownState.Fully;
 
                 var tempError = (xStar[2 * i] - xInit[2 * i]) * (xStar[2 * i] - xInit[2 * i]) + 
                     (xStar[2 * i+1] - xInit[2 * i+1]) * (xStar[2 * i+1] - xInit[2 * i+1]);

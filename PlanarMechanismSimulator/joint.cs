@@ -46,12 +46,26 @@ namespace PlanarMechanismSimulator
         internal double yNumerical { get; set; }
         internal double xLast { get; set; }
         internal double yLast { get; set; }
+
+        internal double vx_unit { get; set; }
+        internal double vy_unit { get; set; }
+        internal double vx { get; set; }
+        internal double vy { get; set; }
+        internal double vxNumerical { get; set; }
+        internal double vyNumerical { get; set; }
+        internal double vxLast { get; set; }
+        internal double vyLast { get; set; }
+
+
         public link Link1 { get; internal set; }
         public link Link2 { get; internal set; }
-        // how to plan for future cam shapes
-        internal KnownState knownState;
-        // internal Boolean SlideLineIsUnknown = true;
-        //   internal Boolean PositionIsUnknown = true;
+        // how to plan for future cam shapes?
+
+
+        internal KnownState positionKnown;
+        internal KnownState velocityKnown;
+        internal KnownState accelerationKnown;
+
 
 
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
@@ -64,15 +78,15 @@ namespace PlanarMechanismSimulator
             if (currentJointPosition == null) return;
             if (currentJointPosition.GetLength(0) < 2)
                 throw new Exception("Values for x and y must be provided for joint.");
-            xInitial = currentJointPosition[0];
-            yInitial = currentJointPosition[1];
+            x = xInitial = currentJointPosition[0];
+            y = yInitial = currentJointPosition[1];
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
                 InitSlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)
                 throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
-        private joint(){}
+        private joint() { }
 
         public Boolean SlidingWithRespectTo(link link0)
         {

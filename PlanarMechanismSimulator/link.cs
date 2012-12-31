@@ -50,6 +50,12 @@ namespace PlanarMechanismSimulator
         public double AngleLast { get; set; }
         public double AngleNumerical { get; set; }
 
+        internal KnownState velocityKnown;
+
+        public double Velocity { get; set; }
+        public double Acceleration { get; set; }
+        public point InstantCenter { get; set; }
+
         internal link(string name, List<joint> Joints, Boolean IsGround)
         {
             this.name = name;
@@ -114,7 +120,7 @@ namespace PlanarMechanismSimulator
 
         internal double lengthBetween(joint joint1, joint joint2)
         {
-            return Math.Abs(signedLengthBetween(joint1,joint2));
+            return Math.Abs(signedLengthBetween(joint1, joint2));
         }
 
         internal double signedLengthBetween(joint joint1, joint joint2)

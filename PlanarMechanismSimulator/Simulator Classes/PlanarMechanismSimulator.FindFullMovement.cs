@@ -13,7 +13,7 @@ namespace PlanarMechanismSimulator
         {
             if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
                 throw new Exception(
-                    "Either the smoothing errorm angle delta or the time step must be specified.");
+                    "Either the smoothing error angle delta or the time step must be specified.");
             var useErrorMethod = !double.IsNaN(MaxSmoothingError);
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
@@ -30,8 +30,6 @@ namespace PlanarMechanismSimulator
             for (int i = 0; i < numLinks; i++)
                 initLinkParams[i, 0] = links[i].AngleInitial;
 
-            SetUpDyadicVelocityObjects();
-            InitializeGroundAndInputSpeedAndAcceleration(initPivotParams, initLinkParams, circleDiagram);
             InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
             JointParameters.Add(0.0, initPivotParams);
             LinkParameters.Add(0.0, initLinkParams);
@@ -40,7 +38,10 @@ namespace PlanarMechanismSimulator
             /* attempt to find velocities and accelerations at initial point analytically
              * there is no point in trying numerically as this is the first point and the numerical methods
              * perform finite difference of current and last time steps. */
-            if (!(findVelocitiesThroughICMethod(0.0, true) && findAccelerationAnalytically(0.0, true)))
+
+            // at this point. the values are in x_initial and y_initial, but the velocity analysis will look at only
+            // x and y.
+            if (!(DefineVelocities() && findAccelerationAnalytically(0.0, true)))
             {
                 var ForwardJointParams = (double[,])initPivotParams.Clone();
                 var ForwardLinkParams = (double[,])initLinkParams.Clone();
@@ -205,11 +206,10 @@ namespace PlanarMechanismSimulator
                         {
                             InputRange[0] = currentLinkParams[inputLinkIndex, 0];
                         }
-                    InitializeGroundAndInputSpeedAndAcceleration(currentPivotParams, currentLinkParams);
 
                     #region Find Velocities for Current Position
 
-                    if (!findVelocitiesThroughICMethod(currentTime, currentPivotParams, currentLinkParams, Forward))
+                    if (!DefineVelocities())
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
                         NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
@@ -301,11 +301,10 @@ namespace PlanarMechanismSimulator
                         {
                             InputRange[0] = currentLinkParams[inputLinkIndex, 0];
                         }
-                    InitializeGroundAndInputSpeedAndAcceleration(currentPivotParams, currentLinkParams);
 
                     #region Find Velocities for Current Position
 
-                    if (!findVelocitiesThroughICMethod(currentTime, true))
+                    if (!DefineVelocities())
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
                         NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
