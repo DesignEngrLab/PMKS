@@ -13,7 +13,6 @@ namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-
         private void InitializeGroundAndInputSpeedAndAcceleration()
         {
             for (int i = 0; i < inputJointIndex; i++)
@@ -73,8 +72,7 @@ namespace PlanarMechanismSimulator
             }
             else throw new Exception("Currently only R or P can be the input joints.");
         }
-
-
+        
         internal Boolean DefineVelocities()
         {
             InitializeGroundAndInputSpeedAndAcceleration();
@@ -89,6 +87,7 @@ namespace PlanarMechanismSimulator
             } while (numUnknownJoints > 0 && (successfulJointUpdate || successfulLinkUpdate));
             return (numUnknownJoints == 0);
         }
+
         #region Update Velocities and ICs of Links
         private bool UpdateVelocitiesAndICsOfLinks()
         {
@@ -156,13 +155,13 @@ namespace PlanarMechanismSimulator
                 if (j.velocityKnown == KnownState.Fully) continue;
                 if (j.velocityKnown == KnownState.Unknown)
                 {
-                    if (j.Link1.velocityKnown != KnownState.Unknown)
+                    if ((j.Link1.velocityKnown != KnownState.Unknown)
+                        && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
                     {
                         updateJointUnitVectors(j, j.Link1);
                         a_successful_update = true;
                     }
-                    else if (j.Link2.velocityKnown != KnownState.Unknown
-                        && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
+                    else if (j.Link2.velocityKnown != KnownState.Unknown)
                     {
                         updateJointUnitVectors(j, j.Link2);
                         a_successful_update = true;
@@ -170,13 +169,13 @@ namespace PlanarMechanismSimulator
                 }
                 if (j.velocityKnown == KnownState.Partially)
                 {
-                    if (j.Link1.velocityKnown == KnownState.Fully)
+                    if ((j.Link1.velocityKnown == KnownState.Fully)
+                        && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
                     {
                         updateJointVelocityVector(j, j.Link1);
                         a_successful_update = true;
                     }
-                    else if (j.Link2.velocityKnown == KnownState.Fully
-                        && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
+                    else if (j.Link2.velocityKnown == KnownState.Fully)
                     {
                         updateJointVelocityVector(j, j.Link2);
                         a_successful_update = true;
@@ -201,8 +200,8 @@ namespace PlanarMechanismSimulator
             }
             else
             {
-                j.vx = j.vx_unit * j.Link1.Velocity;
-                j.vy = j.vy_unit * j.Link1.Velocity;
+                j.vx = j.vx_unit * l.Velocity;
+                j.vy = j.vy_unit * l.Velocity;
             }
             j.velocityKnown = KnownState.Fully;
         }

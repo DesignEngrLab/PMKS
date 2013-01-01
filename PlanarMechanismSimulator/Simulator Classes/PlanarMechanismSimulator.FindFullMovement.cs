@@ -39,8 +39,6 @@ namespace PlanarMechanismSimulator
              * there is no point in trying numerically as this is the first point and the numerical methods
              * perform finite difference of current and last time steps. */
 
-            // at this point. the values are in x_initial and y_initial, but the velocity analysis will look at only
-            // x and y.
             if (!(DefineVelocities() && findAccelerationAnalytically(0.0, true)))
             {
                 var ForwardJointParams = (double[,])initPivotParams.Clone();

@@ -220,18 +220,24 @@ namespace PlanarMechanismSimulator
                     if (Positions != null) currentJointPosition = Positions[i];
                     if (LinkIDs[i].Count == 1)
                     {
-                        joints.Add(new joint((LinkIDs[i][0] == "ground"), JointTypeStrings[i], currentJointPosition));
+                        /* if the specified joint is only a point to be traced on a given link, then we make it
+                         * an "R" joint. */
+                        joints.Add(new joint((LinkIDs[i][0] == "ground"), "r", currentJointPosition));
                         newLinkIDs.Add(new List<string> { LinkIDs[i][0] });
                     }
-                    else
+                    else /* if there are 2 or more links at this joint, then it's actually multiple co-located
+                          * joints. This really only make sense for "R" joints. We assume that if it is typed as an RP
+                          * joint then between 0 and 1 there is an RP and between 1 and 2, 2 and 3 and so on, it is an R joint. */
                         for (int j = 0; j < LinkIDs[i].Count - 1; j++)
                         {
                             if (j > 0 && JointTypeStrings[i].Equals("rp", StringComparison.InvariantCultureIgnoreCase))
                                 joints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                                      "r", currentJointPosition));
+                                /* if there are more than 2 links and the joint is typed G or P then we throw an error. */
                             else if (j > 0 && (JointTypeStrings[i].Equals("g", StringComparison.InvariantCultureIgnoreCase)
                                  || JointTypeStrings[i].Equals("p", StringComparison.InvariantCultureIgnoreCase)))
                                 throw new Exception("More than two links is not allowed for " + JointTypeStrings[i] + " joints.");
+                                /* else...this is the normal case of a joint between two links. */
                             else joints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                              JointTypeStrings[i], currentJointPosition));
                             newLinkIDs.Add(new List<string> { LinkIDs[i][j], LinkIDs[i][j + 1] });
