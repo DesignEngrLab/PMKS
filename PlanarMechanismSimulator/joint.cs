@@ -51,10 +51,12 @@ namespace PlanarMechanismSimulator
         internal double vy_unit { get; set; }
         internal double vx { get; set; }
         internal double vy { get; set; }
-        internal double vxNumerical { get; set; }
-        internal double vyNumerical { get; set; }
         internal double vxLast { get; set; }
         internal double vyLast { get; set; }
+
+        internal double ax { get; set; }
+        internal double ay { get; set; }
+
 
 
         public link Link1 { get; internal set; }
@@ -78,8 +80,8 @@ namespace PlanarMechanismSimulator
             if (currentJointPosition == null) return;
             if (currentJointPosition.GetLength(0) < 2)
                 throw new Exception("Values for x and y must be provided for joint.");
-            x = xInitial = currentJointPosition[0];
-            y = yInitial = currentJointPosition[1];
+            x = xInitial = xLast = xNumerical = currentJointPosition[0];
+            y = yInitial = yLast = yNumerical = currentJointPosition[1];
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
                 InitSlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)

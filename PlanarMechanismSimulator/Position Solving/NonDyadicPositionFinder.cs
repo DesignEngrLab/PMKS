@@ -104,7 +104,7 @@ namespace PlanarMechanismSimulator
                 if (posError < tempError) posError = tempError;
             }
             foreach (var c in links)
-                if (!c.AngleIsKnown)
+                if (c.AngleIsKnown==KnownState.Unknown)
                     posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
             return true;
         }

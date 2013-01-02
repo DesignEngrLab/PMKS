@@ -4,14 +4,6 @@ using System.Collections.Generic;
 
 namespace PlanarMechanismSimulator
 {
-    //internal enum LinkPointType
-    //{
-    //    Pin,
-    //    Center,
-    //    GearTooth,
-    //    OrthoSlideReference
-    //};
-
     public class link
     {
         /// <summary>
@@ -25,7 +17,7 @@ namespace PlanarMechanismSimulator
         /// </summary>
         public readonly Boolean isGround;
 
-        internal Boolean AngleIsKnown;
+        internal KnownState AngleIsKnown;
 
         private Dictionary<int, double> lengths;
         //private Dictionary<int, point> orthoPoints;
@@ -53,6 +45,7 @@ namespace PlanarMechanismSimulator
         internal KnownState velocityKnown;
 
         public double Velocity { get; set; }
+        public double VelocityLast { get; set; }
         public double Acceleration { get; set; }
         public point InstantCenter { get; set; }
 
@@ -69,14 +62,15 @@ namespace PlanarMechanismSimulator
         {
             numJoints = joints.Count;
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).ToList();
-            if (fixedJoints.Count < 2 || fixedJoints.Count(j => j.isGround) > 1) AngleInitial = 0.0;
+            if (fixedJoints.Count < 2 || fixedJoints.Count(j => j.isGround) > 1)
+                Angle = AngleInitial =AngleNumerical=AngleLast= 0.0;
             else if (fixedJoints.Count(j => j.isGround) == 1)
             {
                 var ground = fixedJoints.FirstOrDefault(j => j.isGround);
                 var notGround = fixedJoints.FirstOrDefault(j => !j.isGround);
-                AngleInitial = Constants.angle(ground, notGround);
+                Angle = AngleInitial = AngleNumerical = AngleLast = Constants.angle(ground, notGround);
             }
-            else AngleInitial = Constants.angle(fixedJoints[0], fixedJoints[1]);
+            else Angle = AngleInitial = AngleNumerical = AngleLast = Constants.angle(fixedJoints[0], fixedJoints[1]);
             lengths = new Dictionary<int, double>();
             //orthoPoints = new Dictionary<int, point>();
             for (int i = 0; i < joints.Count - 1; i++)

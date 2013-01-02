@@ -72,8 +72,8 @@ namespace PlanarMechanismSimulator
             }
             else throw new Exception("Currently only R or P can be the input joints.");
         }
-        
-        internal Boolean DefineVelocities()
+
+        private Boolean DefineVelocitiesAnalytically()
         {
             InitializeGroundAndInputSpeedAndAcceleration();
 
@@ -85,7 +85,12 @@ namespace PlanarMechanismSimulator
                 successfulJointUpdate = UpdateVelocitiesOfJoints();
                 numUnknownJoints = joints.Count(j => j.velocityKnown != KnownState.Fully);
             } while (numUnknownJoints > 0 && (successfulJointUpdate || successfulLinkUpdate));
-            return (numUnknownJoints == 0);
+            if (numUnknownJoints == 0)
+            {
+                UpdateVelocitiesAndICsOfLinks();
+                return true;
+            }
+            return false;
         }
 
         #region Update Velocities and ICs of Links
@@ -112,19 +117,31 @@ namespace PlanarMechanismSimulator
                         && Constants.sameCloseZero(j.y, thisLink.InstantCenter.y)));
                     if (knownJoint != null)
                     {
-                        if (Double.IsNaN(thisLink.InstantCenter.x) || Double.IsInfinity(thisLink.InstantCenter.x)
-                            || Double.IsNaN(thisLink.InstantCenter.y) || Double.IsInfinity(thisLink.InstantCenter.y))
-                            thisLink.Velocity = 0.0;
-                        else
-                            thisLink.Velocity = StarMathLib.StarMath.crossProduct2(
-                                new double[] { knownJoint.x - thisLink.InstantCenter.x, knownJoint.y - thisLink.InstantCenter.y },
-                                new double[] { knownJoint.vx, knownJoint.vy });
-                        thisLink.velocityKnown = KnownState.Fully;
+                        setAngularVelocity(thisLink, knownJoint);
                         a_successful_update = true;
                     }
                 }
             }
             return a_successful_update;
+        }
+
+        private void setAngularVelocity(link thisLink, joint knownJoint)
+        {
+            if (Double.IsNaN(thisLink.InstantCenter.x) || Double.IsInfinity(thisLink.InstantCenter.x)
+                || Double.IsNaN(thisLink.InstantCenter.y) || Double.IsInfinity(thisLink.InstantCenter.y))
+                thisLink.Velocity = 0.0;
+            else
+            {
+                var negRy = -(knownJoint.y - thisLink.InstantCenter.y);
+                var Rx = knownJoint.x - thisLink.InstantCenter.x;
+                if (Constants.sameCloseZero(negRy))
+                    thisLink.Velocity = knownJoint.vy / Rx;
+                else if (Constants.sameCloseZero(Rx))
+                    thisLink.Velocity = knownJoint.vx / negRy;
+                else thisLink.Velocity = (knownJoint.vy / Rx + knownJoint.vx / negRy) / 2;
+            }
+            thisLink.velocityKnown = KnownState.Fully;
+            // todo: need to recurse on all connected P joints
         }
 
         private point findInstantCenter(List<joint> jointsWithKnownVelDirs)
@@ -200,6 +217,7 @@ namespace PlanarMechanismSimulator
             }
             else
             {
+                // todo: need to add radius!
                 j.vx = j.vx_unit * l.Velocity;
                 j.vy = j.vy_unit * l.Velocity;
             }

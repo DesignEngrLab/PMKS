@@ -46,16 +46,11 @@ namespace PlanarMechanismSimulator
             this.gearsData = gearsData;
         }
 
-        internal Boolean DefineNewPositions(double positionChange, double[,] currentJointParams, double[,] currentLinkParams,
-            double[,] oldJointParams, double[,] oldLinkParams)
+        internal Boolean DefineNewPositions(double positionChange)
         {
-            InitializeJointsAndLinks(positionChange, currentJointParams, currentLinkParams, oldJointParams, oldLinkParams);
+            InitializeJointsAndLinks(positionChange);
             var numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
-            if (numUnknownJoints == 0)
-            {
-                WriteValuesToMatrices(currentJointParams, currentLinkParams);
-                return true;
-            }
+            if (numUnknownJoints == 0) return true;
             do
             {
                 posResult = PositionAnalysisResults.NoSolvableDyadFound;
@@ -271,37 +266,16 @@ namespace PlanarMechanismSimulator
                 if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
                 PositionError = NDPSError;
             }
-            WriteValuesToMatrices(currentJointParams, currentLinkParams);
             return true;
         }
 
-        private void WriteValuesToMatrices(double[,] currentJointParams, double[,] currentLinkParams)
-        {
-            for (int i = 0; i < numJoints; i++)
-            {
-                var j = joints[i];
-                currentJointParams[i, 0] = j.x;
-                currentJointParams[i, 1] = j.y;
-            }
-            for (int i = 0; i < numLinks; i++)
-            {
-                var l = links[i];
-                currentLinkParams[i, 0] = l.Angle;
-            }
-        }
-
-        private void InitializeJointsAndLinks(double positionChange, double[,] currentJointParams, double[,] currentLinkParams,
-            double[,] oldJointParams, double[,] oldLinkParams)
+        private void InitializeJointsAndLinks(double positionChange)
         {
             _posError = 0.0;
             joint fixedGndJoint = null;
             for (int i = 0; i < numJoints; i++)
             {
                 var j = joints[i];
-                j.xLast = oldJointParams[i, 0];
-                j.yLast = oldJointParams[i, 1];
-                j.xNumerical = currentJointParams[i, 0];
-                j.yNumerical = currentJointParams[i, 1];
                 if (i >= inputJointIndex && j.FixedWithRespectTo(groundLink) && fixedGndJoint == null)
                 {
                     fixedGndJoint = j;
@@ -309,14 +283,12 @@ namespace PlanarMechanismSimulator
                     // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
                     assignJointPosition(j, groundLink, j.xLast, j.yLast);
                 }
-                else joints[i].positionKnown = KnownState.Unknown;
+                else j.positionKnown = KnownState.Unknown;
             }
             for (int i = 0; i < numLinks; i++)
             {
                 var l = links[i];
-                l.AngleLast = oldLinkParams[i, 0];
-                l.AngleNumerical = currentLinkParams[i, 0];
-                l.AngleIsKnown = false;
+                l.AngleIsKnown = KnownState.Unknown;
             }
             setLinkPositionFromRotate(fixedGndJoint, groundLink, 0.0);
             if (inputJoint.jointType == JointTypes.R)
@@ -718,7 +690,7 @@ namespace PlanarMechanismSimulator
 
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
-            if (thisLink.AngleIsKnown) return; //this sometimes happen as the process recurses, esp. around RP and G joints
+            if (thisLink.AngleIsKnown==KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
             if (double.IsNaN(angleChange))
             {
                 //var j1 = knownJoint;
@@ -741,7 +713,7 @@ namespace PlanarMechanismSimulator
                     angleChange += solveRotateSlotToPin(knownJoint, j2, thisLink);
             }
             thisLink.Angle = thisLink.AngleLast + angleChange;
-            thisLink.AngleIsKnown = true;
+            thisLink.AngleIsKnown = KnownState.Fully;
 
             foreach (var j in thisLink.joints.Where(j => j.positionKnown != KnownState.Fully))
             {
@@ -786,7 +758,7 @@ namespace PlanarMechanismSimulator
         private static bool FindKnownPositionAndSlopeOnLink(link link, out joint knownJoint)
         {
             knownJoint = null;
-            if (!link.AngleIsKnown) return false;
+            if (link.AngleIsKnown==KnownState.Unknown) return false;
             return FindKnownPositionOnLink(link, out knownJoint);
         }
         private static bool FindKnownPositionOnLink(link link, out joint knownJoint)
@@ -797,7 +769,7 @@ namespace PlanarMechanismSimulator
         private static bool FindKnownSlopeOnLink(link link, out joint knownJoint)
         {
             knownJoint = null;
-            if (!link.AngleIsKnown) return false;
+            if (link.AngleIsKnown==KnownState.Unknown) return false;
             knownJoint = link.joints.FirstOrDefault(j => j.positionKnown != KnownState.Unknown);
             return knownJoint != null;
         }

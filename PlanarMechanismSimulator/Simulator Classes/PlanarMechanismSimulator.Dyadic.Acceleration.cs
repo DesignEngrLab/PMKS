@@ -9,7 +9,7 @@ namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-        private Boolean findAccelerationAnalytically(double currentTime, bool forwardInTime)
+        private Boolean DefineAccelerationsAnalytically()
         {
             return false;
             throw new NotImplementedException();

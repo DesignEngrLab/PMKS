@@ -1,46 +1,42 @@
 ﻿using OptimizationToolbox;
+using System;
 
 namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-        private void NumericalPosition(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
+        private void NumericalPosition(double deltaTime)
         {
             for (int i = 0; i < numJoints; i++)
             {
-                newJointParams[i, 0] = lastJointParams[i, 0] + lastJointParams[i, 2] * deltaTime +
-                    0.5 * lastJointParams[i, 4] * deltaTime * deltaTime;
-                newJointParams[i, 1] = lastJointParams[i, 1] + lastJointParams[i, 3] * deltaTime +
-                              0.5 * lastJointParams[i, 5] * deltaTime * deltaTime;
-                //newJointParams[i, 0] = lastJointParams[i, 0];
-                //newJointParams[i, 1] = lastJointParams[i, 1];
+                joints[i].xNumerical = joints[i].xLast + joints[i].vx * deltaTime + 0.5 * joints[i].ax * deltaTime * deltaTime;
+                joints[i].yNumerical = joints[i].yLast + joints[i].vy * deltaTime + 0.5 * joints[i].ay * deltaTime * deltaTime;
             }
             for (int i = 0; i < inputLinkIndex; i++)
-            {
-                newLinkParams[i, 0] = lastLinkParams[i, 0] + lastLinkParams[i, 1] * deltaTime +
-                    0.5 * lastLinkParams[i, 2] * deltaTime * deltaTime;
-                //newLinkParams[i, 0] = lastLinkParams[i, 0];
-            }
+                links[i].Angle = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
         }
-        private void NumericalVelocity(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
+        private void NumericalVelocity(double deltaTime)
         {
             for (int i = 0; i < firstInputJointIndex; i++)
             {
-                newJointParams[i, 2] = (newJointParams[i, 0] - lastJointParams[i, 0]) / deltaTime;
-                newJointParams[i, 3] = (newJointParams[i, 1] - lastJointParams[i, 1]) / deltaTime;
+                joints[i].vx = (joints[i].x - joints[i].xLast) / deltaTime;
+                joints[i].vy = (joints[i].y - joints[i].yLast) / deltaTime;
+                var magnitude = Math.Sqrt(joints[i].vx * joints[i].vx + joints[i].vy * joints[i].vy);
+                joints[i].vx_unit = joints[i].vx / magnitude;
+                joints[i].vy_unit = joints[i].vy / magnitude;
             }
             for (int i = 0; i < inputLinkIndex; i++)
-                newLinkParams[i, 1] = (newLinkParams[i, 0] - lastLinkParams[i, 0]) / deltaTime;
+                links[i].Velocity = (links[i].Angle - links[i].AngleLast) / deltaTime;
         }
-        private void NumericalAcceleration(double deltaTime, double[,] newJointParams, double[,] newLinkParams, double[,] lastJointParams, double[,] lastLinkParams)
+        private void NumericalAcceleration(double deltaTime)
         {
             for (int i = 0; i < firstInputJointIndex; i++)
             {
-                newJointParams[i, 4] = (newJointParams[i, 2] - lastJointParams[i, 2]) / deltaTime;
-                newJointParams[i, 5] = (newJointParams[i, 3] - lastJointParams[i, 3]) / deltaTime;
+                joints[i].ax = (joints[i].vx - joints[i].vxLast) / deltaTime;
+                joints[i].ay = (joints[i].vy - joints[i].vyLast) / deltaTime;
             }
             for (int i = 0; i < inputLinkIndex; i++)
-                newLinkParams[i, 2] = (newLinkParams[i, 1] - lastLinkParams[i, 1]) / deltaTime;
+                links[i].Acceleration = (links[i].Velocity - links[i].VelocityLast) / deltaTime;
         }
     }
 }

@@ -17,145 +17,220 @@ namespace PlanarMechanismSimulator
             var useErrorMethod = !double.IsNaN(MaxSmoothingError);
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
-            JointParameters = new TimeSortedList();
-            LinkParameters = new TimeSortedList();
+            double[,] initJointParams, initLinkParams;
+            SetInitialVelocityAndAcceleration(DefineVelocitiesAnalytically(), DefineAccelerationsAnalytically(),
+              out  initJointParams, out initLinkParams);
 
-            var initPivotParams = new double[numJoints, 6];
-            for (int i = 0; i < numJoints; i++)
-            {
-                initPivotParams[i, 0] = joints[i].xInitial;
-                initPivotParams[i, 1] = joints[i].yInitial;
-            }
-            var initLinkParams = new double[numLinks, 3];
-            for (int i = 0; i < numLinks; i++)
-                initLinkParams[i, 0] = links[i].AngleInitial;
+            var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+            JointParameters = new TimeSortedList();
+            JointParameters.Add(0.0, initJointParams);
+            LinkParameters = new TimeSortedList();
+            LinkParameters.Add(0.0, initLinkParams);
 
             InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
-            JointParameters.Add(0.0, initPivotParams);
-            LinkParameters.Add(0.0, initLinkParams);
-            posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var posFinderBackwards = setUpNewPositionFinder();
-            /* attempt to find velocities and accelerations at initial point analytically
-             * there is no point in trying numerically as this is the first point and the numerical methods
-             * perform finite difference of current and last time steps. */
-
-            if (!(DefineVelocities() && findAccelerationAnalytically(0.0, true)))
-            {
-                var ForwardJointParams = (double[,])initPivotParams.Clone();
-                var ForwardLinkParams = (double[,])initLinkParams.Clone();
-                bool forwardSuccess = false;
-                var BackwardJointParams = (double[,])initPivotParams.Clone();
-                var BackwardLinkParams = (double[,])initLinkParams.Clone();
-                bool backwardSuccess = false;
-                var smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
-                forwardSuccess = posFinder.DefineNewPositions(Constants.SmallPerturbationFraction * FixedTimeStep * InputSpeed,
-                ForwardJointParams, ForwardLinkParams, initPivotParams, initLinkParams);
-                if (forwardSuccess)
-                    NumericalVelocity(smallTimeStep, ForwardJointParams, ForwardLinkParams, initPivotParams, initLinkParams);
-                /*** Stepping Backward in Time ***/
-                backwardSuccess = posFinder.DefineNewPositions(-Constants.SmallPerturbationFraction * FixedTimeStep * InputSpeed,
-                BackwardJointParams, BackwardLinkParams, initPivotParams, initLinkParams);
-                if (backwardSuccess)
-                    NumericalVelocity(-smallTimeStep, BackwardJointParams, BackwardLinkParams, initPivotParams, initLinkParams);
-
-                if (forwardSuccess && backwardSuccess)
-                {
-                    /* central difference puts values in init parameters. */
-                    for (int i = 0; i < firstInputJointIndex; i++)
-                    {
-                        initPivotParams[i, 2] = (ForwardJointParams[i, 2] + BackwardJointParams[i, 2]) / 2;
-                        initPivotParams[i, 3] = (ForwardJointParams[i, 3] + BackwardJointParams[i, 3]) / 2;
-                        initPivotParams[i, 4] = (ForwardJointParams[i, 2] - BackwardJointParams[i, 2]) / (2 * smallTimeStep);
-                        initPivotParams[i, 5] = (ForwardJointParams[i, 3] - BackwardJointParams[i, 3]) / (2 * smallTimeStep);
-                    }
-                    for (int i = 0; i < inputLinkIndex; i++)
-                    {
-                        initLinkParams[i, 1] = (ForwardLinkParams[i, 1] + BackwardLinkParams[i, 1]) / 2;
-                        initLinkParams[i, 2] = (ForwardLinkParams[i, 1] - BackwardLinkParams[i, 1]) / (2 * smallTimeStep);
-                    }
-                }
-                else if (forwardSuccess)
-                {
-                    for (int i = 0; i < firstInputJointIndex; i++)
-                    {
-                        initPivotParams[i, 2] = ForwardJointParams[i, 2];
-                        initPivotParams[i, 3] = ForwardJointParams[i, 3];
-                    }
-                    for (int i = 0; i < inputLinkIndex; i++)
-                        initLinkParams[i, 1] = ForwardLinkParams[i, 1];
-                }
-                else if (backwardSuccess)
-                {
-                    for (int i = 0; i < firstInputJointIndex; i++)
-                    {
-                        initPivotParams[i, 2] = BackwardJointParams[i, 2];
-                        initPivotParams[i, 3] = BackwardJointParams[i, 3];
-                    }
-                    for (int i = 0; i < inputLinkIndex; i++)
-                        initLinkParams[i, 1] = BackwardLinkParams[i, 1];
-                }
-            }
 
             #endregion
             if (useErrorMethod)
             {
 #if DEBUGSERIAL
-            SimulateWithinError(initPivotParams, initLinkParams, true, posFinder);
+                SimulateWithinError(true, posFinder);
 #elif SILVERLIGHT
-            var forwardThread = new Thread(delegate()
+                var posFinderBackwards = setUpNewPositionFinder();
+                var forwardThread = new Thread(delegate()
+                    {
+                        SimulateWithinError( true, posFinder);
+                        forwardDone.Set();
+                    });
+                var backwardThread = new Thread(delegate()
+                    {
+                        SimulateWithinError(false, posFinderBackwards);
+                        backwardDone.Set();
+                    });
+                forwardThread.Start(); backwardThread.Start();
+                if (forwardDone.WaitOne() && backwardDone.WaitOne())
                 {
-                    SimulateWithinError( initPivotParams, initLinkParams, true, posFinder);
-                    forwardDone.Set();
-                });
-            var backwardThread = new Thread(delegate()
-                {
-                    SimulateWithinError(initPivotParams, initLinkParams, false, posFinderBackwards);
-                    backwardDone.Set();
-                });
-            forwardThread.Start(); backwardThread.Start();
-            if (forwardDone.WaitOne() && backwardDone.WaitOne())
-            {
-                forwardDone = new AutoResetEvent(false);
-                backwardDone = new AutoResetEvent(false);
-            }
+                    forwardDone = new AutoResetEvent(false);
+                    backwardDone = new AutoResetEvent(false);
+                }
 #else
+                var posFinderBackwards = setUpNewPositionFinder();
                 Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
-                    () => SimulateWithinError(initPivotParams, initLinkParams, true, posFinder),
+                    () => SimulateWithinError(true, posFinder),
                     /*** Stepping Backward in Time ***/
-                    () => SimulateWithinError(initPivotParams, initLinkParams, false, posFinderBackwards));
+                    () => SimulateWithinError(false, posFinderBackwards));
 #endif
             }
             else
             {
 #if DEBUGSERIAL
-            SimulateWithFixedDelta( initPivotParams, initLinkParams, true, posFinder);
+                SimulateWithFixedDelta(true, posFinder);
 #elif SILVERLIGHT
-            var forwardThread = new Thread(delegate()
+                var posFinderBackwards = setUpNewPositionFinder();
+                var forwardThread = new Thread(delegate()
                 {
-                    SimulateWithFixedDelta( initPivotParams, initLinkParams, true, posFinder);
+                    SimulateWithFixedDelta(true, posFinder);
                     forwardDone.Set();
                 });
-            var backwardThread = new Thread(delegate()
+                var backwardThread = new Thread(delegate()
                 {
-                    SimulateWithFixedDelta(initPivotParams, initLinkParams, false, posFinderBackwards);
+                    SimulateWithFixedDelta(false, posFinderBackwards);
                     backwardDone.Set();
                 });
-            forwardThread.Start(); backwardThread.Start();
-            if (forwardDone.WaitOne() && backwardDone.WaitOne())
-            {
-                forwardDone = new AutoResetEvent(false);
-                backwardDone = new AutoResetEvent(false);
-            }
+                forwardThread.Start(); backwardThread.Start();
+                if (forwardDone.WaitOne() && backwardDone.WaitOne())
+                {
+                    forwardDone = new AutoResetEvent(false);
+                    backwardDone = new AutoResetEvent(false);
+                }
 #else
+                var posFinderBackwards = setUpNewPositionFinder();
                 Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
-                    () => SimulateWithFixedDelta(initPivotParams, initLinkParams, true, posFinder),
+                    () => SimulateWithFixedDelta(true, posFinder),
                     /*** Stepping Backward in Time ***/
-                    () => SimulateWithFixedDelta(initPivotParams, initLinkParams, false, posFinderBackwards));
+                    () => SimulateWithFixedDelta(false, posFinderBackwards));
 #endif
             }
         }
+
+        private void SetInitialVelocityAndAcceleration(bool velocitySuccessful, bool accelSuccessful,
+           out double[,] initJointParams, out double[,] initLinkParams)
+        {
+            initJointParams = WriteJointStatesVariablesToMatrixAndToLast();
+            initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast();
+            if (velocitySuccessful && accelSuccessful)
+                /* good news, both velocity and acceleration were found analytically! */
+                return;
+                var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+                var smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
+            if (velocitySuccessful)
+            { /* velocity was successfully found, but not acceleration. */
+                if (posFinder.DefineNewPositions(smallTimeStep * InputSpeed) && DefineVelocitiesAnalytically())
+                {
+                    /* forward difference on velocities to create accelerations. */
+                    for (int i = 0; i < firstInputJointIndex; i++)
+                    {
+                        initJointParams[i, 4] = (joints[i].vx - joints[i].vxLast) / smallTimeStep;
+                        initJointParams[i, 5] = (joints[i].vy - joints[i].vyLast) / smallTimeStep;
+                    }
+                    for (int i = 0; i < inputLinkIndex; i++)
+                        initLinkParams[i, 2] = (links[i].Velocity - links[i].VelocityLast) / smallTimeStep;
+
+                    /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
+                    for (int i = 0; i < numJoints; i++)
+                    {
+                        joints[i].x = initJointParams[i, 0];
+                        joints[i].y = initJointParams[i, 1];
+                        joints[i].vx = initJointParams[i, 2];
+                        joints[i].vy = initJointParams[i, 3];
+                        joints[i].ax = initJointParams[i, 4];
+                        joints[i].ay = initJointParams[i, 5];
+                    }
+                    for (int i = 0; i < numLinks; i++)
+                    {
+                        links[i].Angle = initLinkParams[i, 0];
+                        links[i].Velocity = initLinkParams[i, 1];
+                        links[i].Acceleration = initLinkParams[i, 2];
+                    }
+                    return;
+                }
+            }
+            var ForwardJointParams = new double[numJoints, 2];
+            var ForwardLinkParams = new double[numLinks];
+            /*** Stepping Forward in Time ***/
+            var forwardSuccess = posFinder.DefineNewPositions(smallTimeStep * InputSpeed);
+            if (forwardSuccess)
+            {
+                NumericalVelocity(smallTimeStep);
+                for (int i = 0; i < numJoints; i++)
+                {
+                    ForwardJointParams[i, 0] = joints[i].x;
+                    ForwardJointParams[i, 0] = joints[i].y;
+                }
+                for (int i = 0; i < numLinks; i++)
+                    ForwardLinkParams[i] = links[i].Angle;
+            }
+            /*** Stepping Backward in Time ***/
+            var BackwardJointParams = new double[numJoints, 2];
+            var BackwardLinkParams = new double[numLinks];
+            var backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep * InputSpeed);
+            if (backwardSuccess)
+            {
+                NumericalVelocity(-smallTimeStep);
+                for (int i = 0; i < numJoints; i++)
+                {
+                    BackwardJointParams[i, 0] = joints[i].x;
+                    BackwardJointParams[i, 0] = joints[i].y;
+                }
+                for (int i = 0; i < numLinks; i++)
+                    BackwardLinkParams[i] = links[i].Angle;
+            }
+            if (forwardSuccess && backwardSuccess)
+            {
+                /* central difference puts values in init parameters. */
+                for (int i = 0; i < firstInputJointIndex; i++)
+                {
+                    /* first-order central finite difference */
+                    initJointParams[i, 2] = (ForwardJointParams[i, 0] - BackwardJointParams[i, 0]) / (2 * smallTimeStep);
+                    initJointParams[i, 3] = (ForwardJointParams[i, 1] - BackwardJointParams[i, 1]) / (2 * smallTimeStep);
+                    /* second-order central finite difference */
+                    initJointParams[i, 4] = (ForwardJointParams[i, 0] - 2 * initJointParams[i, 0] + BackwardJointParams[i, 0]) / (smallTimeStep * smallTimeStep);
+                    initJointParams[i, 5] = (ForwardJointParams[i, 1] - 2 * initJointParams[i, 1] + BackwardJointParams[i, 1]) / (smallTimeStep * smallTimeStep);
+                }
+                for (int i = 0; i < inputLinkIndex; i++)
+                {
+                    /* first-order central finite difference */
+                    initLinkParams[i, 1] = (ForwardLinkParams[i] - BackwardLinkParams[i]) / (2 * smallTimeStep);
+                    /* second-order central finite difference */
+                    initLinkParams[i, 2] = (ForwardLinkParams[i] - 2 * initLinkParams[i, 0] + BackwardLinkParams[i])
+                        / (smallTimeStep * smallTimeStep);
+                }
+            }
+            else if (forwardSuccess)
+            {
+                /* forward difference puts values in init parameters. */
+                for (int i = 0; i < firstInputJointIndex; i++)
+                {
+                    /* first-order forward finite difference */
+                    initJointParams[i, 2] = (ForwardJointParams[i, 0] - initJointParams[i, 0]) / smallTimeStep;
+                    initJointParams[i, 3] = (ForwardJointParams[i, 1] - initJointParams[i, 1]) / smallTimeStep;
+                }
+                for (int i = 0; i < inputLinkIndex; i++)
+                    /* first-order forward finite difference */
+                    initLinkParams[i, 1] = (ForwardLinkParams[i] - initLinkParams[i, 0]) / smallTimeStep;
+            }
+            else if (backwardSuccess)
+            {
+                /* backward difference puts values in init parameters. */
+                for (int i = 0; i < firstInputJointIndex; i++)
+                {
+                    /* first-order backward finite difference */
+                    initJointParams[i, 2] = (initJointParams[i, 0] - BackwardJointParams[i, 0]) / smallTimeStep;
+                    initJointParams[i, 3] = (initJointParams[i, 1] - BackwardJointParams[i, 1]) / smallTimeStep;
+                }
+                for (int i = 0; i < inputLinkIndex; i++)
+                    /* first-order backward finite difference */
+                    initLinkParams[i, 1] = (initLinkParams[i, 0] - BackwardLinkParams[i]) / smallTimeStep;
+            }
+            /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
+            for (int i = 0; i < numJoints; i++)
+            {
+                joints[i].x = initJointParams[i, 0];
+                joints[i].y = initJointParams[i, 1];
+                joints[i].vx = initJointParams[i, 2];
+                joints[i].vy = initJointParams[i, 3];
+                joints[i].ax = initJointParams[i, 4];
+                joints[i].ay = initJointParams[i, 5];
+            }
+            for (int i = 0; i < numLinks; i++)
+            {
+                links[i].Angle = initLinkParams[i, 0];
+                links[i].Velocity = initLinkParams[i, 1];
+                links[i].Acceleration = initLinkParams[i, 2];
+            }
+        }
+
 
 
         private PositionFinder setUpNewPositionFinder()
@@ -175,21 +250,19 @@ namespace PlanarMechanismSimulator
         private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
 
-        private void SimulateWithFixedDelta(double[,] lastPivotParams, double[,] lastLinkParams, Boolean Forward, PositionFinder posFinder)
+        private void SimulateWithFixedDelta(Boolean Forward, PositionFinder posFinder)
         {
             var timeStep = Forward ? FixedTimeStep : -FixedTimeStep;
             var currentTime = 0.0;
             Boolean validPosition;
             do
             {
-                var currentLinkParams = new double[numLinks, 3];
-                var currentPivotParams = new double[numJoints, 6];
                 #region Find Next Positions
-                NumericalPosition(timeStep, currentPivotParams, currentLinkParams,
-                                  lastPivotParams, lastLinkParams);
+                // this next function puts the xNumerical and yNumerical values in the joints
+                NumericalPosition(timeStep);
                 var delta = InputSpeed * timeStep;
-                validPosition = posFinder.DefineNewPositions(delta, currentPivotParams, currentLinkParams,
-                                                   lastPivotParams, lastLinkParams);
+                // this next function puts the x and y values in the joints
+                validPosition = posFinder.DefineNewPositions(delta);
                 #endregion
 
                 if (validPosition)
@@ -197,59 +270,57 @@ namespace PlanarMechanismSimulator
                     if (Forward)
                         lock (InputRange)
                         {
-                            InputRange[1] = currentLinkParams[inputLinkIndex, 0];
+                            InputRange[1] = links[inputLinkIndex].Angle;
                         }
                     else
                         lock (InputRange)
                         {
-                            InputRange[0] = currentLinkParams[inputLinkIndex, 0];
+                            InputRange[0] = links[inputLinkIndex].Angle;
                         }
 
                     #region Find Velocities for Current Position
-
-                    if (!DefineVelocities())
+                    // this next functions puts the vx and vy values as well as the vx_unit and vy_unit in the joints
+                    if (!DefineVelocitiesAnalytically())
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
-                        NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
-                                          lastPivotParams, lastLinkParams);
+                        NumericalVelocity(timeStep);
                     }
 
                     #endregion
 
                     #region Find Accelerations for Current Position
 
-                    if (!findAccelerationAnalytically(currentTime, true))
+                    // this next functions puts the ax and ay values in the joints
+                    if (!DefineAccelerationsAnalytically())
                     {
                         Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                        NumericalAcceleration(timeStep, currentPivotParams, currentLinkParams,
-                                              lastPivotParams, lastLinkParams);
+                        NumericalAcceleration(timeStep);
                     }
 
                     #endregion
 
                     currentTime += timeStep;
+                    var linkParams = WriteLinkStatesVariablesToMatrixAndToLast();
+                    var jointParams = WriteJointStatesVariablesToMatrixAndToLast();
                     if (Forward)
                     {
                         lock (JointParameters)
-                            JointParameters.AddNearEnd(currentTime, currentPivotParams);
+                            JointParameters.AddNearEnd(currentTime, jointParams);
                         lock (LinkParameters)
-                            LinkParameters.AddNearEnd(currentTime, currentLinkParams);
+                            LinkParameters.AddNearEnd(currentTime, linkParams);
                     }
                     else
                     {
                         lock (JointParameters)
-                            JointParameters.AddNearBegin(currentTime, currentPivotParams);
+                            JointParameters.AddNearBegin(currentTime, jointParams);
                         lock (LinkParameters)
-                            LinkParameters.AddNearBegin(currentTime, currentLinkParams);
+                            LinkParameters.AddNearBegin(currentTime, linkParams);
                     }
-                    lastPivotParams = currentPivotParams;
-                    lastLinkParams = currentLinkParams;
                 }
             } while (validPosition && lessThanFullRotation());
         }
 
-
-        private void SimulateWithinError(double[,] lastPivotParams, double[,] lastLinkParams, Boolean Forward, PositionFinder posFinder)
+        private void SimulateWithinError(Boolean Forward, PositionFinder posFinder)
         {
             var startingPosChange = Forward ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
             var prevStep = startingPosChange;
@@ -260,19 +331,14 @@ namespace PlanarMechanismSimulator
             Boolean validPosition;
             do
             {
-                var currentLinkParams = new double[numLinks, 3];
-                var currentPivotParams = new double[numJoints, 6];
-
                 #region Find Next Positions
                 var upperError = double.PositiveInfinity;
                 var k = 0;
                 do
                 {
                     timeStep = startingPosChange / InputSpeed;
-                    NumericalPosition(timeStep, currentPivotParams, currentLinkParams,
-                                      lastPivotParams, lastLinkParams);
-                    validPosition = posFinder.DefineNewPositions(startingPosChange, currentPivotParams, currentLinkParams,
-                                                       lastPivotParams, lastLinkParams);
+                    NumericalPosition(timeStep);
+                    validPosition = posFinder.DefineNewPositions(startingPosChange);
                     upperError = posFinder.PositionError - maxLengthError;
                     if (validPosition && upperError < 0)
                     {
@@ -292,57 +358,91 @@ namespace PlanarMechanismSimulator
                     if (Forward)
                         lock (InputRange)
                         {
-                            InputRange[1] = currentLinkParams[inputLinkIndex, 0];
+                            InputRange[1] = links[inputLinkIndex].Angle;
                         }
                     else
                         lock (InputRange)
                         {
-                            InputRange[0] = currentLinkParams[inputLinkIndex, 0];
+                            InputRange[0] = links[inputLinkIndex].Angle;
                         }
 
                     #region Find Velocities for Current Position
-
-                    if (!DefineVelocities())
+                    // this next functions puts the vx and vy values as well as the vx_unit and vy_unit in the joints
+                    if (!DefineVelocitiesAnalytically())
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
-                        NumericalVelocity(timeStep, currentPivotParams, currentLinkParams,
-                                          lastPivotParams, lastLinkParams);
+                        NumericalVelocity(timeStep);
                     }
 
                     #endregion
 
                     #region Find Accelerations for Current Position
 
-                    if (!findAccelerationAnalytically(currentTime, true))
+                    // this next functions puts the ax and ay values in the joints
+                    if (!DefineAccelerationsAnalytically())
                     {
                         Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                        NumericalAcceleration(timeStep, currentPivotParams, currentLinkParams,
-                                              lastPivotParams, lastLinkParams);
+                        NumericalAcceleration(timeStep);
                     }
 
                     #endregion
 
                     currentTime += timeStep;
+                    var linkParams = WriteLinkStatesVariablesToMatrixAndToLast();
+                    var jointParams = WriteJointStatesVariablesToMatrixAndToLast();
                     if (Forward)
                     {
                         lock (JointParameters)
-                            JointParameters.AddNearEnd(currentTime, currentPivotParams);
+                            JointParameters.AddNearEnd(currentTime, jointParams);
                         lock (LinkParameters)
-                            LinkParameters.AddNearEnd(currentTime, currentLinkParams);
+                            LinkParameters.AddNearEnd(currentTime, linkParams);
                     }
                     else
                     {
                         lock (JointParameters)
-                            JointParameters.AddNearBegin(currentTime, currentPivotParams);
+                            JointParameters.AddNearBegin(currentTime, jointParams);
                         lock (LinkParameters)
-                            LinkParameters.AddNearBegin(currentTime, currentLinkParams);
+                            LinkParameters.AddNearBegin(currentTime, linkParams);
                     }
-                    lastPivotParams = currentPivotParams;
-                    lastLinkParams = currentLinkParams;
                 }
             } while (validPosition && lessThanFullRotation());
         }
 
+
+        private double[,] WriteJointStatesVariablesToMatrixAndToLast()
+        {
+            var jointParams = new double[numJoints, 6];
+            for (int i = 0; i < numJoints; i++)
+            {
+                var j = joints[i];
+                jointParams[i, 0] = j.x;
+                jointParams[i, 1] = j.y;
+                jointParams[i, 2] = j.vx;
+                jointParams[i, 3] = j.vy;
+                jointParams[i, 4] = j.ax;
+                jointParams[i, 5] = j.ay;
+                j.xLast = j.x;
+                j.yLast = j.y;
+                j.vxLast = j.vx;
+                j.vyLast = j.vy;
+            }
+            return jointParams;
+        }
+
+        private double[,] WriteLinkStatesVariablesToMatrixAndToLast()
+        {
+            var linkParams = new double[numLinks, 3];
+            for (int i = 0; i < numLinks; i++)
+            {
+                var l = links[i];
+                linkParams[i, 0] = l.Angle;
+                linkParams[i, 0] = l.Velocity;
+                linkParams[i, 0] = l.Acceleration;
+                l.AngleLast = l.Angle;
+                l.VelocityLast = l.Velocity;
+            }
+            return linkParams;
+        }
 
     }
 }
