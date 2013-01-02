@@ -217,9 +217,8 @@ namespace PlanarMechanismSimulator
             }
             else
             {
-                // todo: need to add radius!
-                j.vx = j.vx_unit * l.Velocity;
-                j.vy = j.vy_unit * l.Velocity;
+                j.vy = (j.x - l.InstantCenter.x) * l.Velocity;
+                j.vx = (l.InstantCenter.y - j.y) * l.Velocity;
             }
             j.velocityKnown = KnownState.Fully;
         }
