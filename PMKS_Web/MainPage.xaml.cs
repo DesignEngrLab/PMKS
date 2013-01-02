@@ -143,8 +143,8 @@ namespace PMKS_Silverlight_App
         #region PMKS Controller Functions
         internal void ParseData()
         {
-            try
-            {
+            //try
+            //{
                 if (JointsInfo == null) 
                     return;
                 numJoints = TrimEmptyJoints();
@@ -187,11 +187,11 @@ namespace PMKS_Silverlight_App
                     mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.ijoints,JointsInfo.Data);
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 }
-            }
-            catch (Exception e)
-            {
-                status(e.Message);
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    status(e.Message);
+            //}
         }
 
 

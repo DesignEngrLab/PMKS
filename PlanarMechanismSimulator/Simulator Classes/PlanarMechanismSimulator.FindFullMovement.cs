@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using OptimizationToolbox;
 
 namespace PlanarMechanismSimulator
@@ -35,7 +36,7 @@ namespace PlanarMechanismSimulator
             if (useErrorMethod)
             {
 #if DEBUGSERIAL
-                SimulateWithinError(true, posFinder);
+                SimulateWithinError(ijoints, ilinks, true);
 #elif SILVERLIGHT
                 List<joint> newJoints = ijoints.Select(j => j.copy()).ToList();
                 List<link> newLinks = ilinks.Select(c => c.copy(ijoints, newJoints)).ToList();
@@ -45,12 +46,12 @@ namespace PlanarMechanismSimulator
                     if (j.Link2 != null)
                         j.Link2 = newLinks[ilinks.IndexOf(j.Link2)];
                 }
-                var forwardThread = new Thread(delegate
+                var forwardThread = new Thread(()=>
                     {
                         SimulateWithinError(ijoints, ilinks, true);
                         forwardDone.Set();
                     });
-                var backwardThread = new Thread(delegate
+                var backwardThread = new Thread(()=>
                     {
                         SimulateWithinError(newJoints, newLinks, false);
                         backwardDone.Set();
@@ -81,7 +82,7 @@ namespace PlanarMechanismSimulator
             else
             {
 #if DEBUGSERIAL
-                SimulateWithFixedDelta(true, posFinder);
+                SimulateWithFixedDelta(ijoints, ilinks, true);
 #elif SILVERLIGHT
                 List<joint> newJoints = ijoints.Select(j => j.copy()).ToList();
                 List<link> newLinks = ilinks.Select(c => c.copy(ijoints, newJoints)).ToList();
@@ -91,12 +92,12 @@ namespace PlanarMechanismSimulator
                     if (j.Link2 != null)
                         j.Link2 = newLinks[ilinks.IndexOf(j.Link2)];
                 }
-                var forwardThread = new Thread(delegate
+                var forwardThread = new Thread(()=>
                     {
                         SimulateWithFixedDelta(ijoints, ilinks, true);
                         forwardDone.Set();
                     });
-                var backwardThread = new Thread(delegate
+                var backwardThread = new Thread(()=>
                     {
                         SimulateWithFixedDelta(newJoints, newLinks, false);
                         backwardDone.Set();

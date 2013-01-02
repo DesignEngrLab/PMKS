@@ -177,7 +177,7 @@ namespace PlanarMechanismSimulator
                         updateJointUnitVectors(j, j.Link1);
                         a_successful_update = true;
                     }
-                    else if (j.Link2.velocityKnown != KnownState.Unknown)
+                    else if (j.Link2!=null && j.Link2.velocityKnown != KnownState.Unknown)
                     {
                         updateJointUnitVectors(j, j.Link2);
                         a_successful_update = true;
@@ -185,13 +185,12 @@ namespace PlanarMechanismSimulator
                 }
                 if (j.velocityKnown == KnownState.Partially)
                 {
-                    if ((j.Link1.velocityKnown == KnownState.Fully)
-                        && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
+                    if (j.Link1.velocityKnown == KnownState.Fully)
                     {
                         updateJointVelocityVector(j, j.Link1);
                         a_successful_update = true;
                     }
-                    else if (j.Link2.velocityKnown == KnownState.Fully)
+                    else if (j.Link2 != null && j.Link2.velocityKnown == KnownState.Fully)
                     {
                         updateJointVelocityVector(j, j.Link2);
                         a_successful_update = true;
@@ -214,10 +213,19 @@ namespace PlanarMechanismSimulator
                 j.vx_unit = j.vx / magnitude;
                 j.vy_unit = j.vy / magnitude;
             }
+            else if (j.FixedWithRespectTo(l))
+            {
+                j.vy = (j.x - l.InstantCenter.x)*l.Velocity;
+                j.vx = (l.InstantCenter.y - j.y)*l.Velocity;
+            }
             else
             {
-                j.vy = (j.x - l.InstantCenter.x) * l.Velocity;
-                j.vx = (l.InstantCenter.y - j.y) * l.Velocity;
+                var fixedVy = (j.x - l.InstantCenter.x)*l.Velocity;
+                var fixedVx = (l.InstantCenter.y - j.y)*l.Velocity;
+                var slope = Math.Tan(j.SlideAngle);
+                var magnitude = (fixedVy - fixedVx * slope) / (j.vy_unit - j.vx_unit * slope);
+                j.vx = magnitude * j.vx_unit;
+                j.vy = magnitude * j.vy_unit;
             }
             j.velocityKnown = KnownState.Fully;
         }
