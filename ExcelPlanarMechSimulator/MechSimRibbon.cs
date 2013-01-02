@@ -141,12 +141,12 @@ namespace ExcelPlanarMechSimulator
             //create headings for joint data
             mergeAndCenter(Globals.Sheet2.Range["a1:a2"]);
             Globals.Sheet2.Cells[1, 1] = "time";
-            for (int i = 0; i < pms.joints.Count; i++)
+            for (int i = 0; i < pms.ijoints.Count; i++)
             {
                 var name = "Joint " + (i + 1) + " (";
-                name += pms.joints[i].Link1.name;
-                if (pms.joints[i].Link2 != null)
-                    name += ", " + pms.joints[i].Link2.name;
+                name += pms.ijoints[i].Link1.name;
+                if (pms.ijoints[i].Link2 != null)
+                    name += ", " + pms.ijoints[i].Link2.name;
                 name += ")";
                 mergeAndCenter(Globals.Sheet2.Range[Globals.Sheet2.Cells[1, 2 + jointNumCol * i], Globals.Sheet2.Cells[1, 1 + jointNumCol * (i + 1)]]);
                 Globals.Sheet2.Cells[1, 2 + jointNumCol * i].Value = name;
@@ -164,7 +164,7 @@ namespace ExcelPlanarMechSimulator
             {
                 mergeAndCenter(Globals.Sheet3.Range[Globals.Sheet3.Cells[1, 2 + linkNumCol * i], Globals.Sheet3.Cells[1, 1 + linkNumCol * (i + 1)]]);
                 Globals.Sheet3.Range[Globals.Sheet3.Cells[2, 2 + linkNumCol * i], Globals.Sheet3.Cells[2, 1 + linkNumCol * (i + 1)]].Font.Name = "Symbol";
-                Globals.Sheet3.Cells[1, 2 + linkNumCol * i].Value = pms.links[i].name;
+                Globals.Sheet3.Cells[1, 2 + linkNumCol * i].Value = pms.ilinks[i].name;
                 Globals.Sheet3.Cells[2, 2 + linkNumCol * i].Value = "q";
                 Globals.Sheet3.Cells[2, 3 + linkNumCol * i].Value = "w";
                 Globals.Sheet3.Cells[2, 4 + linkNumCol * i].Value = "a";

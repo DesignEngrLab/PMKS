@@ -94,8 +94,8 @@ namespace PlanarMechanismSimulator
 
         public int numLinks { get; private set; }
         public int numJoints { get; private set; }
-        public List<link> links { get; private set; }
-        public List<joint> joints { get; private set; }
+        public List<link> ilinks { get; private set; }
+        public List<joint> ijoints { get; private set; }
         private int firstInputJointIndex;
         public int inputJointIndex;
         private joint inputJoint;
@@ -115,8 +115,8 @@ namespace PlanarMechanismSimulator
         {
             get
             {
-                var knownPositions = joints.Where(j => j.isGround || inputLink.joints.Contains(j)).ToList();
-                var unknownPositions = joints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
+                var knownPositions = ijoints.Where(j => j.isGround || inputLink.joints.Contains(j)).ToList();
+                var unknownPositions = ijoints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
                 do
                 {
                     var determined = unknownPositions.FirstOrDefault(j =>
@@ -211,7 +211,7 @@ namespace PlanarMechanismSimulator
 
                 var newLinkIDs = new List<List<string>>();
                 /* create the pivots */
-                joints = new List<joint>(); //create an arry of pivots
+                ijoints = new List<joint>(); //create an arry of pivots
                 for (int i = 0; i < JointTypeStrings.Count; i++)
                 {
                     double[] currentJointPosition = null;
@@ -220,7 +220,7 @@ namespace PlanarMechanismSimulator
                     {
                         /* if the specified joint is only a point to be traced on a given link, then we make it
                          * an "R" joint. */
-                        joints.Add(new joint((LinkIDs[i][0] == "ground"), "r", currentJointPosition));
+                        ijoints.Add(new joint((LinkIDs[i][0] == "ground"), "r", currentJointPosition));
                         newLinkIDs.Add(new List<string> { LinkIDs[i][0] });
                     }
                     else /* if there are 2 or more links at this joint, then it's actually multiple co-located
@@ -229,35 +229,35 @@ namespace PlanarMechanismSimulator
                         for (int j = 0; j < LinkIDs[i].Count - 1; j++)
                         {
                             if (j > 0 && JointTypeStrings[i].Equals("rp", StringComparison.InvariantCultureIgnoreCase))
-                                joints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
+                                ijoints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                                      "r", currentJointPosition));
                                 /* if there are more than 2 links and the joint is typed G or P then we throw an error. */
                             else if (j > 0 && (JointTypeStrings[i].Equals("g", StringComparison.InvariantCultureIgnoreCase)
                                  || JointTypeStrings[i].Equals("p", StringComparison.InvariantCultureIgnoreCase)))
                                 throw new Exception("More than two links is not allowed for " + JointTypeStrings[i] + " joints.");
                                 /* else...this is the normal case of a joint between two links. */
-                            else joints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
+                            else ijoints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                              JointTypeStrings[i], currentJointPosition));
                             newLinkIDs.Add(new List<string> { LinkIDs[i][j], LinkIDs[i][j + 1] });
                         }
                 }
                 /* now onto the links */
-                links = new List<link>(); //create an array of LINKS
-                for (int k = 0; k < linkNames.Count; k++)
+                ilinks = new List<link>(); //create an array of LINKS
+                foreach (string linkName in linkNames)
                 {
                     var pivotIndices =
-                        newLinkIDs.Where(lid => lid.Contains(linkNames[k])).Select(lid => newLinkIDs.IndexOf(lid));
-                    var pivotsForThisLink = pivotIndices.Select(i => joints[i]).ToList();
-                    links.Add(new link(linkNames[k], pivotsForThisLink, pivotsForThisLink.All(piv => piv.isGround)));
+                        newLinkIDs.Where(lid => lid.Contains(linkName)).Select(lid => newLinkIDs.IndexOf(lid));
+                    var pivotsForThisLink = pivotIndices.Select(i => ijoints[i]).ToList();
+                    ilinks.Add(new link(linkName, pivotsForThisLink, pivotsForThisLink.All(piv => piv.isGround)));
                 }
                 /* now that links have been created, need to add these to pivots */
                 for (int i = 0; i < newLinkIDs.Count; i++)
                 {
-                    joints[i].Link1 = links[linkNames.IndexOf(newLinkIDs[i][0])];
+                    ijoints[i].Link1 = ilinks[linkNames.IndexOf(newLinkIDs[i][0])];
                     if (newLinkIDs[i].Count > 1)
-                        joints[i].Link2 = links[linkNames.IndexOf(newLinkIDs[i][1])];
+                        ijoints[i].Link2 = ilinks[linkNames.IndexOf(newLinkIDs[i][1])];
                 }
-                inputJoint = joints[0];
+                inputJoint = ijoints[0];
                 if (inputJoint.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
                 if (inputJoint.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
                 if (!inputJoint.Link1.isGround)
@@ -269,37 +269,37 @@ namespace PlanarMechanismSimulator
                 }
                 inferAdditionalGearLinks();
                 addReferencePivotsToSlideOnlyLinks();
-                numLinks = links.Count; //count the number of links in the system
-                numJoints = joints.Count; //count the number of pivots in the system
+                numLinks = ilinks.Count; //count the number of links in the system
+                numJoints = ijoints.Count; //count the number of pivots in the system
                 /* reorder links, move input link and ground link to back of list */
                 inputLink = (inputJoint.Link2.isGround) ? inputJoint.Link1 : inputJoint.Link2;
-                links.Remove(inputLink); links.Add(inputLink); //move inputLink to back of list
-                var groundLinks = links.FindAll(c => c.isGround);//move inputLink to back of list
+                ilinks.Remove(inputLink); ilinks.Add(inputLink); //move inputLink to back of list
+                var groundLinks = ilinks.Where(c => c.isGround).ToList();//move inputLink to back of list
                 if (groundLinks.Count != 1) throw new Exception("There can only be one ground link. In this case, there are "
                       + groundLinks.Count);
                 groundLink = groundLinks[0];
-                links.Remove(groundLink); links.Add(groundLink); //move ground to back of list
+                ilinks.Remove(groundLink); ilinks.Add(groundLink); //move ground to back of list
                 inputLinkIndex = numLinks - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
-                var origOrder = new List<joint>(joints);
-                joints.Remove(inputJoint);
-                var groundPivots = joints.Where(j => j.isGround).ToList();
-                joints.RemoveAll(j => j.isGround);
-                var connectedInputJoints = joints.Where(j => inputLink.joints.Contains(j) && j.FixedWithRespectTo(inputLink)).ToList();
-                joints.RemoveAll(connectedInputJoints.Contains);
-                firstInputJointIndex = joints.Count;
-                joints.AddRange(connectedInputJoints);
-                inputJointIndex = joints.Count;
-                joints.Add(inputJoint);
-                joints.AddRange(groundPivots);
+                var origOrder = new List<joint>(ijoints);
+               ijoints.Remove(inputJoint);
+                var groundPivots = ijoints.Where(j => j.isGround).ToList();
+                ijoints.RemoveAll(j => j.isGround);
+                var connectedInputJoints = ijoints.Where(j => inputLink.joints.Contains(j) && j.FixedWithRespectTo(inputLink)).ToList();
+                ijoints.RemoveAll(connectedInputJoints.Contains);
+                firstInputJointIndex = ijoints.Count;
+                ijoints.AddRange(connectedInputJoints);
+                inputJointIndex = ijoints.Count;
+                ijoints.Add(inputJoint);
+                ijoints.AddRange(groundPivots);
                 JointReOrdering = new int[numJoints];
                 for (int i = 0; i < numJoints; i++)
-                    JointReOrdering[i] = joints.IndexOf(origOrder[i]);
+                    JointReOrdering[i] = ijoints.IndexOf(origOrder[i]);
                 setAdditionalReferencePositions();
                 setGearData();
                 var totalLength = 0.0;
                 int numLengths = 0;
-                foreach (var eachLink in links)
+                foreach (var eachLink in ilinks)
                 {
                     eachLink.DetermineLengthsAndReferences();
                     totalLength += eachLink.Lengths.Sum();
@@ -317,15 +317,14 @@ namespace PlanarMechanismSimulator
 
         private void addReferencePivotsToSlideOnlyLinks()
         {
-            if (links.All(c => c.joints.Count(j => j.FixedWithRespectTo(c)) > 0)) return;
+            if (ilinks.All(c => c.joints.Count(j => j.FixedWithRespectTo(c)) > 0)) return;
             additionalRefjoints = new List<joint>();
-            foreach (var c in links)
+            foreach (var c in ilinks)
             {
                 if (c.joints.Count(j => j.FixedWithRespectTo(c)) > 0) continue;
-                var newJoint = new joint(false, "r");
-                newJoint.Link1 = c;
+                var newJoint = new joint(false, "r") {Link1 = c};
                 c.joints.Add(newJoint);
-                joints.Add(newJoint);
+                ijoints.Add(newJoint);
                 additionalRefjoints.Add(newJoint);
             }
         }
@@ -349,9 +348,9 @@ namespace PlanarMechanismSimulator
 
         private void inferAdditionalGearLinks()
         {
-            if (joints.All(j => j.jointType != JointTypes.G)) return;
+            if (ijoints.All(j => j.jointType != JointTypes.G)) return;
             var counter = 0;
-            foreach (var j in joints)
+            foreach (var j in ijoints)
             {
                 if (j.jointType != JointTypes.G) continue;
                 var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
@@ -367,17 +366,17 @@ namespace PlanarMechanismSimulator
                 newJoint1.Link1 = j.Link1;
                 newJoint2.Link1 = j.Link2;
                 newJoint1.Link2 = newJoint2.Link2 = connectLink;
-                joints.Add(newJoint1); joints.Add(newJoint2); links.Add(connectLink);
+                ijoints.Add(newJoint1); ijoints.Add(newJoint2); ilinks.Add(connectLink);
             }
         }
 
 
         private void setGearData()
         {
-            if (joints.All(j => j.jointType != JointTypes.G)) return;
+            if (ijoints.All(j => j.jointType != JointTypes.G)) return;
             gearsData = new Dictionary<int, gearData>();
             int index = 0;
-            foreach (var gearTeethJoint in joints)
+            foreach (var gearTeethJoint in ijoints)
             {
                 if (gearTeethJoint.jointType == JointTypes.G)
                 {
@@ -413,9 +412,9 @@ namespace PlanarMechanismSimulator
                         gearCenter2.yInitial = trueGearCenter2.yInitial;
                     }
                     gearsData.Add(index,
-                                  new gearData(gearTeethJoint, connectingRod, links.IndexOf(connectingRod), gearCenter1,
-                                               joints.IndexOf(gearCenter1),
-                                               gearCenter2, joints.IndexOf(gearCenter2)));
+                                  new gearData(gearTeethJoint, ilinks.IndexOf(connectingRod), gearCenter1,
+                                               ijoints.IndexOf(gearCenter1),
+                                               gearCenter2, ijoints.IndexOf(gearCenter2)));
                 }
                 index++;
             }
@@ -454,15 +453,15 @@ namespace PlanarMechanismSimulator
                 {
                     if (InitPositions[i] != null)
                     {
-                        joints[JointReOrdering[i]].xInitial = InitPositions[i][0];
-                        joints[JointReOrdering[i]].yInitial = InitPositions[i][1];
+                        ijoints[JointReOrdering[i]].xInitial = InitPositions[i][0];
+                        ijoints[JointReOrdering[i]].yInitial = InitPositions[i][1];
                         if (InitPositions[i].GetLength(0) > 2)
-                            joints[JointReOrdering[i]].InitSlideAngle = InitPositions[i][2];
+                            ijoints[JointReOrdering[i]].InitSlideAngle = InitPositions[i][2];
                     }
                 }
                 setAdditionalReferencePositions();
                 setGearData();
-                foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
+                foreach (var eachLink in ilinks) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
             {
@@ -480,15 +479,15 @@ namespace PlanarMechanismSimulator
                 var k = 0;
                 for (int i = 0; i < numJoints; i++)
                 {
-                    joints[JointReOrdering[i]].xInitial = InitPositions[k++];
-                    joints[JointReOrdering[i]].yInitial = InitPositions[k++];
-                    if (joints[JointReOrdering[i]].jointType == JointTypes.P ||
-                        joints[JointReOrdering[i]].jointType == JointTypes.RP)
-                        joints[JointReOrdering[i]].InitSlideAngle = InitPositions[k++];
+                    ijoints[JointReOrdering[i]].xInitial = InitPositions[k++];
+                    ijoints[JointReOrdering[i]].yInitial = InitPositions[k++];
+                    if (ijoints[JointReOrdering[i]].jointType == JointTypes.P ||
+                        ijoints[JointReOrdering[i]].jointType == JointTypes.RP)
+                        ijoints[JointReOrdering[i]].InitSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
                 setGearData();
-                foreach (var eachLink in links) eachLink.DetermineLengthsAndReferences();
+                foreach (var eachLink in ilinks) eachLink.DetermineLengthsAndReferences();
             }
             catch (Exception e)
             {
@@ -508,9 +507,9 @@ namespace PlanarMechanismSimulator
             {
                 for (int i = 0; i < Lengths.Count(); i++)
                 {
-                    var p1 = joints[(int)Lengths[i][0]];
-                    var p2 = joints[(int)Lengths[i][1]];
-                    var link0 = links.FirstOrDefault(l => l.joints.Contains(p1) && l.joints.Contains(p2));
+                    var p1 = ijoints[(int)Lengths[i][0]];
+                    var p2 = ijoints[(int)Lengths[i][1]];
+                    var link0 = ilinks.First(l => l.joints.Contains(p1) && l.joints.Contains(p2));
                     var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
                     pivotIndices.Sort();
                     link0.setLength(p1, p2, Lengths[i][2]);
@@ -534,18 +533,16 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                if (links.Any(a => a.Lengths.Any(double.IsNaN)))
+                if (ilinks.Any(a => a.Lengths.Any(double.IsNaN)))
                     throw new Exception("Link lengths for all links need to be set first.");
-                inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
-                                links.FirstOrDefault(a => a.joints.Contains(inputJoint));
-                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]),
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, ijoints[inputJointIndex + 1]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
-                                        inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]));
+                                        inputLink.lengthBetween(inputJoint, ijoints[inputJointIndex + 1]));
                 inputJoint.xInitial = inputX;
                 inputJoint.yInitial = inputY;
-                joints[inputJointIndex + 1].xInitial = gnd1X;
-                joints[inputJointIndex + 1].yInitial = gnd1Y;
+                ijoints[inputJointIndex + 1].xInitial = gnd1X;
+                ijoints[inputJointIndex + 1].yInitial = gnd1Y;
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -567,14 +564,12 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                if (links.Any(a => a.Lengths.Any(double.IsNaN)))
+                if (ilinks.Any(a => a.Lengths.Any(double.IsNaN)))
                     throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
-                var inputLink = links.FirstOrDefault(a => a.isGround && a.joints.Contains(inputJoint)) ??
-                                links.FirstOrDefault(a => a.joints.Contains(inputJoint));
                 inputJoint.xInitial = inputX;
                 inputJoint.yInitial = inputY;
-                joints[inputJointIndex + 1].xInitial = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
-                joints[inputJointIndex + 1].yInitial = inputY + Math.Sin(AngleToGnd1) * inputLink.lengthBetween(inputJoint, joints[inputJointIndex + 1]);
+                ijoints[inputJointIndex + 1].xInitial = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, ijoints[inputJointIndex + 1]);
+                ijoints[inputJointIndex + 1].yInitial = inputY + Math.Sin(AngleToGnd1) * inputLink.lengthBetween(inputJoint, ijoints[inputJointIndex + 1]);
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -589,7 +584,7 @@ namespace PlanarMechanismSimulator
         {
             LinkAngles = new double[numLinks, 1];
             JointPositions = new double[numJoints, 2];
-            var NDPS = new NonDyadicPositionSolver(new PositionFinder(joints, links, gearsData, inputJointIndex));
+            var NDPS = new NonDyadicPositionSolver(new PositionFinder(ijoints, ilinks, gearsData, inputJointIndex));
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
 
@@ -622,7 +617,7 @@ namespace PlanarMechanismSimulator
             {
                 range = Math.Abs(InputRange[0] - InputRange[1]);
             }
-            return range < 8 * Math.PI;
+            return range < 2 * Math.PI;
         }
 
 
@@ -648,10 +643,10 @@ namespace PlanarMechanismSimulator
             get
             {
                 var oneDOFJoints =
-                    joints.Count(j => j.Link2 != null && (j.jointType == JointTypes.P || j.jointType == JointTypes.R));
+                    ijoints.Count(j => j.Link2 != null && (j.jointType == JointTypes.P || j.jointType == JointTypes.R));
                 var twoDOFJoints =
-                    joints.Count(j => j.Link2 != null && (j.jointType == JointTypes.G || j.jointType == JointTypes.RP));
-                return 3 * (links.Count - 1) - 2 * oneDOFJoints - twoDOFJoints;
+                    ijoints.Count(j => j.Link2 != null && (j.jointType == JointTypes.G || j.jointType == JointTypes.RP));
+                return 3 * (ilinks.Count - 1) - 2 * oneDOFJoints - twoDOFJoints;
             }
         }
 

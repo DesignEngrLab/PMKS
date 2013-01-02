@@ -1,11 +1,12 @@
-﻿using OptimizationToolbox;
+﻿using System.Collections.Generic;
+using OptimizationToolbox;
 using System;
 
 namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-        private void NumericalPosition(double deltaTime)
+        private void NumericalPosition(double deltaTime, List<joint> joints, List<link> links)
         {
             for (int i = 0; i < numJoints; i++)
             {
@@ -15,7 +16,8 @@ namespace PlanarMechanismSimulator
             for (int i = 0; i < inputLinkIndex; i++)
                 links[i].Angle = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
         }
-        private void NumericalVelocity(double deltaTime)
+
+        private void NumericalVelocity(double deltaTime, List<joint> joints, List<link> links)
         {
             for (int i = 0; i < firstInputJointIndex; i++)
             {
@@ -28,7 +30,8 @@ namespace PlanarMechanismSimulator
             for (int i = 0; i < inputLinkIndex; i++)
                 links[i].Velocity = (links[i].Angle - links[i].AngleLast) / deltaTime;
         }
-        private void NumericalAcceleration(double deltaTime)
+
+        private void NumericalAcceleration(double deltaTime, List<joint> joints, List<link> links)
         {
             for (int i = 0; i < firstInputJointIndex; i++)
             {

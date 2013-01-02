@@ -184,7 +184,7 @@ namespace PMKS_Silverlight_App
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                     status("Drawing...");
                     now = DateTime.Now;
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints,JointsInfo.Data);
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.ijoints,JointsInfo.Data);
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 }
             }

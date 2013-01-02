@@ -13,7 +13,7 @@ namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-        private void InitializeGroundAndInputSpeedAndAcceleration()
+        private void InitializeGroundAndInputSpeedAndAcceleration(List<joint> joints, List<link> links)
         {
             for (int i = 0; i < inputJointIndex; i++)
             {
@@ -73,28 +73,28 @@ namespace PlanarMechanismSimulator
             else throw new Exception("Currently only R or P can be the input joints.");
         }
 
-        private Boolean DefineVelocitiesAnalytically()
+        private Boolean DefineVelocitiesAnalytically(List<joint> joints, List<link> links)
         {
-            InitializeGroundAndInputSpeedAndAcceleration();
+            InitializeGroundAndInputSpeedAndAcceleration(joints, links);
 
             int numUnknownJoints;
             Boolean successfulLinkUpdate, successfulJointUpdate;
             do
             {
-                successfulLinkUpdate = UpdateVelocitiesAndICsOfLinks();
-                successfulJointUpdate = UpdateVelocitiesOfJoints();
+                successfulLinkUpdate = UpdateVelocitiesAndICsOfLinks(joints, links);
+                successfulJointUpdate = UpdateVelocitiesOfJoints(joints);
                 numUnknownJoints = joints.Count(j => j.velocityKnown != KnownState.Fully);
             } while (numUnknownJoints > 0 && (successfulJointUpdate || successfulLinkUpdate));
             if (numUnknownJoints == 0)
             {
-                UpdateVelocitiesAndICsOfLinks();
+                UpdateVelocitiesAndICsOfLinks(joints,links);
                 return true;
             }
             return false;
         }
 
         #region Update Velocities and ICs of Links
-        private bool UpdateVelocitiesAndICsOfLinks()
+        private bool UpdateVelocitiesAndICsOfLinks(List<joint> joints, List<link> links)
         {
             var a_successful_update = false;
             foreach (var thisLink in links)
@@ -105,7 +105,7 @@ namespace PlanarMechanismSimulator
                     var jointsWithKnownVelDirs = thisLink.joints.Where(j => j.velocityKnown != KnownState.Unknown);
                     if (jointsWithKnownVelDirs.Count() >= 2)
                     {
-                        thisLink.InstantCenter = findInstantCenter(jointsWithKnownVelDirs.ToList());
+                        thisLink.InstantCenter = findInstantCenter(jointsWithKnownVelDirs);
                         thisLink.velocityKnown = KnownState.Partially;
                         a_successful_update = true;
                     }
@@ -144,27 +144,26 @@ namespace PlanarMechanismSimulator
             // todo: need to recurse on all connected P joints
         }
 
-        private point findInstantCenter(List<joint> jointsWithKnownVelDirs)
+        private point findInstantCenter(IEnumerable<joint> jointsWithKnownVelDirs)
         {
-            var lines = new SortedList<double, point>(new slopeSort());
-            foreach (var j in jointsWithKnownVelDirs)
-                lines.Add(-j.vx_unit / j.vy_unit, new point(j.x, j.y));
+            var lines = jointsWithKnownVelDirs.Select(j => new Tuple<double, point>(-j.vx_unit / j.vy_unit, new point(j.x, j.y)))
+                .OrderBy(line => Math.Abs(line.Item1)).ToList();
             while (lines.Count > 2)
             {
-                var removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Key) && double.IsInfinity(line.Value.x) && double.IsInfinity(line.Value.y))).Value;
+                var removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Item1) && double.IsInfinity(line.Item2.x) && double.IsInfinity(line.Item2.y)));
                 if (removeCand == null)
-                    removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Key) && (double.IsInfinity(line.Value.x) || double.IsInfinity(line.Value.y)))).Value;
+                    removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Item1) && (double.IsInfinity(line.Item2.x) || double.IsInfinity(line.Item2.y))));
                 if (removeCand == null)
-                    removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Value.x) || double.IsInfinity(line.Value.y))).Value;
-                var removeIndex = (removeCand == null) ? 1 : lines.IndexOfValue(removeCand);
+                    removeCand = lines.FirstOrDefault(line => (double.IsInfinity(line.Item2.x) || double.IsInfinity(line.Item2.y)));
+                var removeIndex = (removeCand == null) ? 1 : lines.IndexOf(removeCand);
                 lines.RemoveAt(removeIndex);
-            };
-            return Constants.solveViaIntersectingLines(lines.Keys[0], lines.Values[0], lines.Keys[1], lines.Values[1]);
+            }
+            return Constants.solveViaIntersectingLines(lines[0].Item1, lines[0].Item2, lines[1].Item1, lines[1].Item2);
         }
         #endregion
 
         #region Update Velocities of Joints
-        private bool UpdateVelocitiesOfJoints()
+        private bool UpdateVelocitiesOfJoints(List<joint> joints)
         {
             var a_successful_update = false;
             foreach (var j in joints)
@@ -236,18 +235,4 @@ namespace PlanarMechanismSimulator
         }
         #endregion
     }
-
-    /// <summary>
-    /// A comparer for optimization that can be used for either 
-    /// minimization or maximization.
-    /// </summary>
-    internal class slopeSort : IComparer<double>
-    {
-        public int Compare(double x, double y)
-        {
-            if (Math.Abs(x) > Math.Abs(y)) return -1;
-            else return 1;
-        }
-    }
-
 }

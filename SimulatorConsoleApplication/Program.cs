@@ -1,4 +1,6 @@
-﻿namespace SimulatorConsoleApplication
+﻿using System;
+
+namespace SimulatorConsoleApplication
 {
     class Program
     {
@@ -10,7 +12,11 @@
                        + "output ground r 12.0 0\n";
             var pms = new PlanarMechanismSimulator.Simulator(data);
             pms.InputSpeed = 123.0;
+            pms.MaxSmoothingError = 0.0001;
+            Console.WriteLine("start");
             pms.FindFullMovement();
+            Console.WriteLine("done");
+            Console.ReadKey();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿#region
 using System;
+using System.Collections.Generic;
 using OptimizationToolbox;
 
 #endregion
@@ -9,7 +10,7 @@ namespace PlanarMechanismSimulator
 {
     public partial class Simulator : IDependentAnalysis
     {
-        private Boolean DefineAccelerationsAnalytically()
+        private bool DefineAccelerationsAnalytically(List<joint> joints, List<link> links)
         {
             return false;
             throw new NotImplementedException();

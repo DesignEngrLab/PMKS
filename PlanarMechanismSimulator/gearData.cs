@@ -4,23 +4,17 @@ namespace PlanarMechanismSimulator
 {
     internal class gearData
     {
-        private readonly link connectingRod;
-        private readonly joint gearCenter1;
-        private readonly joint gearCenter2;
         internal readonly double radius1;
         internal readonly double radius2;
         internal readonly int connectingRodIndex;
         internal readonly int gearCenter1Index;
         internal readonly int gearCenter2Index;
 
-        public gearData(joint j, link connectingRod, int connectingRodIndex, joint gearCenter1,
+        public gearData(joint j, int connectingRodIndex, joint gearCenter1,
                         int gearCenter1Index, joint gearCenter2, int gearCenter2Index)
         {
-            this.connectingRod = connectingRod;
             this.connectingRodIndex = connectingRodIndex;
-            this.gearCenter1 = gearCenter1;
             this.gearCenter1Index = gearCenter1Index;
-            this.gearCenter2 = gearCenter2;
             this.gearCenter2Index = gearCenter2Index;
             var dx1 = gearCenter1.xInitial - j.xInitial;
             var dy1 = gearCenter1.yInitial - j.yInitial;
