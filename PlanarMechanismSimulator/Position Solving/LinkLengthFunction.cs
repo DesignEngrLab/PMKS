@@ -1,7 +1,7 @@
 ﻿using System;
 using OptimizationToolbox;
 
-namespace PlanarMechanismSimulator
+namespace PlanarMechanismSimulator.PositionSolving
 {
     internal class LinkLengthFunction : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {

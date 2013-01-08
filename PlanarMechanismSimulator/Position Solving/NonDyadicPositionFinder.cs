@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OptimizationToolbox;
 
-namespace PlanarMechanismSimulator
+namespace PlanarMechanismSimulator.PositionSolving
 {
     internal class NonDyadicPositionSolver : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {

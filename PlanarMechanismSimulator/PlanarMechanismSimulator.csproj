@@ -59,6 +59,9 @@
     <Compile Include="OOOT_Functions\OptMethods\NewtonMethod.cs" />
     <Compile Include="OOOT_Functions\SearchDirection\abstractSearchDirection.cs" />
     <Compile Include="OOOT_Functions\SearchIO.cs" />
+    <Compile Include="Simulator Classes\Copy of PlanarMechanismSimulator.Dyadic.Velocity.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="StarMath_Functions\3D transforms.cs" />
     <Compile Include="StarMath_Functions\add subtract multiply.cs" />
     <Compile Include="StarMath_Functions\find functions.cs" />
@@ -70,9 +73,10 @@
     <Compile Include="TimeSortedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="circleDiagramItem.cs" />
-    <Compile Include="DynamicMatrixTerm.cs" />
+    <Compile Include="VelocityAndAcceleration\DynamicMatrixTerm.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
-    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
+    <Compile Include="VelocityAndAcceleration\Equations.cs" />
+    <Compile Include="VelocityAndAcceleration\VelocitySolver.cs" />
     <Compile Include="Position Solving\LinkLengthFunction.cs" />
     <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
     <Compile Include="Position Solving\PositionSolver.cs" />

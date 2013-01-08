@@ -42,7 +42,7 @@ namespace PlanarMechanismSimulator
         public double AngleLast { get; set; }
         public double AngleNumerical { get; set; }
 
-        internal VelocityKnownState velocityKnown;
+        internal KnownState velocityKnown;
 
         public double Velocity { get; set; }
         public double VelocityLast { get; set; }

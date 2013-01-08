@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OptimizationToolbox;
+using PlanarMechanismSimulator.PositionSolving;
+using PlanarMechanismSimulator.VelocityAndAcceleration;
 
 namespace PlanarMechanismSimulator
 {

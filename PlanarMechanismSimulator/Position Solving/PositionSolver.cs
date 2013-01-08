@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PlanarMechanismSimulator
+namespace PlanarMechanismSimulator.PositionSolving
 {
     /// <summary>
     /// 
