@@ -11,6 +11,7 @@ using System.Collections;
 namespace PlanarMechanismSimulator
 //at time t=0; all acceleration and velocity are zero
 {
+    enum VelocityKnownState { Unknown, X_and_Y, Magnitude, Fully };
     public partial class Simulator : IDependentAnalysis
     {
         private void InitializeGroundAndInputSpeedAndAcceleration(List<joint> joints, List<link> links)

@@ -65,7 +65,7 @@ namespace PlanarMechanismSimulator
 
 
         internal KnownState positionKnown;
-        internal KnownState velocityKnown;
+        internal VelocityKnownState velocityKnown;
         internal KnownState accelerationKnown;
 
 

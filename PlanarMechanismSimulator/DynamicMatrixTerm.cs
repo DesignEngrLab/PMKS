@@ -1,17 +1,16 @@
 ﻿namespace PlanarMechanismSimulator
 {
-    internal class PivotDynamicMatrixTerm : DynamicMatrixTerm
+    internal class JointMatrixVariableDescriptor : MatrixVariableDescriptor
     {
-        internal joint belongsFrom;
         internal joint belongsTo;
     }
 
-    internal  class LinkDynamicMatrixTerm:DynamicMatrixTerm
+    internal class LinkMatrixVariableDescriptor : MatrixVariableDescriptor
         {
             internal link belongsTo;
         }
 
-        internal abstract class DynamicMatrixTerm
+        internal abstract class MatrixVariableDescriptor
     {
         internal double defaultValue;
         internal Direction dir;
@@ -25,17 +24,17 @@
 
         /* borrowed from the example at http://msdn.microsoft.com/en-us/library/z5z9kes2.aspx */
 
-        internal DynamicMatrixTerm(double d)
+        internal MatrixVariableDescriptor(double d)
         {
             value = d;
         }
 
-        internal DynamicMatrixTerm()
+        internal MatrixVariableDescriptor()
         {
         }
 
         // User-defined conversion from Digit to double
-            public static implicit operator double(DynamicMatrixTerm d)
+            public static implicit operator double(MatrixVariableDescriptor d)
         {
             return d.value;
         }
