@@ -5,10 +5,11 @@ using System.Text;
 
 namespace PlanarMechanismSimulator.VelocityAndAcceleration
 {
-    internal class VelocityEquationForFixedJoints : VelocityJointToJoint
+    internal class AccelerationEquationForFixedJoints : AccelerationJointToJoint
     {
-        internal VelocityEquationForFixedJoints(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown, bool linkIsKnown)
-            : base(joint1, joint2, link, Joint1IsKnown, Joint2IsKnown,  linkIsKnown) { }
+
+        internal AccelerationEquationForFixedJoints(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown)
+            : base(joint1, joint2, link, Joint1IsKnown, Joint2IsKnown) { }
 
         internal override double[] GetRow1Coefficients()
         {
@@ -34,5 +35,6 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             }
             return coefficients;
         }
+
     }
 }

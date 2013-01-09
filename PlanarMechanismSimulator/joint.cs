@@ -33,13 +33,28 @@ namespace PlanarMechanismSimulator
 
     public class joint
     {
+        /// <summary>
+        /// Is the joint connected to ground
+        /// </summary>
         public Boolean isGround;
+        /// <summary>
+        /// The joint type
+        /// </summary>
         public JointTypes jointType;
+        /// <summary>
+        /// The initial x-coordinate
+        /// </summary>
         public double xInitial;
+        /// <summary>
+        /// The initial y-coordinate
+        /// </summary>
         public double yInitial;
+        /// <summary>
+        /// The initial slide angle
+        /// </summary>
         public double InitSlideAngle = Double.NaN;
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
-
+        internal double SlideVelocity { get; set; }
         internal double x { get; set; }
         internal double y { get; set; }
         internal double xNumerical { get; set; }
@@ -47,8 +62,6 @@ namespace PlanarMechanismSimulator
         internal double xLast { get; set; }
         internal double yLast { get; set; }
 
-        internal double vx_unit { get; set; }
-        internal double vy_unit { get; set; }
         internal double vx { get; set; }
         internal double vy { get; set; }
         internal double vxLast { get; set; }
@@ -59,15 +72,23 @@ namespace PlanarMechanismSimulator
 
 
 
+        /// <summary>
+        /// Gets the link1.
+        /// </summary>
+        /// <value>
+        /// The link1.
+        /// </value>
         public link Link1 { get; internal set; }
+        /// <summary>
+        /// Gets the link2.
+        /// </summary>
+        /// <value>
+        /// The link2.
+        /// </value>
         public link Link2 { get; internal set; }
-        // how to plan for future cam shapes?
 
 
         internal KnownState positionKnown;
-        internal KnownState velocityKnown;
-        internal KnownState accelerationKnown;
-
 
 
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
@@ -99,8 +120,12 @@ namespace PlanarMechanismSimulator
 
         public Boolean FixedWithRespectTo(link link0)
         {
+            if (link0 != Link1 && link0 != Link2) return false;
             if (jointType == JointTypes.R) return true;
             if (jointType == JointTypes.G) return false;
+            /* this business with Gear Connection is what prevents SlidingWithRespectTo and
+             * FixedWithRespectTo being truly opposite. */
+
             /* then joint is either P or RP, so... */
             return (Link2 == link0);
         }

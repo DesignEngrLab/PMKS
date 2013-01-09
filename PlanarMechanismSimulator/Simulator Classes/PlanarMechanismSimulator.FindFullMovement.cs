@@ -159,17 +159,17 @@ namespace PlanarMechanismSimulator
                 else
                 {
                     /* velocity was successfully found, but not acceleration. */
-                    if (posFinder.DefineNewPositions(smallTimeStep*InputSpeed) &&
+                    if (posFinder.DefineNewPositions(smallTimeStep * InputSpeed) &&
                         velSolver.Solve())
                     {
                         /* forward difference on velocities to create accelerations. */
                         for (int i = 0; i <= inputJointIndex; i++)
                         {
-                            initJointParams[i, 4] = (ijoints[i].vx - ijoints[i].vxLast)/smallTimeStep;
-                            initJointParams[i, 5] = (ijoints[i].vy - ijoints[i].vyLast)/smallTimeStep;
+                            initJointParams[i, 4] = (ijoints[i].vx - ijoints[i].vxLast) / smallTimeStep;
+                            initJointParams[i, 5] = (ijoints[i].vy - ijoints[i].vyLast) / smallTimeStep;
                         }
                         for (int i = 0; i <= inputLinkIndex; i++)
-                            initLinkParams[i, 2] = (ilinks[i].Velocity - ilinks[i].VelocityLast)/smallTimeStep;
+                            initLinkParams[i, 2] = (ilinks[i].Velocity - ilinks[i].VelocityLast) / smallTimeStep;
 
                         /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
                         for (int i = 0; i <= inputJointIndex; i++)
@@ -187,9 +187,9 @@ namespace PlanarMechanismSimulator
                             ilinks[i].Velocity = initLinkParams[i, 1];
                             ilinks[i].Acceleration = initLinkParams[i, 2];
                         }
-                        return;
                     }
                 }
+                return;
             }
             var ForwardJointParams = new double[numJoints, 2];
             var ForwardLinkParams = new double[numLinks];

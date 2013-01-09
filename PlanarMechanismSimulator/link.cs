@@ -13,7 +13,7 @@ namespace PlanarMechanismSimulator
 
         private int numJoints;
         /// <summary>
-        /// 
+        /// Is the link the ground-link?
         /// </summary>
         public readonly Boolean isGround;
 
@@ -22,6 +22,12 @@ namespace PlanarMechanismSimulator
         private Dictionary<int, double> lengths;
         //private Dictionary<int, point> orthoPoints;
 
+        /// <summary>
+        /// Gets the lengths between the joints of this link.
+        /// </summary>
+        /// <value>
+        /// The lengths.
+        /// </value>
         public double[] Lengths
         {
             get
@@ -42,12 +48,9 @@ namespace PlanarMechanismSimulator
         public double AngleLast { get; set; }
         public double AngleNumerical { get; set; }
 
-        internal KnownState velocityKnown;
-
         public double Velocity { get; set; }
         public double VelocityLast { get; set; }
         public double Acceleration { get; set; }
-        public point InstantCenter { get; set; }
 
         internal link(string name, List<joint> Joints, Boolean IsGround)
         {
@@ -63,7 +66,7 @@ namespace PlanarMechanismSimulator
             numJoints = joints.Count;
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).ToList();
             if (fixedJoints.Count < 2 || fixedJoints.Count(j => j.isGround) > 1)
-                Angle = AngleInitial =AngleNumerical=AngleLast= 0.0;
+                Angle = AngleInitial = AngleNumerical = AngleLast = 0.0;
             else if (fixedJoints.Count(j => j.isGround) == 1)
             {
                 var ground = fixedJoints.FirstOrDefault(j => j.isGround);

@@ -5,14 +5,13 @@ using System.Text;
 
 namespace PlanarMechanismSimulator.VelocityAndAcceleration
 {
-    internal class VelocityEquationForDoubleSlide : VelocityJointToJoint
+    internal class AccelerationEquationForDoubleSlide : AccelerationJointToJoint
     {
         private int slide1SpeedIndex = -1;
         private int slide2SpeedIndex = -1;
 
-        internal VelocityEquationForDoubleSlide(joint slide1Joint, joint slide2Joint, link link, bool slideJoint1IsKnown,
-             bool slideJoint2Known, bool linkIsKnown)
-            : base(slide1Joint, slide2Joint, link, slideJoint1IsKnown, slideJoint2Known, linkIsKnown) { }
+        internal AccelerationEquationForDoubleSlide(joint slide1Joint, joint slide2Joint, link link, bool slideJointIsKnown, bool fixedJointIsKnown)
+            : base(slide1Joint, slide2Joint, link, slideJointIsKnown, fixedJointIsKnown) { }
 
         internal override double[] GetRow1Coefficients()
         {
@@ -43,6 +42,19 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             return coefficients;
         }
 
+        internal override double GetRow1Constant()
+        {
+            return -2 * joint1.SlideVelocity * Math.Sin(joint1.SlideAngle) * link.Velocity
+                + 2 * joint2.SlideVelocity * Math.Sin(joint2.SlideAngle) * link.Velocity 
+                + base.GetRow1Constant();
+        }
+        internal override double GetRow2Constant()
+        {
+            // need to add in the coriolis term
+            return 2 * joint1.SlideVelocity * Math.Cos(joint1.SlideAngle) * link.Velocity  
+                -2 * joint2.SlideVelocity * Math.Cos(joint2.SlideAngle) * link.Velocity 
+                + base.GetRow2Constant();
+        }
         internal override void CaptureUnknownIndicies(List<object> unknownObjects)
         {
             base.CaptureUnknownIndicies(unknownObjects);

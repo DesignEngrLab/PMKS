@@ -24,8 +24,6 @@ namespace PlanarMechanismSimulator
                 joints[i].vx = (joints[i].x - joints[i].xLast) / deltaTime;
                 joints[i].vy = (joints[i].y - joints[i].yLast) / deltaTime;
                 var magnitude = Math.Sqrt(joints[i].vx * joints[i].vx + joints[i].vy * joints[i].vy);
-                joints[i].vx_unit = joints[i].vx / magnitude;
-                joints[i].vy_unit = joints[i].vy / magnitude;
             }
             for (int i = 0; i < inputLinkIndex; i++)
                 links[i].Velocity = (links[i].Angle - links[i].AngleLast) / deltaTime;
