@@ -1,0 +1,7 @@
+ground,arm,R,0,0
+arm,gears,R,1,0
+gears,ground,G,44,0
+gears,output,G,46,0
+ground,output,R,0,0
+gears,R, -43,0
+output,R,47,0

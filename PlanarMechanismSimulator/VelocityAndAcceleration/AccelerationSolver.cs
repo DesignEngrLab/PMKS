@@ -12,7 +12,7 @@ using StarMathLib;
 namespace PlanarMechanismSimulator.VelocityAndAcceleration
 //at time t=0; all acceleration and velocity are zero
 {
-    public class VelocitySolver
+    public class AccelerationSolver
     {
         private readonly List<joint> joints;
         private readonly List<link> links;
@@ -31,7 +31,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         private readonly List<object> unknownObjects;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VelocitySolver" /> class.
+        /// Initializes a new instance of the <see cref="AccelerationSolver" /> class.
         /// </summary>
         /// <param name="joints">The joints.</param>
         /// <param name="links">The links.</param>
@@ -40,7 +40,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         /// <param name="inputLinkIndex">Index of the input link.</param>
         /// <param name="InputSpeed">The input speed.</param>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
-        public VelocitySolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
+        public AccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
                               int inputLinkIndex,
                               double InputSpeed)
         {
@@ -67,10 +67,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 else if (i == inputLinkIndex)
                 {
                     if (inputJoint.jointType == JointTypes.R)
-                        l.Velocity = inputSpeed;
+                        l.Acceleration = inputSpeed;
                     else if (inputJoint.jointType == JointTypes.P)
                     {
-                        l.Velocity = 0.0;
+                        l.Acceleration = 0.0;
                         var vx = inputSpeed * Math.Cos(inputJoint.SlideAngle);
                         var vy = inputSpeed * Math.Sin(inputJoint.SlideAngle);
                         for (int j = firstInputJointIndex; j <= inputJointIndex; j++)
@@ -84,7 +84,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     }
                     else throw new Exception("Currently only R or P can be the input joints.");
                 }
-                else if (i == inputLinkIndex + 1) l.Velocity = 0.0;
+                else if (i == inputLinkIndex + 1) l.Acceleration = 0.0;
                 for (int j = 0; j < l.joints.Count - 1; j++)
                     for (int k = j + 1; k < l.joints.Count; k++)
                     {
@@ -97,13 +97,13 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                         if (!jointJIsKnown || !jointKIsKnown)
                         {
                             if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
-                                equations.Add(new VelocityEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown));
+                                equations.Add(new AccelerationEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown));
                             else if (joints[j].SlidingWithRespectTo(l))
-                                equations.Add(new VelocityEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown));
+                                equations.Add(new AccelerationEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown));
                             else if (joints[k].SlidingWithRespectTo(l))
-                                equations.Add(new VelocityEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown));
+                                equations.Add(new AccelerationEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown));
                             else
-                                equations.Add(new VelocityEquationForFixedJoints(l.joints[j], l.joints[k], l,
+                                equations.Add(new AccelerationEquationForFixedJoints(l.joints[j], l.joints[k], l,
                                                                                  jointJIsKnown, jointKIsKnown));
                         }
                     }
@@ -118,7 +118,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     var l1Known = (j.Link1 == inputLink || j.Link1 == groundLink);
                     var l2Known = (j.Link2 == inputLink || j.Link2 == groundLink);
                     if (!l1Known && !l2Known)
-                        equations.Add(new EqualLinkVelocityEquation(j.Link1, j.Link2));
+                        equations.Add(new EqualLinkAccelerationEquation(j.Link1, j.Link2));
                 }
             }
             /**** Set velocity of any P-links connected to input and remove link from unknowns ****/
@@ -126,7 +126,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 if (joints[i].jointType == JointTypes.P)
                 {
                     var otherLink = joints[i].OtherLink(links[inputJointIndex]);
-                    otherLink.Velocity = links[inputLinkIndex].Velocity;
+                    otherLink.Acceleration = links[inputLinkIndex].Acceleration;
                     unknownObjects.Remove(otherLink);
                 }
             /**** But the velocities of any P-joints or RP-joints connected to ground are unknown. ****/
@@ -167,7 +167,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 }
                 else
                 {
-                    var row = ((EqualLinkVelocityEquation)eq).GetRowCoefficients();
+                    var row = ((EqualLinkAccelerationEquation)eq).GetRowCoefficients();
                     rows.Add(new Tuple<double, double[], double>(DistanceFromOne(row), row, 0.0));
                 }
             }
@@ -194,7 +194,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link) ((link)o).Velocity = x[index++];
+                if (o is link) ((link)o).Acceleration = x[index++];
                 else if (o is joint)
                 {
                     ((joint)o).vx = x[index++];

@@ -62,7 +62,6 @@
   <ItemGroup>
     <Compile Include="circleDiagramItem.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="DynamicMatrixTerm.cs" />
     <Compile Include="gearData.cs" />
     <Compile Include="joint.cs" />
     <Compile Include="link.cs" />
@@ -85,8 +84,8 @@
     <Compile Include="Position Solving\LinkLengthFunction.cs" />
     <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
     <Compile Include="Position Solving\PositionSolver.cs" />
+    <Compile Include="Simulator Classes\Copy of PlanarMechanismSimulator.Dyadic.Velocity.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.Dyadic.Acceleration.cs" />
-    <Compile Include="Simulator Classes\PlanarMechanismSimulator.Dyadic.Velocity.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.Main.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.Numerical.cs" />
@@ -99,6 +98,13 @@
     <Compile Include="StarMath_Functions\print functions.cs" />
     <Compile Include="StarMath_Functions\solve.cs" />
     <Compile Include="TimeSortedList.cs" />
+    <Compile Include="VelocityAndAcceleration\DynamicMatrixTerm.cs" />
+    <Compile Include="VelocityAndAcceleration\EqualLinkVelocityEquation.cs" />
+    <Compile Include="VelocityAndAcceleration\Equations.cs" />
+    <Compile Include="VelocityAndAcceleration\VelocityEquationForDoubleSlide.cs" />
+    <Compile Include="VelocityAndAcceleration\VelocityEquationForFixedJoints.cs" />
+    <Compile Include="VelocityAndAcceleration\VelocityEquationForFixedToSlide.cs" />
+    <Compile Include="VelocityAndAcceleration\VelocitySolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="HTMLPage1.html" />
