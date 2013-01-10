@@ -99,14 +99,13 @@
     <Compile Include="VelocityAndAcceleration\AccelerationEquationForDoubleSlide.cs" />
     <Compile Include="VelocityAndAcceleration\AccelerationEquationForFixedJoints.cs" />
     <Compile Include="VelocityAndAcceleration\AccelerationEquationForFixedToSlide.cs" />
-    <Compile Include="VelocityAndAcceleration\AccelerationSolver.cs" />
     <Compile Include="VelocityAndAcceleration\EqualLinkToLinkStateVarEquation.cs" />
     <Compile Include="VelocityAndAcceleration\EquationBase.cs" />
     <Compile Include="VelocityAndAcceleration\JointToJointEquation.cs" />
+    <Compile Include="VelocityAndAcceleration\VelocityAndAccelerationSolver.cs" />
     <Compile Include="VelocityAndAcceleration\VelocityEquationForDoubleSlide.cs" />
     <Compile Include="VelocityAndAcceleration\VelocityEquationForFixedJoints.cs" />
     <Compile Include="VelocityAndAcceleration\VelocityEquationForFixedToSlide.cs" />
-    <Compile Include="VelocityAndAcceleration\VelocitySolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="HTMLPage1.html" />

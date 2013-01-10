@@ -22,7 +22,7 @@ namespace PlanarMechanismSimulator
         /// Gets the status.
         /// </summary>
         public string Status { get; private set; }
-        
+
         public double[] InputRange { get; private set; }
         private double _deltaAngle = Constants.DefaultStepSize;
         private double _fixedTimeStep = double.NaN;
@@ -233,11 +233,11 @@ namespace PlanarMechanismSimulator
                             if (j > 0 && JointTypeStrings[i].Equals("rp", StringComparison.InvariantCultureIgnoreCase))
                                 ijoints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                                      "r", currentJointPosition));
-                                /* if there are more than 2 links and the joint is typed G or P then we throw an error. */
+                            /* if there are more than 2 links and the joint is typed G or P then we throw an error. */
                             else if (j > 0 && (JointTypeStrings[i].Equals("g", StringComparison.InvariantCultureIgnoreCase)
                                  || JointTypeStrings[i].Equals("p", StringComparison.InvariantCultureIgnoreCase)))
                                 throw new Exception("More than two links is not allowed for " + JointTypeStrings[i] + " joints.");
-                                /* else...this is the normal case of a joint between two links. */
+                            /* else...this is the normal case of a joint between two links. */
                             else ijoints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                              JointTypeStrings[i], currentJointPosition));
                             newLinkIDs.Add(new List<string> { LinkIDs[i][j], LinkIDs[i][j + 1] });
@@ -269,12 +269,12 @@ namespace PlanarMechanismSimulator
                     inputJoint.Link1 = inputJoint.Link2;
                     inputJoint.Link2 = tempLinkRef;
                 }
+                inputLink = inputJoint.Link2;
                 inferAdditionalGearLinks();
                 addReferencePivotsToSlideOnlyLinks();
                 numLinks = ilinks.Count; //count the number of links in the system
                 numJoints = ijoints.Count; //count the number of pivots in the system
                 /* reorder links, move input link and ground link to back of list */
-                inputLink = (inputJoint.Link2.isGround) ? inputJoint.Link1 : inputJoint.Link2;
                 ilinks.Remove(inputLink); ilinks.Add(inputLink); //move inputLink to back of list
                 var groundLinks = ilinks.Where(c => c.isGround).ToList();//move inputLink to back of list
                 if (groundLinks.Count != 1) throw new Exception("There can only be one ground link. In this case, there are "
@@ -284,8 +284,19 @@ namespace PlanarMechanismSimulator
                 inputLinkIndex = numLinks - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
                 var origOrder = new List<joint>(ijoints);
-               ijoints.Remove(inputJoint);
+                ijoints.Remove(inputJoint);
                 var groundPivots = ijoints.Where(j => j.isGround).ToList();
+                foreach (var groundPivot in groundPivots)
+                {
+                    /* this doesn't real change anything, but allows one to see the movement of P joints along ground. It only 
+                     * applies to P-joints as RP-joints will behave differently. */
+                    if (groundPivot.jointType == JointTypes.P && !inputJoint.Link1.isGround)
+                    {
+                        var tempLinkRef = inputJoint.Link1;
+                        inputJoint.Link1 = inputJoint.Link2;
+                        inputJoint.Link2 = tempLinkRef;
+                    }
+                }
                 ijoints.RemoveAll(j => j.isGround);
                 var connectedInputJoints = ijoints.Where(j => inputLink.joints.Contains(j) && j.FixedWithRespectTo(inputLink)).ToList();
                 ijoints.RemoveAll(connectedInputJoints.Contains);
@@ -324,7 +335,7 @@ namespace PlanarMechanismSimulator
             foreach (var c in ilinks)
             {
                 if (c.joints.Count(j => j.FixedWithRespectTo(c)) > 0) continue;
-                var newJoint = new joint(false, "r") {Link1 = c};
+                var newJoint = new joint(false, "r") { Link1 = c };
                 c.joints.Add(newJoint);
                 ijoints.Add(newJoint);
                 additionalRefjoints.Add(newJoint);
