@@ -8,14 +8,13 @@ namespace PMKS_Silverlight_App
     {
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            Boolean temp;
             if ((Boolean)value) return AngleType.Radians;
-            else return AngleType.Degrees;
+            return AngleType.Degrees;
         }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((AngleType) value==AngleType.Radians);
+            return ((AngleType)value == AngleType.Radians);
         }
 
     }

@@ -54,6 +54,17 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 }
             }
         }
+
+        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown, bool jointKIsKnown, bool linkIsKnown)
+        {
+            if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
+                return new AccelerationEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
+            if (jJoint.SlidingWithRespectTo(l))
+                return new AccelerationEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
+            if (kJoint.SlidingWithRespectTo(l))
+                return new AccelerationEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown);
+            return new AccelerationEquationForFixedJoints(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
+        }
     }
     /// <summary>
     /// Velocity Solver works by creating equations corresponding to the relative velocity equations.
@@ -117,6 +128,16 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 }
             }
         }
+        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown, bool jointKIsKnown, bool linkIsKnown)
+        {
+            if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
+                return new VelocityEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
+            if (jJoint.SlidingWithRespectTo(l))
+                return new VelocityEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
+            if (kJoint.SlidingWithRespectTo(l))
+                return new VelocityEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
+            return new VelocityEquationForFixedJoints(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
+        }
     }
 
     /// <summary>
@@ -179,20 +200,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                         var jointKIsKnown = ((kJoint.isGround && (kJoint.jointType == JointTypes.R || kJoint.jointType == JointTypes.G))
                             || ((l == inputLink || kJoint.OtherLink(l) == inputLink) && !kJoint.SlidingWithRespectTo(inputLink)));
                         if (!jointJIsKnown || !jointKIsKnown)
-                        {
-                            if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
-                                equations.Add(new VelocityEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown,
-                                    (i >= inputJointIndex)));
-                            else if (joints[j].SlidingWithRespectTo(l))
-                                equations.Add(new VelocityEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown,
-                                    (i >= inputJointIndex)));
-                            else if (joints[k].SlidingWithRespectTo(l))
-                                equations.Add(new VelocityEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown,
-                                    (i >= inputJointIndex)));
-                            else
-                                equations.Add(new VelocityEquationForFixedJoints(l.joints[j], l.joints[k], l,
-                                                                                 jointJIsKnown, jointKIsKnown, (i >= inputJointIndex)));
-                        }
+                            equations.Add(MakeJointToJointEquations(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown, (i >= inputLinkIndex)));
                     }
             }
             for (int i = 0; i < firstInputJointIndex; i++)
@@ -237,6 +245,9 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 eq.unkLength = numUnknowns;
             }
         }
+
+        protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown,
+                                                          bool jointKIsKnown, bool linkIsKnown);
 
         protected abstract void SetInitialInputAndGroundLinkStates(link groundLink);
         protected abstract void SetInitialInputAndGroundJointStates();

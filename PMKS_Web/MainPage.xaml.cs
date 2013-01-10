@@ -145,48 +145,48 @@ namespace PMKS_Silverlight_App
         {
             //try
             //{
-                if (JointsInfo == null) 
-                    return;
-                numJoints = TrimEmptyJoints();
-                if (pmks != null && SameTopology() && SameParameters())
-                {
-                    /* Given the new dynamic binding in UpdateVisuals, we should need to call this again if nothing has changed.*/
-                    //mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data,jointInputTable);
-                    return;
-                }
+            if (JointsInfo == null)
+                return;
+            numJoints = TrimEmptyJoints();
+            if (pmks != null && SameTopology() && SameParameters())
+            {
+                /* Given the new dynamic binding in UpdateVisuals, we should need to call this again if nothing has changed.*/
+                //mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data,jointInputTable);
+                return;
+            }
 
-                if (pmks != null && SameTopology() && DataListsSameLength())
-                {
-                    DefinePositions();
-                    pmks.AssignPositions(InitPositions);
-                }
-                else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
+            if (pmks != null && SameTopology() && DataListsSameLength())
+            {
+                DefinePositions();
+                pmks.AssignPositions(InitPositions);
+            }
+            else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
 
-                pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
+            pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
 
-                if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
-                else status("The mechanism has non-dyadic loops.");
-                int dof = pmks.DegreesOfFreedom;
-                status("Degrees of freedom = " + dof);
-                if (dof == 1)
+            if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
+            else status("The mechanism has non-dyadic loops.");
+            int dof = pmks.DegreesOfFreedom;
+            status("Degrees of freedom = " + dof);
+            if (dof == 1)
+            {
+                pmks.InputSpeed = Speed;
+                if ((bool)globalSettings.ErrorCheckBox.IsChecked)
+                    pmks.MaxSmoothingError = AngleIncrement / 100.0;
+                else
                 {
-                    pmks.InputSpeed = Speed;
-                    if ((bool)globalSettings.ErrorCheckBox.IsChecked) 
-                        pmks.MaxSmoothingError = AngleIncrement/100.0;
-                    else
-                    {
-                        pmks.DeltaAngle = AngleIncrement;
-                        pmks.MaxSmoothingError = double.NaN;
-                    }
-                    status("Analyzing...");
-                    var now = DateTime.Now;
-                    pmks.FindFullMovement();
-                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                    status("Drawing...");
-                    now = DateTime.Now;
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.ijoints,JointsInfo.Data);
-                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                    pmks.DeltaAngle = AngleIncrement;
+                    pmks.MaxSmoothingError = double.NaN;
                 }
+                status("Analyzing...");
+                var now = DateTime.Now;
+                pmks.FindFullMovement();
+                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                status("Drawing...");
+                now = DateTime.Now;
+                mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.AllJoints, JointsInfo.Data);
+                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+            }
             //}
             //catch (Exception e)
             //{
@@ -264,7 +264,6 @@ namespace PMKS_Silverlight_App
 
         private Boolean DefinePositions()
         {
-            double angle;
             InitPositions.Clear();
             for (int i = 0; i < numJoints; i++)
             {

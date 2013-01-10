@@ -9,8 +9,6 @@ namespace PMKS_Silverlight_App
 {
     public class JointData : DependencyObject
     {
-        private bool _velocityVisible = true;
-        private bool _accelerationVisible = true;
         private double _xPos = double.NaN;
         private double _yPos = double.NaN;
         private double _angle = double.NaN;

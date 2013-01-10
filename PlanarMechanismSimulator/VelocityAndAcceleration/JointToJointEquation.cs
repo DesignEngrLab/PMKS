@@ -11,8 +11,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         protected int joint1XIndex = -1;
         protected int joint1YIndex = -1;
         protected readonly joint joint2;
-        protected int joint2XIndex;
-        protected int joint2YIndex;
+        protected int joint2XIndex = -1;
+        protected int joint2YIndex = -1;
         protected readonly link link;
         protected int linkIndex = -1;
         protected readonly bool joint1IsKnown;
