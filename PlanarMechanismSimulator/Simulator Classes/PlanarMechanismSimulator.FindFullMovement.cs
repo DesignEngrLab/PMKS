@@ -35,6 +35,7 @@ namespace PlanarMechanismSimulator
 
             if (useErrorMethod)
             {
+                if (MaxSmoothingError == 0) throw new Exception("The MaxSmoothingError must not be zero.");
 #if DEBUGSERIAL
                 SimulateWithinError(AllJoints, AllLinks, true);
 #elif SILVERLIGHT
