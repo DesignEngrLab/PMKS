@@ -15,6 +15,7 @@ namespace SimulatorConsoleApplication
             pms.MaxSmoothingError = 0.0001;
             Console.WriteLine("start");
             pms.FindFullMovement();
+            
             Console.WriteLine("done");
             Console.ReadKey();
         }

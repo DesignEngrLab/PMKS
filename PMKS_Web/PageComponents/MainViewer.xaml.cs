@@ -24,26 +24,6 @@ namespace PMKS_Silverlight_App
         }
 
         #region Properties
-        private TimeSliderDataClass _dataclass;
-        public TimeSliderDataClass Dataclass
-        {
-            get { return _dataclass; }
-            set { _dataclass = value; }
-        }
-
-        private double _val;
-        public double Val
-        {
-            get { return _val; }
-            set
-            {
-                if (_val != value)
-                {
-                    _val = value;
-                    setNewPathStateFromSliderValue(_val);
-                }
-            }
-        }
 
         private double ScaleFactor
         {
@@ -51,22 +31,13 @@ namespace PMKS_Silverlight_App
             set;
         }
 
-        private MatrixParams MatrixParameters
-        {
-            get;
-            set;
-        }
         #endregion
 
-        private void setNewPathStateFromSliderValue(double val)
-        {
 
-        }
 
         public void UpdateVisuals(TimeSortedList JointParameters, TimeSortedList LinkParameters, int inputJointIndex, List<joint> joints, ObservableCollection<JointData> JointData)
         {
             if (LinkParameters == null || JointParameters == null) return;
-            Dataclass.NumberOfPoints = inputJointIndex;
             MainCanvas.Children.Clear();
             if (JointParameters.Count < 2) return;
             double penThick, velocityFactor, accelFactor;
@@ -118,36 +89,22 @@ namespace PMKS_Silverlight_App
             maxima[3] = Math.Sqrt(maxima[3]);
 
 
-            ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / (maxima[0] - minima[0]),
+            var ScaleFactor = Math.Min((((Grid)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / (maxima[0] - minima[0]),
                                        (((Grid)Parent).ActualHeight - 2 * DisplayConstants.Buffer) / (maxima[1] - minima[1]));
             if (ScaleFactor > 100) ScaleFactor = 100;
             if (ScaleFactor < 0.01) ScaleFactor = 0.01;
             var biggerDim = Math.Max(maxima[0] - minima[0], maxima[1] - minima[1]);
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
-            Dataclass.PenThick = penThick;
             velocityFactor = DisplayConstants.VelocityLengthRatio * biggerDim / maxima[2];
             accelFactor = DisplayConstants.AccelLengthRatio * biggerDim / maxima[3];
-            MainCanvas.RenderTransform = new ScaleTransform { ScaleX = 100, ScaleY = 100 };
-          
-            return;
             /* this function is going to impact pan and zoom. I'm not sure it is right. */
             /* Plus there is the matter of the cropping, which causes problems if the shapes have negative parts. */
-            MainCanvas.RenderTransform = new ScaleTransform { ScaleX = ScaleFactor, ScaleY = ScaleFactor };
-            //MainCanvas.RenderTransform = new MatrixTransform
-            //{
-            //    Matrix =
-            //        new Matrix(ScaleFactor, 0, 0, -ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0],
-            //                   ScaleFactor * maxima[1] + DisplayConstants.Buffer)
-            //};
-            if (MatrixParameters == null)
-                MatrixParameters = new MatrixParams(ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0], ScaleFactor * maxima[1] + DisplayConstants.Buffer);
-            //else
-            //{
-            MatrixParameters.ScaleFactor = ScaleFactor;
-            //    MatrixParameters.XOffSet = DisplayConstants.Buffer - ScaleFactor * minima[0];
-            //    MatrixParameters.YOffSet = ScaleFactor * maxima[1] + DisplayConstants.Buffer;
-            //}
-
+            MainCanvas.RenderTransform = new MatrixTransform
+            {
+                Matrix =
+                    new Matrix(ScaleFactor, 0, 0, -ScaleFactor, DisplayConstants.Buffer - ScaleFactor * minima[0],
+                               ScaleFactor * maxima[1] + DisplayConstants.Buffer)
+            };
             /* this is just to debug the problem with the positioning and cropping. */
             MainCanvas.Background = new SolidColorBrush(Colors.LightGray);
             MainCanvas.Margin = new Thickness(DisplayConstants.Buffer);
@@ -155,7 +112,6 @@ namespace PMKS_Silverlight_App
 
         private void MainCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            return;
             /* commented out for now, not working properly, but the zooming mechanism should take place in this handler*/
             if (e.Delta > 1)
                 ScaleFactor *= 1.01;
@@ -163,36 +119,5 @@ namespace PMKS_Silverlight_App
             MainCanvas.RenderTransform = new ScaleTransform { ScaleX = ScaleFactor, ScaleY = ScaleFactor };
 
         }
-    }
-
-    internal class MatrixParams
-    {
-        #region Properties
-        public double ScaleFactor
-        {
-            get;
-            set;
-        }
-
-        public double XOffSet
-        {
-            get;
-            set;
-        }
-
-        public double YOffSet
-        {
-            get;
-            set;
-        }
-        #endregion
-
-        public MatrixParams(double scaleFactor, double xOffSet, double yOffSet)
-        {
-            this.ScaleFactor = scaleFactor;
-            this.XOffSet = xOffSet;
-            this.YOffSet = yOffSet;
-        }
-
     }
 }
