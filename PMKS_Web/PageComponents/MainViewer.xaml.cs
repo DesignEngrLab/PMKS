@@ -17,8 +17,10 @@ namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
     {
-        private double minY;
-        private double minX;
+        private double ScaleFactor, minX, minY;
+        private bool Panning;
+        private Point ScreenStartPoint = new Point(0, 0);
+        private Point startOffset;
 
         public MainViewer()
         {
@@ -27,11 +29,6 @@ namespace PMKS_Silverlight_App
 
         #region Properties
 
-        private double ScaleFactor
-        {
-            get;
-            set;
-        }
 
         #endregion
 
@@ -42,10 +39,36 @@ namespace PMKS_Silverlight_App
             if (LinkParameters == null || JointParameters == null) return;
             MainCanvas.Children.Clear();
             if (JointParameters.Count < 2) return;
-            double penThick, velocityFactor, accelFactor;
+            double velocityFactor, accelFactor, width, height;
 
-            var minima = new double[4];
-            var maxima = new double[4];
+            defineDisplayConstants(JointParameters, out  width, out height, out velocityFactor, out accelFactor);
+            MainCanvas.Width = 3 * width;
+            MainCanvas.Height = 3 * height;
+            ScaleFactor = Math.Min(((FrameworkElement)Parent).ActualWidth / (3 * width),
+                                      ((FrameworkElement)Parent).ActualHeight / (3 * height));
+            if (ScaleFactor > 100) ScaleFactor = 100;
+            if (ScaleFactor < 0.01) ScaleFactor = 0.01;
+
+            double penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
+
+            for (int i = 0; i < inputJointIndex; i++)
+            {
+                /* make a shape (i.e. Path shape) for each joint for each of the 3:position, velocity, and acceleration */
+                MainCanvas.Children.Add(new AccelerationPath(i, JointParameters, JointData[i], accelFactor, width - minX, height - minY) { StrokeThickness = penThick });
+                MainCanvas.Children.Add(new VelocityPath(i, JointParameters, JointData[i], velocityFactor, width - minX, height - minY) { StrokeThickness = penThick });
+                MainCanvas.Children.Add(new PositionPath(i, JointParameters, JointData[i], width - minX, height - minY) { StrokeThickness = penThick });
+            }
+            startOffset = new Point((((FrameworkElement)Parent).ActualWidth - (3 * ScaleFactor * width)) / 2,
+           (((FrameworkElement)Parent).ActualHeight - (3 * ScaleFactor * height)) / 2);
+            ScreenStartPoint = new Point(0.0, ((FrameworkElement)Parent).ActualHeight);
+            transform();
+        }
+
+        private void defineDisplayConstants(TimeSortedList JointParameters, out double width, out double height,
+            out double velocityFactor, out double accelFactor)
+        {
+            var minima = new double[6];
+            var maxima = new double[6];
             var numJoints = JointParameters.Parameters[0].GetLength(0);
             for (int k = 0; k < minima.GetLength(0); k++)
             {
@@ -55,83 +78,70 @@ namespace PMKS_Silverlight_App
             maxima[2] = maxima[3] = Constants.epsilonSame;
             for (int j = 0; j < JointParameters.Count; j++)
                 for (int i = 0; i < numJoints; i++)
-                {
-                    if (minima[0] > JointParameters.Parameters[j][i, 0])
-                        minima[0] = JointParameters.Parameters[j][i, 0];
-                    if (maxima[0] < JointParameters.Parameters[j][i, 0])
-                        maxima[0] = JointParameters.Parameters[j][i, 0];
-                    if (minima[1] > JointParameters.Parameters[j][i, 1])
-                        minima[1] = JointParameters.Parameters[j][i, 1];
-                    if (maxima[1] < JointParameters.Parameters[j][i, 1])
-                        maxima[1] = JointParameters.Parameters[j][i, 1];
-                    var velSize = Constants.distanceSqared(JointParameters.Parameters[j][i, 2],
-                                                     JointParameters.Parameters[j][i, 3]);
-                    if (minima[2] > velSize) minima[2] = velSize;
-                    if (maxima[2] < velSize) maxima[2] = velSize;
-                    var accelSize = Constants.distanceSqared(JointParameters.Parameters[j][i, 4],
-                                                     JointParameters.Parameters[j][i, 5]);
-                    if (minima[3] > accelSize) minima[3] = accelSize;
-                    if (maxima[3] < accelSize) maxima[3] = accelSize;
-                }
+                    for (int k = 0; k < 6; k++)
+                    {
+                        if (minima[0] > JointParameters.Parameters[j][i, k])
+                            minima[k] = JointParameters.Parameters[j][i, k];
+                        if (maxima[k] < JointParameters.Parameters[j][i, k])
+                            maxima[k] = JointParameters.Parameters[j][i, k];
+
+                    }
             minX = minima[0];
             minY = minima[1];
-            MainCanvas.Width = maxima[0] - minX;
-            MainCanvas.Height = maxima[1] - minY;
-            minima[2] = Math.Sqrt(minima[2]);
-            maxima[2] = Math.Sqrt(maxima[2]);
-            minima[3] = Math.Sqrt(minima[3]);
-            maxima[3] = Math.Sqrt(maxima[3]);
+            width = maxima[0] - minX;
+            height = maxima[1] - minY;
+            var vxMax = Math.Max(Math.Abs(minima[2]), Math.Abs(maxima[2]));
+            var vyMax = Math.Max(Math.Abs(minima[3]), Math.Abs(maxima[3]));
+            velocityFactor = Math.Min(width / vxMax, height / vyMax);
 
-
-            ScaleFactor = Math.Min((((FrameworkElement)Parent).ActualWidth - 2 * DisplayConstants.Buffer) / MainCanvas.Width,
-                                      (((FrameworkElement)Parent).ActualHeight - 2 * DisplayConstants.Buffer) / MainCanvas.Height);
-            if (ScaleFactor > 100) ScaleFactor = 100;
-            if (ScaleFactor < 0.01) ScaleFactor = 0.01;
-            var biggerDim = Math.Max(maxima[0] - minX, maxima[1] - minY);
-            penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
-            velocityFactor = DisplayConstants.VelocityLengthRatio * biggerDim / maxima[2];
-            accelFactor = DisplayConstants.AccelLengthRatio * biggerDim / maxima[3];
-            var buffer = DisplayConstants.Buffer / ScaleFactor;
-            minX -= buffer;
-            minY -= buffer;
-            MainCanvas.Width += 2 * buffer;
-            MainCanvas.Height += 2 * buffer;
-
-            /* this is just to debug the problem with the positioning and cropping. */
-
-            //MainCanvas.RenderTransform = new ScaleTransform { ScaleX = ScaleFactor, ScaleY = ScaleFactor };
-            //MainCanvas.Background = new SolidColorBrush(Colors.LightGray);
-            //MainCanvas.Margin = new Thickness(DisplayConstants.Buffer);
-
-            for (int i = 0; i < inputJointIndex; i++)
-            {
-                /* make a shape (i.e. Path shape) for each joint for each of the 3:position, velocity, and acceleration */
-                MainCanvas.Children.Add(new AccelerationPath(i, JointParameters, JointData[i], accelFactor, minX, minY) { StrokeThickness = penThick });
-                MainCanvas.Children.Add(new VelocityPath(i, JointParameters, JointData[i], velocityFactor, minX, minY) { StrokeThickness = penThick });
-                MainCanvas.Children.Add(new PositionPath(i, JointParameters, JointData[i], minX, minY) { StrokeThickness = penThick });
-            }
-            /* this function is going to impact pan and zoom. I'm not sure it is right. */
-            /* Plus there is the matter of the cropping, which causes problems if the shapes have negative parts. */
-            MainCanvas.RenderTransform = new MatrixTransform
-            {
-                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, 0,
-                   ((FrameworkElement)Parent).ActualHeight)
-            };
+            var axMax = Math.Max(Math.Abs(minima[4]), Math.Abs(maxima[4]));
+            var ayMax = Math.Max(Math.Abs(minima[5]), Math.Abs(maxima[5]));
+            accelFactor = Math.Min(width / axMax, height / ayMax);
         }
 
-        internal void MainCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void transform()
+        {
+            MainCanvas.RenderTransform = new MatrixTransform
+            {
+                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, startOffset.X,
+                    ((FrameworkElement)Parent).ActualHeight - startOffset.Y)
+            };
+
+        }
+
+        #region Events
+
+        internal void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
             /* commented out for now, not working properly, but the zooming mechanism should take place in this handler*/
             if (e.Delta > 1)
                 ScaleFactor *= 1.05;
             else ScaleFactor /= 1.05;
-            MainCanvas.RenderTransform = new MatrixTransform
-            {
-                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, 0,
-                   ((FrameworkElement)Parent).ActualHeight)
-            };
-
+            transform();
         }
+
+        internal void OnLostMouseCapture(object sender, MouseEventArgs e)
+        {
+            Panning = false;
+        }
+
+        internal void OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            Panning = true;
+            // Save starting point, used later when determining how much to scroll.
+            ScreenStartPoint = e.GetPosition(this);
+        }
+
+        internal void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (!Panning)
+                return;
+            startOffset = new Point(startOffset.X + (e.GetPosition(this).X - ScreenStartPoint.X) / ScaleFactor,
+                                    startOffset.Y - (e.GetPosition(this).Y - ScreenStartPoint.Y) / ScaleFactor);
+
+            transform();
+        }
+        #endregion
 
     }
 }

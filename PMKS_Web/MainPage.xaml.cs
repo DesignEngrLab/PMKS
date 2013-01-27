@@ -75,7 +75,7 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
             jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
-           
+
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -303,10 +303,24 @@ namespace PMKS_Silverlight_App
 
         #endregion
 
-        private void mainViewer_MouseWheel_1(object sender, MouseWheelEventArgs e)
+        private void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            mainViewer.MainCanvas_MouseWheel(sender, e);
+            mainViewer.OnMouseWheel(sender, e);
         }
 
+        private void OnLostMouseCapture(object sender, MouseEventArgs e)
+        {
+            mainViewer.OnLostMouseCapture(sender, e);
+        }
+
+        private void OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            mainViewer.OnMouseEnter(sender, e);
+        }
+
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            mainViewer.OnMouseMove(sender, e);
+        }
     }
 }

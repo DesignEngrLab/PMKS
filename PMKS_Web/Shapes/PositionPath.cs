@@ -15,7 +15,7 @@ namespace PMKS_Silverlight_App
         private double minX;
         private double minY;
 
-        public PositionPath(int index, TimeSortedList JointParameters, JointData jData, double minX, double minY)
+        public PositionPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)
         {
             Data = new PathGeometry
                 {
@@ -28,7 +28,7 @@ namespace PMKS_Silverlight_App
                 };
 
             Stroke = new SolidColorBrush { Color = Colors.Green };
-            RenderTransform = new TranslateTransform { X = -minX, Y = -minY };
+            RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY };
             var binding = new Binding
                 {
                     Source = jData,

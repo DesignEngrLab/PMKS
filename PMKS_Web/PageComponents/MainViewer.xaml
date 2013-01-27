@@ -2,17 +2,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:src="clr-namespace:PMKS_Silverlight_App"
-    MouseWheel="MainCanvas_MouseWheel" >
- 
-            <Canvas Grid.Column="0" Grid.Row="0" x:Name="MainCanvas" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"/>
-        
-   
-    <!--<ScrollViewer Name="scrollViewer1" VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto" >-->
-    <!--</ScrollViewer>-->
-    <!--<src:PanAndZoomViewer x:Name="zoomViewer" MinimumZoom="1" MaximumZoom="4">-->
-
-    <!--</src:PanAndZoomViewer>-->
-    
-
+             MouseWheel="OnMouseWheel" 
+              MouseLeftButtonUp="OnLostMouseCapture" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"
+             MouseLeftButtonDown="OnMouseEnter"
+             MouseMove="OnMouseMove" >
+    <Canvas Grid.Column="0" Grid.Row="0" x:Name="MainCanvas" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"/>
 </UserControl>

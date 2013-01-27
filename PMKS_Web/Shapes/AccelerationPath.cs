@@ -8,7 +8,7 @@ namespace PMKS_Silverlight_App
 {
     public class AccelerationPath : Path
     {
-        public AccelerationPath(int index, TimeSortedList JointParameters, JointData jData, double accelFactor, double minX, double minY)
+        public AccelerationPath(int index, TimeSortedList JointParameters, JointData jData, double accelFactor, double offsetX, double offsetY)
         {
             var lines = new PathFigureCollection(); 
             for (int j = 0; j < JointParameters.Count; j++)
@@ -30,7 +30,7 @@ namespace PMKS_Silverlight_App
             }
             Data = new PathGeometry{Figures = lines};
             Stroke = new SolidColorBrush { Color = Colors.Orange };
-            RenderTransform = new TranslateTransform { X = -minX, Y = -minY };
+            RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY};
 
             var binding = new Binding
               {

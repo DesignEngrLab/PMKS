@@ -5,7 +5,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:src="clr-namespace:PMKS_Silverlight_App" xmlns:Silverlight_PMKS="clr-namespace:Silverlight_PMKS"
     x:Class="PMKS_Silverlight_App.MainPage"
-    mc:Ignorable="d" Loaded="MainPage_Loaded_1" MouseWheel="mainViewer_MouseWheel_1" 
+    mc:Ignorable="d" Loaded="MainPage_Loaded_1"
+             MouseWheel="OnMouseWheel" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"
+              MouseLeftButtonUp="OnLostMouseCapture"
+             MouseLeftButtonDown="OnMouseEnter"
+             MouseMove="OnMouseMove"
     d:DesignHeight="674" d:DesignWidth="855">
     <UserControl.Resources>
         <src:JointsViewModel x:Name="JointsInfo" />
@@ -26,9 +30,9 @@
         <src:OutputStatus Grid.Row="1" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
         <!--I thought that putting the JointInputTable last would cause it to be "on top" and always focused. Didn't change anything.-->
         <src:JointInputTable Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
-        <ScrollViewer Grid.Row="1" Foreground="{x:Null}" HorizontalScrollBarVisibility="Visible" VerticalContentAlignment="Bottom">
-            <src:MainViewer  x:Name="mainViewer"/>
-        </ScrollViewer>
+        <!--<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Visible" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">-->
+            <src:MainViewer  x:Name="mainViewer" VerticalAlignment="Top" HorizontalAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" HorizontalContentAlignment="Left"/>
+        <!--</ScrollViewer>-->
 
 
     </Grid>
