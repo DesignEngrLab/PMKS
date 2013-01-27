@@ -8,7 +8,7 @@ namespace PMKS_Silverlight_App
 {
     public class VelocityPath : Path
     {
-        public VelocityPath(int index, TimeSortedList JointParameters, JointData jData, double velocityFactor)
+        public VelocityPath(int index, TimeSortedList JointParameters, JointData jData, double velocityFactor, double minX, double minY)
         {
             var lines = new PathFigureCollection(); 
             for (int j = 0; j < JointParameters.Count; j++)
@@ -29,7 +29,8 @@ namespace PMKS_Silverlight_App
                     });
             }
             Data = new PathGeometry{Figures = lines};
-            Stroke = new SolidColorBrush {Color = Colors.Brown};
+            Stroke = new SolidColorBrush { Color = Colors.Brown };
+            RenderTransform = new TranslateTransform { X = -minX, Y = -minY };
 
             var binding = new Binding
               {

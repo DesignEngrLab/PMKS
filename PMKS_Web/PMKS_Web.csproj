@@ -90,7 +90,6 @@
     <Compile Include="PageComponents\OutputStatus.xaml.cs">
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PageComponents\PanAndZoom.cs" />
     <Compile Include="Converters\CheckBoxVisibilityConverter.cs" />
     <Compile Include="Shapes\AccelerationPath.cs" />
     <Compile Include="Shapes\VelocityPath.cs" />

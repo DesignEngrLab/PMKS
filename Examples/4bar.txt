@@ -1,5 +1,5 @@
-ground,input,R,0,0.00
-input,coupler,R,0,10.00
-coupler,output,R,50,20.00
-ground,output,R,40,0.00
-coupler,R,30,-10.00
+ground, input,R,0,0
+input coupler,R,-2,0,0
+coupler rocker,R,5,6
+rocker 0,R,4,0
+coupler,R,7,7,False,False,false

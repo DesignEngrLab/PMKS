@@ -75,6 +75,7 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
             jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
+           
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -172,7 +173,7 @@ namespace PMKS_Silverlight_App
             {
                 pmks.InputSpeed = Speed;
                 if ((bool)globalSettings.ErrorCheckBox.IsChecked)
-                    pmks.MaxSmoothingError = AngleIncrement / 100.0;
+                    pmks.MaxSmoothingError = AngleIncrement;  // / 100.0;
                 else
                 {
                     pmks.DeltaAngle = AngleIncrement;
@@ -301,6 +302,11 @@ namespace PMKS_Silverlight_App
         }
 
         #endregion
+
+        private void mainViewer_MouseWheel_1(object sender, MouseWheelEventArgs e)
+        {
+            mainViewer.MainCanvas_MouseWheel(sender, e);
+        }
 
     }
 }

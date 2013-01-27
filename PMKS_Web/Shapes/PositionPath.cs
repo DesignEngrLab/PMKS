@@ -9,7 +9,13 @@ namespace PMKS_Silverlight_App
 {
     public class PositionPath : Path
     {
-        public PositionPath(int index, TimeSortedList JointParameters, JointData jData)
+        private int i;
+        private TimeSortedList JointParameters;
+        private JointData jointData;
+        private double minX;
+        private double minY;
+
+        public PositionPath(int index, TimeSortedList JointParameters, JointData jData, double minX, double minY)
         {
             Data = new PathGeometry
                 {
@@ -20,8 +26,9 @@ namespace PMKS_Silverlight_App
                             QuadraticPath(index, JointParameters, jData)
                         }
                 };
+
             Stroke = new SolidColorBrush { Color = Colors.Green };
-            
+            RenderTransform = new TranslateTransform { X = -minX, Y = -minY };
             var binding = new Binding
                 {
                     Source = jData,
@@ -32,6 +39,7 @@ namespace PMKS_Silverlight_App
             SetBinding(OpacityProperty, binding);
 
         }
+
 
         public PathFigure LinearPath(int index, TimeSortedList JointParameters, JointData jData)
         {
