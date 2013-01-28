@@ -17,20 +17,20 @@ namespace PMKS_Silverlight_App
                 var y = JointParameters.Parameters[j][index, 1];
                 lines.Add(new PathFigure
                     {
-                        StartPoint = new Point(x, y),
+                        StartPoint = new Point(x + offsetX, y + offsetY),
                         Segments =
                             {
                                 new LineSegment
                                     {
-                                        Point = new Point(x + accelFactor*JointParameters.Parameters[j][index, 4],
-                                                          y + accelFactor*JointParameters.Parameters[j][index, 5])
+                                        Point = new Point(x +offsetX+ accelFactor*JointParameters.Parameters[j][index, 4],
+                                                          y +offsetY+ accelFactor*JointParameters.Parameters[j][index, 5])
                                     }
                             }
                     });
             }
             Data = new PathGeometry{Figures = lines};
             Stroke = new SolidColorBrush { Color = Colors.Orange };
-            RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY};
+            //RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY};
 
             var binding = new Binding
               {

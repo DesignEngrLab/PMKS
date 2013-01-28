@@ -75,12 +75,12 @@ namespace PMKS_Silverlight_App
                 minima[k] = double.PositiveInfinity;
                 maxima[k] = double.NegativeInfinity;
             }
-            maxima[2] = maxima[3] = Constants.epsilonSame;
+            //maxima[2] = maxima[3] = Constants.epsilonSame;
             for (int j = 0; j < JointParameters.Count; j++)
                 for (int i = 0; i < numJoints; i++)
                     for (int k = 0; k < 6; k++)
                     {
-                        if (minima[0] > JointParameters.Parameters[j][i, k])
+                        if (minima[k] > JointParameters.Parameters[j][i, k])
                             minima[k] = JointParameters.Parameters[j][i, k];
                         if (maxima[k] < JointParameters.Parameters[j][i, k])
                             maxima[k] = JointParameters.Parameters[j][i, k];
@@ -127,17 +127,17 @@ namespace PMKS_Silverlight_App
 
         internal void OnMouseEnter(object sender, MouseEventArgs e)
         {
+            if (Panning) return;
             Panning = true;
             // Save starting point, used later when determining how much to scroll.
-            ScreenStartPoint = e.GetPosition(this);
+            ScreenStartPoint = e.GetPosition((UIElement) Parent);
         }
 
         internal void OnMouseMove(object sender, MouseEventArgs e)
         {
-            if (!Panning)
-                return;
-            startOffset = new Point(startOffset.X + (e.GetPosition(this).X - ScreenStartPoint.X) / ScaleFactor,
-                                    startOffset.Y - (e.GetPosition(this).Y - ScreenStartPoint.Y) / ScaleFactor);
+            if (!Panning) return;
+            startOffset = new Point(startOffset.X + (e.GetPosition((UIElement)Parent).X - ScreenStartPoint.X) / ScaleFactor,
+                                    startOffset.Y - (e.GetPosition((UIElement)Parent).Y - ScreenStartPoint.Y) / ScaleFactor);
 
             transform();
         }

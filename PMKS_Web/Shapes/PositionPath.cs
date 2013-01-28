@@ -9,26 +9,20 @@ namespace PMKS_Silverlight_App
 {
     public class PositionPath : Path
     {
-        private int i;
-        private TimeSortedList JointParameters;
-        private JointData jointData;
-        private double minX;
-        private double minY;
-
         public PositionPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)
         {
             Data = new PathGeometry
                 {
                     Figures = new PathFigureCollection
                         {
-                            //LinearPath(index, JointParameters, jData)
+                            LinearPath(index, JointParameters, jData, offsetX, offsetY)
                             //,
-                            QuadraticPath(index, JointParameters, jData)
+                            //QuadraticPath(index, JointParameters, jData,  offsetX,  offsetY)
                         }
                 };
 
             Stroke = new SolidColorBrush { Color = Colors.Green };
-            RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY };
+            //RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY };
             var binding = new Binding
                 {
                     Source = jData,
@@ -41,14 +35,14 @@ namespace PMKS_Silverlight_App
         }
 
 
-        public PathFigure LinearPath(int index, TimeSortedList JointParameters, JointData jData)
+        public PathFigure LinearPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)
         {
-            var start = new Point(JointParameters[0].Value[index, 0], JointParameters[0].Value[index, 1]);
+            var start = new Point(JointParameters[0].Value[index, 0] + offsetX, JointParameters[0].Value[index, 1] + offsetY);
             var points = new PointCollection();
             for (int i = 1; i < JointParameters.Count; i++)
             {
-                var x = JointParameters[i].Value[index, 0];
-                var y = JointParameters[i].Value[index, 1];
+                var x = JointParameters[i].Value[index, 0] + offsetX;
+                var y = JointParameters[i].Value[index, 1] + offsetY;
                 points.Add(new Point(x, y));
             }
             #region see if path should be closed
@@ -74,20 +68,20 @@ namespace PMKS_Silverlight_App
             };
         }
 
-        public PathFigure QuadraticPath(int index, TimeSortedList JointParameters, JointData jData)
+        public PathFigure QuadraticPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)
         {
-            var start = new Point(JointParameters[0].Value[index, 0], JointParameters[0].Value[index, 1]);
+            var start = new Point(JointParameters[0].Value[index, 0] + offsetX, JointParameters[0].Value[index, 1] + offsetY);
             var points = new PointCollection();
             for (int i = 1; i < JointParameters.Count; i++)
             {
                 var timeStep = JointParameters.Times[i] - JointParameters.Times[i - 1];
-                var x = JointParameters[i - 1].Value[index, 0];
-                var y = JointParameters[i - 1].Value[index, 1];
+                var x = JointParameters[i - 1].Value[index, 0] + offsetX;
+                var y = JointParameters[i - 1].Value[index, 1] + offsetY;
                 var v_x = (JointParameters[i].Value[index, 2] + JointParameters[i - 1].Value[index, 2]) / 2;
                 var v_y = (JointParameters[i].Value[index, 3] + JointParameters[i - 1].Value[index, 3]) / 2;
                 points.Add(new Point(x + (v_x * timeStep) / 2, y + (v_y * timeStep) / 2));
-                x = JointParameters[i].Value[index, 0];
-                y = JointParameters[i].Value[index, 1];
+                x = JointParameters[i].Value[index, 0] + offsetX;
+                y = JointParameters[i].Value[index, 1] + offsetY;
                 points.Add(new Point(x, y));
             }
             #region see if path should be closed
