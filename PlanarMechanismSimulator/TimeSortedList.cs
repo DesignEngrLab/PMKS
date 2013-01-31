@@ -26,26 +26,32 @@ namespace PlanarMechanismSimulator
             get { return parameterValues; }
         }
 
+       //rkprad: possibly there is a better and simpler way to write the series of add /addnearend /addnearbegin functions
+
         internal void Add(double time, double[,] parameters)
         {
             if (Count == 0 || time > Times[lastSpot])
+                //if count =0; then time is added to the first spot
+                //if count =/0 then time is added to the next spot based on lastspot value
+               
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
             }
-            else
+            else //inserting time at some intermediate value
+                
             {
-                int ub = lastSpot;
-                int lb = 0;
-                int i;
+                int ub = lastSpot; //ub = upperbound say 5
+                int lb = 0; //lb = lower bound 
+                int i; //counter
                 do
                 {
-                    i = (ub - lb)/2;
-                    if (Times[i] > time)
+                    i = (ub - lb)/2; //2.5 -> 3
+                    if (Times[i] > time) //Times[3]>
                         ub = i;
                     else lb = i;
 
-                } while (ub - lb > 1);
+                } while (ub - lb > 1); 
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }
