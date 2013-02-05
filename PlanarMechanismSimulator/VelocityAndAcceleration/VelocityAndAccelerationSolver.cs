@@ -256,6 +256,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
         internal Boolean Solve()
         {
+            return false;
             SetInitialInputAndGroundJointStates();
             var rows = new double[numEquations][];
             var answers = new double[numEquations];
