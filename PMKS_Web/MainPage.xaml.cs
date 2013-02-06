@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -160,8 +161,12 @@ namespace PMKS_Silverlight_App
                 DefinePositions();
                 pmks.AssignPositions(InitPositions);
             }
+            if (!validLinks())
+            {
+                return;
+            }
             else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
-
+          
             pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
 
             if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
@@ -192,6 +197,74 @@ namespace PMKS_Silverlight_App
             //{
             //    status(e.Message);
             //}
+        }
+
+        private bool validLinks()
+        {
+            List<string> flatList = new List<string>();
+            if (!DefineLinkIDS())
+            {
+                return true;
+            }
+            //generates a flat list of strings
+            foreach (List<string> linklist in LinkIDs)
+            {
+                 foreach(string s in linklist) 
+                 {
+                     flatList.Add(s);
+                 }
+            }
+            foreach (string s in flatList)
+            {
+                int count = 0;
+                for (int i = 0; i < flatList.Count; i++)
+                {
+                    if (s.ToString().Equals(flatList.ElementAt(i).ToString()))
+                    {
+                        count++;
+                    }
+                }
+                if (count < 2)
+                {
+                    status("Only one Link named " + s.ToString());
+                    return false;
+                }
+            }
+            int groundlinks = 0;
+            foreach (string s in flatList)
+            {
+                if (s.ToLower().Equals("0") || s.ToLower().Equals("grnd") || s.ToLower().Equals("ground") || s.ToLower().Equals("grd") || s.ToLower().Equals("zero"))
+                {
+                    groundlinks++;
+                }
+            }
+            if (groundlinks == 0)
+            {
+                status("There are no links named ground. There must be at least one ground link.");
+                return false;
+            }
+
+            
+            foreach (List<string> linklist in LinkIDs)
+            {
+                foreach (string mystring in linklist)
+                {
+                    int stringcount = 0;
+                    foreach (string s in linklist)
+                    {
+                        if (mystring.Equals(s))
+                        {
+                            stringcount++;
+                        }
+                    }
+                    if (stringcount > 1)
+                    {
+                        status("No link should be referenced twice in the same joint. " + mystring.ToString());
+                    }
+                }
+            }
+
+            return true;
         }
 
 
