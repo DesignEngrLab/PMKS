@@ -167,31 +167,41 @@ namespace PMKS_Silverlight_App
                 return;
             }
             else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
-          
-            pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
 
-            if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
-            else status("The mechanism has non-dyadic loops.");
-            int dof = pmks.DegreesOfFreedom;
-            status("Degrees of freedom = " + dof);
-            if (dof == 1)
+            try
             {
-                pmks.InputSpeed = Speed;
-                if ((bool)globalSettings.ErrorCheckBox.IsChecked)
-                    pmks.MaxSmoothingError = AngleIncrement;  // / 100.0;
-                else
+                pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
+            }
+            catch(Exception e)
+            {
+                status("You cannot do that: \n" + e.InnerException);
+            }
+            if (pmks != null)
+            {
+
+                if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
+                else status("The mechanism has non-dyadic loops.");
+                int dof = pmks.DegreesOfFreedom;
+                status("Degrees of freedom = " + dof);
+                if (dof == 1)
                 {
-                    pmks.DeltaAngle = AngleIncrement;
-                    pmks.MaxSmoothingError = double.NaN;
+                    pmks.InputSpeed = Speed;
+                    if ((bool)globalSettings.ErrorCheckBox.IsChecked)
+                        pmks.MaxSmoothingError = AngleIncrement;  // / 100.0;
+                    else
+                    {
+                        pmks.DeltaAngle = AngleIncrement;
+                        pmks.MaxSmoothingError = double.NaN;
+                    }
+                    status("Analyzing...");
+                    var now = DateTime.Now;
+                    pmks.FindFullMovement();
+                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                    status("Drawing...");
+                    now = DateTime.Now;
+                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.AllJoints, JointsInfo.Data);
+                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 }
-                status("Analyzing...");
-                var now = DateTime.Now;
-                pmks.FindFullMovement();
-                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                status("Drawing...");
-                now = DateTime.Now;
-                mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.AllJoints, JointsInfo.Data);
-                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
             }
             //}
             //catch (Exception e)

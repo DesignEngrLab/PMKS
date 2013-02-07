@@ -15,8 +15,7 @@
                 CanUserSortColumns="False" HeadersVisibility="All"
                 RowEditEnded="dataGrid_RowEditEnded" 
                 CellEditEnded="dataGrid_CellEditEnded" MaxHeight="500" 
-                MouseLeftButtonDown="ClickMe_MouseLeftButtonDown"
-                MouseRightButtonDown="dataGrid_MouseRightButtonDown">
+                MouseLeftButtonDown="ClickMe_MouseLeftButtonDown" >
                 <s:DataGrid.Columns>
                 <s:DataGridTextColumn Header="Links" Binding="{Binding LinkNames}" Width="110" />
                 <s:DataGridTemplateColumn Header="Type of Joint">

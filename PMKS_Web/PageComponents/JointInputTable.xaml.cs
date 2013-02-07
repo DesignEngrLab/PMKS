@@ -14,6 +14,13 @@ namespace PMKS_Silverlight_App
 {
     public partial class JointInputTable : UserControl
     {
+        //angle is useless for r joints
+        private const string RJOINT = "r";
+        //angle is required for p and rp joints
+        private const string PJOINT = "p";
+        private const string RPJOINT = "rp";
+        private const string TYPEOFJOINTCOLUMN= "type of joint";
+
         public MainPage main { private get; set; }
         public JointInputTable()
         {
@@ -37,6 +44,25 @@ namespace PMKS_Silverlight_App
                 }
                 
             }
+
+            if (e.Column.DisplayIndex == 1 || e.Column.Header.ToString().ToLower().Equals(TYPEOFJOINTCOLUMN)) // in case if header is changed, we check the display index and vice versa
+            {
+                DataGridCell cell = e.Column.GetCellContent(e.Row.DataContext).Parent as DataGridCell;
+                JointData datacontext = cell.DataContext as JointData;
+                if (datacontext.JointType.ToLower().Equals(RJOINT))
+                {
+                    //disable the column "angle" here
+                }
+                else if (datacontext.JointType.ToLower().Equals(PJOINT) || datacontext.JointType.ToLower().Equals(RPJOINT))
+                {
+                    //enable the column "angle" here
+                    //ensure that an angle is entered
+                }
+                else
+                {
+                    //enable the column "angle" here
+                }
+            }
         }
 
         internal void HighlightMissingAngle(int i)
@@ -54,11 +80,6 @@ namespace PMKS_Silverlight_App
                 main.editButtons.AddButton_Click(sender, e);
             }
 
-        }
-
-        private void dataGrid_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            MessageBox.Show("FACEBOOK");
         }
 
     }
