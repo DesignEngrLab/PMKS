@@ -606,9 +606,9 @@ namespace PlanarMechanismSimulator
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
-        public Boolean FindPositionAtTime(double time)
+        public double[] FindPositionAtTime(double time)
         {
-            return false;
+            throw new Exception("sorry");
         }
         /// <summary>
         /// Finds the position at crank angle.
