@@ -78,7 +78,16 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The fixed time step.
         /// </value>
-        public double MaxSmoothingError { get; set; }
+        public double MaxSmoothingError
+        {
+            get { return _maxSmoothingError; }
+            set
+            {
+                _maxSmoothingError = value;
+                _deltaAngle = double.NaN;
+                // _fixedTimeStep = _deltaAngle / InputSpeed;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the input angular speed.
