@@ -1,0 +1,7 @@
+ground,input,R,0,0
+input,coupler,R,0,2
+coupler,triangle,R,2.73,6.189
+ground,triangle,R,6,0
+triangle, c2, R, 5.736,7.778
+c2,output,r,14.1268,8.17
+output, ground, r, 12.4,1.8

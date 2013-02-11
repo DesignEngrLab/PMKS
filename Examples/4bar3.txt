@@ -1,0 +1,4 @@
+ground,input,R,0,0
+input,coupler,R,-2.3,3.98
+coupler,output,R,-15.2,0.0001
+ground,output,R,-13.2,8.98
