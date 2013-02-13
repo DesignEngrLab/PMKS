@@ -15,9 +15,9 @@ namespace PMKS_Silverlight_App
                 {
                     Figures = new PathFigureCollection
                         {
-                            LinearPath(index, JointParameters, jData, offsetX, offsetY)
+                            //LinearPath(index, JointParameters, jData, offsetX, offsetY)
                             //,
-                            //QuadraticPath(index, JointParameters, jData,  offsetX,  offsetY)
+                            QuadraticPath(index, JointParameters, jData,  offsetX,  offsetY)
                         }
                 };
 
