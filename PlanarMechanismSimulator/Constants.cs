@@ -82,7 +82,7 @@ namespace PlanarMechanismSimulator
 
         #endregion
 
-        internal static point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
+        public static point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
         {
             if (sameCloseZero(ptA.x, ptB.x) && sameCloseZero(ptA.y, ptB.y)) return ptA;
             if (sameCloseZero(slopeA, slopeB)) return new point(Double.NaN, Double.NaN);

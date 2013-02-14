@@ -190,18 +190,19 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             {
                 var l = links[i];
                 if (i < inputLinkIndex) unknownObjects.Add(l);
-                for (int j = 0; j < l.joints.Count - 1; j++)
-                    for (int k = j + 1; k < l.joints.Count; k++)
-                    {
-                        var jJoint = l.joints[j];
-                        var kJoint = l.joints[k];
-                        var jointJIsKnown = ((jJoint.isGround && (jJoint.jointType == JointTypes.R || jJoint.jointType == JointTypes.G))
-                            || ((l == inputLink || jJoint.OtherLink(l) == inputLink) && !jJoint.SlidingWithRespectTo(inputLink)));
-                        var jointKIsKnown = ((kJoint.isGround && (kJoint.jointType == JointTypes.R || kJoint.jointType == JointTypes.G))
-                            || ((l == inputLink || kJoint.OtherLink(l) == inputLink) && !kJoint.SlidingWithRespectTo(inputLink)));
-                        if (!jointJIsKnown || !jointKIsKnown)
-                            equations.Add(MakeJointToJointEquations(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown, (i >= inputLinkIndex)));
-                    }
+                var refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j, l));
+                if (refJoint != null)
+                {
+                    foreach (var j in l.joints.Where(j => j != refJoint && !jointIsKnownState(j, l)))
+                        equations.Add(MakeJointToJointEquations(j, refJoint, l, true, false, (i >= inputLinkIndex)));
+                }
+                else
+                {
+                    refJoint = l.joints[0];
+                    for (int k = 1; k < l.joints.Count; k++)
+                        equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false,
+                            jointIsKnownState(l.joints[k], l), (i >= inputLinkIndex)));
+                }
             }
             for (int i = 0; i < firstInputJointIndex; i++)
             {
@@ -244,6 +245,12 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 eq.CaptureUnknownIndicies(unknownObjects);
                 eq.unkLength = numUnknowns;
             }
+        }
+
+        private bool jointIsKnownState(joint j, link l)
+        {
+            return ((j.isGround && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
+                || ((l == inputLink || j.OtherLink(l) == inputLink) && !j.SlidingWithRespectTo(inputLink)));
         }
 
         protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown,
