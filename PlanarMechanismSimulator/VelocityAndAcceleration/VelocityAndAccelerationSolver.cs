@@ -200,8 +200,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 {
                     refJoint = l.joints[0];
                     for (int k = 1; k < l.joints.Count; k++)
-                        equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false,
-                            jointIsKnownState(l.joints[k], l), (i >= inputLinkIndex)));
+                        equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false, false, (i >= inputLinkIndex)));
                 }
             }
             for (int i = 0; i < firstInputJointIndex; i++)
