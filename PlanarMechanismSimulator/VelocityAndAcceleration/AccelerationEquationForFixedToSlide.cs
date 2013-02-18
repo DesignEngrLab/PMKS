@@ -61,5 +61,19 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 else index++;
             }
         }
+        internal override List<int> GetRow1Indices()
+        {
+            var indices = base.GetRow1Indices();
+            indices.Add(slideSpeedIndex);
+            return indices;
+        }
+
+
+        internal override List<int> GetRow2Indices()
+        {
+            var indices = base.GetRow2Indices();
+            indices.Add(slideSpeedIndex);
+            return indices;
+        }
     }
 }

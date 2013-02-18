@@ -157,7 +157,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         protected readonly double[,] A;
         protected readonly double[] b;
         protected readonly List<object> unknownObjects;
-        protected readonly int numEquations;
+        private readonly List<int>[] possibleRowsPerIndex;
+        private int[][] matrixOrders;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VelocitySolver" /> class.
@@ -169,9 +170,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         /// <param name="inputLinkIndex">Index of the input link.</param>
         /// <param name="InputSpeed">The input speed.</param>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
-        public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                              int inputLinkIndex,
-                              double InputSpeed)
+        public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex,
+                                             int inputJointIndex,
+                                             int inputLinkIndex,
+                                             double InputSpeed)
         {
             /************ Initialization ************/
             this.joints = joints;
@@ -200,9 +202,14 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 {
                     refJoint = l.joints[0];
                     for (int k = 1; k < l.joints.Count; k++)
-                        equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false, false, (i >= inputLinkIndex)));
+                        equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false, false,
+                                                                (i >= inputLinkIndex)));
                 }
             }
+            /**** Then there is the matter of the sliding velocities.. ****/
+            foreach (joint j in joints)
+                if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
+                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
             for (int i = 0; i < firstInputJointIndex; i++)
             {
                 var j = joints[i];
@@ -210,6 +217,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 if (j.jointType == JointTypes.P)
                     equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
             }
+            /**** The velocities of any P-joints or RP-joints connected to ground are unknown. ****/
+            for (int i = inputJointIndex + 1; i < joints.Count; i++)
+                if (joints[i].jointType == JointTypes.P || joints[i].jointType == JointTypes.RP)
+                    unknownObjects.Add(joints[i]);
             /**** Set velocity of any P-links connected to input and remove link from unknowns ****/
             for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 if (joints[i].jointType == JointTypes.P)
@@ -218,14 +229,6 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     otherLink.Velocity = links[inputLinkIndex].Velocity;
                     unknownObjects.Remove(otherLink);
                 }
-            /**** But the velocities of any P-joints or RP-joints connected to ground are unknown. ****/
-            for (int i = inputJointIndex + 1; i < joints.Count; i++)
-                if (joints[i].jointType == JointTypes.P || joints[i].jointType == JointTypes.RP)
-                    unknownObjects.Add(joints[i]);
-            /**** Then there is the matter of the sliding velocities.. ****/
-            foreach (joint j in joints)
-                if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
-                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
             /**** Set up equations. Number of unknowns is 2*unknown-joints + 1*unknown links. ****/
             foreach (var unknownObject in unknownObjects)
             {
@@ -236,15 +239,64 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             A = new double[numUnknowns, numUnknowns];
             b = new double[numUnknowns];
             /* While unknownObjects is saved, the data for their positions in the matrix is also stored in the equation objects*/
-            numEquations = 0;
+            var rowNonZeroes = new List<List<int>>();
+            var numEquations = 0;
             foreach (var eq in equations)
             {
-                if (eq is JointToJointEquation) numEquations += 2;
-                else numEquations++;
                 eq.CaptureUnknownIndicies(unknownObjects);
                 eq.unkLength = numUnknowns;
+                if (eq is JointToJointEquation)
+                {
+                    rowNonZeroes.Add(((JointToJointEquation)eq).GetRow1Indices());
+                    rowNonZeroes.Add(((JointToJointEquation)eq).GetRow2Indices());
+                    numEquations += 2;
+                }
+                else
+                {
+                    rowNonZeroes.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowIndices());
+                    numEquations++;
+                }
+            }
+            if (numEquations != numUnknowns) throw new Exception("The number of equations, " + numEquations + ", must be the same as the " +
+                      "number of unknowns, " + numUnknowns);
+            DefineTwoMatrixOrders(rowNonZeroes);
+        }
+
+        private void DefineTwoMatrixOrders(List<List<int>> rowNonZeroes)
+        {
+            matrixOrders = new int[2][];
+            for (int m = 0; m < 2; m++)
+            {
+                matrixOrders[m] = new int[numUnknowns];
+                var rowNonZeroesTemp = new List<List<int>>(rowNonZeroes);
+                var targetIndices = new List<Tuple<int, int>>();
+                for (int i = 0; i < numUnknowns; i++)
+                    targetIndices.Add(new Tuple<int, int>(i, rowNonZeroesTemp.Count(r => r.Contains(i))));
+                var j = 0;
+                while (targetIndices.Count > 0)
+                {
+                    var lowestOccurence = targetIndices.Min(t => t.Item2);
+                    var lowestOccurringVariable = targetIndices.First(t => t.Item2 == lowestOccurence);
+                    var rowsWithlowestOccuringVar =
+                        rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1));
+                    var rowWithlowestOccuringVar = (rowsWithlowestOccuringVar.Count() == 1)
+                                                       ? rowsWithlowestOccuringVar.First()
+                                                       : rowsWithlowestOccuringVar.ToArray()[m];
+                    matrixOrders[m][lowestOccurringVariable.Item1] = rowNonZeroes.IndexOf(rowWithlowestOccuringVar);
+                    targetIndices.Remove(lowestOccurringVariable);
+                    rowNonZeroesTemp.Remove(rowWithlowestOccuringVar);
+                    var tuplesToUpdate =
+                        targetIndices.Where(tuple => rowWithlowestOccuringVar.Contains(tuple.Item1)).ToList();
+                    foreach (var tuple in tuplesToUpdate)
+                    {
+                        targetIndices.Remove(tuple);
+                        targetIndices.Add(new Tuple<int, int>(tuple.Item1, tuple.Item2 - 1));
+                    }
+                    j++;
+                }
             }
         }
+
 
         private bool jointIsKnownState(joint j, link l)
         {
@@ -264,11 +316,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         {
             //return false;
             SetInitialInputAndGroundJointStates();
-            var rows = new double[numEquations][];
-            var answers = new double[numEquations];
+            var rows = new double[numUnknowns][];
+            var answers = new double[numUnknowns];
             var i = 0;
             foreach (var eq in equations)
-            {
                 if (eq is JointToJointEquation)
                 {
                     rows[i] = ((JointToJointEquation)eq).GetRow1Coefficients();
@@ -284,14 +335,39 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     answers[i] = 0.0;
                     i++;
                 }
+            var rowOrdering = ChooseBestRowOrder(rows);
+            for (int j = 0; j < numUnknowns; j++)
+            {
+                StarMath.SetRow(j, A, rows[rowOrdering[j]]);
+                b[j] = answers[rowOrdering[j]];
             }
-            if (!Constants.CreateBestMatrixAndB(numUnknowns, numEquations, rows, A, answers, b)) return false;
             var x = StarMath.solve(A, b);
-            if (x.Any(value => double.IsInfinity(value) || double.IsNaN(value))) return false;
+            if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
             PutStateVarsBackInJointsAndLinks(x);
             return true;
         }
-    }
 
+        private int[] ChooseBestRowOrder(double[][] rows)
+        {
+            var order0Value = 1.0;
+            var order1Value = 1.0;
+
+            for (int i = 0; i < numUnknowns; i++)
+            {
+                var value = MultiplicativeDistanceToOne(rows[matrixOrders[0][i]][i]);
+                if (value < order0Value) order0Value = value;
+                value = MultiplicativeDistanceToOne(rows[matrixOrders[1][i]][i]);
+                if (value < order1Value) order1Value = value;
+            }
+            if (order0Value >= order1Value) return matrixOrders[0];
+            return matrixOrders[1];
+        }
+        public double MultiplicativeDistanceToOne(double x)
+        {
+            if (double.IsInfinity(x) || double.IsNaN(x) || x == 0.0) return 0;
+            return (Math.Abs(x) > 1) ? 1 / Math.Abs(x) : Math.Abs(x);
+
+        }
+    }
 }
 

@@ -32,27 +32,36 @@ namespace PlanarMechanismSimulator
             InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
 
             #endregion
-
+#if DEBUGSERIAL
             if (useErrorMethod)
             {
                 if (MaxSmoothingError == 0) throw new Exception("The MaxSmoothingError must not be zero.");
-#if DEBUGSERIAL
+
                 SimulateWithinError(AllJoints, AllLinks, true);
-#elif SILVERLIGHT
-                List<joint> newJoints = AllJoints.Select(j => j.copy()).ToList();
-                List<link> newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (joint j in newJoints)
+            }
+            else
+            {
+                SimulateWithFixedDelta(AllJoints, AllLinks, true);
+            }
+#else
+                var newJoints = AllJoints.Select(j => j.copy()).ToList();
+                var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
+                foreach (var j in newJoints)
                 {
                     j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
                     if (j.Link2 != null)
                         j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
                 }
-                var forwardThread = new Thread(()=>
+            if (useErrorMethod)
+            {
+                if (MaxSmoothingError == 0) throw new Exception("The MaxSmoothingError must not be zero.");
+#if SILVERLIGHT
+                var forwardThread = new Thread(() =>
                     {
                         SimulateWithinError(AllJoints, AllLinks, true);
                         forwardDone.Set();
                     });
-                var backwardThread = new Thread(()=>
+                var backwardThread = new Thread(() =>
                     {
                         SimulateWithinError(newJoints, newLinks, false);
                         backwardDone.Set();
@@ -65,14 +74,6 @@ namespace PlanarMechanismSimulator
                     backwardDone = new AutoResetEvent(false);
                 }
 #else
-                var newJoints = AllJoints.Select(j => j.copy()).ToList();
-                var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (var j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
                 Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
                     () => SimulateWithinError(AllJoints, AllLinks, true),
@@ -82,17 +83,7 @@ namespace PlanarMechanismSimulator
             }
             else
             {
-#if DEBUGSERIAL
-                SimulateWithFixedDelta(AllJoints, AllLinks, true);
-#elif SILVERLIGHT
-                List<joint> newJoints = AllJoints.Select(j => j.copy()).ToList();
-                List<link> newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (joint j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
+#if SILVERLIGHT
                 var forwardThread = new Thread(()=>
                     {
                         SimulateWithFixedDelta(AllJoints, AllLinks, true);
@@ -111,21 +102,14 @@ namespace PlanarMechanismSimulator
                     backwardDone = new AutoResetEvent(false);
                 }
 #else
-                var newJoints = AllJoints.Select(j => j.copy()).ToList();
-                var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (var j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
-                Parallel.Invoke(
+               Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
                     () => SimulateWithFixedDelta(AllJoints, AllLinks, true),
                     /*** Stepping Backward in Time ***/
                     () => SimulateWithFixedDelta(newJoints, newLinks, false));
 #endif
             }
+#endif
         }
 
         private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
