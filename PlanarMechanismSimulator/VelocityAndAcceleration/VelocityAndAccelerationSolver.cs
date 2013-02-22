@@ -52,6 +52,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     ((joint)o).ax = x[index++];
                     ((joint)o).ay = x[index++];
                 }
+                else if (o is Tuple<link, joint>)
+                    ((Tuple<link, joint>)o).Item2.SlideAcceleration = x[index++];
             }
         }
 
@@ -126,6 +128,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     ((joint)o).vx = x[index++];
                     ((joint)o).vy = x[index++];
                 }
+                else if (o is Tuple<link, joint>)
+                    ((Tuple<link, joint>)o).Item2.SlideVelocity = x[index++];
             }
         }
         protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown, bool jointKIsKnown, bool linkIsKnown)

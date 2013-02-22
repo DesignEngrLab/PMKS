@@ -19,7 +19,7 @@ namespace PlanarMechanismSimulator
             if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
                 throw new Exception(
                     "Either the smoothing error angle delta or the time step must be specified.");
-            bool useErrorMethod = !double.IsNaN(MaxSmoothingError);
+            bool useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
 
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
@@ -44,17 +44,17 @@ namespace PlanarMechanismSimulator
                 SimulateWithFixedDelta(AllJoints, AllLinks, true);
             }
 #else
-                var newJoints = AllJoints.Select(j => j.copy()).ToList();
-                var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (var j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
+            var newJoints = AllJoints.Select(j => j.copy()).ToList();
+            var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
+            foreach (var j in newJoints)
+            {
+                j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
+                if (j.Link2 != null)
+                    j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
+            }
             if (useErrorMethod)
             {
-                if (MaxSmoothingError == 0) throw new Exception("The MaxSmoothingError must not be zero.");
+
 #if SILVERLIGHT
                 var forwardThread = new Thread(() =>
                     {
@@ -102,11 +102,11 @@ namespace PlanarMechanismSimulator
                     backwardDone = new AutoResetEvent(false);
                 }
 #else
-               Parallel.Invoke(
+                Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
-                    () => SimulateWithFixedDelta(AllJoints, AllLinks, true),
+                     () => SimulateWithFixedDelta(AllJoints, AllLinks, true),
                     /*** Stepping Backward in Time ***/
-                    () => SimulateWithFixedDelta(newJoints, newLinks, false));
+                     () => SimulateWithFixedDelta(newJoints, newLinks, false));
 #endif
             }
 #endif

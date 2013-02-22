@@ -56,6 +56,7 @@ namespace PlanarMechanismSimulator
         public double InitSlideAngle = 0.0;
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
         internal double SlideVelocity { get; set; }
+        internal double SlideAcceleration { get; set; }
         internal double x { get; set; }
         internal double y { get; set; }
         internal double xNumerical { get; set; }

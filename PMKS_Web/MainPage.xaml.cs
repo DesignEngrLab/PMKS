@@ -76,7 +76,6 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
             jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
-
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -172,7 +171,7 @@ namespace PMKS_Silverlight_App
             {
                 pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 status("You cannot do that: \n" + e.InnerException);
             }
@@ -220,10 +219,10 @@ namespace PMKS_Silverlight_App
             //generates a flat list of strings
             foreach (List<string> linklist in LinkIDs)
             {
-                 foreach(string s in linklist) 
-                 {
-                     flatList.Add(s);
-                 }
+                foreach (string s in linklist)
+                {
+                    flatList.Add(s);
+                }
             }
             foreach (string s in flatList)
             {
@@ -256,7 +255,7 @@ namespace PMKS_Silverlight_App
                 return false;
             }
 
-            
+
             foreach (List<string> linklist in LinkIDs)
             {
                 foreach (string mystring in linklist)
@@ -283,7 +282,13 @@ namespace PMKS_Silverlight_App
         private int TrimEmptyJoints()
         {
             for (int i = 0; i < JointsInfo.Data.Count; i++)
-                if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointType)) return i;
+            {
+                var row = JointsInfo.Data[i];
+                double dummy;
+                if (row.LinkNamesList.Count() == 1 && double.TryParse(row.XPos, out dummy) && double.TryParse(row.YPos, out dummy))
+                    row.JointType = "R (pin joint)";
+                if (string.IsNullOrWhiteSpace(row.JointType)) return i;
+            }
             return JointsInfo.Data.Count;
         }
 

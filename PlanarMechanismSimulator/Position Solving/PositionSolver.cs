@@ -260,11 +260,15 @@ namespace PlanarMechanismSimulator.PositionSolving
                      numUnknownJoints > 0);
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
             {
-                //if (NDPS == null)
-                NDPS = new NonDyadicPositionSolver(this);
-                var NDPSError = 0.0;
-                if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
-                PositionError = NDPSError;
+                try
+                {
+                    //if (NDPS == null)
+                    NDPS = new NonDyadicPositionSolver(this);
+                    var NDPSError = 0.0;
+                    if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
+                    PositionError = NDPSError;
+                }
+                catch (Exception e) { Console.WriteLine("Error in setting up and running NonDyadicPositionSolver."); }
             }
             return true;
         }
