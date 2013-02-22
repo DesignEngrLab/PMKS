@@ -27,6 +27,11 @@ namespace PlanarMechanismSimulator
         private double _deltaAngle = Constants.DefaultStepSize;
         private double _fixedTimeStep = double.NaN;
         private double _maxSmoothingError = double.NaN;
+        private Dictionary<int, gearData> gearsData;
+        private double[] targetT;
+        private double[] targetAngle;
+        private double[] targetY;
+        private double[] targetX;
         /// <summary>
         /// Gets or sets the epsilon.
         /// </summary>
@@ -293,27 +298,30 @@ namespace PlanarMechanismSimulator
                 inputLinkIndex = numLinks - 2;
                 /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
                 var origOrder = new List<joint>(AllJoints);
-                AllJoints.Remove(inputJoint);
-                var groundPivots = AllJoints.Where(j => j.isGround).ToList();
-                foreach (var groundPivot in groundPivots)
+                var groundPivots = groundLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(groundLink)).ToList();
+                for (int i = groundPivots.Count - 1; i >= 0; i--)
                 {
                     /* this doesn't real change anything, but allows one to see the movement of P joints along ground. It only 
                      * applies to P-joints as RP-joints will behave differently. */
-                    if (groundPivot.jointType == JointTypes.P && !inputJoint.Link1.isGround)
+                    if (groundPivots[i].jointType == JointTypes.P)
                     {
                         var tempLinkRef = inputJoint.Link1;
                         inputJoint.Link1 = inputJoint.Link2;
                         inputJoint.Link2 = tempLinkRef;
+                        groundPivots.RemoveAt(i);
                     }
                 }
-                AllJoints.RemoveAll(j => j.isGround);
-                var connectedInputJoints = AllJoints.Where(j => inputLink.joints.Contains(j) && j.FixedWithRespectTo(inputLink)).ToList();
+                AllJoints.Remove(inputJoint);
+                AllJoints.RemoveAll(groundPivots.Contains);
+
+                var connectedInputJoints = inputLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(inputLink)).ToList();
                 AllJoints.RemoveAll(connectedInputJoints.Contains);
                 firstInputJointIndex = AllJoints.Count;
                 AllJoints.AddRange(connectedInputJoints);
                 inputJointIndex = AllJoints.Count;
                 AllJoints.Add(inputJoint);
                 AllJoints.AddRange(groundPivots);
+
                 JointReOrdering = new int[numJoints];
                 for (int i = 0; i < numJoints; i++)
                     JointReOrdering[i] = AllJoints.IndexOf(origOrder[i]);
@@ -455,11 +463,6 @@ namespace PlanarMechanismSimulator
             return newLinks;
         }
 
-        private Dictionary<int, gearData> gearsData;
-        private double[] targetT;
-        private double[] targetAngle;
-        private double[] targetY;
-        private double[] targetX;
 
         #endregion
 

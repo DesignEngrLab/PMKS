@@ -185,13 +185,11 @@ namespace PMKS_Silverlight_App
                 if (dof == 1)
                 {
                     pmks.InputSpeed = Speed;
-                    if ((bool)globalSettings.ErrorCheckBox.IsChecked)
-                        pmks.MaxSmoothingError = AngleIncrement;  // / 100.0;
+                    if (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked)
+                        pmks.MaxSmoothingError = AngleIncrement;
                     else
-                    {
                         pmks.DeltaAngle = AngleIncrement;
-                        pmks.MaxSmoothingError = double.NaN;
-                    }
+
                     status("Analyzing...");
                     var now = DateTime.Now;
                     pmks.FindFullMovement();
