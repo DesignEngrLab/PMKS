@@ -239,6 +239,7 @@ namespace PMKS_Silverlight_App
                 {
                     status("Only one Link named " + s.ToString());
                     return false;
+                    //this should not return false if it is simply one connected to ground.
                 }
             }
             int groundlinks = 0;
@@ -310,6 +311,7 @@ namespace PMKS_Silverlight_App
                 if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
                 var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
+                if (newLinkIDS.Count != LinkIDs[i].Count) return false;
                 if (newLinkIDS.Where((t, j) => t != LinkIDs[i][j]).Any())
                     return false;
             }

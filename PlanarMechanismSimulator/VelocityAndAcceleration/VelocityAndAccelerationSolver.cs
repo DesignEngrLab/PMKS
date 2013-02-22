@@ -62,7 +62,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             if (jJoint.SlidingWithRespectTo(l))
                 return new AccelerationEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
             if (kJoint.SlidingWithRespectTo(l))
-                return new AccelerationEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown);
+                return new AccelerationEquationForFixedToSlide(kJoint, jJoint, l, jointKIsKnown, jointJIsKnown);
             return new AccelerationEquationForFixedJoints(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
         }
     }
@@ -135,7 +135,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             if (jJoint.SlidingWithRespectTo(l))
                 return new VelocityEquationForFixedToSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
             if (kJoint.SlidingWithRespectTo(l))
-                return new VelocityEquationForFixedToSlide(kJoint, jJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
+                return new VelocityEquationForFixedToSlide(kJoint, jJoint, l, jointKIsKnown, jointJIsKnown, linkIsKnown);
             return new VelocityEquationForFixedJoints(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
         }
     }
@@ -225,15 +225,22 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             for (int i = firstInputJointIndex; i < inputJointIndex; i++)
                 if (joints[i].jointType == JointTypes.P)
                 {
-                    var otherLink = joints[i].OtherLink(links[inputJointIndex]);
+                    var otherLink = joints[i].OtherLink(inputLink);
                     otherLink.Velocity = links[inputLinkIndex].Velocity;
+                    unknownObjects.Remove(otherLink);
+                }
+            /**** Set velocity of any P-links connected to input and remove link from unknowns ****/
+            for (int i = inputJointIndex+1; i < joints.Count; i++)
+                if (joints[i].jointType == JointTypes.P)
+                {
+                    var otherLink = joints[i].OtherLink(links[inputLinkIndex+1]);
+                    otherLink.Velocity = 0.0;
                     unknownObjects.Remove(otherLink);
                 }
             /**** Set up equations. Number of unknowns is 2*unknown-joints + 1*unknown links. ****/
             foreach (var unknownObject in unknownObjects)
             {
-                if (unknownObject is joint && ((joint)unknownObject).jointType != JointTypes.P)
-                    numUnknowns += 2;
+                if (unknownObject is joint) numUnknowns += 2;
                 else numUnknowns++;
             }
             A = new double[numUnknowns, numUnknowns];
@@ -278,9 +285,9 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     var lowestOccurence = targetIndices.Min(t => t.Item2);
                     var lowestOccurringVariable = targetIndices.First(t => t.Item2 == lowestOccurence);
                     var rowsWithlowestOccuringVar =
-                        rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1));
-                    var rowWithlowestOccuringVar = (rowsWithlowestOccuringVar.Count() == 1)
-                                                       ? rowsWithlowestOccuringVar.First()
+                        rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1)).ToList();
+                    var rowWithlowestOccuringVar = (rowsWithlowestOccuringVar.Count == 1)
+                                                       ? rowsWithlowestOccuringVar[0]
                                                        : rowsWithlowestOccuringVar.ToArray()[m];
                     matrixOrders[m][lowestOccurringVariable.Item1] = rowNonZeroes.IndexOf(rowWithlowestOccuringVar);
                     targetIndices.Remove(lowestOccurringVariable);
