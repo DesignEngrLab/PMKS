@@ -84,12 +84,12 @@ namespace PlanarMechanismSimulator
             else
             {
 #if SILVERLIGHT
-                var forwardThread = new Thread(()=>
+                var forwardThread = new Thread(() =>
                     {
                         SimulateWithFixedDelta(AllJoints, AllLinks, true);
                         forwardDone.Set();
                     });
-                var backwardThread = new Thread(()=>
+                var backwardThread = new Thread(() =>
                     {
                         SimulateWithFixedDelta(newJoints, newLinks, false);
                         backwardDone.Set();
@@ -118,8 +118,8 @@ namespace PlanarMechanismSimulator
             initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
 
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
 
             double smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
@@ -280,8 +280,8 @@ namespace PlanarMechanismSimulator
             double currentTime = 0.0;
             Boolean validPosition;
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
             do
             {
                 #region Find Next Positions
@@ -358,8 +358,8 @@ namespace PlanarMechanismSimulator
             double currentTime = 0.0;
             Boolean validPosition;
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
             do
             {
                 #region Find Next Positions

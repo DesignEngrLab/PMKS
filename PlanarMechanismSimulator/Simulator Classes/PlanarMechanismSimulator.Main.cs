@@ -442,9 +442,9 @@ namespace PlanarMechanismSimulator
                         gearCenter2.yInitial = trueGearCenter2.yInitial;
                     }
                     gearsData.Add(index,
-                                  new gearData(gearTeethJoint, AllLinks.IndexOf(connectingRod), gearCenter1,
-                                               AllJoints.IndexOf(gearCenter1),
-                                               gearCenter2, AllJoints.IndexOf(gearCenter2)));
+                                  new gearData(gearTeethJoint, AllJoints.IndexOf(gearTeethJoint), gearCenter1,
+                                      AllJoints.IndexOf(gearCenter1), gearCenter2, AllJoints.IndexOf(gearCenter2),
+                                      AllLinks.IndexOf(connectingRod)));
                 }
                 index++;
             }

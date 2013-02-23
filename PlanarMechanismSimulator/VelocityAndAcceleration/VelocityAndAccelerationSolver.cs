@@ -14,9 +14,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
     internal class AccelerationSolver : VelocityAndAccelerationSolver
     {
         internal AccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                              int inputLinkIndex,
-                              double InputSpeed)
-            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed)
+                              int inputLinkIndex, double InputSpeed, Dictionary<int, gearData> gearsData)
+            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData)
         {
         }
         protected override void SetInitialInputAndGroundLinkStates()
@@ -35,8 +34,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 {
                     if (j.FixedWithRespectTo(inputLink))
                     {
-                        j.ax = inputSpeed*inputSpeed*(xGnd - j.x);
-                        j.ay = inputSpeed*inputSpeed*(yGnd - j.y);
+                        j.ax = inputSpeed * inputSpeed * (xGnd - j.x);
+                        j.ay = inputSpeed * inputSpeed * (yGnd - j.y);
                     }
                 }
             }
@@ -51,18 +50,20 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 if (o is link) ((link)o).Acceleration = x[index++];
                 else if (o is joint)
                 {
-                    if (((joint) o).jointType == JointTypes.G)
-                    {
-                        index += 2;
-                    }
-                    else
-                    {
-                        ((joint) o).ax = x[index++];
-                        ((joint) o).ay = x[index++];
-                    }
+                    ((joint)o).ax = x[index++];
+                    ((joint)o).ay = x[index++];
                 }
                 else if (o is Tuple<link, joint>)
-                    ((Tuple<link, joint>) o).Item2.SlideAcceleration = x[index++];
+                    ((Tuple<link, joint>)o).Item2.SlideAcceleration = x[index++];
+            }
+            if (gearsData == null) return;
+            foreach (var gearData in gearsData.Values)
+            {
+                var j = joints[gearData.gearTeethIndex];
+                j.ax = (joints[gearData.gearCenter1Index].ax * gearData.radius1
+                    + joints[gearData.gearCenter2Index].ax * gearData.radius2) / (gearData.radius1 + gearData.radius2);
+                j.ay = (joints[gearData.gearCenter1Index].ay * gearData.radius1
+                    + joints[gearData.gearCenter2Index].ay * gearData.radius2) / (gearData.radius1 + gearData.radius2);
             }
         }
 
@@ -83,8 +84,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
     internal class VelocitySolver : VelocityAndAccelerationSolver
     {
         internal VelocitySolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                              int inputLinkIndex, double InputSpeed)
-            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed)
+            int inputLinkIndex, double InputSpeed, Dictionary<int, gearData> gearsData)
+            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData)
         {
         }
         protected override void SetInitialInputAndGroundLinkStates()
@@ -131,18 +132,20 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 if (o is link) ((link)o).Velocity = x[index++];
                 else if (o is joint)
                 {
-                    if (((joint) o).jointType == JointTypes.G)
-                    {
-                        index += 2;
-                    }
-                    else
-                    {
-                        ((joint) o).vx = x[index++];
-                        ((joint) o).vy = x[index++];
-                    }
+                    ((joint)o).vx = x[index++];
+                    ((joint)o).vy = x[index++];
                 }
                 else if (o is Tuple<link, joint>)
-                    ((Tuple<link, joint>) o).Item2.SlideVelocity = x[index++];
+                    ((Tuple<link, joint>)o).Item2.SlideVelocity = x[index++];
+            }
+            if (gearsData == null) return;
+            foreach (var gearData in gearsData.Values)
+            {
+                var j = joints[gearData.gearTeethIndex];
+                j.vx = (joints[gearData.gearCenter1Index].vx * gearData.radius1
+                    + joints[gearData.gearCenter2Index].vx * gearData.radius2) / (gearData.radius1 + gearData.radius2);
+                j.vy = (joints[gearData.gearCenter1Index].vy * gearData.radius1
+                    + joints[gearData.gearCenter2Index].vy * gearData.radius2) / (gearData.radius1 + gearData.radius2);
             }
         }
         protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown, bool jointKIsKnown, bool linkIsKnown)
@@ -177,6 +180,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         protected readonly double[] b;
         protected readonly List<object> unknownObjects;
         private int[][] matrixOrders;
+        protected readonly Dictionary<int, gearData> gearsData;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VelocitySolver" /> class.
@@ -188,10 +192,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         /// <param name="inputLinkIndex">Index of the input link.</param>
         /// <param name="InputSpeed">The input speed.</param>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
-        public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex,
-                                             int inputJointIndex,
-                                             int inputLinkIndex,
-                                             double InputSpeed)
+        public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
+                                             int inputLinkIndex, double InputSpeed, Dictionary<int, gearData> gearsData)
         {
             /************ Initialization ************/
             this.joints = joints;
@@ -203,6 +205,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             groundLink = links[inputLinkIndex + 1];
             this.joints = joints;
             inputSpeed = InputSpeed;
+            this.gearsData = gearsData;
             equations = new List<EquationBase>();
 
             unknownObjects = new List<object>();
