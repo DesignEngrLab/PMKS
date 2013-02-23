@@ -149,7 +149,7 @@ namespace PMKS_Silverlight_App
             if (JointsInfo == null)
                 return;
             numJoints = TrimEmptyJoints();
-            if (pmks != null && SameTopology() && SameParameters())
+            if (pmks != null && SameTopology() && SameParameters() && SameGlobalSettings() && SameRadioSettings())
             {
                 /* Given the new dynamic binding in UpdateVisuals, we should need to call this again if nothing has changed.*/
                 //mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data,jointInputTable);
@@ -207,6 +207,36 @@ namespace PMKS_Silverlight_App
             //}
         }
 
+        private bool SameRadioSettings()
+        {
+            if (pmks == null)
+            {
+                return false;
+            }
+            if (pmks.DeltaAngle == AngleIncrement && (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked)) {
+                return false;
+            }
+            if (pmks.MaxSmoothingError == AngleIncrement && (globalSettings.AngleCheckBox.IsChecked != null && (bool)globalSettings.AngleCheckBox.IsChecked))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool SameGlobalSettings()
+        {
+            if (pmks == null)
+            {
+                return false;
+            }
+            if (pmks.MaxSmoothingError == AngleIncrement || pmks.DeltaAngle == AngleIncrement)
+            {
+                return true;
+            }
+            return false;
+
+        }
+
         private bool validLinks()
         {
             List<string> flatList = new List<string>();
@@ -242,7 +272,7 @@ namespace PMKS_Silverlight_App
             int groundlinks = 0;
             foreach (string s in flatList)
             {
-                if (s.ToLower().Equals("0") || s.ToLower().Equals("grnd") || s.ToLower().Equals("ground") || s.ToLower().Equals("grd") || s.ToLower().Equals("zero"))
+                if (s.ToLower().Equals("0") || s.ToLower().Equals("grnd") || s.ToLower().Equals("ground") || s.ToLower().Equals("gnd") || s.ToLower().Equals("grd") || s.ToLower().Equals("zero"))
                 {
                     groundlinks++;
                 }

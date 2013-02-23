@@ -15,11 +15,11 @@
                     <StackPanel Orientation="Horizontal" >
                         <Border BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                             <StackPanel  >
-                                <RadioButton Content="Angle" Name="AngleCheckBox"  />
-                                <RadioButton Content="% error" Name="ErrorCheckBox" />
+                                <RadioButton Content="Angle" Name="AngleCheckBox" LostFocus="radioChanged"/>
+                                <RadioButton Content="% error" Name="ErrorCheckBox" LostFocus="radioChanged"/>
                             </StackPanel>
                         </Border>
-                        <TextBox MinWidth="60" Name="AngleErrorBox" />
+                        <TextBox MinWidth="60" Name="AngleErrorBox" LostFocus="lostFocus" Loaded="onLoad" />
                     </StackPanel>
                 </StackPanel>
             </Border>

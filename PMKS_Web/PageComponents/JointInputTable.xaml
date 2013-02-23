@@ -26,8 +26,8 @@
                     </s:DataGridTemplateColumn.CellTemplate>
                     <s:DataGridTemplateColumn.CellEditingTemplate>
                         <DataTemplate>
-                            <ComboBox SelectedItem="{Binding JointType, Mode=TwoWay}" 
-                                      ItemsSource="{Binding jointTypeList, Source={StaticResource jointTypeProvider}}" />
+                            <ComboBox  ItemsSource="{Binding jointTypeList, Source={StaticResource jointTypeProvider}}" 
+                                       SelectedItem="{Binding JointType, Mode=TwoWay}"/>
                         </DataTemplate>
                     </s:DataGridTemplateColumn.CellEditingTemplate>
                 </s:DataGridTemplateColumn>
