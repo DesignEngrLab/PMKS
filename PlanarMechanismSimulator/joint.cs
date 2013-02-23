@@ -52,9 +52,11 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// The initial slide angle
         /// </summary>
-        public double InitSlideAngle = Double.NaN;
+       //public double InitSlideAngle = Double.NaN;
+        public double InitSlideAngle = 0.0;
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
         internal double SlideVelocity { get; set; }
+        internal double SlideAcceleration { get; set; }
         internal double x { get; set; }
         internal double y { get; set; }
         internal double xNumerical { get; set; }
@@ -106,7 +108,11 @@ namespace PlanarMechanismSimulator
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
                 InitSlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)
-                throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
+            {
+                
+                InitSlideAngle = 0.0;
+            }
+                //throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
         private joint() { }

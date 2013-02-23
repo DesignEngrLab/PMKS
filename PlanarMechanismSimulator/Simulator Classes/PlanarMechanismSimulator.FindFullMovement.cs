@@ -19,7 +19,7 @@ namespace PlanarMechanismSimulator
             if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
                 throw new Exception(
                     "Either the smoothing error angle delta or the time step must be specified.");
-            bool useErrorMethod = !double.IsNaN(MaxSmoothingError);
+            bool useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
 
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
@@ -32,26 +32,36 @@ namespace PlanarMechanismSimulator
             InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
 
             #endregion
-
+#if DEBUGSERIAL
             if (useErrorMethod)
             {
-#if DEBUGSERIAL
+                if (MaxSmoothingError == 0) throw new Exception("The MaxSmoothingError must not be zero.");
+
                 SimulateWithinError(AllJoints, AllLinks, true);
-#elif SILVERLIGHT
-                List<joint> newJoints = AllJoints.Select(j => j.copy()).ToList();
-                List<link> newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (joint j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
-                var forwardThread = new Thread(()=>
+            }
+            else
+            {
+                SimulateWithFixedDelta(AllJoints, AllLinks, true);
+            }
+#else
+            var newJoints = AllJoints.Select(j => j.copy()).ToList();
+            var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
+            foreach (var j in newJoints)
+            {
+                j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
+                if (j.Link2 != null)
+                    j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
+            }
+            if (useErrorMethod)
+            {
+
+#if SILVERLIGHT
+                var forwardThread = new Thread(() =>
                     {
                         SimulateWithinError(AllJoints, AllLinks, true);
                         forwardDone.Set();
                     });
-                var backwardThread = new Thread(()=>
+                var backwardThread = new Thread(() =>
                     {
                         SimulateWithinError(newJoints, newLinks, false);
                         backwardDone.Set();
@@ -64,14 +74,6 @@ namespace PlanarMechanismSimulator
                     backwardDone = new AutoResetEvent(false);
                 }
 #else
-                var newJoints = AllJoints.Select(j => j.copy()).ToList();
-                var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (var j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
                 Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
                     () => SimulateWithinError(AllJoints, AllLinks, true),
@@ -81,23 +83,13 @@ namespace PlanarMechanismSimulator
             }
             else
             {
-#if DEBUGSERIAL
-                SimulateWithFixedDelta(AllJoints, AllLinks, true);
-#elif SILVERLIGHT
-                List<joint> newJoints = AllJoints.Select(j => j.copy()).ToList();
-                List<link> newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (joint j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
-                var forwardThread = new Thread(()=>
+#if SILVERLIGHT
+                var forwardThread = new Thread(() =>
                     {
                         SimulateWithFixedDelta(AllJoints, AllLinks, true);
                         forwardDone.Set();
                     });
-                var backwardThread = new Thread(()=>
+                var backwardThread = new Thread(() =>
                     {
                         SimulateWithFixedDelta(newJoints, newLinks, false);
                         backwardDone.Set();
@@ -110,51 +102,44 @@ namespace PlanarMechanismSimulator
                     backwardDone = new AutoResetEvent(false);
                 }
 #else
-                var newJoints = AllJoints.Select(j => j.copy()).ToList();
-                var newLinks = AllLinks.Select(c => c.copy(AllJoints, newJoints)).ToList();
-                foreach (var j in newJoints)
-                {
-                    j.Link1 = newLinks[AllLinks.IndexOf(j.Link1)];
-                    if (j.Link2 != null)
-                        j.Link2 = newLinks[AllLinks.IndexOf(j.Link2)];
-                }
                 Parallel.Invoke(
                     /*** Stepping Forward in Time ***/
-                    () => SimulateWithFixedDelta(AllJoints, AllLinks, true),
+                     () => SimulateWithFixedDelta(AllJoints, AllLinks, true),
                     /*** Stepping Backward in Time ***/
-                    () => SimulateWithFixedDelta(newJoints, newLinks, false));
+                     () => SimulateWithFixedDelta(newJoints, newLinks, false));
 #endif
             }
+#endif
         }
 
-        private void SetInitialVelocityAndAcceleration(List<joint> ijoints, List<link> ilinks, out double[,] initJointParams, out double[,] initLinkParams)
+        private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
         {
-            initJointParams = WriteJointStatesVariablesToMatrixAndToLast(ijoints);
-            initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(ilinks);
+            initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
+            initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
 
-            var posFinder = new PositionFinder(ijoints, ilinks, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(ijoints, ilinks, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
-            var accelSolver = new AccelerationSolver(ijoints, ilinks, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
+            var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
 
             double smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
             {
                 for (int i = 0; i <= inputJointIndex; i++)
                 {
-                    initJointParams[i, 2] = ijoints[i].vx;
-                    initJointParams[i, 3] = ijoints[i].vy;
+                    initJointParams[i, 2] = joints[i].vx;
+                    initJointParams[i, 3] = joints[i].vy;
                 }
                 for (int i = 0; i <= inputLinkIndex; i++)
-                    initLinkParams[i, 1] = ilinks[i].Velocity;
+                    initLinkParams[i, 1] = links[i].Velocity;
                 if (accelSolver.Solve())
                 {
                     for (int i = 0; i <= inputJointIndex; i++)
                     {
-                        initJointParams[i, 4] = ijoints[i].ax;
-                        initJointParams[i, 5] = ijoints[i].ay;
+                        initJointParams[i, 4] = joints[i].ax;
+                        initJointParams[i, 5] = joints[i].ay;
                     }
                     for (int i = 0; i <= inputLinkIndex; i++)
-                        initLinkParams[i, 2] = ilinks[i].Acceleration;
+                        initLinkParams[i, 2] = links[i].Acceleration;
                 }
                 else
                 {
@@ -165,27 +150,27 @@ namespace PlanarMechanismSimulator
                         /* forward difference on velocities to create accelerations. */
                         for (int i = 0; i <= inputJointIndex; i++)
                         {
-                            initJointParams[i, 4] = (ijoints[i].vx - ijoints[i].vxLast) / smallTimeStep;
-                            initJointParams[i, 5] = (ijoints[i].vy - ijoints[i].vyLast) / smallTimeStep;
+                            initJointParams[i, 4] = (joints[i].vx - joints[i].vxLast) / smallTimeStep;
+                            initJointParams[i, 5] = (joints[i].vy - joints[i].vyLast) / smallTimeStep;
                         }
                         for (int i = 0; i <= inputLinkIndex; i++)
-                            initLinkParams[i, 2] = (ilinks[i].Velocity - ilinks[i].VelocityLast) / smallTimeStep;
+                            initLinkParams[i, 2] = (links[i].Velocity - links[i].VelocityLast) / smallTimeStep;
 
                         /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
                         for (int i = 0; i <= inputJointIndex; i++)
                         {
-                            ijoints[i].x = initJointParams[i, 0];
-                            ijoints[i].y = initJointParams[i, 1];
-                            ijoints[i].vx = initJointParams[i, 2];
-                            ijoints[i].vy = initJointParams[i, 3];
-                            ijoints[i].ax = initJointParams[i, 4];
-                            ijoints[i].ay = initJointParams[i, 5];
+                            joints[i].x = initJointParams[i, 0];
+                            joints[i].y = initJointParams[i, 1];
+                            joints[i].vx = initJointParams[i, 2];
+                            joints[i].vy = initJointParams[i, 3];
+                            joints[i].ax = initJointParams[i, 4];
+                            joints[i].ay = initJointParams[i, 5];
                         }
                         for (int i = 0; i <= inputLinkIndex; i++)
                         {
-                            ilinks[i].Angle = initLinkParams[i, 0];
-                            ilinks[i].Velocity = initLinkParams[i, 1];
-                            ilinks[i].Acceleration = initLinkParams[i, 2];
+                            links[i].Angle = initLinkParams[i, 0];
+                            links[i].Velocity = initLinkParams[i, 1];
+                            links[i].Acceleration = initLinkParams[i, 2];
                         }
                     }
                 }
@@ -197,14 +182,14 @@ namespace PlanarMechanismSimulator
             bool forwardSuccess = posFinder.DefineNewPositions(smallTimeStep * InputSpeed);
             if (forwardSuccess)
             {
-                NumericalVelocity(smallTimeStep, ijoints, ilinks);
+                NumericalVelocity(smallTimeStep, joints, links);
                 for (int i = 0; i < numJoints; i++)
                 {
-                    ForwardJointParams[i, 0] = ijoints[i].x;
-                    ForwardJointParams[i, 0] = ijoints[i].y;
+                    ForwardJointParams[i, 0] = joints[i].x;
+                    ForwardJointParams[i, 0] = joints[i].y;
                 }
                 for (int i = 0; i < numLinks; i++)
-                    ForwardLinkParams[i] = ilinks[i].Angle;
+                    ForwardLinkParams[i] = links[i].Angle;
             }
             /*** Stepping Backward in Time ***/
             var BackwardJointParams = new double[numJoints, 2];
@@ -212,14 +197,14 @@ namespace PlanarMechanismSimulator
             bool backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep * InputSpeed);
             if (backwardSuccess)
             {
-                NumericalVelocity(-smallTimeStep, ijoints, ilinks);
+                NumericalVelocity(-smallTimeStep, joints, links);
                 for (int i = 0; i < numJoints; i++)
                 {
-                    BackwardJointParams[i, 0] = ijoints[i].x;
-                    BackwardJointParams[i, 0] = ijoints[i].y;
+                    BackwardJointParams[i, 0] = joints[i].x;
+                    BackwardJointParams[i, 0] = joints[i].y;
                 }
                 for (int i = 0; i < numLinks; i++)
-                    BackwardLinkParams[i] = ilinks[i].Angle;
+                    BackwardLinkParams[i] = links[i].Angle;
             }
             if (forwardSuccess && backwardSuccess)
             {
@@ -273,36 +258,36 @@ namespace PlanarMechanismSimulator
             /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
             for (int i = 0; i <= inputJointIndex; i++)
             {
-                ijoints[i].x = initJointParams[i, 0];
-                ijoints[i].y = initJointParams[i, 1];
-                ijoints[i].vx = initJointParams[i, 2];
-                ijoints[i].vy = initJointParams[i, 3];
-                ijoints[i].ax = initJointParams[i, 4];
-                ijoints[i].ay = initJointParams[i, 5];
+                joints[i].x = initJointParams[i, 0];
+                joints[i].y = initJointParams[i, 1];
+                joints[i].vx = initJointParams[i, 2];
+                joints[i].vy = initJointParams[i, 3];
+                joints[i].ax = initJointParams[i, 4];
+                joints[i].ay = initJointParams[i, 5];
             }
             for (int i = 0; i <= inputLinkIndex; i++)
             {
-                ilinks[i].Angle = initLinkParams[i, 0];
-                ilinks[i].Velocity = initLinkParams[i, 1];
-                ilinks[i].Acceleration = initLinkParams[i, 2];
+                links[i].Angle = initLinkParams[i, 0];
+                links[i].Velocity = initLinkParams[i, 1];
+                links[i].Acceleration = initLinkParams[i, 2];
             }
         }
 
 
-        private void SimulateWithFixedDelta(List<joint> ijoints, List<link> ilinks, Boolean Forward)
+        private void SimulateWithFixedDelta(List<joint> joints, List<link> links, Boolean Forward)
         {
             double timeStep = Forward ? FixedTimeStep : -FixedTimeStep;
             double currentTime = 0.0;
             Boolean validPosition;
-            var posFinder = new PositionFinder(ijoints, ilinks, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(ijoints, ilinks, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
-            var accelSolver = new AccelerationSolver(ijoints, ilinks, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
+            var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
             do
             {
                 #region Find Next Positions
 
                 // this next function puts the xNumerical and yNumerical values in the joints
-                NumericalPosition(timeStep, ijoints, ilinks);
+                NumericalPosition(timeStep, joints, links);
                 double delta = InputSpeed * timeStep;
                 // this next function puts the x and y values in the joints
                 validPosition = posFinder.DefineNewPositions(delta);
@@ -314,12 +299,12 @@ namespace PlanarMechanismSimulator
                     if (Forward)
                         lock (InputRange)
                         {
-                            InputRange[1] = ilinks[inputLinkIndex].Angle;
+                            InputRange[1] = links[inputLinkIndex].Angle;
                         }
                     else
                         lock (InputRange)
                         {
-                            InputRange[0] = ilinks[inputLinkIndex].Angle;
+                            InputRange[0] = links[inputLinkIndex].Angle;
                         }
 
                     #region Find Velocities for Current Position
@@ -328,7 +313,7 @@ namespace PlanarMechanismSimulator
                     if (!velSolver.Solve())
                     {
                         Status += "Instant Centers could not be found at" + currentTime + ".";
-                        NumericalVelocity(timeStep, ijoints, ilinks);
+                        NumericalVelocity(timeStep, joints, links);
                     }
 
                     #endregion
@@ -339,14 +324,14 @@ namespace PlanarMechanismSimulator
                     if (!accelSolver.Solve())
                     {
                         Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                        NumericalAcceleration(timeStep, ijoints, ilinks);
+                        NumericalAcceleration(timeStep, joints, links);
                     }
 
                     #endregion
 
                     currentTime += timeStep;
-                    double[,] jointParams = WriteJointStatesVariablesToMatrixAndToLast(ijoints);
-                    double[,] linkParams = WriteLinkStatesVariablesToMatrixAndToLast(ilinks);
+                    double[,] jointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
+                    double[,] linkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
                     if (Forward)
                     {
                         lock (JointParameters)
@@ -373,8 +358,8 @@ namespace PlanarMechanismSimulator
             double currentTime = 0.0;
             Boolean validPosition;
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(AllJoints, AllLinks, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
-            var accelSolver = new AccelerationSolver(AllJoints, AllLinks, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
             do
             {
                 #region Find Next Positions

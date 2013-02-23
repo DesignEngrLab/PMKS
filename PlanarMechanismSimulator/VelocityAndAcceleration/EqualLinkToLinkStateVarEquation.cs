@@ -45,5 +45,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             }
             return coefficients;
         }
+
+        internal List<int> GetRowIndices()
+        {
+            return new List<int> { link1Index, link2Index };
+        }
     }
 }

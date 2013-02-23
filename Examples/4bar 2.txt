@@ -1,0 +1,5 @@
+ground,input,R,0,0.00
+input,coupler,R,0,10.00
+coupler,output,R,50,20.00
+ground,output,R,40,0.00
+coupler,R,30,-10.00

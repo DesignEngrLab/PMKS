@@ -53,6 +53,22 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         internal abstract double[] GetRow2Coefficients();
         internal abstract double GetRow1Constant();
         internal abstract double GetRow2Constant();
+
+        internal virtual List<int> GetRow1Indices()
+        {
+            var indices = new List<int> {joint1XIndex, joint2XIndex, linkIndex};
+            indices.RemoveAll(i => i == -1);
+           return indices;
+        }
+
+
+        internal virtual List<int> GetRow2Indices()
+        {
+            var indices = new List<int> { joint1YIndex, joint2YIndex, linkIndex };
+            indices.RemoveAll(i => i == -1);
+            return indices;
+        }
+
     }
 
     internal abstract class VelocityJointToJoint : JointToJointEquation

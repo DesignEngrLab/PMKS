@@ -82,7 +82,7 @@ namespace PlanarMechanismSimulator
 
         #endregion
 
-        internal static point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
+        public static point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
         {
             if (sameCloseZero(ptA.x, ptB.x) && sameCloseZero(ptA.y, ptB.y)) return ptA;
             if (sameCloseZero(slopeA, slopeB)) return new point(Double.NaN, Double.NaN);
@@ -96,57 +96,6 @@ namespace PlanarMechanismSimulator
             var x = (offsetB - offsetA) / (slopeA - slopeB);
             var y = slopeA * x + offsetA;
             return new point(x, y);
-        }
-
-        internal static Boolean CreateBestMatrixAndB(int numUnknowns, int numEquations, double[][] rows, double[,] A,
-                                                double[] answers, double[] b)
-        {
-            if (numEquations < numUnknowns) return false;
-            var rowData = new List<Tuple<List<int>, double, double[], double>>();
-            for (int i = 0; i < numEquations; i++)
-                rowData.Add(new Tuple<List<int>, double, double[], double>
-                    (NonZeroColumns(rows[i], numUnknowns), DistanceFromOne(rows[i]), rows[i], answers[i]));
-            var targetIndices = new List<Tuple<int, int>>();
-            for (int i = 0; i < numUnknowns; i++)
-                targetIndices.Add(new Tuple<int, int>(i, rowData.Count(r => r.Item1.Contains(i))));
-            while (targetIndices.Count > 0)
-            {
-                var lowestOccurence = targetIndices.Min(t => t.Item2);
-                //if (lowestOccurence == 0) return false;
-                var targetIndex = targetIndices.First(t => t.Item2 == lowestOccurence);
-                var index = targetIndex.Item1;
-                var rowDatum = rowData.Where(r => r.Item1.Contains(index)).OrderBy(t => t.Item2).First();
-                StarMath.SetRow(index, A, rowDatum.Item3);
-                b[index] = rowDatum.Item4;
-                targetIndices.Remove(targetIndex);
-                rowData.Remove(rowDatum);
-                var tuplesToUpdate = targetIndices.Where(tuple => rowDatum.Item1.Contains(tuple.Item1)).ToList();
-                foreach (var tuple in tuplesToUpdate)
-                {
-                    targetIndices.Remove(tuple);
-                    targetIndices.Add(new Tuple<int, int>(tuple.Item1, tuple.Item2 - 1));
-                }
-            }
-            return true;
-        }
-
-        private static List<int> NonZeroColumns(double[] rows, int numUnknowns)
-        {
-            var result = new List<int>();
-            for (int j = 0; j < numUnknowns; j++)
-                if (rows[j] != 0.0) result.Add(j);
-            return result;
-        }
-
-        private static double DistanceFromOne(double[] row)
-        {
-            var rowMax = row.Max();
-            if (rowMax == 0.0) rowMax = 1.0;
-            else if (Math.Abs(rowMax) < 1) rowMax = 1 / rowMax;
-            var rowMin = row.Min();
-            if (rowMin == 0.0) rowMin = 1.0;
-            else if (Math.Abs(rowMin) < 1) rowMin = 1 / rowMin;
-            return Math.Max(Math.Abs(rowMax), Math.Abs(rowMin));
         }
     }
 }

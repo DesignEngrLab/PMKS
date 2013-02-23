@@ -76,7 +76,6 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
             jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
-
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -172,7 +171,7 @@ namespace PMKS_Silverlight_App
             {
                 pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 status("You cannot do that: \n" + e.InnerException);
             }
@@ -186,13 +185,11 @@ namespace PMKS_Silverlight_App
                 if (dof == 1)
                 {
                     pmks.InputSpeed = Speed;
-                    if ((bool)globalSettings.ErrorCheckBox.IsChecked)
-                        pmks.MaxSmoothingError = AngleIncrement;  // / 100.0;
+                    if (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked)
+                        pmks.MaxSmoothingError = AngleIncrement;
                     else
-                    {
                         pmks.DeltaAngle = AngleIncrement;
-                        pmks.MaxSmoothingError = double.NaN;
-                    }
+
                     status("Analyzing...");
                     var now = DateTime.Now;
                     pmks.FindFullMovement();
@@ -220,10 +217,10 @@ namespace PMKS_Silverlight_App
             //generates a flat list of strings
             foreach (List<string> linklist in LinkIDs)
             {
-                 foreach(string s in linklist) 
-                 {
-                     flatList.Add(s);
-                 }
+                foreach (string s in linklist)
+                {
+                    flatList.Add(s);
+                }
             }
             foreach (string s in flatList)
             {
@@ -239,6 +236,7 @@ namespace PMKS_Silverlight_App
                 {
                     //status("Only one Link named " + s.ToString());
                     //return false;
+                    //this should not return false if it is simply one connected to ground.
                 }
             }
             int groundlinks = 0;
@@ -255,7 +253,7 @@ namespace PMKS_Silverlight_App
                 return false;
             }
 
-            
+
             foreach (List<string> linklist in LinkIDs)
             {
                 foreach (string mystring in linklist)
@@ -282,7 +280,13 @@ namespace PMKS_Silverlight_App
         private int TrimEmptyJoints()
         {
             for (int i = 0; i < JointsInfo.Data.Count; i++)
-                if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointType)) return i;
+            {
+                var row = JointsInfo.Data[i];
+                double dummy;
+                if (row.LinkNamesList.Count() == 1 && double.TryParse(row.XPos, out dummy) && double.TryParse(row.YPos, out dummy))
+                    row.JointType = "R (pin joint)";
+                if (string.IsNullOrWhiteSpace(row.JointType)) return i;
+            }
             return JointsInfo.Data.Count;
         }
 
@@ -310,6 +314,7 @@ namespace PMKS_Silverlight_App
                 if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
                 var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
+                if (newLinkIDS.Count != LinkIDs[i].Count) return false;
                 if (newLinkIDS.Where((t, j) => t != LinkIDs[i][j]).Any())
                     return false;
             }
