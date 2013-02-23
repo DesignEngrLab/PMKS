@@ -56,6 +56,16 @@ namespace PMKS_Silverlight_App
             }
         }
 
+        public double getYPos()
+        {
+            return _yPos;
+        }
+
+        public double getXPos()
+        {
+            return _xPos;
+        }
+
         public string Angle
         {
             get { return (double.IsNaN(_angle)) ? "" : _angle.ToString(CultureInfo.InvariantCulture); }

@@ -237,8 +237,8 @@ namespace PMKS_Silverlight_App
                 }
                 if (count < 2)
                 {
-                    status("Only one Link named " + s.ToString());
-                    return false;
+                    //status("Only one Link named " + s.ToString());
+                    //return false;
                 }
             }
             int groundlinks = 0;

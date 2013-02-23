@@ -58,6 +58,30 @@ namespace PMKS_Silverlight_App
                 MainCanvas.Children.Add(new VelocityPath(i, JointParameters, JointData[i], velocityFactor, width - minX, height - minY) { StrokeThickness = penThick });
                 MainCanvas.Children.Add(new PositionPath(i, JointParameters, JointData[i], width - minX, height - minY) { StrokeThickness = penThick });
             }
+            
+            for(int i = 0; i < JointData.Count; i++) {
+                double x;
+                double y;
+
+                x = JointData[i].getXPos();
+                y = JointData[i].getYPos();
+
+                Ellipse ellipse = new Ellipse();
+                ellipse.Height = .5;
+                ellipse.Width = .5;
+                SolidColorBrush b = new SolidColorBrush();
+                SolidColorBrush blueBrush = new SolidColorBrush();
+                blueBrush.Color = Colors.Blue;
+                ellipse.Fill = blueBrush;
+                ellipse.StrokeThickness = .5;
+                ellipse.Stroke = blueBrush;
+
+                //ellipse.MouseEnter += new MouseEventHandler(ellipseHover);
+                MainCanvas.Children.Add(ellipse);
+                Canvas.SetLeft(ellipse, width - minX + x - .25);
+                Canvas.SetTop(ellipse, height - minY + y - .25);
+
+            }
             startOffset = new Point((((FrameworkElement)Parent).ActualWidth - (3 * ScaleFactor * width)) / 2,
            (((FrameworkElement)Parent).ActualHeight - (3 * ScaleFactor * height)) / 2);
             ScreenStartPoint = new Point(0.0, ((FrameworkElement)Parent).ActualHeight);
