@@ -67,7 +67,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             }
         }
 
-        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown, bool jointKIsKnown, bool linkIsKnown)
+        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
         {
             if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
                 return new AccelerationEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
@@ -148,7 +148,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     + joints[gearData.gearCenter2Index].vy * gearData.radius2) / (gearData.radius1 + gearData.radius2);
             }
         }
-        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown, bool jointKIsKnown, bool linkIsKnown)
+        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
         {
             if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
                 return new VelocityEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
@@ -217,25 +217,25 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             {
                 var l = links[i];
                 unknownObjects.Add(l);
-                var refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j, l));
-                if (refJoint != null)
-                    foreach (var j in l.joints.Where(j => j != refJoint)) // && !jointIsKnownState(j, l)))
-                        equations.Add(MakeJointToJointEquations(j, refJoint, l, true, false, false));
-
-                else
+                var refJoint = l.joints.FirstOrDefault(j => j.isGround);
+                if (refJoint == null)
+                    refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j, l));
+                if (refJoint == null)
                 {
                     refJoint = l.joints[0];
                     for (int k = 1; k < l.joints.Count; k++)
                         equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false, false, false));
                 }
+                else foreach (var j in l.joints.Where(j => j != refJoint)) 
+                        equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j, l), true, false));
             }
             /* now address the input link - well, the only unknown is the joints that slide on this input. */
             foreach (var j in inputLink.joints.Where(j => j.SlidingWithRespectTo(inputLink)))
-                equations.Add(MakeJointToJointEquations(j, inputJoint, inputLink, true, false, true));
+                equations.Add(MakeJointToJointEquations(j, inputJoint, inputLink, false, true, true));
 
             /* now address the input link - again, only the joints that slide w.r.t. ground. */
             foreach (var j in groundLink.joints.Where(j => j.SlidingWithRespectTo(groundLink)))
-                equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, true, false, true));
+                equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, false, true, true));
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
             /**** Set velocity of any links connected to input by a P joint and remove link from unknowns ****/
             foreach (var pJoint in inputLink.joints.Where(j => j.jointType == JointTypes.P))
@@ -346,8 +346,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 || ((l == inputLink || j.OtherLink(l) == inputLink) && !j.SlidingWithRespectTo(inputLink)));
         }
 
-        protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointJIsKnown,
-                                                          bool jointKIsKnown, bool linkIsKnown);
+        protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown);
 
         protected abstract void SetInitialInputAndGroundLinkStates();
         protected abstract void SetInitialInputAndGroundJointStates();
