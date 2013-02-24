@@ -226,7 +226,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     for (int k = 1; k < l.joints.Count; k++)
                         equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false, false, false));
                 }
-                else foreach (var j in l.joints.Where(j => j != refJoint)) 
+                else foreach (var j in l.joints.Where(j => j != refJoint))
                         equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j, l), true, false));
             }
             /* now address the input link - well, the only unknown is the joints that slide on this input. */
@@ -254,21 +254,24 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
             /**** Then there is the matter of the sliding velocities.. ****/
-            int q = 0;
-            foreach (joint j in joints)
+            for (int i = 0; i < firstInputJointIndex; i++)
             {
-                if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
-                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
-                if (q < firstInputJointIndex)
+                var j = joints[i];
+                if (j.jointType == JointTypes.R) unknownObjects.Add(j);
+                else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
+                             j.Link2 != inputLink && j.Link2 != groundLink)
+                    unknownObjects.Add(j);
+                else if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
                 {
-                    if (j.jointType == JointTypes.G && (j.Link1 == inputLink || j.Link1 == groundLink ||
-                                                        j.Link2 == inputLink || j.Link2 == groundLink))
-                    { /* don't add as an unknown. It will be determined in SetInitialInputAndGroundJointStates() */ }
-                    else unknownObjects.Add(j);
-                    if (j.jointType == JointTypes.P)
-                        equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
+                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
+                    if (j.Link1 != inputLink && j.Link1 != groundLink &&
+                        j.Link2 != inputLink && j.Link2 != groundLink)
+                    {
+                        unknownObjects.Add(j);
+                        if (j.jointType == JointTypes.P)
+                            equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
+                    }
                 }
-                q++;
             }
             #endregion
 
@@ -319,11 +322,18 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 {
                     var lowestOccurence = targetIndices.Min(t => t.Item2);
                     var lowestOccurringVariable = targetIndices.First(t => t.Item2 == lowestOccurence);
+                    /* if there are multiple possible rows to use, use the one with the fewest
+                     * dependencies on other variables. Why? Because it will be easier to solve, yes.
+                     * But more importantly it can prevent nonsensical solutions. If there are fewer
+                     * relationships in the equations coefficients then there are more in the equations'
+                     * answers. Which will prevent runaway situations like x=y and y=x. */
                     var rowsWithlowestOccuringVar =
-                        rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1)).ToList();
-                    var rowWithlowestOccuringVar = (rowsWithlowestOccuringVar.Count == 1)
-                                                       ? rowsWithlowestOccuringVar[0]
-                                                       : rowsWithlowestOccuringVar.ToArray()[m];
+                        rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1)).OrderBy(r => r.Count).ToList();
+                    var rowWithlowestOccuringVar =
+                           (m == 0 || rowsWithlowestOccuringVar.Count == 1 || matrixOrders[0][lowestOccurringVariable.Item1] !=
+                              rowNonZeroes.IndexOf(rowsWithlowestOccuringVar[0])) ?
+                      rowsWithlowestOccuringVar[0] :
+                      rowsWithlowestOccuringVar[1];
                     matrixOrders[m][lowestOccurringVariable.Item1] = rowNonZeroes.IndexOf(rowWithlowestOccuringVar);
                     targetIndices.Remove(lowestOccurringVariable);
                     rowNonZeroesTemp.Remove(rowWithlowestOccuringVar);
