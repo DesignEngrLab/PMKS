@@ -217,7 +217,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             {
                 var l = links[i];
                 unknownObjects.Add(l);
-                var refJoint = l.joints.FirstOrDefault(j => j.isGround);
+                var refJoint = l.joints.FirstOrDefault(j => j.isGround && !j.SlidingWithRespectTo(groundLink));
                 if (refJoint == null)
                     refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j, l));
                 if (refJoint == null)
@@ -245,7 +245,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 unknownObjects.Remove(otherLink);
             }
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
-            foreach (var pJoint in inputLink.joints.Where(j => j.jointType == JointTypes.P))
+            foreach (var pJoint in groundLink.joints.Where(j => j.jointType == JointTypes.P))
             {
                 var otherLink = pJoint.OtherLink(groundLink);
                 otherLink.Velocity = 0.0;
@@ -261,17 +261,22 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
                              j.Link2 != inputLink && j.Link2 != groundLink)
                     unknownObjects.Add(j);
-                else if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
+                else if (j.jointType == JointTypes.P )
                 {
                     unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
-                    if (j.Link1 != inputLink && j.Link1 != groundLink &&
-                        j.Link2 != inputLink && j.Link2 != groundLink)
+                    if (j.Link2 != inputLink && j.Link2 != groundLink)
                     {
                         unknownObjects.Add(j);
-                        if (j.jointType == JointTypes.P)
+                        if (j.Link1 != inputLink && j.Link1 != groundLink)
                             equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
                     }
                 }
+                else if (j.jointType == JointTypes.RP)
+                {
+                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
+                    if (j.Link2 != inputLink && j.Link2 != groundLink)
+                    unknownObjects.Add(j);
+                    }
             }
             #endregion
 
