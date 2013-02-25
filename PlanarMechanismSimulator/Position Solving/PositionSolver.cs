@@ -64,8 +64,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                     {
                         case JointTypes.R:
                             #region R-R-R
-                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
+                                FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaCircleIntersection(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link1, sJPoint);
@@ -75,8 +75,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region R-R-P
-                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                     FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
+                                     FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaCircleAndLineIntersection(j, knownJoint1, knownJoint2, out angleChange);
                                 assignJointPosition(j, j.Link1, sJPoint);
@@ -86,8 +86,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region P-R-R
-                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                                     && FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
+                                     && FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaCircleAndLineIntersection(j, knownJoint2, knownJoint1, out angleChange);
                                 assignJointPosition(j, j.Link1, sJPoint);
@@ -97,8 +97,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region P-R-P
-                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                                     && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
+                                     && FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link1, sJPoint);
@@ -108,21 +108,21 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region R-R-G/G
-                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                     FindPartiallyKnownGearOnLink(j.Link2, out knownJoint2) &&
-                                     FindPartiallyKnownGearOnLink(j.Link2, out knownJoint3, knownJoint2))
+                            else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
+                                     FindPartiallyKnownGearOnLink(j, j.Link2, out knownJoint2) &&
+                                     FindPartiallyKnownGearOnLink(j, j.Link2, out knownJoint3, knownJoint2))
                                 solveGearCenterFromTwoGears(j.Link1, j, knownJoint1, j.Link2, knownJoint2, knownJoint3);
                             #endregion
                             #region G/G-R-R
-                            else if (FindKnownPositionOnLink(j.Link2, out knownJoint1) &&
-                                             FindPartiallyKnownGearOnLink(j.Link1, out knownJoint2) &&
-                                             FindPartiallyKnownGearOnLink(j.Link1, out knownJoint3, knownJoint2))
+                            else if (FindKnownPositionOnLink(j, j.Link2, out knownJoint1) &&
+                                             FindPartiallyKnownGearOnLink(j, j.Link1, out knownJoint2) &&
+                                             FindPartiallyKnownGearOnLink(j, j.Link1, out knownJoint3, knownJoint2))
                                 solveGearCenterFromTwoGears(j.Link2, j, knownJoint1, j.Link1, knownJoint2, knownJoint3);
                             #endregion
                             #region R-R-RP/RP
-                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                     FindPartiallyKnownRPSlotOnLink(j.Link2, out knownJoint2) &&
-                                     FindPartiallyKnownRPSlotOnLink(j.Link2, out knownJoint3, knownJoint2))
+                            else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
+                                     FindPartiallyKnownRPSlotOnLink(j, j.Link2, out knownJoint2) &&
+                                     FindPartiallyKnownRPSlotOnLink(j, j.Link2, out knownJoint3, knownJoint2))
                             {
                                 throw new NotImplementedException("need to complete R-R-RP/RP");
                             }
@@ -130,8 +130,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             break;
                         case JointTypes.P:
                             #region R-P-R
-                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
+                                FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveRPRIntersection(j, knownJoint1, knownJoint2, out angleChange);
                                 assignJointPosition(j, j.Link2, sJPoint);
@@ -141,8 +141,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region P-P-R
-                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                                     && FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
+                                     && FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* in this case, the block is on the rotating link and the slide is on the sliding link */
                                 var sJPoint = solveViaSlopeToCircleIntersectionPPR(j, knownJoint1, knownJoint2, out angleChange);
@@ -154,8 +154,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region R-P-P
-                            else if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
-                                     FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
+                                     FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* in this case, the slide is on the rotating link and the block is on the sliding link */
                                 point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, knownJoint1, knownJoint2, out angleChange);
@@ -166,8 +166,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region P-P-P
-                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1) &&
-                                     FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1) &&
+                                     FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link1, sJPoint);
@@ -200,8 +200,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             //}
                             #endregion
                             #region R&P-RP-R
-                            if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) &&
-                                FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1) &&
+                                FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveRotatePinToSlot(j, knownJoint2, out angleChange);
                                 assignJointPosition(j, j.Link2, sJPoint);
@@ -210,8 +210,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                             }
                             #endregion
                             #region R&P-RP-P
-                            else if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) &&
-                                    FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1) &&
+                                    FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* not sure this is right, but j must be partially known so it has enough
                                  * information to define the first line. */
@@ -224,18 +224,18 @@ namespace PlanarMechanismSimulator.PositionSolving
                             break;
                         case JointTypes.G:
                             #region R-G-R&P
-                            if (FindKnownPositionOnLink(j.Link1, out knownJoint1) && FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
+                            if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) && FindKnownPositionAndSlopeOnLink(j, j.Link2, out knownJoint2))
                                 solveGearAngleAndPos_R_G_R_and_P(j, j.Link1, knownJoint1, knownJoint2);
                             #endregion
                             #region R&P-G-R
-                            else if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1) && FindKnownPositionOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1) && FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                                 solveGearAngleAndPos_R_G_R_and_P(j, j.Link2, knownJoint2, knownJoint1);
                             #endregion
 
                             #region P-G-R&P
 
-                            else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
-                          && FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
+                          && FindKnownPositionAndSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 throw new NotImplementedException("The dyad solver for P-G-R&P has not been implemented yet.");
                             }
@@ -244,8 +244,8 @@ namespace PlanarMechanismSimulator.PositionSolving
 
                             #region R&P-G-P
 
-                            else if (FindKnownPositionAndSlopeOnLink(j.Link1, out knownJoint1)
-                             && FindKnownSlopeOnLink(j.Link2, out knownJoint2))
+                            else if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1)
+                             && FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 throw new NotImplementedException("The dyad solver for R&P-P-G has not been implemented yet.");
                             }
@@ -488,7 +488,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         private point solveViaSlopeToCircleIntersectionRPP(joint j, joint circCenterIndex, joint slideIndex,
              out double angleChange)
         { /* in this case, the slide is on the rotating link and the block is on the sliding link */
-            var rAC = j.Link2.lengthBetween(j, circCenterIndex);
+            var rAC = j.Link1.lengthBetween(j, circCenterIndex);
             double slopeB = Math.Tan(slideIndex.SlideAngle);
             var ptB = defineParallelLineThroughJoint(j, slideIndex, j.Link2);
             // need to find proper link1 angle and thus slideAngle for goal, 
@@ -694,7 +694,7 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
-            if (thisLink.AngleIsKnown==KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
+            if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
             if (double.IsNaN(angleChange))
             {
                 //var j1 = knownJoint;
@@ -759,36 +759,36 @@ namespace PlanarMechanismSimulator.PositionSolving
 
 
 
-        private static bool FindKnownPositionAndSlopeOnLink(link link, out joint knownJoint)
+        private static bool FindKnownPositionAndSlopeOnLink(joint unkJoint, link link, out joint knownJoint)
         {
             knownJoint = null;
-            if (link.AngleIsKnown==KnownState.Unknown) return false;
-            return FindKnownPositionOnLink(link, out knownJoint);
+            if (link.AngleIsKnown == KnownState.Unknown) return false;
+            return FindKnownPositionOnLink(unkJoint, link, out knownJoint);
         }
-        private static bool FindKnownPositionOnLink(link link, out joint knownJoint)
+        private static bool FindKnownPositionOnLink(joint unkJoint, link link, out joint knownJoint)
         {
-            knownJoint = link.joints.FirstOrDefault(j => j.positionKnown == KnownState.Fully && j.FixedWithRespectTo(link));
+            knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j.positionKnown == KnownState.Fully && j.FixedWithRespectTo(link));
             return knownJoint != null;
         }
-        private static bool FindKnownSlopeOnLink(link link, out joint knownJoint)
+        private static bool FindKnownSlopeOnLink(joint unkJoint, link link, out joint knownJoint)
         {
             knownJoint = null;
-            if (link.AngleIsKnown==KnownState.Unknown) return false;
-            knownJoint = link.joints.FirstOrDefault(j => j.positionKnown != KnownState.Unknown);
+            if (link.AngleIsKnown == KnownState.Unknown) return false;
+            knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j.positionKnown != KnownState.Unknown);
             return knownJoint != null;
         }
-        private bool FindPartiallyKnownRPSlotOnLink(link link, out joint knownJoint, joint notJoint = null)
+        private bool FindPartiallyKnownRPSlotOnLink(joint unkJoint, link link, out joint knownJoint, joint notJoint = null)
         {
             knownJoint = null;
-            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.RP && j != notJoint
+            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.RP && j != notJoint && j != unkJoint  
                 && ((j.positionKnown == KnownState.Fully && !j.FixedWithRespectTo(link))
                 || (j.positionKnown == KnownState.Partially && j.FixedWithRespectTo(link))));
             return knownJoint != null;
         }
-        private bool FindPartiallyKnownGearOnLink(link link, out joint knownJoint, joint notJoint = null)
+        private bool FindPartiallyKnownGearOnLink(joint unkJoint, link link, out joint knownJoint, joint notJoint = null)
         {
             knownJoint = null;
-            knownJoint = link.joints.FirstOrDefault(j => j.positionKnown != KnownState.Unknown && j.jointType == JointTypes.G && j != notJoint);
+            knownJoint = link.joints.FirstOrDefault(j => j.positionKnown != KnownState.Unknown && j.jointType == JointTypes.G && j != unkJoint && j != notJoint);
             return knownJoint != null;
         }
         #endregion

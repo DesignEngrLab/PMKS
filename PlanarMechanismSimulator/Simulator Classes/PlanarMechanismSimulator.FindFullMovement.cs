@@ -377,7 +377,7 @@ namespace PlanarMechanismSimulator
                         // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
                     }
                     else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
-                } while (upperError > 0 && k++ < Constants.MaxItersInPositionError);
+                } while ((!validPosition||upperError > 0) && k++ < Constants.MaxItersInPositionError);
                 //var tempStep = startingPosChange;
                 //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
                 //prevStep = tempStep;
