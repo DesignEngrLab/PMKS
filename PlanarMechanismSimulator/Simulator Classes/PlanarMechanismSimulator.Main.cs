@@ -95,7 +95,7 @@ namespace PlanarMechanismSimulator
         }
 
         /// <summary>
-        /// Gets or sets the input angular speed.
+        /// Gets or sets the input angular speed in radians/second.
         /// </summary>
         /// <value>
         /// The input angular speed.
@@ -104,6 +104,21 @@ namespace PlanarMechanismSimulator
 
         internal double AverageLength { get; private set; }
 
+        /// <summary>
+        /// Gets whether or not the mechanism completes a cycle and repeats.
+        /// </summary>
+        /// <value>
+        /// The complete cycle.
+        /// </value>
+        public Boolean CompleteCycle { get; private set; }
+
+        /// <summary>
+        /// Gets whether there is potentially additional cycling due to gears.
+        /// </summary>
+        /// <value>
+        /// The additional gear cycling.
+        /// </value>
+        public Boolean AdditionalGearCycling { get; private set; }
         #endregion
 
         #region Set by the Topology (from the Constructor)
@@ -478,10 +493,11 @@ namespace PlanarMechanismSimulator
                 {
                     if (InitPositions[i] != null)
                     {
-                        AllJoints[JointReOrdering[i]].xInitial = InitPositions[i][0];
-                        AllJoints[JointReOrdering[i]].yInitial = InitPositions[i][1];
+                        var j = AllJoints[JointReOrdering[i]];
+                        j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[i][0];
+                        j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[i][1];
                         if (InitPositions[i].GetLength(0) > 2)
-                            AllJoints[JointReOrdering[i]].InitSlideAngle = InitPositions[i][2];
+                            j.InitSlideAngle = InitPositions[i][2];
                     }
                 }
                 setAdditionalReferencePositions();
@@ -504,11 +520,11 @@ namespace PlanarMechanismSimulator
                 var k = 0;
                 for (int i = 0; i < numJoints; i++)
                 {
-                    AllJoints[JointReOrdering[i]].xInitial = InitPositions[k++];
-                    AllJoints[JointReOrdering[i]].yInitial = InitPositions[k++];
-                    if (AllJoints[JointReOrdering[i]].jointType == JointTypes.P ||
-                        AllJoints[JointReOrdering[i]].jointType == JointTypes.RP)
-                        AllJoints[JointReOrdering[i]].InitSlideAngle = InitPositions[k++];
+                    var j = AllJoints[JointReOrdering[i]];
+                    j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
+                    j.yInitial = j.yNumerical = j.yLast = j.y =InitPositions[k++];
+                    if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
+                        j.InitSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
                 setGearData();
@@ -654,7 +670,7 @@ namespace PlanarMechanismSimulator
         /// <param name="x">The x.</param>
         public void calculate(double[] x = null)
         {
-            if (x != null && x.GetLength(0) == numJoints)
+            if (x != null) // && x.GetLength(0) == numJoints)
                 AssignPositions(x);
             FindFullMovement();
         }

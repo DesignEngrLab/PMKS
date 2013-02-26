@@ -156,6 +156,7 @@ namespace PlanarMechanismSimulator
         {
             Times.RemoveAt(index);
             Parameters.RemoveAt(index);
+            lastSpot--;
         }
 
         public KeyValuePair<double, double[,]> this[int index]

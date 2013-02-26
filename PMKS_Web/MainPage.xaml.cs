@@ -193,7 +193,17 @@ namespace PMKS_Silverlight_App
                     status("Analyzing...");
                     var now = DateTime.Now;
                     pmks.FindFullMovement();
+                   //pmks.DefineMovementBooleans();
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                    if (pmks.AdditionalGearCycling)
+                        status(pmks.CompleteCycle
+                                       ? "Input rotates a full 360 degrees but motion is not yet cyclic (more rotations are required)."
+                                       : "Input cannot rotate a full 360 degrees.");
+                    else
+                        status(pmks.CompleteCycle
+                                       ? "Completes a full cycle and repeats"
+                                       : "Input cannot rotate a full 360 degrees.");
+
                     status("Drawing...");
                     now = DateTime.Now;
                     mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.AllJoints, JointsInfo.Data);
@@ -213,7 +223,8 @@ namespace PMKS_Silverlight_App
             {
                 return false;
             }
-            if (pmks.DeltaAngle == AngleIncrement && (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked)) {
+            if (pmks.DeltaAngle == AngleIncrement && (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked))
+            {
                 return false;
             }
             if (pmks.MaxSmoothingError == AngleIncrement && (globalSettings.AngleCheckBox.IsChecked != null && (bool)globalSettings.AngleCheckBox.IsChecked))

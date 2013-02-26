@@ -110,6 +110,32 @@ namespace PlanarMechanismSimulator
 #endif
             }
 #endif
+            DefineMovementBooleans();
+        }
+
+        public void DefineMovementBooleans()
+        {
+            if (!lessThanFullRotation() && AllJoints.All(j => j.jointType != JointTypes.G))
+            {
+                /* move negative times to positive times */
+                var cycleTime = 2 * Math.PI / InputSpeed;
+                while (JointParameters.Times[0] < 0.0)
+                {
+                    var time = JointParameters.Times[0];
+                    var parameters = JointParameters.Parameters[0];
+                    JointParameters.RemoveAt(0);
+                    JointParameters.AddNearEnd(time + cycleTime, parameters);
+
+                    parameters = LinkParameters.Parameters[0];
+                    LinkParameters.RemoveAt(0);
+                    LinkParameters.AddNearEnd(time + cycleTime, parameters);
+                }
+                AdditionalGearCycling = false;
+                CompleteCycle = true;
+            }
+            else if (!lessThanFullRotation() && AllJoints.Any(j => j.jointType == JointTypes.G))
+                AdditionalGearCycling = CompleteCycle = true;
+            else AdditionalGearCycling = CompleteCycle = false;
         }
 
         private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
@@ -376,8 +402,12 @@ namespace PlanarMechanismSimulator
                         startingPosChange *= Constants.ErrorSizeIncrease;
                         // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
                     }
-                    else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
-                } while ((!validPosition||upperError > 0) && k++ < Constants.MaxItersInPositionError);
+                    else
+                    {
+                        startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
+                        startingPosChange =Math.Sign(startingPosChange)* Math.Max(Math.Abs(startingPosChange), Constants.MinimumStepSize);
+                    }
+                } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError);
                 //var tempStep = startingPosChange;
                 //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
                 //prevStep = tempStep;
@@ -475,5 +505,6 @@ namespace PlanarMechanismSimulator
             }
             return linkParams;
         }
+
     }
 }

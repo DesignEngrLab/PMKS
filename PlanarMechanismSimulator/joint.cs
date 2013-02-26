@@ -109,7 +109,6 @@ namespace PlanarMechanismSimulator
                 InitSlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)
             {
-                
                 InitSlideAngle = 0.0;
             }
                 //throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
