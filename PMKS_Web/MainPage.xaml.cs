@@ -206,7 +206,7 @@ namespace PMKS_Silverlight_App
 
                     status("Drawing...");
                     now = DateTime.Now;
-                    mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.AllJoints, JointsInfo.Data);
+                    mainViewer.UpdateVisuals(pmks, JointsInfo.Data, timeSlider);
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 }
             }

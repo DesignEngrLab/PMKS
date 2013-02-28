@@ -34,14 +34,14 @@ namespace PMKS_Silverlight_App
 
 
 
-        public void UpdateVisuals(TimeSortedList JointParameters, TimeSortedList LinkParameters, int inputJointIndex, List<joint> joints, ObservableCollection<JointData> JointData)
+        internal void UpdateVisuals(Simulator pmks, ObservableCollection<JointData> jointData, TimeSlider timeSlider)
         {
-            if (LinkParameters == null || JointParameters == null) return;
+            if (pmks.LinkParameters == null || pmks.JointParameters == null) return;
             MainCanvas.Children.Clear();
-            if (JointParameters.Count < 2) return;
+            if (pmks.JointParameters.Count < 2) return;
             double velocityFactor, accelFactor, width, height;
 
-            defineDisplayConstants(JointParameters, out  width, out height, out velocityFactor, out accelFactor);
+            defineDisplayConstants(pmks.JointParameters, out  width, out height, out velocityFactor, out accelFactor);
             MainCanvas.Width = 3 * width;
             MainCanvas.Height = 3 * height;
             ScaleFactor = Math.Min(((FrameworkElement)Parent).ActualWidth / (3 * width),
@@ -51,20 +51,22 @@ namespace PMKS_Silverlight_App
 
             double penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
 
-            for (int i = 0; i < inputJointIndex; i++)
+            for (int i = 0; i < pmks.inputJointIndex; i++)
             {
                 /* make a shape (i.e. Path shape) for each joint for each of the 3:position, velocity, and acceleration */
-                MainCanvas.Children.Add(new AccelerationPath(i, JointParameters, JointData[i], accelFactor, width - minX, height - minY) { StrokeThickness = penThick });
-                MainCanvas.Children.Add(new VelocityPath(i, JointParameters, JointData[i], velocityFactor, width - minX, height - minY) { StrokeThickness = penThick });
-                MainCanvas.Children.Add(new PositionPath(i, JointParameters, JointData[i], width - minX, height - minY) { StrokeThickness = penThick });
+                MainCanvas.Children.Add(new AccelerationPath(i, pmks.JointParameters, jointData[i], accelFactor, width - minX, height - minY) { StrokeThickness = penThick });
+                MainCanvas.Children.Add(new VelocityPath(i, pmks.JointParameters, jointData[i], velocityFactor, width - minX, height - minY) { StrokeThickness = penThick });
+                MainCanvas.Children.Add(new PositionPath(i, pmks.JointParameters, jointData[i], width - minX, height - minY) { StrokeThickness = penThick });
             }
-            
-            for(int i = 0; i < JointData.Count; i++) {
+            /************experimenting with joint shape classes ***************/
+            MainCanvas.Children.Add(new JointBaseShape(pmks.AllJoints[0],timeSlider,pmks,0.5,0.5,minX, minY));
+            /******************************************************************/
+            for(int i = 0; i < jointData.Count; i++) {
                 double x;
                 double y;
 
-                x = JointData[i].getXPos();
-                y = JointData[i].getYPos();
+                x = jointData[i].getXPos();
+                y = jointData[i].getYPos();
 
                 Ellipse ellipse = new Ellipse();
                 ellipse.Height = .5;
@@ -166,6 +168,7 @@ namespace PMKS_Silverlight_App
             transform();
         }
         #endregion
+
 
     }
 }

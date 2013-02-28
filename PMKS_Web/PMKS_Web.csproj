@@ -82,8 +82,11 @@
     <Compile Include="ConstantsAndEnumerators.cs" />
     <Compile Include="Converters\BooleanToAngleTypeConverter.cs" />
     <Compile Include="Converters\BooleanToLengthTypeConverter.cs" />
+    <Compile Include="Converters\TimeToParameterBaseConverter.cs" />
+    <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
+    <Compile Include="JointBaseShape.cs" />
     <Compile Include="PageComponents\EditButtons.xaml.cs">
       <DependentUpon>EditButtons.xaml</DependentUpon>
     </Compile>
@@ -94,6 +97,7 @@
     <Compile Include="Shapes\AccelerationPath.cs" />
     <Compile Include="Shapes\VelocityPath.cs" />
     <Compile Include="Shapes\PositionPath.cs" />
+    <Compile Include="Converters\TimeToJointParameterConverter.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />
     <Compile Include="PageComponents\LinkInputTable.xaml.cs">

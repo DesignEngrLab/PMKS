@@ -16,21 +16,16 @@ namespace PMKS_Silverlight_App
 {
     public partial class TimeSlider : UserControl
     {
-        private TimeSliderDataClass _dataclass;
-        public TimeSliderDataClass Dataclass
-        {
-            get { return _dataclass; }
-            set { _dataclass = value; }
-        }
+        public MainPage main { private get; set; }
 
-        public MainPage main
-        { get; set; }
+        public static readonly DependencyProperty CurrentTimeProperty
+            = DependencyProperty.Register("CurrentTime",
+                                          typeof(double), typeof(TimeSlider), new PropertyMetadata(0.0));
 
-        public TimeSlider()
+        public double CurrentTime
         {
-            InitializeComponent();
-            Dataclass = new TimeSliderDataClass();
-            this.DataContext = Dataclass;
+            get { return (double)GetValue(CurrentTimeProperty); }
+            set { SetValue(CurrentTimeProperty, value); }
         }
     }
 }
