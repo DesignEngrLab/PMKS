@@ -144,6 +144,8 @@ namespace PMKS_Silverlight_App
         #region PMKS Controller Functions
         internal void ParseData()
         {
+
+            #region table validation
             //try
             //{
             if (JointsInfo == null)
@@ -189,11 +191,11 @@ namespace PMKS_Silverlight_App
                         pmks.MaxSmoothingError = AngleIncrement;
                     else
                         pmks.DeltaAngle = AngleIncrement;
-
+            #endregion
+                    #region Simulation of mechanism
                     status("Analyzing...");
                     var now = DateTime.Now;
                     pmks.FindFullMovement();
-                   //pmks.DefineMovementBooleans();
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                     if (pmks.AdditionalGearCycling)
                         status(pmks.CompleteCycle
@@ -206,8 +208,11 @@ namespace PMKS_Silverlight_App
 
                     status("Drawing...");
                     now = DateTime.Now;
+                    #endregion
+                    #region draw curves
                     mainViewer.UpdateVisuals(pmks, JointsInfo.Data, timeSlider);
                     status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                    #endregion
                 }
             }
             //}

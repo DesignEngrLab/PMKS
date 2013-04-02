@@ -36,6 +36,7 @@ namespace PMKS_Silverlight_App
 
         internal void UpdateVisuals(Simulator pmks, ObservableCollection<JointData> jointData, TimeSlider timeSlider)
         {
+            #region initialize, set scale and center
             if (pmks.LinkParameters == null || pmks.JointParameters == null) return;
             MainCanvas.Children.Clear();
             if (pmks.JointParameters.Count < 2) return;
@@ -48,7 +49,8 @@ namespace PMKS_Silverlight_App
                                       ((FrameworkElement)Parent).ActualHeight / (3 * height));
             if (ScaleFactor > 100) ScaleFactor = 100;
             if (ScaleFactor < 0.01) ScaleFactor = 0.01;
-
+            #endregion
+            #region draw position, velocity, and acceleration curves
             double penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
 
             for (int i = 0; i < pmks.inputJointIndex; i++)
@@ -58,10 +60,15 @@ namespace PMKS_Silverlight_App
                 MainCanvas.Children.Add(new VelocityPath(i, pmks.JointParameters, jointData[i], velocityFactor, width - minX, height - minY) { StrokeThickness = penThick });
                 MainCanvas.Children.Add(new PositionPath(i, pmks.JointParameters, jointData[i], width - minX, height - minY) { StrokeThickness = penThick });
             }
+            #endregion
+
+            #region draw joints and links and data-bind to slider
             /************experimenting with joint shape classes ***************/
             MainCanvas.Children.Add(new JointBaseShape(pmks.AllJoints[0],timeSlider,pmks,0.5,0.5,minX, minY));
             /******************************************************************/
-            for(int i = 0; i < jointData.Count; i++) {
+            #endregion
+            #region draw initial joint positions (move to ParseData)
+            for (int i = 0; i < jointData.Count; i++) {
                 double x;
                 double y;
 
@@ -84,6 +91,7 @@ namespace PMKS_Silverlight_App
                 Canvas.SetTop(ellipse, height - minY + y - .25);
 
             }
+            #endregion
             startOffset = new Point((((FrameworkElement)Parent).ActualWidth - (3 * ScaleFactor * width)) / 2,
            (((FrameworkElement)Parent).ActualHeight - (3 * ScaleFactor * height)) / 2);
             ScreenStartPoint = new Point(0.0, ((FrameworkElement)Parent).ActualHeight);

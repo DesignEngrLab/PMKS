@@ -73,7 +73,7 @@ namespace PMKS_Silverlight_App
                 {
                     RadiusX = radius,
                     RadiusY = radius,
-                    Transform = new TranslateTransform { X = XCoord + minX, Y = YCoord + minY }
+                    Transform = new TranslateTransform { X = XCoord + minX, Y = YCoord - minY }
                 };
             Stroke = new SolidColorBrush(Colors.Black);
             StrokeThickness = strokeThickness;
