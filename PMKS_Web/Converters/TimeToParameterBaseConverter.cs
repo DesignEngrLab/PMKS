@@ -8,7 +8,10 @@ namespace PMKS_Silverlight_App
 {
     public abstract class TimeToParameterBaseConverter : IValueConverter
     {
+        protected int ColIndex;
+        protected int RowIndex;
 
+        private static int lastIndex;
         protected static double lastTime;
         protected static int prevIndex;
         protected static int nextIndex;
@@ -18,26 +21,27 @@ namespace PMKS_Silverlight_App
         protected static double nextDeltaTime;
         protected static double totalDeltaTime;
 
-        protected int ColIndex;
-        protected int RowIndex;
         protected static List<double[,]> parameters;
         protected static List<double> times;
         private static double timePeriod;
-        private static int lastIndex;
         private static bool cyclic;
 
-        public TimeToParameterBaseConverter(Simulator pmks)
+        protected TimeToParameterBaseConverter(Simulator pmks)
         {
             cyclic = pmks.CompleteCycle && !pmks.AdditionalGearCycling;
             times = pmks.JointParameters.Times;
             parameters = pmks.JointParameters.Parameters;
             lastIndex = times.Count - 1;
+            lastTime = times[lastIndex];
+            prevIndex = nextIndex = 0;
+            prevTime = nextTime = times[0];
+            prevDeltaTime = nextDeltaTime = totalDeltaTime = 0.0;
             timePeriod = 2 * Math.PI / pmks.InputSpeed;
         }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var currentTime = (double) value;
+            var currentTime = (double)value;
             SetTimeIndices(currentTime);
             var prevState = parameters[prevIndex][RowIndex, ColIndex];
             var nextState = parameters[nextIndex][RowIndex, ColIndex];
@@ -85,10 +89,12 @@ namespace PMKS_Silverlight_App
             if (currentTime == lastTime) return; /* you are at a same time step - no need to change static vars. */
             /* you are at a new time step */
             if (currentTime >= prevTime && currentTime <= nextTime)
-            { /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */ }
-            else if (currentTime < prevTime)
             {
-                do
+                /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */
+            }
+            else
+            {
+                while (currentTime < prevTime)
                 {
                     if (prevIndex == 0)
                     {
@@ -106,11 +112,8 @@ namespace PMKS_Silverlight_App
                         prevIndex--;
                         prevTime = times[prevIndex];
                     }
-                } while (currentTime < prevTime);
-            }
-            else
-            {
-                do
+                }
+                while (currentTime > nextTime)
                 {
                     if (nextIndex == lastIndex)
                     {
@@ -125,10 +128,10 @@ namespace PMKS_Silverlight_App
                     {
                         prevIndex = nextIndex;
                         prevTime = nextTime;
-                        nextIndex--;
+                        nextIndex++;
                         nextTime = times[nextIndex];
                     }
-                } while (currentTime > nextTime);
+                }
             }
             nextDeltaTime = nextTime - currentTime;
             prevDeltaTime = currentTime - prevTime;

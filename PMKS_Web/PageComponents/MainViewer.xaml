@@ -6,5 +6,6 @@
               MouseLeftButtonUp="OnLostMouseCapture" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"
              MouseLeftButtonDown="OnMouseEnter"
              MouseMove="OnMouseMove" >
-    <Canvas Grid.Column="0" Grid.Row="0" x:Name="MainCanvas" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"/>
+        <Canvas Background="Transparent" x:Name="MainCanvas"/>
+
 </UserControl>

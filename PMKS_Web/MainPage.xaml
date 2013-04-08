@@ -3,13 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:src="clr-namespace:PMKS_Silverlight_App" xmlns:Silverlight_PMKS="clr-namespace:Silverlight_PMKS"
+    xmlns:src="clr-namespace:PMKS_Silverlight_App"
     x:Class="PMKS_Silverlight_App.MainPage"
     mc:Ignorable="d" Loaded="MainPage_Loaded_1"
-             MouseWheel="OnMouseWheel" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"
-              MouseLeftButtonUp="OnLostMouseCapture"
-             MouseLeftButtonDown="OnMouseEnter"
-             MouseMove="OnMouseMove"
+    MouseWheel="OnMouseWheel" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"
+    MouseLeftButtonUp="OnLostMouseCapture" MouseLeftButtonDown="OnMouseEnter"
+    MouseMove="OnMouseMove"
     d:DesignHeight="674" d:DesignWidth="855">
     <UserControl.Resources>
         <src:JointsViewModel x:Name="JointsInfo" />
@@ -17,23 +16,18 @@
     </UserControl.Resources>
 
     <!--<Grid x:Name="BigGrid" Background="White" >-->
-    <Grid Background="Transparent">
+    <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="71" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
-        <src:TimeSlider Grid.Row="1" HorizontalAlignment="Right" Width="18" x:Name="timeSlider" />
+        <Slider Orientation="Vertical" Grid.Row="1" HorizontalAlignment="Right" x:Name="timeSlider" />
         <src:EditButtons HorizontalAlignment="Left" Margin="10,25" Grid.RowSpan="2" Width="292" x:Name="editButtons"/>
         <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top" Height="64" Width="407" x:Name="globalSettings" />
         <src:LinkInputTable Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         <src:OutputStatus Grid.Row="1" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-        <!--I thought that putting the JointInputTable last would cause it to be "on top" and always focused. Didn't change anything.-->
         <src:JointInputTable Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
-        <!--<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Visible" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">-->
-            <src:MainViewer  x:Name="mainViewer" VerticalAlignment="Top" HorizontalAlignment="Left" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" HorizontalContentAlignment="Left"/>
-        <!--</ScrollViewer>-->
-
-
+        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
     </Grid>
 </UserControl>

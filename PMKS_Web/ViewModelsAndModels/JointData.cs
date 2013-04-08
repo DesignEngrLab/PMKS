@@ -95,7 +95,7 @@ namespace PMKS_Silverlight_App
 
         public static readonly DependencyProperty VelVisibleProperty = DependencyProperty.Register("VelVisible",
                                           typeof(Boolean), typeof(JointData),
-                                          new PropertyMetadata(true));
+                                          new PropertyMetadata(false));
 
         public Boolean AccelerationVisible
         {
@@ -105,7 +105,7 @@ namespace PMKS_Silverlight_App
 
         public static readonly DependencyProperty AccelVisibleProperty = DependencyProperty.Register("AccelVisible",
                                           typeof(Boolean), typeof(JointData),
-                                          new PropertyMetadata(true));
+                                          new PropertyMetadata(false));
 
 
         internal static bool ConvertTextToData(string text, out List<JointData> jointsInfo)

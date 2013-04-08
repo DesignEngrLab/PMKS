@@ -78,7 +78,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Binding Classes\TimeSliderDataClass.cs" />
     <Compile Include="ConstantsAndEnumerators.cs" />
     <Compile Include="Converters\BooleanToAngleTypeConverter.cs" />
     <Compile Include="Converters\BooleanToLengthTypeConverter.cs" />
@@ -117,9 +116,6 @@
       <DependentUpon>MainViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PageComponents\TimeSlider.xaml.cs">
-      <DependentUpon>TimeSlider.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -151,10 +147,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="PageComponents\MainViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="PageComponents\TimeSlider.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

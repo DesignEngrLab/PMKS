@@ -127,12 +127,12 @@ namespace PlanarMechanismSimulator
         public int numJoints { get; private set; }
         public List<link> AllLinks { get; private set; }
         public List<joint> AllJoints { get; private set; }
-        private int firstInputJointIndex;
-        public int inputJointIndex;
-        private joint inputJoint;
-        private int inputLinkIndex;
-        private link inputLink;
-        private link groundLink;
+        public int firstInputJointIndex { get; private set; }
+        public int inputJointIndex { get; private set; }
+        public joint inputJoint { get; private set; }
+        public int inputLinkIndex { get; private set; }
+        public link inputLink { get; private set; }
+        public link groundLink { get; private set; }
         private List<joint> additionalRefjoints;
         private const string nameBaseForGearConnector = "auto_generated_gear_connect_";
 

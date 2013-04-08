@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections;
+﻿using System.Windows.Media;
+using System.Windows.Shapes;
+using PlanarMechanismSimulator;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using PlanarMechanismSimulator;
-using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
@@ -75,7 +69,8 @@ namespace PMKS_Silverlight_App
         public MainPage()
         {
             InitializeComponent();
-            jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
+            jointInputTable.main = editButtons.main = linkInputTable.main = this;
+            //jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -144,7 +139,7 @@ namespace PMKS_Silverlight_App
         #region PMKS Controller Functions
         internal void ParseData()
         {
-
+            mainViewer.UpdateRangeScaleAndCenter(pmks);
             #region table validation
             //try
             //{
@@ -208,6 +203,7 @@ namespace PMKS_Silverlight_App
 
                     status("Drawing...");
                     now = DateTime.Now;
+                    mainViewer.RecalculateLimits = true;
                     #endregion
                     #region draw curves
                     mainViewer.UpdateVisuals(pmks, JointsInfo.Data, timeSlider);
