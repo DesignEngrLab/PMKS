@@ -37,7 +37,7 @@ namespace PMKS_Silverlight_App
         }
         protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((JointBaseShape) d).Redraw();
+            ((JointBaseShape)d).Redraw();
         }
 
 
@@ -47,11 +47,10 @@ namespace PMKS_Silverlight_App
         protected abstract void Redraw();
 
         protected JointBaseShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
-
         {
             this.xOffset = xOffset;
             this.yOffset = yOffset;
-            
+
             this.radius = radius;
 
             Stroke = new SolidColorBrush(Colors.Black);
@@ -81,5 +80,11 @@ namespace PMKS_Silverlight_App
             };
         }
 
+
+        internal void ClearBindings()
+        {
+            ClearValue(XCoordProperty);
+            ClearValue(YCoordProperty);
+        }
     }
 }

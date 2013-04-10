@@ -85,6 +85,7 @@
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
+    <Compile Include="Shapes\DisplayVectorBaseShape.cs" />
     <Compile Include="Shapes\RJointShape.cs" />
     <Compile Include="Shapes\JointBaseShape.cs" />
     <Compile Include="PageComponents\EditButtons.xaml.cs">

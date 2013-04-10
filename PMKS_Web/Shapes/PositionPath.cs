@@ -22,7 +22,7 @@ namespace PMKS_Silverlight_App
                 };
 
             Stroke = new SolidColorBrush { Color = Colors.Green };
-            //RenderTransform = new TranslateTransform { X = offsetX, Y = offsetY };
+            Width = Height = 999999;
             var binding = new Binding
                 {
                     Source = jData,

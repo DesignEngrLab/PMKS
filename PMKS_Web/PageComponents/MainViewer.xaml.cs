@@ -55,16 +55,25 @@ namespace PMKS_Silverlight_App
             if (pmks.LinkParameters == null || pmks.JointParameters == null || pmks.JointParameters.Count < 2) return;
             UpdateRangeScaleAndCenter(pmks);
             #region remove old shapes
+
             for (int i = MainCanvas.Children.Count - 1; i >= 0; i--)
             {
                 var child = MainCanvas.Children[i];
-                if (child is AccelerationVector || child is VelocityVector  || child is PositionPath || child is JointBaseShape)
+                if (child is DisplayVectorBaseShape || child is PositionPath || child is JointBaseShape)
+                {
+                    if (child is DisplayVectorBaseShape)
+                        ((DisplayVectorBaseShape)child).ClearBindings();
+                    else if (child is JointBaseShape)
+                        ((JointBaseShape)child).ClearBindings();
+                    else child.ClearValue(OpacityProperty);
                     MainCanvas.Children.RemoveAt(i);
+                }
             }
+
             #endregion
             #region draw position, velocity, and acceleration curves
             double penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
-
+            double jointSize = DisplayConstants.JointSize / ScaleFactor;
             timeSlider.Maximum = pmks.JointParameters.Times.Last();
             timeSlider.Minimum = pmks.JointParameters.Times[0];
             timeSlider.LargeChange = (timeSlider.Maximum - timeSlider.Minimum) * DisplayConstants.TickDistance / timeSlider.ActualHeight;
@@ -78,10 +87,10 @@ namespace PMKS_Silverlight_App
                 var j = pmks.JointReOrdering[i];
                 if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
                 MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XOffset, YOffset) { StrokeThickness = penThick });
-                JointBaseShape displayJoint; 
+                JointBaseShape displayJoint;
                 switch (pmks.AllJoints[j].jointType)
                 {
-                    default:displayJoint=new RJointShape(pmks.AllJoints[j], timeSlider, pmks, DisplayConstants.JointSize/ScaleFactor, penThick, XOffset, YOffset);
+                    default: displayJoint = new RJointShape(pmks.AllJoints[j], timeSlider, pmks, jointSize, penThick, XOffset, YOffset);
                         break;
                 }
                 MainCanvas.Children.Add(displayJoint);
