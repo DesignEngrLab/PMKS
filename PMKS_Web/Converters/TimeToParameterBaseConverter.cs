@@ -17,9 +17,8 @@ namespace PMKS_Silverlight_App
         protected static int nextIndex;
         protected static double prevTime;
         protected static double nextTime;
-        protected static double prevDeltaTime;
-        protected static double nextDeltaTime;
-        protected static double totalDeltaTime;
+        protected static double tau;
+        protected static double deltaTime;
 
         protected static List<double[,]> parameters;
         protected static List<double> times;
@@ -35,56 +34,19 @@ namespace PMKS_Silverlight_App
             lastTime = times[lastIndex];
             prevIndex = nextIndex = 0;
             prevTime = nextTime = times[0];
-            prevDeltaTime = nextDeltaTime = totalDeltaTime = 0.0;
+            tau = deltaTime = 0.0;
             timePeriod = 2 * Math.PI / pmks.InputSpeed;
         }
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var currentTime = (double)value;
-            SetTimeIndices(currentTime);
-            var prevState = parameters[prevIndex][RowIndex, ColIndex];
-            var nextState = parameters[nextIndex][RowIndex, ColIndex];
-            switch (ColIndex)
-            {
-                case 0:
-                case 1:
-                    return position(prevState, nextState, parameters[prevIndex][RowIndex, ColIndex + 2],
-                                    parameters[nextIndex][RowIndex, ColIndex + 2],
-                                    parameters[prevIndex][RowIndex, ColIndex + 4],
-                                    parameters[nextIndex][RowIndex, ColIndex + 4]);
-                case 2:
-                case 3:
-                    return velocity(prevState, nextState, parameters[prevIndex][RowIndex, ColIndex + 2],
-                                    parameters[nextIndex][RowIndex, ColIndex + 2]);
-                default:
-                    return acceleration(prevState, nextState);
-            }
-        }
 
+        public abstract object Convert(object value, Type targetType, object parameter, CultureInfo culture);
 
-        private double position(double x0, double x1, double v0, double v1, double a0, double a1)
-        {
-            return (prevDeltaTime * x1 + nextDeltaTime * x0) / totalDeltaTime
-                   + velocity(v0, v1, a0, a1) * prevDeltaTime * nextDeltaTime / totalDeltaTime;
-        }
-
-        private double velocity(double v0, double v1, double a0, double a1)
-        {
-            return (prevDeltaTime * v1 + nextDeltaTime * v0) / totalDeltaTime
-                   + acceleration(a0, a1) * prevDeltaTime * nextDeltaTime / totalDeltaTime;
-        }
-
-        private double acceleration(double a0, double a1)
-        {
-            return (prevDeltaTime * a1 + nextDeltaTime * a0) / totalDeltaTime;
-        }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
 
-        private static void SetTimeIndices(double currentTime)
+        protected static void SetTimeIndices(double currentTime)
         {
             if (currentTime == lastTime) return; /* you are at a same time step - no need to change static vars. */
             /* you are at a new time step */
@@ -133,9 +95,8 @@ namespace PMKS_Silverlight_App
                     }
                 }
             }
-            nextDeltaTime = nextTime - currentTime;
-            prevDeltaTime = currentTime - prevTime;
-            totalDeltaTime = nextTime - prevTime;
+            tau = currentTime - prevTime;
+            deltaTime = nextTime - prevTime;
             lastTime = currentTime;
         }
     }

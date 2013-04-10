@@ -14,21 +14,12 @@ using PlanarMechanismSimulator;
 
 namespace PMKS_Silverlight_App
 {
-    public class JointBaseShape : Path
+    public abstract class JointBaseShape : Path
     {
         public static readonly DependencyProperty XCoordProperty
             = DependencyProperty.Register("XCoord",
                                           typeof(double), typeof(JointBaseShape),
                                           new PropertyMetadata(double.NaN, OnTimeChanged));
-
-        private static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((JointBaseShape)d).RenderTransform = new TranslateTransform
-           {
-               X = ((JointBaseShape)d).XCoord + ((JointBaseShape)d).xOffset - ((JointBaseShape)d).radius,
-               Y = ((JointBaseShape)d).YCoord + ((JointBaseShape)d).yOffset - ((JointBaseShape)d).radius
-           };
-        }
 
         public double XCoord
         {
@@ -39,30 +30,29 @@ namespace PMKS_Silverlight_App
             = DependencyProperty.Register("YCoord",
                                           typeof(double), typeof(JointBaseShape),
                                           new PropertyMetadata(double.NaN, OnTimeChanged));
-
-        private readonly double yOffset;
-        private readonly double xOffset;
-        private readonly double radius;
-
         public double YCoord
         {
             get { return (double)GetValue(YCoordProperty); }
             set { SetValue(YCoordProperty, value); }
         }
+        protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((JointBaseShape) d).Redraw();
+        }
 
-        public JointBaseShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
+
+        protected readonly double yOffset;
+        protected readonly double xOffset;
+        protected readonly double radius;
+        protected abstract void Redraw();
+
+        protected JointBaseShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
+
         {
             this.xOffset = xOffset;
             this.yOffset = yOffset;
-            XCoord = j.xInitial;
-            YCoord = j.yInitial;
+            
             this.radius = radius;
-            Data = new EllipseGeometry
-                {
-                    RadiusX = radius,
-                    RadiusY = radius,
-                    Transform = new TranslateTransform { X = radius, Y = radius }
-                };
 
             Stroke = new SolidColorBrush(Colors.Black);
             StrokeThickness = strokeThickness;

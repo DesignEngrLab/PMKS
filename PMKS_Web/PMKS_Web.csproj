@@ -85,7 +85,8 @@
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
-    <Compile Include="JointBaseShape.cs" />
+    <Compile Include="Shapes\RJointShape.cs" />
+    <Compile Include="Shapes\JointBaseShape.cs" />
     <Compile Include="PageComponents\EditButtons.xaml.cs">
       <DependentUpon>EditButtons.xaml</DependentUpon>
     </Compile>
@@ -93,8 +94,8 @@
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\CheckBoxVisibilityConverter.cs" />
-    <Compile Include="Shapes\AccelerationPath.cs" />
-    <Compile Include="Shapes\VelocityPath.cs" />
+    <Compile Include="Shapes\AccelerationVector.cs" />
+    <Compile Include="Shapes\VelocityVector.cs" />
     <Compile Include="Shapes\PositionPath.cs" />
     <Compile Include="Converters\TimeToJointParameterConverter.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />

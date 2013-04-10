@@ -139,7 +139,7 @@ namespace PMKS_Silverlight_App
         #region PMKS Controller Functions
         internal void ParseData()
         {
-            mainViewer.UpdateRangeScaleAndCenter(pmks);
+          //  mainViewer.UpdateRangeScaleAndCenter(pmks);
             #region table validation
             //try
             //{

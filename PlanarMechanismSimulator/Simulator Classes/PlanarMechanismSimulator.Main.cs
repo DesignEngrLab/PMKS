@@ -24,6 +24,7 @@ namespace PlanarMechanismSimulator
         public string Status { get; private set; }
 
         public double[] InputRange { get; private set; }
+        public int[] JointReOrdering { get; private set; }
         private double _deltaAngle = Constants.DefaultStepSize;
         private double _fixedTimeStep = double.NaN;
         private double _maxSmoothingError = double.NaN;
@@ -522,7 +523,7 @@ namespace PlanarMechanismSimulator
                 {
                     var j = AllJoints[JointReOrdering[i]];
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
-                    j.yInitial = j.yNumerical = j.yLast = j.y =InitPositions[k++];
+                    j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
                     if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
                         j.InitSlideAngle = InitPositions[k++];
                 }
@@ -628,16 +629,6 @@ namespace PlanarMechanismSimulator
             var NDPS = new NonDyadicPositionSolver(new PositionFinder(AllJoints, AllLinks, gearsData, inputJointIndex));
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
-
-        /// <summary>
-        /// Finds the next position.
-        /// </summary>
-        /// <param name="time">The time.</param>
-        /// <returns></returns>
-        public double[] FindPositionAtTime(double time)
-        {
-            throw new Exception("sorry");
-        }
         /// <summary>
         /// Finds the position at crank angle.
         /// </summary>
@@ -692,7 +683,163 @@ namespace PlanarMechanismSimulator
         }
 
 
+        #region Static State Variable Methods
 
-        public int[] JointReOrdering { get; private set; }
+        /// <summary>
+        /// Finds the X position at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="xPrevious">The previous x value.</param>
+        /// <param name="xNext">The next x value.</param>
+        /// <param name="vPrevious">previous x-velocity</param>
+        /// <param name="vNext">next x-velocity</param>
+        /// <param name="aPrevious">previous x-acceleration</param>
+        /// <param name="aNext">next x-acceleration</param>
+        /// <returns></returns>
+        public static double FindXatTime(double tau, double deltaTime, double xPrevious, double xNext, double vPrevious,
+            double vNext, double aPrevious, double aNext)
+        {
+            return FindPositionatTime(tau, deltaTime, xPrevious, xNext, vPrevious, vNext, aPrevious, aNext);
+        }
+        /// <summary>
+        /// Finds the Y position at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="yPrevious">The previous y value.</param>
+        /// <param name="yNext">The next y value.</param>
+        /// <param name="vPrevious">previous y-velocity</param>
+        /// <param name="vNext">next y-velocity</param>
+        /// <param name="aPrevious">previous y-acceleration</param>
+        /// <param name="aNext">next y-acceleration</param>
+        /// <returns></returns>
+        public static double FindYatTime(double tau, double deltaTime, double yPrevious, double yNext, double vPrevious,
+            double vNext, double aPrevious, double aNext)
+        {
+            return FindPositionatTime(tau, deltaTime, yPrevious, yNext, vPrevious, vNext, aPrevious, aNext);
+        }
+        /// <summary>
+        /// Finds the position (either x or y) at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="posPrevious">The previous x or y value.</param>
+        /// <param name="posNext">The next x or y value.</param>
+        /// <param name="vPrevious">previous x or y-velocity</param>
+        /// <param name="vNext">next x or y-velocity</param>
+        /// <param name="aPrevious">previous x or y-acceleration</param>
+        /// <param name="aNext">next x or y-acceleration</param>
+        /// <returns></returns>
+        public static double FindPositionatTime(double tau, double deltaTime, double posPrevious, double posNext, double vPrevious,
+            double vNext, double aPrevious, double aNext)
+        {
+            if (deltaTime == 0.0) return posPrevious;
+            var tauSquared = tau * tau;
+            var tauCubed = tau * tauSquared;
+            var tauToThe4th = tau * tauCubed;
+            var tauToThe5th = tau * tauToThe4th;
+            var deltaTimeSquared = deltaTime * deltaTime;
+            var deltaTimeCubed = deltaTime * deltaTimeSquared;
+            return posPrevious + vPrevious * tau + aPrevious * tauSquared / 2
+                   + tauCubed * (10 * (posNext - posPrevious) / deltaTimeSquared - 6 * vPrevious / deltaTime - 4 * vNext / deltaTime
+                   - 1.5 * aPrevious + aNext / 2) / deltaTime
+                   + tauToThe4th * (15 * (posPrevious - posNext) / deltaTimeSquared + 8 * vPrevious / deltaTime + 7 * vNext / deltaTime
+                   + 1.5 * aPrevious - aNext) / deltaTimeSquared
+                   + tauToThe5th * (6*(posPrevious - posNext) / deltaTimeSquared + 3 * (vPrevious + vNext) / deltaTime +  0.5 * (aPrevious-aNext))
+                   / deltaTimeCubed;
+        }
+
+        /// <summary>
+        /// Finds the X velocity at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="vPrevious">previous x-velocity</param>
+        /// <param name="vNext">next x-velocity</param>
+        /// <param name="aPrevious">previous x-acceleration</param>
+        /// <param name="aNext">next x-acceleration</param>
+        /// <returns></returns>
+        public static double FindVXatTime(double tau, double deltaTime, double vPrevious, double vNext, double aPrevious, double aNext)
+        {
+            return FindVelocityatTime(tau, deltaTime, vPrevious, vNext, aPrevious, aNext);
+        }
+        /// <summary>
+        /// Finds the Y velocity at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="vPrevious">previous y-velocity</param>
+        /// <param name="vNext">next y-velocity</param>
+        /// <param name="aPrevious">previous y-acceleration</param>
+        /// <param name="aNext">next y-acceleration</param>
+        /// <returns></returns>
+        public static double FindVYatTime(double tau, double deltaTime, double vPrevious, double vNext, double aPrevious, double aNext)
+        {
+            return FindVelocityatTime(tau, deltaTime, vPrevious, vNext, aPrevious, aNext);
+        }
+        /// <summary>
+        /// Finds the velocity (either x or y) at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="vPrevious">previous x or y-velocity</param>
+        /// <param name="vNext">next x or y-velocity</param>
+        /// <param name="aPrevious">previous x or y-acceleration</param>
+        /// <param name="aNext">next x or y-acceleration</param>
+        /// <returns></returns>
+        public static double FindVelocityatTime(double tau, double deltaTime, double vPrevious, double vNext, double aPrevious, double aNext)
+        {
+            if (deltaTime == 0.0) return vPrevious;
+            var tauSquared = tau * tau;
+            var tauCubed = tau * tauSquared;
+            var deltaTimeSquared = deltaTime * deltaTime;
+            var deltaTimeCubed = deltaTime * deltaTimeSquared;
+            return vPrevious
+                   + (vPrevious - vNext) * (2 * tauCubed / deltaTimeCubed - 3 * tauSquared / deltaTimeSquared)
+                   + aNext * (tauCubed / deltaTimeSquared - tauSquared / deltaTime)
+                   + aPrevious * (tauCubed / deltaTimeSquared - 2 * tauSquared / deltaTime + tau);
+        }
+
+        /// <summary>
+        /// Finds the X acceleration at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="aPrevious">previous x-acceleration</param>
+        /// <param name="aNext">next x-acceleration</param>
+        /// <returns></returns>
+        public static double FindAXatTime(double tau, double deltaTime, double aPrevious, double aNext)
+        {
+            return FindAccelerationatTime(tau, deltaTime, aPrevious, aNext);
+        }
+        /// <summary>
+        /// Finds the Y acceleration at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="aPrevious">previous y-acceleration</param>
+        /// <param name="aNext">next y-acceleration</param>
+        /// <returns></returns>
+        public static double FindAYatTime(double tau, double deltaTime, double aPrevious, double aNext)
+        {
+            return FindAccelerationatTime(tau, deltaTime, aPrevious, aNext);
+        }
+        /// <summary>
+        /// Finds the acceleration (X or Y) at any time value.
+        /// </summary>
+        /// <param name="tau">tau is the differnce between the arbitrary time value and the previous time value.</param>
+        /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
+        /// <param name="aPrevious">previous x or y-acceleration</param>
+        /// <param name="aNext">next x or y-acceleration</param>
+        /// <returns></returns>
+        public static double FindAccelerationatTime(double tau, double deltaTime, double aPrevious, double aNext)
+        {
+            if (deltaTime == 0.0) return aPrevious;
+            return aPrevious + (aNext - aPrevious) * tau / deltaTime;
+        }
+
+        #endregion
+
     }
 }

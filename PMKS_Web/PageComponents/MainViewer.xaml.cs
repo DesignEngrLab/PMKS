@@ -58,24 +58,12 @@ namespace PMKS_Silverlight_App
             for (int i = MainCanvas.Children.Count - 1; i >= 0; i--)
             {
                 var child = MainCanvas.Children[i];
-                if (child is AccelerationPath || child is VelocityPath || child is PositionPath || child is JointBaseShape)
+                if (child is AccelerationVector || child is VelocityVector  || child is PositionPath || child is JointBaseShape)
                     MainCanvas.Children.RemoveAt(i);
             }
             #endregion
             #region draw position, velocity, and acceleration curves
             double penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
-
-            for (int i = 0; i < pmks.numJoints; i++)
-            {
-                if (pmks.AllJoints[pmks.JointReOrdering[i]].FixedWithRespectTo(pmks.groundLink)) continue;
-                /* make a shape (i.e. Path shape) for each joint for each of the 3:position, velocity, and acceleration */
-                MainCanvas.Children.Add(new AccelerationPath(pmks.JointReOrdering[i], pmks.JointParameters, jointData[i], accelFactor, XOffset, YOffset) { StrokeThickness = penThick });
-                MainCanvas.Children.Add(new VelocityPath(pmks.JointReOrdering[i], pmks.JointParameters, jointData[i], velocityFactor, XOffset, YOffset) { StrokeThickness = penThick });
-                MainCanvas.Children.Add(new PositionPath(pmks.JointReOrdering[i], pmks.JointParameters, jointData[i], XOffset, YOffset) { StrokeThickness = penThick });
-            }
-            #endregion
-
-            #region draw joints and links and data-bind to slider
 
             timeSlider.Maximum = pmks.JointParameters.Times.Last();
             timeSlider.Minimum = pmks.JointParameters.Times[0];
@@ -84,10 +72,21 @@ namespace PMKS_Silverlight_App
             timeSlider.Value = 0.0;
 
 
-            /************experimenting with joint shape classes ***************/
+            /************ creating the shapes ***************/
             for (int i = 0; i < jointData.Count; i++)
             {
-                MainCanvas.Children.Add(new JointBaseShape(pmks.AllJoints[i], timeSlider, pmks, DisplayConstants.JointSize/ScaleFactor, penThick, XOffset, YOffset));
+                var j = pmks.JointReOrdering[i];
+                if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
+                MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XOffset, YOffset) { StrokeThickness = penThick });
+                JointBaseShape displayJoint; 
+                switch (pmks.AllJoints[j].jointType)
+                {
+                    default:displayJoint=new RJointShape(pmks.AllJoints[j], timeSlider, pmks, DisplayConstants.JointSize/ScaleFactor, penThick, XOffset, YOffset);
+                        break;
+                }
+                MainCanvas.Children.Add(displayJoint);
+                MainCanvas.Children.Add(new AccelerationVector(pmks.AllJoints[j], timeSlider, pmks, accelFactor, penThick, XOffset, YOffset, displayJoint, jointData[i]));
+                MainCanvas.Children.Add(new VelocityVector(pmks.AllJoints[j], timeSlider, pmks, velocityFactor, penThick, XOffset, YOffset, displayJoint, jointData[i]));
             }
             /******************************************************************/
             #endregion
