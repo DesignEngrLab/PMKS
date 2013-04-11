@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using PlanarMechanismSimulator;
 using System;
 using System.Collections.ObjectModel;
@@ -6,16 +7,21 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Silverlight_PMKS.Shapes.Static_Shapes;
 
 namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
     {
-        private double ScaleFactor, minX, minY;
-        private bool Panning;
+        #region Fields
         private Point ScreenStartPoint = new Point(0, 0);
         private Point startOffset;
-        private double accelFactor, velocityFactor, width, height;
+        private double width;
+        private double height;
+        private Boolean Panning;
+        private double penThick;
+        private double jointSize;
+        #endregion
 
         public MainViewer()
         {
@@ -23,6 +29,27 @@ namespace PMKS_Silverlight_App
         }
 
         #region Properties
+        /// <summary>
+        /// Gets the scale factor.
+        /// </summary>
+        /// <value>
+        /// The scale factor.
+        /// </value>
+        public double ScaleFactor { get; private set; }
+        /// <summary>
+        /// Gets the accel factor.
+        /// </summary>
+        /// <value>
+        /// The accel factor.
+        /// </value>
+        public double AccelFactor { get; private set; }
+        /// <summary>
+        /// Gets the velocity factor.
+        /// </summary>
+        /// <value>
+        /// The velocity factor.
+        /// </value>
+        public double VelocityFactor { get; private set; }
         /// <summary>
         /// Gets the X offset.
         /// </summary>
@@ -38,45 +65,50 @@ namespace PMKS_Silverlight_App
         /// </value>
         public double YOffset { get; private set; }
 
-        /// <summary>
-        /// Gets or sets whether or not one needs to recalcuate limits.
-        /// </summary>
-        /// <value>
-        /// The recalcuate limits.
-        /// </value>
-        public Boolean RecalculateLimits = true;
 
+        private double ParentHeight
+        {
+            get
+            {
+                return (((FrameworkElement)Parent).ActualHeight == 0)
+                           ? Application.Current.Host.Content.ActualHeight
+                           : ActualHeight;
+            }
+        }
+
+        private double ParentWidth
+        {
+            get
+            {
+                return (((FrameworkElement)Parent).ActualWidth == 0)
+                           ? Application.Current.Host.Content.ActualWidth
+                           : ActualWidth;
+            }
+        }
         #endregion
 
-
+        internal void Clear()
+        {
+            foreach (var child in MainCanvas.Children)
+            {
+                if (!(child is DisplayVectorBaseShape) && !(child is PositionPath) && !(child is JointBaseShape))
+                    continue;
+                if (child is DisplayVectorBaseShape)
+                    ((DisplayVectorBaseShape)child).ClearBindings();
+                else if (child is JointBaseShape)
+                    ((JointBaseShape)child).ClearBindings();
+                else child.ClearValue(OpacityProperty);
+            }
+            MainCanvas.Children.Clear();
+        }
 
         internal void UpdateVisuals(Simulator pmks, ObservableCollection<JointData> jointData, Slider timeSlider)
         {
-            if (pmks.LinkParameters == null || pmks.JointParameters == null || pmks.JointParameters.Count < 2) return;
-            UpdateRangeScaleAndCenter(pmks);
-            #region remove old shapes
-
-            for (int i = MainCanvas.Children.Count - 1; i >= 0; i--)
-            {
-                var child = MainCanvas.Children[i];
-                if (child is DisplayVectorBaseShape || child is PositionPath || child is JointBaseShape)
-                {
-                    if (child is DisplayVectorBaseShape)
-                        ((DisplayVectorBaseShape)child).ClearBindings();
-                    else if (child is JointBaseShape)
-                        ((JointBaseShape)child).ClearBindings();
-                    else child.ClearValue(OpacityProperty);
-                    MainCanvas.Children.RemoveAt(i);
-                }
-            }
-
-            #endregion
             #region draw position, velocity, and acceleration curves
-            double penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
-            double jointSize = DisplayConstants.JointSize / ScaleFactor;
             timeSlider.Maximum = pmks.JointParameters.Times.Last();
             timeSlider.Minimum = pmks.JointParameters.Times[0];
-            timeSlider.LargeChange = (timeSlider.Maximum - timeSlider.Minimum) * DisplayConstants.TickDistance / timeSlider.ActualHeight;
+            var h = (timeSlider.Height == 0) ? ParentHeight : timeSlider.Height;
+            timeSlider.LargeChange = (timeSlider.Maximum - timeSlider.Minimum) * DisplayConstants.TickDistance / h;
             timeSlider.SmallChange = (timeSlider.Maximum - timeSlider.Minimum) / 1000;
             timeSlider.Value = 0.0;
 
@@ -94,62 +126,106 @@ namespace PMKS_Silverlight_App
                         break;
                 }
                 MainCanvas.Children.Add(displayJoint);
-                MainCanvas.Children.Add(new AccelerationVector(pmks.AllJoints[j], timeSlider, pmks, accelFactor, penThick, XOffset, YOffset, displayJoint, jointData[i]));
-                MainCanvas.Children.Add(new VelocityVector(pmks.AllJoints[j], timeSlider, pmks, velocityFactor, penThick, XOffset, YOffset, displayJoint, jointData[i]));
+                MainCanvas.Children.Add(new AccelerationVector(pmks.AllJoints[j], timeSlider, pmks, AccelFactor, penThick, XOffset, YOffset, displayJoint, jointData[i]));
+                MainCanvas.Children.Add(new VelocityVector(pmks.AllJoints[j], timeSlider, pmks, VelocityFactor, penThick, XOffset, YOffset, displayJoint, jointData[i]));
             }
             /******************************************************************/
             #endregion
         }
 
-        public void UpdateRangeScaleAndCenter(Simulator pmks)
+        internal void UpdateRangeScaleAndCenter(Simulator pmks)
         {
             if (pmks == null) return;
-            if (RecalculateLimits)
-            {
-                var minima = new double[6];
-                var maxima = new double[6];
-                var numJoints = pmks.JointParameters.Parameters[0].GetLength(0);
-                for (int k = 0; k < minima.GetLength(0); k++)
+            var minima = new[]
                 {
-                    minima[k] = double.PositiveInfinity;
-                    maxima[k] = double.NegativeInfinity;
-                }
-                //maxima[2] = maxima[3] = Constants.epsilonSame;
-                for (int j = 0; j < pmks.JointParameters.Count; j++)
-                    for (int i = 0; i < numJoints; i++)
-                        for (int k = 0; k < 6; k++)
-                        {
-                            if (minima[k] > pmks.JointParameters.Parameters[j][i, k])
-                                minima[k] = pmks.JointParameters.Parameters[j][i, k];
-                            if (maxima[k] < pmks.JointParameters.Parameters[j][i, k])
-                                maxima[k] = pmks.JointParameters.Parameters[j][i, k];
+                    -DisplayConstants.AxesBuffer, -DisplayConstants.AxesBuffer, double.PositiveInfinity,
+                    double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity
+                };
+            var maxima = new[]
+                {
+                    DisplayConstants.AxesBuffer, DisplayConstants.AxesBuffer, double.NegativeInfinity,
+                    double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity
+                };
+            var numJoints = pmks.JointParameters.Parameters[0].GetLength(0);
 
-                        }
-                minX = minima[0];
-                minY = minima[1];
-                width = maxima[0] - minX;
-                height = maxima[1] - minY;
-                var vxMax = Math.Max(Math.Abs(minima[2]), Math.Abs(maxima[2]));
-                var vyMax = Math.Max(Math.Abs(minima[3]), Math.Abs(maxima[3]));
-                velocityFactor = Math.Min(width / vxMax, height / vyMax);
+            for (int j = 0; j < pmks.JointParameters.Count; j++)
+                for (int i = 0; i < numJoints; i++)
+                    for (int k = 0; k < 6; k++)
+                    {
+                        if (minima[k] > pmks.JointParameters.Parameters[j][i, k])
+                            minima[k] = pmks.JointParameters.Parameters[j][i, k];
+                        if (maxima[k] < pmks.JointParameters.Parameters[j][i, k])
+                            maxima[k] = pmks.JointParameters.Parameters[j][i, k];
 
-                var axMax = Math.Max(Math.Abs(minima[4]), Math.Abs(maxima[4]));
-                var ayMax = Math.Max(Math.Abs(minima[5]), Math.Abs(maxima[5]));
-                accelFactor = Math.Min(width / axMax, height / ayMax);
+                    }
+            var minX = minima[0];
+            var minY = minima[1];
+            width = maxima[0] - minX;
+            height = maxima[1] - minY;
+            var vxMax = Math.Max(Math.Abs(minima[2]), Math.Abs(maxima[2]));
+            var vyMax = Math.Max(Math.Abs(minima[3]), Math.Abs(maxima[3]));
+            VelocityFactor = Math.Min(width / vxMax, height / vyMax);
 
-                XOffset = width - minX;
-                YOffset = height - minY;
-                MainCanvas.Width = 3 * width;
-                MainCanvas.Height = 3 * height;
-                ScaleFactor = Math.Min(((FrameworkElement)Parent).ActualWidth / (3 * width),
-                                       ((FrameworkElement)Parent).ActualHeight / (3 * height));
-                if (ScaleFactor > 100) ScaleFactor = 100;
-                if (ScaleFactor < 0.01) ScaleFactor = 0.01;
-                RecalculateLimits = false;
+            var axMax = Math.Max(Math.Abs(minima[4]), Math.Abs(maxima[4]));
+            var ayMax = Math.Max(Math.Abs(minima[5]), Math.Abs(maxima[5]));
+            AccelFactor = Math.Min(width / axMax, height / ayMax);
+
+            XOffset = width - minX;
+            YOffset = height - minY;
+            MainCanvas.Width = 3 * width;
+            MainCanvas.Height = 3 * height;
+
+            ScaleFactor = Math.Min(ParentWidth / (3 * width), ParentHeight / (3 * height));
+            if (ScaleFactor > 100) ScaleFactor = 100;
+            if (ScaleFactor < 0.01) ScaleFactor = 0.01;
+            startOffset = new Point((ParentWidth - (3 * ScaleFactor * width)) / 2,
+                                    (ParentHeight - (3 * ScaleFactor * height)) / 2);
+            ScreenStartPoint = new Point(0.0, ParentHeight);
+            penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
+            jointSize = DisplayConstants.JointSize / ScaleFactor;
+            transform();
+        }
+
+        public void DrawStaticShapes(List<List<string>> linkIDs, List<string> jointTypes, List<double[]> initPositions)
+        {
+            MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
+            MainCanvas.Children.Add(new Axes(DisplayConstants.PenThicknessRatio / ScaleFactor, XOffset, YOffset));
+
+
+        }
+
+        internal void UpdateRangeScaleAndCenter(List<double[]> initPositions)
+        {
+            var minX = -DisplayConstants.AxesBuffer;
+            var minY = -DisplayConstants.AxesBuffer;
+            var maxX = DisplayConstants.AxesBuffer;
+            var maxY = DisplayConstants.AxesBuffer;
+            foreach (var initPosition in initPositions)
+            {
+                if (initPosition[0] < minX) minX = initPosition[0];
+                else if (initPosition[0] > maxX) maxX = initPosition[0];
+                if (initPosition[1] < minY) minY = initPosition[1];
+                else if (initPosition[1] > maxY) maxY = initPosition[2];
             }
-            startOffset = new Point((((FrameworkElement)Parent).ActualWidth - (3 * ScaleFactor * width)) / 2,
-           (((FrameworkElement)Parent).ActualHeight - (3 * ScaleFactor * height)) / 2);
-            ScreenStartPoint = new Point(0.0, ((FrameworkElement)Parent).ActualHeight);
+            if (initPositions.Count == 0)
+            {
+                maxX = maxY = 5 * DisplayConstants.AxesBuffer;
+            }
+            width = maxX - minX;
+            height = maxY - minY;
+            XOffset = width - minX;
+            YOffset = height - minY;
+            MainCanvas.Width = 3 * width;
+            MainCanvas.Height = 3 * height;
+            ScaleFactor = Math.Min(ParentWidth / (3 * width),
+                                   ParentHeight / (3 * height));
+            if (ScaleFactor > 100) ScaleFactor = 100;
+            if (ScaleFactor < 0.01) ScaleFactor = 0.01;
+
+            startOffset = new Point((ParentWidth - (3 * ScaleFactor * width)) / 2, (ParentHeight - (3 * ScaleFactor * height)) / 2);
+            ScreenStartPoint = new Point(0.0, ParentHeight);
+            penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
+            jointSize = DisplayConstants.JointSize / ScaleFactor;
             transform();
         }
 
@@ -157,8 +233,7 @@ namespace PMKS_Silverlight_App
         {
             MainCanvas.RenderTransform = new MatrixTransform
             {
-                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, startOffset.X,
-                    ((FrameworkElement)Parent).ActualHeight - startOffset.Y)
+                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, startOffset.X, ParentHeight - startOffset.Y)
             };
 
         }
@@ -196,7 +271,6 @@ namespace PMKS_Silverlight_App
             transform();
         }
         #endregion
-
 
     }
 }

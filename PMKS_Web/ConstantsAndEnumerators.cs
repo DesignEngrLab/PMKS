@@ -19,6 +19,8 @@ namespace PMKS_Silverlight_App
         public const double AccelLengthRatio = 0.5;
         public const double TickDistance = 24.0; // one-quarter of an inch
         public const double JointSize = 6.0; // one-sixteenth of an inch
+        public const double AxesBuffer = 96; // one inch
+       // public const double GuessInitialBrowserDimension = 500;
     }
     public class JointTypeProvider
     {

@@ -42,6 +42,7 @@ namespace PMKS_Silverlight_App
                         }
                     }
                 }
+            main.ParseData();
         }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
@@ -63,7 +64,7 @@ namespace PMKS_Silverlight_App
         {
             main.JointsInfo.Data.Clear();
             main.LinksInfo.Data.Clear();
-
+            main.ParseData();
         }
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
@@ -71,7 +72,7 @@ namespace PMKS_Silverlight_App
             var Jointstable = main.jointInputTable.dataGrid;
             if (jointData.Count > 0)
             {
-                JointData removedJoint;                
+                JointData removedJoint;
                 if (Jointstable.SelectedItem == null)
                 {
                     removedJoint = jointData[jointData.Count - 1];
@@ -84,8 +85,9 @@ namespace PMKS_Silverlight_App
                 }
                 main.linkInputTable.UpdateLinksTableAfterDeletion(removedJoint.LinkNamesList);
             }
+            main.ParseData();
         }
-        
+
 
         private void SimulateButton_Click(object sender, RoutedEventArgs e)
         {

@@ -81,13 +81,15 @@
     <Compile Include="ConstantsAndEnumerators.cs" />
     <Compile Include="Converters\BooleanToAngleTypeConverter.cs" />
     <Compile Include="Converters\BooleanToLengthTypeConverter.cs" />
+    <Compile Include="Converters\HSLtoRGB.cs" />
     <Compile Include="Converters\TimeToParameterBaseConverter.cs" />
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
-    <Compile Include="Shapes\DisplayVectorBaseShape.cs" />
-    <Compile Include="Shapes\RJointShape.cs" />
-    <Compile Include="Shapes\JointBaseShape.cs" />
+    <Compile Include="Shapes\Static Shapes\Axes.cs" />
+    <Compile Include="Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
+    <Compile Include="Shapes\Joint Shapes\RJointShape.cs" />
+    <Compile Include="Shapes\Joint Shapes\JointBaseShape.cs" />
     <Compile Include="PageComponents\EditButtons.xaml.cs">
       <DependentUpon>EditButtons.xaml</DependentUpon>
     </Compile>
@@ -95,9 +97,9 @@
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\CheckBoxVisibilityConverter.cs" />
-    <Compile Include="Shapes\AccelerationVector.cs" />
-    <Compile Include="Shapes\VelocityVector.cs" />
-    <Compile Include="Shapes\PositionPath.cs" />
+    <Compile Include="Shapes\Vector Shapes\AccelerationVector.cs" />
+    <Compile Include="Shapes\Vector Shapes\VelocityVector.cs" />
+    <Compile Include="Shapes\Vector Shapes\PositionPath.cs" />
     <Compile Include="Converters\TimeToJointParameterConverter.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />
@@ -154,7 +156,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Viewing Classes\" />
+    <Folder Include="Shapes\Link Shapes\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\AppManifest.xml" />

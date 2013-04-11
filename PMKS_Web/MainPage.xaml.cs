@@ -64,6 +64,7 @@ namespace PMKS_Silverlight_App
             get { return (LengthType)GetValue(LengthUnitsProperty); }
             set { SetValue(LengthUnitsProperty, value); }
         }
+
         #endregion
 
         public MainPage()
@@ -71,6 +72,7 @@ namespace PMKS_Silverlight_App
             InitializeComponent();
             jointInputTable.main = editButtons.main = linkInputTable.main = this;
             //jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
+            
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -135,45 +137,38 @@ namespace PMKS_Silverlight_App
                 Converter = new BooleanToLengthTypeConverter()
             };
             globalSettings.MetricCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
+            ParseData();
         }
         #region PMKS Controller Functions
         internal void ParseData()
         {
-          //  mainViewer.UpdateRangeScaleAndCenter(pmks);
             #region table validation
-            //try
-            //{
-            if (JointsInfo == null)
-                return;
+            if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
             if (pmks != null && SameTopology() && SameParameters() && SameGlobalSettings() && SameRadioSettings())
-            {
-                /* Given the new dynamic binding in UpdateVisuals, we should need to call this again if nothing has changed.*/
-                //mainViewer.UpdateVisuals(pmks.JointParameters, pmks.LinkParameters, pmks.inputJointIndex, pmks.joints, JointsInfo.Data,jointInputTable);
                 return;
-            }
+
 
             if (pmks != null && SameTopology() && DataListsSameLength())
             {
                 DefinePositions();
                 pmks.AssignPositions(InitPositions);
             }
-            if (!validLinks())
-            {
-                return;
-            }
-            else if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
+            if (!validLinks()) return;
 
+            if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
+            #endregion
+
+            #region Just Draw Axes and Joints
+            mainViewer.Clear();
+            mainViewer.UpdateRangeScaleAndCenter(InitPositions);
+            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions);
+            #endregion
+
+            #region Setting Up PMKS
             try
             {
                 pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
-            }
-            catch (Exception e)
-            {
-                status("You cannot do that: \n" + e.InnerException);
-            }
-            if (pmks != null)
-            {
 
                 if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
                 else status("The mechanism has non-dyadic loops.");
@@ -186,36 +181,50 @@ namespace PMKS_Silverlight_App
                         pmks.MaxSmoothingError = AngleIncrement;
                     else
                         pmks.DeltaAngle = AngleIncrement;
-            #endregion
-                    #region Simulation of mechanism
-                    status("Analyzing...");
-                    var now = DateTime.Now;
-                    pmks.FindFullMovement();
-                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                    if (pmks.AdditionalGearCycling)
-                        status(pmks.CompleteCycle
-                                       ? "Input rotates a full 360 degrees but motion is not yet cyclic (more rotations are required)."
-                                       : "Input cannot rotate a full 360 degrees.");
-                    else
-                        status(pmks.CompleteCycle
-                                       ? "Completes a full cycle and repeats"
-                                       : "Input cannot rotate a full 360 degrees.");
-
-                    status("Drawing...");
-                    now = DateTime.Now;
-                    mainViewer.RecalculateLimits = true;
-                    #endregion
-                    #region draw curves
-                    mainViewer.UpdateVisuals(pmks, JointsInfo.Data, timeSlider);
-                    status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                    #endregion
                 }
             }
-            //}
-            //catch (Exception e)
-            //{
-            //    status(e.Message);
-            //}
+            catch (Exception e)
+            {
+                status("Incomplete or incorrect data: \n" + e.InnerException);
+                return;
+            }
+            #endregion
+
+            try
+            {
+                #region Simulation of mechanism
+                status("Analyzing...");
+                var now = DateTime.Now;
+                pmks.FindFullMovement();
+                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                if (pmks.AdditionalGearCycling)
+                    status(pmks.CompleteCycle
+                               ? "Input rotates a full 360 degrees but motion is not yet cyclic (more rotations are required)."
+                               : "Input cannot rotate a full 360 degrees.");
+                else
+                    status(pmks.CompleteCycle
+                               ? "Completes a full cycle and repeats"
+                               : "Input cannot rotate a full 360 degrees.");
+                #endregion
+                #region draw curves
+                status("Drawing...");
+                now = DateTime.Now;
+                if (pmks.LinkParameters == null || pmks.JointParameters == null || pmks.JointParameters.Count < 2)
+                {
+                    status("...nothing to draw. Error in simulation.");
+                    return;
+                }
+                mainViewer.Clear();
+                mainViewer.UpdateRangeScaleAndCenter(pmks);
+                mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions);
+                mainViewer.UpdateVisuals(pmks, JointsInfo.Data, timeSlider);
+                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                #endregion
+            }
+            catch (Exception e)
+            {
+                status(e.Message);
+            }
         }
 
         private bool SameRadioSettings()
@@ -269,7 +278,7 @@ namespace PMKS_Silverlight_App
                 int count = 0;
                 for (int i = 0; i < flatList.Count; i++)
                 {
-                    if (s.ToString().Equals(flatList.ElementAt(i).ToString()))
+                    if (s.Equals(flatList.ElementAt(i)))
                     {
                         count++;
                     }
@@ -356,6 +365,7 @@ namespace PMKS_Silverlight_App
                 if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
                 var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
+                if (i >= LinkIDs.Count) return false;
                 if (newLinkIDS.Count != LinkIDs[i].Count) return false;
                 if (newLinkIDS.Where((t, j) => t != LinkIDs[i][j]).Any())
                     return false;

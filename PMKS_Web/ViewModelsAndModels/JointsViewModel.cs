@@ -38,17 +38,17 @@ namespace PMKS_Silverlight_App
                     //new JointData
                     //    {JointType = "p", XPos = "4.0", YPos = "4.0", LinkNames ="coupler"}
                         
-                    new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
-                    new JointData {JointType = "p", XPos = "20", YPos = "5.0", Angle="0",  LinkNames = "input coupler"},
-                    new JointData {JointType = "r", XPos = "20.0", YPos = "0.0",LinkNames = "coupler output "},
-                    new JointData{JointType = "r", XPos = "21.0", YPos = "10", LinkNames ="output ground"}
-                    //,new JointData()
                     //new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
-                    //new JointData {JointType = "R (pin joint)", XPos = "1.0", YPos = "8.0", LinkNames = "input coupler"},
-                    //new JointData
-                    //    {JointType = "R (pin joint)", XPos = "10.0", YPos = "12.0", LinkNames = "coupler,output "},
-                    //new JointData
-                    //    {JointType = "R (pin joint)", XPos = "9.0", YPos = "0.0", LinkNames = "ground, output"}
+                    //new JointData {JointType = "p", XPos = "20", YPos = "5.0", Angle="0",  LinkNames = "input coupler"},
+                    //new JointData {JointType = "r", XPos = "20.0", YPos = "0.0",LinkNames = "coupler output "},
+                    //new JointData{JointType = "r", XPos = "21.0", YPos = "10", LinkNames ="output ground"}
+                    //,new JointData()
+                    new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
+                    new JointData {JointType = "R (pin joint)", XPos = "1.0", YPos = "8.0", LinkNames = "input coupler"},
+                    new JointData
+                        {JointType = "R (pin joint)", XPos = "10.0", YPos = "12.0", LinkNames = "coupler,output "},
+                    new JointData
+                        {JointType = "R (pin joint)", XPos = "9.0", YPos = "0.0", LinkNames = "ground, output"}
                 };
         }
     }
