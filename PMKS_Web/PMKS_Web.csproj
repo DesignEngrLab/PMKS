@@ -86,10 +86,11 @@
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
+    <Compile Include="Shapes\Joint Shapes\InputRJointShape.cs" />
     <Compile Include="Shapes\Static Shapes\Axes.cs" />
     <Compile Include="Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
     <Compile Include="Shapes\Joint Shapes\RJointShape.cs" />
-    <Compile Include="Shapes\Joint Shapes\JointBaseShape.cs" />
+    <Compile Include="Shapes\Joint Shapes\JointShape Base Classes.cs" />
     <Compile Include="PageComponents\EditButtons.xaml.cs">
       <DependentUpon>EditButtons.xaml</DependentUpon>
     </Compile>

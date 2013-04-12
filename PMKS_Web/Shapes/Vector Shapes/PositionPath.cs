@@ -22,7 +22,7 @@ namespace PMKS_Silverlight_App
                 };
 
             Stroke = new SolidColorBrush { Color = Colors.Green };
-            Width = Height = 999999;
+            Width = Height = DisplayConstants.UnCroppedDimension;
             var binding = new Binding
                 {
                     Source = jData,

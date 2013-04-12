@@ -14,7 +14,7 @@ using PlanarMechanismSimulator;
 
 namespace PMKS_Silverlight_App
 {
-    public class RJointShape : JointBaseShape
+    public class RJointShape : DynamicJointBaseShape
     {
         public RJointShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
        :base(j,timeSlider,pmks,radius,strokeThickness,xOffset,yOffset) 
@@ -33,13 +33,19 @@ namespace PMKS_Silverlight_App
             };
         }
 
-        protected override void Redraw()
+        public override void Redraw()
         {
             RenderTransform = new TranslateTransform
             {
                 X = XCoord + xOffset - radius,
                 Y = YCoord + yOffset - radius
             };
+        }
+
+        internal override void ClearBindings()
+        {
+            ClearValue(XCoordProperty);
+            ClearValue(YCoordProperty);
         }
     }
 }

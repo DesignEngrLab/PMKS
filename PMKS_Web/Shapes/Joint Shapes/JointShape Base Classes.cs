@@ -16,9 +16,44 @@ namespace PMKS_Silverlight_App
 {
     public abstract class JointBaseShape : Path
     {
+        protected JointBaseShape(double radius, double strokeThickness, double xOffset, double yOffset)
+        {
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+            this.radius = radius;
+            Stroke = new SolidColorBrush(Colors.Black);
+            StrokeThickness = strokeThickness;
+        }
+        protected readonly double yOffset;
+        protected readonly double xOffset;
+        protected readonly double radius;
+    }
+    public abstract class FixedJointBaseShape : JointBaseShape
+    {
+        protected Boolean isGround;
+
+        protected FixedJointBaseShape(double radius, double strokeThickness, double xOffset, double yOffset, Boolean isGround, Boolean isFilled)
+            : base(radius, strokeThickness, xOffset, yOffset)
+        {
+            this.isGround = isGround;
+            if (isGround || isFilled) Fill = new SolidColorBrush(Colors.Black);
+            else Fill = new SolidColorBrush(Colors.Transparent);
+
+            //RenderTransform = new TranslateTransform
+            //{
+            //    X = xOffset,
+            //    Y = yOffset
+            //};
+        }
+    }
+
+    public abstract class DynamicJointBaseShape : JointBaseShape
+    {
+        public abstract void Redraw();
+        internal abstract void ClearBindings();
         public static readonly DependencyProperty XCoordProperty
             = DependencyProperty.Register("XCoord",
-                                          typeof(double), typeof(JointBaseShape),
+                                          typeof(double), typeof(DynamicJointBaseShape),
                                           new PropertyMetadata(double.NaN, OnTimeChanged));
 
         public double XCoord
@@ -28,7 +63,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty YCoordProperty
             = DependencyProperty.Register("YCoord",
-                                          typeof(double), typeof(JointBaseShape),
+                                          typeof(double), typeof(DynamicJointBaseShape),
                                           new PropertyMetadata(double.NaN, OnTimeChanged));
         public double YCoord
         {
@@ -37,25 +72,13 @@ namespace PMKS_Silverlight_App
         }
         protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((JointBaseShape)d).Redraw();
+            ((DynamicJointBaseShape)d).Redraw();
         }
 
-
-        protected readonly double yOffset;
-        protected readonly double xOffset;
-        protected readonly double radius;
-        protected abstract void Redraw();
-
-        protected JointBaseShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
+        protected DynamicJointBaseShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
+            : base(radius, strokeThickness, xOffset, yOffset)
         {
-            this.xOffset = xOffset;
-            this.yOffset = yOffset;
-
-            this.radius = radius;
-
-            Stroke = new SolidColorBrush(Colors.Black);
-            StrokeThickness = strokeThickness;
-            Height = Width = 2 * (radius + strokeThickness);
+            Height = Width = DisplayConstants.UnCroppedDimension;
             var binding = new Binding
                               {
                                   Source = timeSlider,
@@ -78,13 +101,10 @@ namespace PMKS_Silverlight_App
                 X = XCoord + xOffset - radius,
                 Y = YCoord + yOffset - radius
             };
+            Fill=new SolidColorBrush(Colors.Black);
         }
 
 
-        internal void ClearBindings()
-        {
-            ClearValue(XCoordProperty);
-            ClearValue(YCoordProperty);
-        }
     }
+
 }

@@ -70,6 +70,7 @@ namespace PMKS_Silverlight_App
         {
             get
             {
+                return Application.Current.Host.Content.ActualHeight;
                 return (((FrameworkElement)Parent).ActualHeight == 0)
                            ? Application.Current.Host.Content.ActualHeight
                            : ActualHeight;
@@ -80,6 +81,7 @@ namespace PMKS_Silverlight_App
         {
             get
             {
+                return Application.Current.Host.Content.ActualWidth;
                 return (((FrameworkElement)Parent).ActualWidth == 0)
                            ? Application.Current.Host.Content.ActualWidth
                            : ActualWidth;
@@ -91,23 +93,23 @@ namespace PMKS_Silverlight_App
         {
             foreach (var child in MainCanvas.Children)
             {
-                if (!(child is DisplayVectorBaseShape) && !(child is PositionPath) && !(child is JointBaseShape))
+                if (!(child is DisplayVectorBaseShape) && !(child is PositionPath) && !(child is DynamicJointBaseShape))
                     continue;
                 if (child is DisplayVectorBaseShape)
                     ((DisplayVectorBaseShape)child).ClearBindings();
-                else if (child is JointBaseShape)
-                    ((JointBaseShape)child).ClearBindings();
+                else if (child is DynamicJointBaseShape)
+                    ((DynamicJointBaseShape)child).ClearBindings();
                 else child.ClearValue(OpacityProperty);
             }
             MainCanvas.Children.Clear();
         }
 
-        internal void UpdateVisuals(Simulator pmks, ObservableCollection<JointData> jointData, Slider timeSlider)
+        internal void DrawDynamicShapes(Simulator pmks, ObservableCollection<JointData> jointData, Slider timeSlider)
         {
             #region draw position, velocity, and acceleration curves
             timeSlider.Maximum = pmks.JointParameters.Times.Last();
             timeSlider.Minimum = pmks.JointParameters.Times[0];
-            var h = (timeSlider.Height == 0) ? ParentHeight : timeSlider.Height;
+            var h = (timeSlider.ActualHeight == 0) ? ParentHeight : timeSlider.ActualHeight;
             timeSlider.LargeChange = (timeSlider.Maximum - timeSlider.Minimum) * DisplayConstants.TickDistance / h;
             timeSlider.SmallChange = (timeSlider.Maximum - timeSlider.Minimum) / 1000;
             timeSlider.Value = 0.0;
@@ -119,7 +121,7 @@ namespace PMKS_Silverlight_App
                 var j = pmks.JointReOrdering[i];
                 if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
                 MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XOffset, YOffset) { StrokeThickness = penThick });
-                JointBaseShape displayJoint;
+                DynamicJointBaseShape displayJoint;
                 switch (pmks.AllJoints[j].jointType)
                 {
                     default: displayJoint = new RJointShape(pmks.AllJoints[j], timeSlider, pmks, jointSize, penThick, XOffset, YOffset);
@@ -131,6 +133,18 @@ namespace PMKS_Silverlight_App
             }
             /******************************************************************/
             #endregion
+        }
+
+        public void DrawStaticShapes(List<List<string>> linkIDs, List<string> jointTypes, List<double[]> initPositions, Boolean FilledIn)
+        {
+            MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
+            MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset));
+            for (int i = 0; i < linkIDs.Count; i++)
+            {
+                MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, initPositions[i][0] + XOffset, initPositions[i][1] + YOffset,
+                    linkIDs[i].Contains("ground"), FilledIn));
+            }
+
         }
 
         internal void UpdateRangeScaleAndCenter(Simulator pmks)
@@ -185,15 +199,6 @@ namespace PMKS_Silverlight_App
             jointSize = DisplayConstants.JointSize / ScaleFactor;
             transform();
         }
-
-        public void DrawStaticShapes(List<List<string>> linkIDs, List<string> jointTypes, List<double[]> initPositions)
-        {
-            MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
-            MainCanvas.Children.Add(new Axes(DisplayConstants.PenThicknessRatio / ScaleFactor, XOffset, YOffset));
-
-
-        }
-
         internal void UpdateRangeScaleAndCenter(List<double[]> initPositions)
         {
             var minX = -DisplayConstants.AxesBuffer;
@@ -205,7 +210,7 @@ namespace PMKS_Silverlight_App
                 if (initPosition[0] < minX) minX = initPosition[0];
                 else if (initPosition[0] > maxX) maxX = initPosition[0];
                 if (initPosition[1] < minY) minY = initPosition[1];
-                else if (initPosition[1] > maxY) maxY = initPosition[2];
+                else if (initPosition[1] > maxY) maxY = initPosition[1];
             }
             if (initPositions.Count == 0)
             {

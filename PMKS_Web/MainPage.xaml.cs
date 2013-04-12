@@ -162,7 +162,7 @@ namespace PMKS_Silverlight_App
             #region Just Draw Axes and Joints
             mainViewer.Clear();
             mainViewer.UpdateRangeScaleAndCenter(InitPositions);
-            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions);
+            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, true);
             #endregion
 
             #region Setting Up PMKS
@@ -216,8 +216,8 @@ namespace PMKS_Silverlight_App
                 }
                 mainViewer.Clear();
                 mainViewer.UpdateRangeScaleAndCenter(pmks);
-                mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions);
-                mainViewer.UpdateVisuals(pmks, JointsInfo.Data, timeSlider);
+                mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, false);
+                mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 #endregion
             }
@@ -376,6 +376,8 @@ namespace PMKS_Silverlight_App
         private void status(string p)
         {
             outputStatus.StatusBox.Text += "\n" + p;
+            outputStatus.StatusBox.SelectionStart = outputStatus.StatusBox.Text.Length;
+           
         }
 
         private Boolean DefineJointTypeList()

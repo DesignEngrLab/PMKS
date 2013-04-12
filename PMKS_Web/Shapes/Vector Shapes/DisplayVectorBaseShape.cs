@@ -61,7 +61,7 @@ namespace PMKS_Silverlight_App
 
         protected DisplayVectorBaseShape(double factor, double strokeThickness, double xOffset, double yOffset)
         {
-            Height = Width = 999999;
+            Height = Width = DisplayConstants.UnCroppedDimension;
             this.xOffset = xOffset;
             this.yOffset = yOffset;
             this.factor = factor;

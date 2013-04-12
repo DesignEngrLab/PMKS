@@ -12,7 +12,8 @@ namespace PMKS_Silverlight_App
 {
     public class AccelerationVector : DisplayVectorBaseShape
     {
-        public AccelerationVector(joint j, Slider timeSlider, Simulator pmks, double factor, double strokeThickness, double xOffset, double yOffset, JointBaseShape displayJoint, JointData jData)
+        public AccelerationVector(joint j, Slider timeSlider, Simulator pmks, double factor, double strokeThickness, double xOffset, double yOffset, 
+            DynamicJointBaseShape displayJoint, JointData jData)
             : base(factor, strokeThickness, xOffset, yOffset)
         {
             Stroke = new SolidColorBrush(Colors.Orange);
@@ -31,7 +32,7 @@ namespace PMKS_Silverlight_App
             {
                 Source = displayJoint,
                 Mode = BindingMode.OneWay,
-                Path = new PropertyPath(JointBaseShape.XCoordProperty),
+                Path = new PropertyPath(DynamicJointBaseShape.XCoordProperty),
             };
             SetBinding(XStartProperty, binding);
 
@@ -39,7 +40,7 @@ namespace PMKS_Silverlight_App
             {
                 Source = displayJoint,
                 Mode = BindingMode.OneWay,
-                Path = new PropertyPath(JointBaseShape.YCoordProperty),
+                Path = new PropertyPath(DynamicJointBaseShape.YCoordProperty),
             };
             SetBinding(YStartProperty, binding);
             binding = new Binding
