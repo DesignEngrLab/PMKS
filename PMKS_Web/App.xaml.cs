@@ -29,11 +29,7 @@ namespace Silverlight_PMKS
         {
             this.RootVisual = new MainPage();
         }
-
-        private LinksViewModel Links { get; set; }
-
-        private JointsViewModel Joints { get; set; }
-
+        
         private void Application_Exit(object sender, EventArgs e)
         {
 

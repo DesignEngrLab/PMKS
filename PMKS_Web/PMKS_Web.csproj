@@ -87,6 +87,8 @@
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
     <Compile Include="Shapes\Joint Shapes\InputRJointShape.cs" />
+    <Compile Include="Shapes\Link Shapes\LinkShape.cs" />
+    <Compile Include="Shapes\Link Shapes\MyConvexHull.cs" />
     <Compile Include="Shapes\Static Shapes\Axes.cs" />
     <Compile Include="Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
     <Compile Include="Shapes\Joint Shapes\RJointShape.cs" />
@@ -156,9 +158,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Shapes\Link Shapes\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="Properties\AppManifest.xml" />
   </ItemGroup>

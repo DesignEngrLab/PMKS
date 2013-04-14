@@ -135,7 +135,7 @@ namespace PMKS_Silverlight_App
             #endregion
         }
 
-        public void DrawStaticShapes(List<List<string>> linkIDs, List<string> jointTypes, List<double[]> initPositions, Boolean FilledIn)
+        public void DrawStaticShapes(List<List<string>> linkIDs, List<string> jointTypes, List<double[]> initPositions, List<string> distinctLinkNames, bool FilledIn)
         {
             MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
             MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset));
@@ -143,6 +143,12 @@ namespace PMKS_Silverlight_App
             {
                 MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, initPositions[i][0] + XOffset, initPositions[i][1] + YOffset,
                     linkIDs[i].Contains("ground"), FilledIn));
+            }
+            for (int i = 0; i < distinctLinkNames.Count; i++)
+            {
+                if (distinctLinkNames[i] == "ground") continue;
+                MainCanvas.Children.Add(new LinkShape(i, distinctLinkNames[i], linkIDs, jointTypes, initPositions, penThick,
+                     DisplayConstants.DefaultBufferRadius / ScaleFactor, XOffset, YOffset));
             }
 
         }

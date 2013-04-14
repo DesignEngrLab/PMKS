@@ -72,7 +72,7 @@ namespace PMKS_Silverlight_App
             InitializeComponent();
             jointInputTable.main = editButtons.main = linkInputTable.main = this;
             //jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
-            
+
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -162,7 +162,7 @@ namespace PMKS_Silverlight_App
             #region Just Draw Axes and Joints
             mainViewer.Clear();
             mainViewer.UpdateRangeScaleAndCenter(InitPositions);
-            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, true);
+            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, true);
             #endregion
 
             #region Setting Up PMKS
@@ -216,7 +216,7 @@ namespace PMKS_Silverlight_App
                 }
                 mainViewer.Clear();
                 mainViewer.UpdateRangeScaleAndCenter(pmks);
-                mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, false);
+                mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, false);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 #endregion
@@ -377,7 +377,7 @@ namespace PMKS_Silverlight_App
         {
             outputStatus.StatusBox.Text += "\n" + p;
             outputStatus.StatusBox.SelectionStart = outputStatus.StatusBox.Text.Length;
-           
+
         }
 
         private Boolean DefineJointTypeList()
@@ -391,17 +391,23 @@ namespace PMKS_Silverlight_App
             return true;
         }
 
+        private List<string> distinctLinkNames;
         private Boolean DefineLinkIDS()
         {
+            distinctLinkNames = new List<string>();
             LinkIDs.Clear();
             for (int i = 0; i < numJoints; i++)
             {
                 if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].LinkNames)) return false;
                 var linkNames = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
-                if (linkNames.Count == 0) return false;
+                if (linkNames.Count == 0)
+                    throw new Exception("it doesn't seem you should ever be able to get here");
+                //return false;
                 LinkIDs.Add(linkNames);
+                distinctLinkNames.AddRange(linkNames);
             }
+            distinctLinkNames = distinctLinkNames.Distinct().ToList();
             return true;
         }
 
