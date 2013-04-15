@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Media;
+//using System.Windows.Media;
 
 namespace PMKS_Silverlight_App
 {
     public static class MIConvexHull
     {
-        public static PointCollection Find(PointCollection nodes)
+        public static List<Point> Find(List<Point> nodes)
         {
             var oldNodes = new List<Point>(nodes);
             var newOrder = new List<Point>();
@@ -184,12 +184,7 @@ namespace PMKS_Silverlight_App
 
             #endregion
 
-            var result = new PointCollection();
-            foreach (var point in newOrder)
-            {
-                result.Add(point);
-            }
-            return result;
+            return newOrder;
         }
 
         /// <summary>

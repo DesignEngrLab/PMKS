@@ -116,6 +116,10 @@ namespace PMKS_Silverlight_App
 
 
             /************ creating the shapes ***************/
+            foreach (var child in MainCanvas.Children)
+                if (child is LinkShape)
+                    ((LinkShape)child).SetBindings(timeSlider, pmks);
+
             for (int i = 0; i < jointData.Count; i++)
             {
                 var j = pmks.JointReOrdering[i];
@@ -139,16 +143,16 @@ namespace PMKS_Silverlight_App
         {
             MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
             MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset));
+            for (int i = 0; i < distinctLinkNames.Count; i++)
+            {
+                if (distinctLinkNames[i] == "ground") continue;
+                MainCanvas.Children.Add(new LinkShape(i, distinctLinkNames[i], linkIDs, jointTypes, initPositions, XOffset, YOffset, penThick, null,
+                     DisplayConstants.DefaultBufferRadius / ScaleFactor));
+            }
             for (int i = 0; i < linkIDs.Count; i++)
             {
                 MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, initPositions[i][0] + XOffset, initPositions[i][1] + YOffset,
                     linkIDs[i].Contains("ground"), FilledIn));
-            }
-            for (int i = 0; i < distinctLinkNames.Count; i++)
-            {
-                if (distinctLinkNames[i] == "ground") continue;
-                MainCanvas.Children.Add(new LinkShape(i, distinctLinkNames[i], linkIDs, jointTypes, initPositions, penThick,
-                     DisplayConstants.DefaultBufferRadius / ScaleFactor, XOffset, YOffset));
             }
 
         }

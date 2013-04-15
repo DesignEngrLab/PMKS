@@ -16,7 +16,7 @@ namespace PMKS_Silverlight_App
 
     public class TimeToLinkParameterConverter : TimeToParameterBaseConverter
     {
-        public TimeToLinkParameterConverter(link l, JointState linkState, Simulator pmks)
+        public TimeToLinkParameterConverter(link l, LinkState linkState, Simulator pmks)
             : base(pmks)
         {
             ColIndex = (int)linkState;

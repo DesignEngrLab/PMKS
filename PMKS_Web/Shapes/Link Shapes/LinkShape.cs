@@ -13,17 +13,19 @@ namespace PMKS_Silverlight_App
 {
     public class LinkShape : Path
     {
-        protected readonly double yOffset;
-        protected readonly double xOffset;
+        #region Fields
+        public readonly double MinimumBufferRadius;
+        private readonly List<Point> cvxCenters;
         private readonly string name;
-        private readonly Point center;
+        private link thisLink;
+        private joint fixedJoint;
+        private int updatedStateVars = 0;
+        #endregion
 
+        #region Constructor
         public LinkShape(int linkNum, string name, List<List<string>> linkIDs, List<string> jointTypes,
-                         List<double[]> initPositions,
-                         double strokeThickness, double startingBufferRadius, double xOffset, double yOffset)
+                         List<double[]> initPositions, double xOffset, double yOffset, double strokeThickness, Slider bufferRadiusSlider, double startingBufferRadius)
         {
-            this.xOffset = xOffset;
-            this.yOffset = yOffset;
             this.name = name;
             Fill = new SolidColorBrush(AHSLtoARGBColor.Convert(DisplayConstants.LinkFillOpacity,
                                                                DisplayConstants.LinkHueMultiplier * linkNum,
@@ -34,55 +36,91 @@ namespace PMKS_Silverlight_App
                                                                  DisplayConstants.LinkStrokeSaturation,
                                                                  DisplayConstants.LinkStrokeLuminence));
             StrokeThickness = strokeThickness;
-            Height = Width = DisplayConstants.UnCroppedDimension;
-
-            var connectedPositions = new PointCollection();
+            // Height = Width = DisplayConstants.UnCroppedDimension;
+            var centers = new List<Point>();
             for (int j = 0; j < linkIDs.Count; j++)
                 if (linkIDs[j].Contains(name))
-                    connectedPositions.Add(new Point(initPositions[j][0], initPositions[j][1]));
-            center = new Point(connectedPositions.Average(n => n.X),
-                               connectedPositions.Average(n => n.Y));
-            if (connectedPositions.Count == 1)
-                Data = new EllipseGeometry
-                        {
-                            Center = connectedPositions[0],
-                            RadiusX = startingBufferRadius,
-                            RadiusY = startingBufferRadius
-                        };
-            else Data = RedrawWithNewBufferRadius(MIConvexHull.Find(connectedPositions), startingBufferRadius);
-            RenderTransform = new TranslateTransform {X = xOffset, Y = yOffset};
-        }
-        private PathGeometry RedrawWithNewBufferRadius(PointCollection points, double radius)
-        {
-            Point start;
-            var segments = new PathSegmentCollection();
-
-            if (radius <= 0)
+                {
+                    var jPoint = new Point(initPositions[j][0] + xOffset, initPositions[j][1] + yOffset);
+                    centers.Add(jPoint);
+                    // need to add points for sliding joints that are ? distance from the joint along the angle.
+                    if (jointTypes[j][0].Equals('p') || jointTypes[j][0].Equals('P') || (jointTypes[j].Length > 1 &&
+                        (jointTypes[j][1].Equals('p') || jointTypes[j][1].Equals('P'))))
+                    {
+                        var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
+                                 Math.Cos(initPositions[j][2]);
+                        var dy = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
+                                 Math.Sin(initPositions[j][2]);
+                        centers.Add(new Point(jPoint.X + dx, jPoint.Y + dy));
+                        centers.Add(new Point(jPoint.X - dx, jPoint.Y - dy));
+                    }
+                }
+            if (centers.Count == 1)
             {
-                start = points[0];
-                points.RemoveAt(0);
-                segments.Add(new PolyLineSegment { Points = points });
+                MinimumBufferRadius = DisplayConstants.SingleJointLinkRadiusMultipler * startingBufferRadius;
+                cvxCenters = centers;
             }
             else
             {
-                start = findNextPoint(points[points.Count - 1], points[0], radius);
-                var size = new Size(radius, radius);
+                MinimumBufferRadius = 0.0;
+                cvxCenters = MIConvexHull.Find(centers);
+            }
+            // the next line can be removed one the binding is established.
+            BufferRadius = startingBufferRadius;
+            //var binding = new Binding
+            //   {
+            //       Source = bufferRadiusSlider,
+            //       Mode = BindingMode.TwoWay,
+            //       Path = new PropertyPath(RangeBase.ValueProperty),
+            //   };
+            //SetBinding(BufferRadiusProperty, binding);
+            Data = RedrawWithNewBufferRadius();
+        }
+        #endregion
+        private static void OnRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((LinkShape)d).RedrawWithNewBufferRadius();
+        }
+        private PathGeometry RedrawWithNewBufferRadius()
+        {
+            if (BufferRadius < MinimumBufferRadius) BufferRadius = MinimumBufferRadius;
+            if (cvxCenters.Count == 1)
+                Data = new EllipseGeometry
+                        {
+                            Center = cvxCenters[0],
+                            RadiusX = BufferRadius,
+                            RadiusY = BufferRadius
+                        };
+            Point start;
+            var segments = new PathSegmentCollection();
 
-                for (int i = 0; i < points.Count - 1; i++)
+            if (BufferRadius <= 0)
+            {
+                start = cvxCenters[0];
+                var pointCollection = new PointCollection();
+                for (int i = 1; i < cvxCenters.Count - 1; i++) pointCollection.Add(cvxCenters[i]);
+                segments.Add(new PolyLineSegment { Points = pointCollection });
+            }
+            else
+            {
+                start = findNextPoint(cvxCenters[cvxCenters.Count - 1], cvxCenters[0], BufferRadius);
+                var size = new Size(BufferRadius, BufferRadius);
+
+                for (int i = 0; i < cvxCenters.Count - 1; i++)
                 {
                     segments.Add(new ArcSegment
                     {
                         IsLargeArc = false,
-                        Point = findThisPoint(points[i], points[i + 1], radius),
+                        Point = findThisPoint(cvxCenters[i], cvxCenters[i + 1], BufferRadius),
                         SweepDirection = SweepDirection.Clockwise,
                         Size = size
                     });
-                    segments.Add(new LineSegment { Point = findNextPoint(points[i], points[i + 1], radius) });
+                    segments.Add(new LineSegment { Point = findNextPoint(cvxCenters[i], cvxCenters[i + 1], BufferRadius) });
                 }
                 segments.Add(new ArcSegment
                 {
                     IsLargeArc = false,
-                    Point = findThisPoint(points[points.Count - 1], points[0], radius),
+                    Point = findThisPoint(cvxCenters[cvxCenters.Count - 1], cvxCenters[0], BufferRadius),
                     SweepDirection = SweepDirection.Clockwise,
                     Size = size
                 });
@@ -119,6 +157,7 @@ namespace PMKS_Silverlight_App
             var vX = nextPt.Y - thisPt.Y;
             var vY = thisPt.X - nextPt.X;
             var mag = Math.Sqrt(vX * vX + vY * vY);
+            if (mag == 0) return thisPt;
             vX /= mag;
             vY /= mag;
             return new Point(radius * vX, radius * vY);
@@ -127,8 +166,12 @@ namespace PMKS_Silverlight_App
 
 
 
-        internal void SetBindings(Slider timeSlider, Slider bufferRadiusSlider, Simulator pmks, link thisJoint, joint fixedJoint)
+        internal void SetBindings(Slider timeSlider, Simulator pmks)
         {
+            thisLink = pmks.AllLinks.First(l => l.name.Equals(name));
+            fixedJoint = thisLink.joints.FirstOrDefault(j => j.isGround && j.FixedWithRespectTo(thisLink));
+            if (fixedJoint == null) fixedJoint = thisLink.joints.FirstOrDefault(j => j.FixedWithRespectTo(thisLink));
+            if (fixedJoint == null) throw new Exception("Cannot display links that lack a fixed joint.");
             var binding = new Binding
             {
                 Source = timeSlider,
@@ -152,17 +195,10 @@ namespace PMKS_Silverlight_App
                Source = timeSlider,
                Mode = BindingMode.OneWay,
                Path = new PropertyPath(RangeBase.ValueProperty),
-               Converter = new TimeToLinkParameterConverter(thisJoint, JointState.XCoord, pmks)
+               Converter = new TimeToLinkParameterConverter(thisLink, LinkState.Angle, pmks)
            };
             SetBinding(AngleProperty, binding);
 
-            binding = new Binding
-            {
-                Source = bufferRadiusSlider,
-                Mode = BindingMode.OneWay,
-                Path = new PropertyPath(RangeBase.ValueProperty),
-            };
-            SetBinding(BufferRadiusProperty, binding);
         }
 
         internal void ClearBindings()
@@ -206,24 +242,31 @@ namespace PMKS_Silverlight_App
         public static readonly DependencyProperty BufferRadiusProperty
             = DependencyProperty.Register("BufferRadius",
                                           typeof(double), typeof(LinkShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-
-
-
-        public double BufferRadius
-        {
-            get { return (double)GetValue(BufferRadiusProperty); }
-            set { SetValue(BufferRadiusProperty, value); }
-        }
+                                          new PropertyMetadata(double.NaN, OnRadiusChanged));
+        public double BufferRadius { get; set; }
+        //{
+        //    get { return (double)GetValue(BufferRadiusProperty); }
+        //    set { SetValue(BufferRadiusProperty, value); }
+        //}
         #endregion
-        protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LinkShape)d).Redraw();
+            ((LinkShape)d).MoveLink();
         }
 
-        private void Redraw()
+        private double xPrev, yPrev, anglePrev;
+        private void MoveLink()
         {
-            throw new System.NotImplementedException();
+            if (double.IsNaN(XCoord) || double.IsNaN(YCoord) || double.IsNaN(Angle)) return;
+            if ((xPrev==XCoord)&&(yPrev==YCoord)&&())
+            //if (++updatedStateVars < 3) return;
+            //updatedStateVars = 0;
+            //RenderTransformOrigin = new Point(0.5,0.5);
+            //var cosAngle = Math.Cos(Angle);
+            //var sinAngle = Math.Sin(Angle);
+            RenderTransform = new CompositeTransform { CenterX = XCoord,CenterY = YCoord, Rotation = Angle};
+            //RenderTransform = new MatrixTransform { Matrix = new Matrix { M11 = cosAngle, M12 = -sinAngle, M21 = sinAngle, M22 = cosAngle, OffsetX = XCoord, OffsetY = YCoord } };
+
         }
 
 

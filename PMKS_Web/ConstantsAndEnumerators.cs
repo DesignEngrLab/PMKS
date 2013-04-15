@@ -21,14 +21,16 @@ namespace PMKS_Silverlight_App
         public const double JointSize = 4.0; // one-sixteenth of an inch
         public const double AxesBuffer = 10; // one inch
         public const double UnCroppedDimension = 99999;
-        public const double LinkFillOpacity = 0.7;
+        public const double LinkFillOpacity = 0.5;
         public const double LinkHueMultiplier = 180.0 / Math.PI;
-        public const double LinkFillLuminence = 0.7;
-        public const double LinkFillSaturation = 0.5;
-        public const double LinkStrokeOpacity = 0.85;
+        public const double LinkFillLuminence = 0.8;
+        public const double LinkFillSaturation = 0.3;
+        public const double LinkStrokeOpacity = 0.75;
         public const double LinkStrokeLuminence = 0.3;
         public const double LinkStrokeSaturation = 0.7;
-        public const double DefaultBufferRadius = 10.0;
+        public const double DefaultBufferRadius = 8.0;
+        public const double InitialSlidingJointLengthMultiplier = 3.0;
+        public static double SingleJointLinkRadiusMultipler = 2.5;
 
     }
     public class JointTypeProvider
