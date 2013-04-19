@@ -19,7 +19,7 @@ namespace PMKS_Silverlight_App
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((double) value).ToString("N");
+            return ((double) value).ToString("F");
         }
 
     }

@@ -24,7 +24,8 @@ namespace PMKS_Silverlight_App
 
         #region Constructor
         public LinkShape(int linkNum, string name, List<List<string>> linkIDs, List<string> jointTypes,
-                         List<double[]> initPositions, double xOffset, double yOffset, double strokeThickness, Slider bufferRadiusSlider, double startingBufferRadius)
+                         List<double[]> initPositions, double xOffset, double yOffset, double strokeThickness, Slider bufferRadiusSlider, 
+            double startingBufferRadius)
         {
             this.name = name;
             Fill = new SolidColorBrush(AHSLtoARGBColor.Convert(DisplayConstants.LinkFillOpacity,
@@ -36,7 +37,7 @@ namespace PMKS_Silverlight_App
                                                                  DisplayConstants.LinkStrokeSaturation,
                                                                  DisplayConstants.LinkStrokeLuminence));
             StrokeThickness = strokeThickness;
-            // Height = Width = DisplayConstants.UnCroppedDimension;
+            Height = Width = DisplayConstants.UnCroppedDimension;
             var centers = new List<Point>();
             for (int j = 0; j < linkIDs.Count; j++)
                 if (linkIDs[j].Contains(name))
@@ -127,7 +128,7 @@ namespace PMKS_Silverlight_App
             }
             return new PathGeometry
                 {
-                    FillRule = FillRule.Nonzero,
+                    FillRule = FillRule.EvenOdd,
                     Figures = new PathFigureCollection
                         {
                             new PathFigure
@@ -165,79 +166,43 @@ namespace PMKS_Silverlight_App
 
 
 
-
-        internal void SetBindings(Slider timeSlider, Simulator pmks)
+        public void SetBindings(Slider timeSlider, Simulator pmks, double xOffset, double yOffset)
         {
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
             thisLink = pmks.AllLinks.First(l => l.name.Equals(name));
             fixedJoint = thisLink.joints.FirstOrDefault(j => j.isGround && j.FixedWithRespectTo(thisLink));
             if (fixedJoint == null) fixedJoint = thisLink.joints.FirstOrDefault(j => j.FixedWithRespectTo(thisLink));
             if (fixedJoint == null) throw new Exception("Cannot display links that lack a fixed joint.");
+            xFixedJoint = fixedJoint.xInitial + xOffset;
+            yFixedJoint = fixedJoint.yInitial + yOffset;
+            startingAngle = thisLink.AngleInitial;
             var binding = new Binding
-            {
-                Source = timeSlider,
-                Mode = BindingMode.OneWay,
-                Path = new PropertyPath(RangeBase.ValueProperty),
-                Converter = new TimeToJointParameterConverter(fixedJoint, JointState.XCoord, pmks)
-            };
-            SetBinding(XCoordProperty, binding);
-
-            binding = new Binding
-            {
-                Source = timeSlider,
-                Mode = BindingMode.OneWay,
-                Path = new PropertyPath(RangeBase.ValueProperty),
-                Converter = new TimeToJointParameterConverter(fixedJoint, JointState.YCoord, pmks)
-            };
-            SetBinding(YCoordProperty, binding);
-
-            binding = new Binding
-           {
-               Source = timeSlider,
-               Mode = BindingMode.OneWay,
-               Path = new PropertyPath(RangeBase.ValueProperty),
-               Converter = new TimeToLinkParameterConverter(thisLink, LinkState.Angle, pmks)
-           };
-            SetBinding(AngleProperty, binding);
+              {
+                  Source = timeSlider,
+                  Mode = BindingMode.OneWay,
+                  Path = new PropertyPath(RangeBase.ValueProperty),
+                  Converter = new TimeToLinkParameterConverter(thisLink, fixedJoint, StateVariableType.Position, pmks)
+              };
+            SetBinding(CoordinatesProperty, binding);
 
         }
 
         internal void ClearBindings()
         {
-            ClearValue(XCoordProperty);
-            ClearValue(YCoordProperty);
-            ClearValue(AngleProperty);
+            ClearValue(CoordinatesProperty);
             ClearValue(BufferRadiusProperty);
         }
         #region Dependency Properties
-        public static readonly DependencyProperty XCoordProperty
-            = DependencyProperty.Register("XCoord",
-                                          typeof(double), typeof(LinkShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
+        public static readonly DependencyProperty CoordinatesProperty
+            = DependencyProperty.Register("Coordinates",
+                                          typeof(double[]), typeof(LinkShape),
+                                          new PropertyMetadata(null, OnTimeChanged));
 
-        public double XCoord
+        public double[] Coordinates
         {
-            get { return (double)GetValue(XCoordProperty); }
-            set { SetValue(XCoordProperty, value); }
-        }
-        public static readonly DependencyProperty YCoordProperty
-            = DependencyProperty.Register("YCoord",
-                                          typeof(double), typeof(LinkShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-
-        public double YCoord
-        {
-            get { return (double)GetValue(YCoordProperty); }
-            set { SetValue(YCoordProperty, value); }
-        }
-        public static readonly DependencyProperty AngleProperty
-            = DependencyProperty.Register("Angle",
-                                          typeof(double), typeof(LinkShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-
-        public double Angle
-        {
-            get { return (double)GetValue(AngleProperty); }
-            set { SetValue(AngleProperty, value); }
+            get { return (double[])GetValue(CoordinatesProperty); }
+            set { SetValue(CoordinatesProperty, value); }
         }
         public static readonly DependencyProperty BufferRadiusProperty
             = DependencyProperty.Register("BufferRadius",
@@ -249,27 +214,24 @@ namespace PMKS_Silverlight_App
         //    set { SetValue(BufferRadiusProperty, value); }
         //}
         #endregion
+
+        private double xFixedJoint, yFixedJoint, startingAngle;
+        private double yOffset;
+        private double xOffset;
         private static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((LinkShape)d).MoveLink();
+            var linkShape = ((LinkShape)d);
+            if (linkShape.Coordinates == null) return;
+            linkShape.RenderTransform = new TransformGroup
+            {
+                Children = new TransformCollection
+                {
+                    new TranslateTransform{ X=-linkShape.xFixedJoint, Y = -linkShape.yFixedJoint },
+                    new RotateTransform{ Angle = DisplayConstants.RadiansToDegrees * (linkShape.Coordinates[2] - linkShape.startingAngle) },
+                    new TranslateTransform{ X = linkShape.Coordinates[0] + linkShape.xOffset, Y = linkShape.Coordinates[1] + linkShape.yOffset }
+                }
+            };
         }
-
-        private double xPrev, yPrev, anglePrev;
-        private void MoveLink()
-        {
-            if (double.IsNaN(XCoord) || double.IsNaN(YCoord) || double.IsNaN(Angle)) return;
-            if ((xPrev==XCoord)&&(yPrev==YCoord)&&())
-            //if (++updatedStateVars < 3) return;
-            //updatedStateVars = 0;
-            //RenderTransformOrigin = new Point(0.5,0.5);
-            //var cosAngle = Math.Cos(Angle);
-            //var sinAngle = Math.Sin(Angle);
-            RenderTransform = new CompositeTransform { CenterX = XCoord,CenterY = YCoord, Rotation = Angle};
-            //RenderTransform = new MatrixTransform { Matrix = new Matrix { M11 = cosAngle, M12 = -sinAngle, M21 = sinAngle, M22 = cosAngle, OffsetX = XCoord, OffsetY = YCoord } };
-
-        }
-
-
 
     }
 

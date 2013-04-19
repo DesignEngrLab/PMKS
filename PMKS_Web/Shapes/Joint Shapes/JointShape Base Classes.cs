@@ -39,11 +39,6 @@ namespace PMKS_Silverlight_App
             if (isGround || isFilled) Fill = new SolidColorBrush(Colors.Black);
             else Fill = new SolidColorBrush(Colors.Transparent);
 
-            //RenderTransform = new TranslateTransform
-            //{
-            //    X = xOffset,
-            //    Y = yOffset
-            //};
         }
     }
 
@@ -51,24 +46,15 @@ namespace PMKS_Silverlight_App
     {
         public abstract void Redraw();
         internal abstract void ClearBindings();
-        public static readonly DependencyProperty XCoordProperty
-            = DependencyProperty.Register("XCoord",
-                                          typeof(double), typeof(DynamicJointBaseShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
+        public static readonly DependencyProperty CoordinatesProperty
+            = DependencyProperty.Register("Coordinates",
+                                          typeof(double[]), typeof(DynamicJointBaseShape),
+                                          new PropertyMetadata(null, OnTimeChanged));
 
-        public double XCoord
+        public double[] Coordinates
         {
-            get { return (double)GetValue(XCoordProperty); }
-            set { SetValue(XCoordProperty, value); }
-        }
-        public static readonly DependencyProperty YCoordProperty
-            = DependencyProperty.Register("YCoord",
-                                          typeof(double), typeof(DynamicJointBaseShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-        public double YCoord
-        {
-            get { return (double)GetValue(YCoordProperty); }
-            set { SetValue(YCoordProperty, value); }
+            get { return (double[])GetValue(CoordinatesProperty); }
+            set { SetValue(CoordinatesProperty, value); }
         }
         protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -84,22 +70,14 @@ namespace PMKS_Silverlight_App
                                   Source = timeSlider,
                                   Mode = BindingMode.OneWay,
                                   Path = new PropertyPath(RangeBase.ValueProperty),
-                                  Converter = new TimeToJointParameterConverter(j, JointState.XCoord, pmks)
+                                  Converter = new TimeToJointParameterConverter(j, StateVariableType.Position, pmks)
                               };
-            SetBinding(XCoordProperty, binding);
+            SetBinding(CoordinatesProperty, binding);
 
-            binding = new Binding
-                             {
-                                 Source = timeSlider,
-                                 Mode = BindingMode.OneWay,
-                                 Path = new PropertyPath(RangeBase.ValueProperty),
-                                 Converter = new TimeToJointParameterConverter(j, JointState.YCoord, pmks)
-                             };
-            SetBinding(YCoordProperty, binding);
             RenderTransform = new TranslateTransform
             {
-                X = XCoord + xOffset - radius,
-                Y = YCoord + yOffset - radius
+                X = Coordinates[0] + xOffset - radius,
+                Y = Coordinates[1] + yOffset - radius
             };
             Fill=new SolidColorBrush(Colors.Black);
         }

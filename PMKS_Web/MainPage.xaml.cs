@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
@@ -20,11 +21,17 @@ namespace PMKS_Silverlight_App
         private readonly List<string> JointTypes = new List<string>();
         private readonly List<double[]> InitPositions = new List<double[]>();
         private int numJoints;
+
         #endregion
         #region Properties
+        private static void GlobalSettingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((MainPage)d).ParseData(true);
+        }
         public static readonly DependencyProperty SpeedProperty
             = DependencyProperty.Register("Speed", typeof(double), typeof(MainPage),
-                                          new PropertyMetadata(1.0));
+                                          new PropertyMetadata(1.0, GlobalSettingChanged));
+
         public double Speed
         {
             get { return (double)GetValue(SpeedProperty); }
@@ -32,7 +39,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty ErrorProperty
             = DependencyProperty.Register("Error", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(1.0));
+                                 new PropertyMetadata(1.0, GlobalSettingChanged));
         public double Error
         {
             get { return (double)GetValue(ErrorProperty); }
@@ -40,7 +47,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty AngleIncrementProperty
             = DependencyProperty.Register("AngleIncrement", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(0.05));
+                                 new PropertyMetadata(0.05, GlobalSettingChanged));
         public double AngleIncrement
         {
             get { return (double)GetValue(AngleIncrementProperty); }
@@ -49,7 +56,7 @@ namespace PMKS_Silverlight_App
 
         public static readonly DependencyProperty AngleUnitsProperty
             = DependencyProperty.Register("AngleUnits", typeof(AngleType), typeof(MainPage),
-                                 new PropertyMetadata(AngleType.Degrees));
+                                 new PropertyMetadata(AngleType.Degrees, GlobalSettingChanged));
         public AngleType AngleUnits
         {
             get { return (AngleType)GetValue(AngleUnitsProperty); }
@@ -58,7 +65,7 @@ namespace PMKS_Silverlight_App
 
         public static readonly DependencyProperty LengthUnitsProperty
             = DependencyProperty.Register("LengthUnits", typeof(LengthType), typeof(MainPage),
-                                 new PropertyMetadata(LengthType.mm));
+                                 new PropertyMetadata(LengthType.mm, GlobalSettingChanged));
         public LengthType LengthUnits
         {
             get { return (LengthType)GetValue(LengthUnitsProperty); }
@@ -70,8 +77,7 @@ namespace PMKS_Silverlight_App
         public MainPage()
         {
             InitializeComponent();
-            jointInputTable.main = editButtons.main = linkInputTable.main = this;
-            //jointInputTable.main = editButtons.main = linkInputTable.main = timeSlider.main = this;
+            jointInputTable.main = editButtons.main = linkInputTable.main = mainViewer.main = this;
 
         }
 
@@ -106,7 +112,7 @@ namespace PMKS_Silverlight_App
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(MainPage.SpeedProperty),
+                Path = new PropertyPath(SpeedProperty),
                 Converter = new TextToDoubleConverter()
             };
             globalSettings.speedBox.SetBinding(TextBox.TextProperty, binding);
@@ -115,16 +121,16 @@ namespace PMKS_Silverlight_App
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(MainPage.AngleIncrementProperty),
+                Path = new PropertyPath(AngleIncrementProperty),
                 Converter = new TextToDoubleConverter()
             };
-            globalSettings.AngleErrorBox.SetBinding(TextBox.TextProperty, binding);
+            globalSettings.AngleBox.SetBinding(TextBox.TextProperty, binding);
 
             binding = new Binding
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(MainPage.AngleUnitsProperty),
+                Path = new PropertyPath(AngleUnitsProperty),
                 Converter = new BooleanToAngleTypeConverter()
             };
             globalSettings.RadiansCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
@@ -133,20 +139,19 @@ namespace PMKS_Silverlight_App
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,
-                Path = new PropertyPath(MainPage.LengthUnitsProperty),
+                Path = new PropertyPath(LengthUnitsProperty),
                 Converter = new BooleanToLengthTypeConverter()
             };
             globalSettings.MetricCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
             ParseData();
         }
         #region PMKS Controller Functions
-        internal void ParseData()
+        internal void ParseData(Boolean SettingChanged = false)
         {
             #region table validation
             if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
-            if (pmks != null && SameTopology() && SameParameters() && SameGlobalSettings() && SameRadioSettings())
-                return;
+            if (pmks != null && !SettingChanged && SameTopology() && SameParameters()) return;
 
 
             if (pmks != null && SameTopology() && DataListsSameLength())
@@ -161,7 +166,8 @@ namespace PMKS_Silverlight_App
 
             #region Just Draw Axes and Joints
             mainViewer.Clear();
-            mainViewer.UpdateRangeScaleAndCenter(InitPositions);
+            mainViewer.UpdateRanges(InitPositions);
+            mainViewer.UpdateScaleAndCenter();
             mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, true);
             #endregion
 
@@ -215,47 +221,19 @@ namespace PMKS_Silverlight_App
                     return;
                 }
                 mainViewer.Clear();
-                mainViewer.UpdateRangeScaleAndCenter(pmks);
+                mainViewer.UpdateRanges(pmks);
+                mainViewer.FindVelocityAndAccelerationScalers(pmks);
+                mainViewer.UpdateScaleAndCenter();
                 mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, false);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                PlayButton_Checked(null,null);
                 #endregion
             }
             catch (Exception e)
             {
                 status(e.Message);
             }
-        }
-
-        private bool SameRadioSettings()
-        {
-            if (pmks == null)
-            {
-                return false;
-            }
-            if (pmks.DeltaAngle == AngleIncrement && (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked))
-            {
-                return false;
-            }
-            if (pmks.MaxSmoothingError == AngleIncrement && (globalSettings.AngleCheckBox.IsChecked != null && (bool)globalSettings.AngleCheckBox.IsChecked))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        private bool SameGlobalSettings()
-        {
-            if (pmks == null)
-            {
-                return false;
-            }
-            if (pmks.MaxSmoothingError == AngleIncrement || pmks.DeltaAngle == AngleIncrement)
-            {
-                return true;
-            }
-            return false;
-
         }
 
         private bool validLinks()
@@ -373,7 +351,7 @@ namespace PMKS_Silverlight_App
             return true;
         }
 
-        private void status(string p)
+        public void status(string p)
         {
             outputStatus.StatusBox.Text += "\n" + p;
             outputStatus.StatusBox.SelectionStart = outputStatus.StatusBox.Text.Length;
@@ -392,6 +370,8 @@ namespace PMKS_Silverlight_App
         }
 
         private List<string> distinctLinkNames;
+        private bool Panning;
+        private Point ScreenStartPoint;
         private Boolean DefineLinkIDS()
         {
             distinctLinkNames = new List<string>();
@@ -451,24 +431,73 @@ namespace PMKS_Silverlight_App
 
         #endregion
 
-        private void OnMouseWheel(object sender, MouseWheelEventArgs e)
+        internal void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            mainViewer.OnMouseWheel(sender, e);
+            var newScaleFactor = (e.Delta > 1) ?
+               mainViewer.ScaleFactor * 1.05 :
+               mainViewer.ScaleFactor /= 1.05;
+
+            mainViewer.MoveScaleCanvas(newScaleFactor, mainViewer.PanningAnchor);
         }
 
-        private void OnLostMouseCapture(object sender, MouseEventArgs e)
+        internal void OnLostMouseCapture(object sender, MouseEventArgs e)
         {
-            mainViewer.OnLostMouseCapture(sender, e);
+            Panning = false;
         }
 
-        private void OnMouseEnter(object sender, MouseEventArgs e)
+        internal void OnMouseEnter(object sender, MouseEventArgs e)
         {
-            mainViewer.OnMouseEnter(sender, e);
+            if (Panning) return;
+            Panning = true;
+            // Save starting point, used later when determining how much to scroll.
+            ScreenStartPoint = e.GetPosition((UIElement)Parent);
         }
 
-        private void OnMouseMove(object sender, MouseEventArgs e)
+        internal void OnMouseMove(object sender, MouseEventArgs e)
         {
-            mainViewer.OnMouseMove(sender, e);
+            if (!Panning) return;
+            var newPanAnchor = new Point(mainViewer.PanningAnchor.X + (e.GetPosition(this).X - ScreenStartPoint.X) / mainViewer.ScaleFactor,
+                                    mainViewer.PanningAnchor.Y - (e.GetPosition(this).Y - ScreenStartPoint.Y) / mainViewer.ScaleFactor);
+
+            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, newPanAnchor);
+        }
+
+        private void PlayButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (mainViewer.storyBoard == null) return;
+            SlideShape1.Opacity = SlideShape2.Opacity = 0;
+            mainViewer.storyBoard.Begin();
+            if (pmks.CompleteCycle)
+            {
+                PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = 0;
+                PlayForwardShape.Opacity = 1;
+            }
+            else
+            {
+                PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = 1;
+                PlayForwardShape.Opacity = 0;
+            }
+        }
+
+        private void PlayButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (mainViewer.storyBoard == null) return;
+            mainViewer.storyBoard.Stop();
+            PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = PlayForwardShape.Opacity = 0;
+            SlideShape1.Opacity = SlideShape2.Opacity = 1;
+        }
+
+        private void timeSlider_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            PlayButton_Unchecked(sender, e);
+        }
+
+        private void timeSlider_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            e.Handled = true;
+            PlayButton_Unchecked(sender, e);
+            if (e.Delta > 0) timeSlider.Value += timeSlider.LargeChange;
+            else timeSlider.Value -= timeSlider.LargeChange;
         }
     }
 }

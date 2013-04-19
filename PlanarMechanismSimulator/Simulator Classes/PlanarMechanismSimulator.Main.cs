@@ -746,7 +746,7 @@ namespace PlanarMechanismSimulator
                    - 1.5 * aPrevious + aNext / 2) / deltaTime
                    + tauToThe4th * (15 * (posPrevious - posNext) / deltaTimeSquared + 8 * vPrevious / deltaTime + 7 * vNext / deltaTime
                    + 1.5 * aPrevious - aNext) / deltaTimeSquared
-                   + tauToThe5th * (6*(posPrevious - posNext) / deltaTimeSquared + 3 * (vPrevious + vNext) / deltaTime +  0.5 * (aPrevious-aNext))
+                   + tauToThe5th * (6 * (posPrevious - posNext) / deltaTimeSquared + 3 * (vPrevious + vNext) / deltaTime + 0.5 * (aPrevious - aNext))
                    / deltaTimeCubed;
         }
 
@@ -799,6 +799,27 @@ namespace PlanarMechanismSimulator
                    + (vPrevious - vNext) * (2 * tauCubed / deltaTimeCubed - 3 * tauSquared / deltaTimeSquared)
                    + aNext * (tauCubed / deltaTimeSquared - tauSquared / deltaTime)
                    + aPrevious * (tauCubed / deltaTimeSquared - 2 * tauSquared / deltaTime + tau);
+        }
+
+        public static double FindAngleAtTime(double tau, double deltaTime, double posPrevious, double posNext,
+                                             double vPrevious, double vNext, double aPrevious, double aNext)
+        {
+            const double fullCircle = 2 * Math.PI;
+            while (posPrevious < 0) { posPrevious += fullCircle; }
+            while (posNext < 0) { posNext += fullCircle; }
+            while (posPrevious >= fullCircle) { posPrevious -= fullCircle; }
+            while (posNext >= fullCircle) { posNext -= fullCircle; }
+
+            var positiveVel = (FindVelocityatTime(tau, deltaTime, vPrevious, vNext, aPrevious, aNext) >= 0);
+            if (positiveVel && posPrevious > posNext && Math.Abs(posPrevious - posNext) > Math.PI)
+            {
+                posPrevious -= fullCircle;
+            }
+            while (!positiveVel && posPrevious < posNext && Math.Abs(posPrevious - posNext) > Math.PI)
+            {
+                posNext -= fullCircle;
+            }
+            return FindPositionatTime(tau, deltaTime, posPrevious, posNext, vPrevious, vNext, aPrevious, aNext);
         }
 
         /// <summary>

@@ -19,42 +19,24 @@ namespace PMKS_Silverlight_App
 
         #region Dependency Properties
 
-        public static readonly DependencyProperty XStartProperty
-            = DependencyProperty.Register("XStart",
-                                          typeof(double), typeof(DisplayVectorBaseShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-        public double XStart
+        public static readonly DependencyProperty StartProperty
+            = DependencyProperty.Register("Start",
+                                          typeof(double[]), typeof(DisplayVectorBaseShape),
+                                          new PropertyMetadata(null, OnTimeChanged));
+        public double[] Start
         {
-            get { return (double)GetValue(XStartProperty); }
-            set { SetValue(XStartProperty, value); }
-        }
-        public static readonly DependencyProperty YStartProperty
-            = DependencyProperty.Register("YStart",
-                                          typeof(double), typeof(DisplayVectorBaseShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-        public double YStart
-        {
-            get { return (double)GetValue(YStartProperty); }
-            set { SetValue(YStartProperty, value); }
+            get { return (double[])GetValue(StartProperty); }
+            set { SetValue(StartProperty, value); }
         }
 
-        public static readonly DependencyProperty XLengthProperty
-            = DependencyProperty.Register("XLength",
-                                          typeof(double), typeof(DisplayVectorBaseShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-        public double XLength
+        public static readonly DependencyProperty EndProperty
+            = DependencyProperty.Register("End",
+                                          typeof(double[]), typeof(DisplayVectorBaseShape),
+                                          new PropertyMetadata(null, OnTimeChanged));
+        public double[] End
         {
-            get { return (double)GetValue(XLengthProperty); }
-            set { SetValue(XLengthProperty, value); }
-        }
-        public static readonly DependencyProperty YLengthProperty
-            = DependencyProperty.Register("YLength",
-                                          typeof(double), typeof(DisplayVectorBaseShape),
-                                          new PropertyMetadata(double.NaN, OnTimeChanged));
-        public double YLength
-        {
-            get { return (double)GetValue(YLengthProperty); }
-            set { SetValue(YLengthProperty, value); }
+            get { return (double[])GetValue(EndProperty); }
+            set { SetValue(EndProperty, value); }
         }
 
         #endregion
@@ -74,17 +56,16 @@ namespace PMKS_Silverlight_App
         protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var vector = ((DisplayVectorBaseShape)d);
-            var xStart = vector.XStart + vector.xOffset;
-            var yStart = vector.YStart + vector.yOffset;
+            if (vector.End == null || vector.Start == null) return;
+            var xStart = vector.Start[0] + vector.xOffset;
+            var yStart = vector.Start[1] + vector.yOffset;
             ((LineGeometry)vector.Data).StartPoint = new Point(xStart, yStart);
-            ((LineGeometry)vector.Data).EndPoint = new Point(xStart + vector.factor * vector.XLength, yStart + vector.factor * vector.YLength);
+            ((LineGeometry)vector.Data).EndPoint = new Point(xStart + vector.factor * vector.End[0], yStart + vector.factor * vector.End[1]);
         }
         public void ClearBindings()
         {
-            ClearValue(XStartProperty);
-            ClearValue(YStartProperty);
-            ClearValue(XLengthProperty);
-            ClearValue(YLengthProperty);
+            ClearValue(StartProperty);
+            ClearValue(EndProperty);
             ClearValue(OpacityProperty);
         }
     }

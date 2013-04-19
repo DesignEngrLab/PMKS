@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
@@ -89,9 +90,45 @@ namespace PMKS_Silverlight_App
         }
 
 
-        private void SimulateButton_Click(object sender, RoutedEventArgs e)
+        private void TargetShapeStream_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            main.ParseData();
+            main.mainViewer.MainCanvas.Children.Remove(main.mainViewer.TargetPath);
+            if (TargetShapeStream.Text.Length != 0 &&
+                TargetShapeStream.Text != "Enter Target Shape Stream Here.")
+            {
+                try
+                {
+                    main.mainViewer.TargetPath = (System.Windows.Shapes.Path)XamlReader.Load(
+                        DisplayConstants.TargetPathStreamFront
+                        + TargetShapeStream.Text
+                        + DisplayConstants.TargetPathStreamEnd);
+                    TargetShapeStream.FontStyle = FontStyles.Normal;
+                    TargetShapeStream.Foreground = new SolidColorBrush(Colors.Black);
+                    main.mainViewer.TargetPath.RenderTransform
+                        = new TranslateTransform
+                        {
+                            X = main.mainViewer.XOffset,
+                            Y = main.mainViewer.YOffset
+                        };
+                    main.mainViewer.MainCanvas.Children.Add(main.mainViewer.TargetPath);
+                    return;
+                }
+                catch (Exception exc)
+                {
+                    main.status(exc.ToString());
+                }
+            }
+            if (string.IsNullOrWhiteSpace(TargetShapeStream.Text))
+            {
+                TargetShapeStream.Text = "Enter Target Shape Stream Here.";
+                TargetShapeStream.FontStyle = FontStyles.Italic;
+                TargetShapeStream.Foreground = new SolidColorBrush(Colors.Black);
+            }
+        }
+
+        private void TargetShapeStream_OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            TargetShapeStream.SelectAll();
         }
 
     }

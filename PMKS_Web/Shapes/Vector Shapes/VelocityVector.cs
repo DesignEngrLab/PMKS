@@ -32,34 +32,19 @@ namespace PMKS_Silverlight_App
             {
                 Source = displayJoint,
                 Mode = BindingMode.OneWay,
-                Path = new PropertyPath(DynamicJointBaseShape.XCoordProperty),
+                Path = new PropertyPath(DynamicJointBaseShape.CoordinatesProperty),
             };
-            SetBinding(XStartProperty, binding);
-
-            binding = new Binding
-            {
-                Source = displayJoint,
-                Mode = BindingMode.OneWay,
-                Path = new PropertyPath(DynamicJointBaseShape.YCoordProperty),
-            };
-            SetBinding(YStartProperty, binding);
-            binding = new Binding
-            {
-                Source = timeSlider,
-                Mode = BindingMode.OneWay,
-                Path = new PropertyPath(RangeBase.ValueProperty),
-                Converter = new TimeToJointParameterConverter(j, JointState.XVelocity, pmks)
-            };
-            SetBinding(XLengthProperty, binding);
+            SetBinding(StartProperty, binding);
 
             binding = new Binding
             {
                 Source = timeSlider,
                 Mode = BindingMode.OneWay,
                 Path = new PropertyPath(RangeBase.ValueProperty),
-                Converter = new TimeToJointParameterConverter(j, JointState.YVelocity, pmks)
+                Converter = new TimeToJointParameterConverter(j, StateVariableType.Velocity, pmks)
             };
-            SetBinding(YLengthProperty, binding);
+            SetBinding(EndProperty, binding);
+
 
         }
         

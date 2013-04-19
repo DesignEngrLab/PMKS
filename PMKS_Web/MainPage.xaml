@@ -6,10 +6,10 @@
     xmlns:src="clr-namespace:PMKS_Silverlight_App"
     x:Class="PMKS_Silverlight_App.MainPage"
     mc:Ignorable="d" Loaded="MainPage_Loaded_1" 
-    MouseWheel="OnMouseWheel" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"
+    MouseWheel="OnMouseWheel" 
     MouseLeftButtonUp="OnLostMouseCapture" MouseLeftButtonDown="OnMouseEnter"
-    MouseMove="OnMouseMove"
-    d:DesignHeight="674" d:DesignWidth="855">
+    MouseMove="OnMouseMove" 
+    d:DesignHeight="800" d:DesignWidth="1000"><!--MouseEnter="OnMouseEnter" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"-->
     <UserControl.Resources>
         <src:JointsViewModel x:Name="JointsInfo" />
         <src:LinksViewModel x:Name="LinksInfo" />
@@ -19,15 +19,60 @@
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="71" />
+            <RowDefinition Height="29" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
-        <Slider Orientation="Vertical" Grid.Row="1" HorizontalAlignment="Right" x:Name="timeSlider" />
-        <src:EditButtons HorizontalAlignment="Left" Margin="10,25" Grid.RowSpan="2"  x:Name="editButtons"/>
-        <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top" Height="64" Width="407" x:Name="globalSettings" />
-        <src:LinkInputTable Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
-        <src:OutputStatus Grid.Row="1" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-        <src:JointInputTable Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
+        <Grid Name="Time_Slider_Grid" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="48" />
+                <RowDefinition />
+                <RowDefinition Height="48" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="24"/>
+            </Grid.ColumnDefinitions>
+            <ToggleButton x:Name="PlayButton" Checked="PlayButton_Checked" Unchecked="PlayButton_Unchecked"  Grid.ColumnSpan="2" Height="24" >
+                <Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Width="48" Height="24" >
+                    <Path x:Name="PlayForwardShape" Opacity="0" Width="23.4707" Height="15.1179" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" 
+                            Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 35.1985,11.8L 12.7278,4.74112L 12.7278,18.859L 35.1985,11.8 Z "/>
+
+                    <Path  x:Name="PlayFowardBackShape1" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="30.1645" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 29.7971,7.72192L 18.4367,0.5L 18.4367,14.9438L 29.7971,7.72192 Z "/>
+                    <Path x:Name="PlayFowardBackShape2" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 0.5,7.72192L 11.8604,14.9438L 11.8604,0.5L 0.5,7.72192 Z "/>
+                    <Path x:Name="SlideShape1" Width="32.9354" Height="19.875" Canvas.Left="7.532" Canvas.Top="1.984" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Fill="#FF00FFCB" Data="F1 M 24,21.5489L 39.9677,17.4818L 8.03229,17.4818L 24,21.5489 M 24,2.45078L 8.03228,6.51782L 39.9677,6.51782L 24,2.45078 Z " UseLayoutRounding="False"/>
+                    <Path x:Name="SlideShape2" Width="32.9004" Height="7.7804" Canvas.Left="7.54978" Canvas.Top="7.98105" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Data="F1 M 37.9502,8.48105L 10.0498,8.48105C 8.94521,8.48105 8.04978,9.37646 8.04978,10.481L 8.04978,13.2615C 8.04978,14.3661 8.94521,15.2614 10.0498,15.2614L 37.9502,15.2614C 39.0548,15.2614 39.9502,14.3661 39.9502,13.2615L 39.9502,10.481C 39.9502,9.37646 39.0548,8.48105 37.9502,8.48105 Z "/>
+
+
+                </Canvas>
+
+            </ToggleButton>
+            <Slider Background="White" Grid.Row="1" Grid.Column="1" Grid.RowSpan="5" Orientation="Vertical" x:Name="timeSlider" 
+                    MouseLeftButtonDown="timeSlider_MouseLeftButtonDown" MouseWheel="timeSlider_MouseWheel"  />
+            <Button x:Name="morePositiveTimeButton" Grid.Row="1" Content="+" IsEnabled="False"/>
+            <Button x:Name="moreNegativeTimeButton" Grid.Row="5" Content="+" IsEnabled="False"/>
+            <TextBox x:Name="maxTimeText" Grid.Row="2" Text="99.99"  Foreground="White" Background="#FF7E7E7E" Height="24" Width="48" Grid.ColumnSpan="2" Margin="0,0,0,24" UseLayoutRounding="False" d:LayoutRounding="Auto" >
+                <TextBox.RenderTransform>
+                    <CompositeTransform Rotation="-90" CenterX="24" CenterY="24" />
+                </TextBox.RenderTransform>
+            </TextBox>
+            <TextBox x:Name="minTimeText" Grid.Row="5" Text="0.00" Foreground="White" Height="24" Width="48" Background="#FF7E7E7E" UseLayoutRounding="False" d:LayoutRounding="Auto" Grid.ColumnSpan="2" Margin="0" >
+                <TextBox.RenderTransform>
+                    <CompositeTransform Rotation="-90"  />
+                </TextBox.RenderTransform>
+            </TextBox>
+
+        </Grid>
+        <Border CornerRadius="4" BorderThickness="1.5" HorizontalAlignment="Left" Margin="10,25,0,4" Grid.RowSpan="2" Background="#FFE2D9F7" BorderBrush="Black" >
+            <src:EditButtons  x:Name="editButtons"/></Border>
+       
+        <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />
+        <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+        <src:OutputStatus Grid.Row="2" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+        <src:JointInputTable Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
     </Grid>
 </UserControl>

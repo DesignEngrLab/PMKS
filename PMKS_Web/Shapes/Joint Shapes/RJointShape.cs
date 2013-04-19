@@ -28,24 +28,24 @@ namespace PMKS_Silverlight_App
 
             RenderTransform = new TranslateTransform
             {
-                X = XCoord + xOffset - radius,
-                Y = YCoord + yOffset - radius
+                X = Coordinates[0] + xOffset - radius,
+                Y = Coordinates[1] + yOffset - radius
             };
         }
 
         public override void Redraw()
         {
+            if (Coordinates == null) return;
             RenderTransform = new TranslateTransform
             {
-                X = XCoord + xOffset - radius,
-                Y = YCoord + yOffset - radius
+                X = Coordinates[0] + xOffset - radius,
+                Y = Coordinates[1] + yOffset - radius
             };
         }
 
         internal override void ClearBindings()
         {
-            ClearValue(XCoordProperty);
-            ClearValue(YCoordProperty);
+            ClearValue(CoordinatesProperty);
         }
     }
 }

@@ -82,7 +82,6 @@
     <Compile Include="Converters\BooleanToAngleTypeConverter.cs" />
     <Compile Include="Converters\BooleanToLengthTypeConverter.cs" />
     <Compile Include="Converters\HSLtoRGB.cs" />
-    <Compile Include="Converters\TimeToParameterBaseConverter.cs" />
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />

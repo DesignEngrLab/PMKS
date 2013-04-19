@@ -27,16 +27,6 @@ namespace PMKS_Silverlight_App
         {
             main.ParseData();
         }
-
-        private void onLoad(object sender, RoutedEventArgs e)
-        {
-            main = (MainPage)Application.Current.RootVisual;
-        }
-
-        private void radioChanged(object sender, RoutedEventArgs e)
-        {
-            main.ParseData();
-        }
     }
 
 }
