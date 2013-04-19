@@ -5,7 +5,7 @@
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Content="Open From File" Name="OpenButton" Click="OpenButton_Click"/>
             <Button Content="Save as CSV" Name="SaveButton" Click="SaveButton_Click" Width="90"/>
-           <Button Content="Export Data to Excel" Name="SaveXMLButton" Click="SaveButton_Click"/>
+            <Button Content="Export Kinematic Data" Name="ExportDataButton" Click="ExportDataButton_Click"/>
           <!--  <Button Content="Copy URL" Name="URLButton" Click="SaveButton_Click"/>
             <Button Content="Simulate" x:Name="SimulateButton" Margin="0,0,0,0" Click="SimulateButton_Click"/>-->
         </StackPanel> 
@@ -13,7 +13,7 @@
         <TextBlock Text="Target Shape = " VerticalAlignment="Center" FontWeight="Bold" />
         <TextBox x:Name="TargetShapeStream" Text="Enter Target Shape Stream Here." Width="212" FontStyle="Italic" 
                      FontSize="10" Foreground="#FF666666" TextChanged="TargetShapeStream_OnTextChanged" 
-                     MouseEnter="TargetShapeStream_OnMouseEnter"/>
+                    MouseLeftButtonDown="TargetShapeStream_OnMouseLeftButtonDown"/>
         </StackPanel>
         <Path Stroke="#FF818181" StrokeThickness="22" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

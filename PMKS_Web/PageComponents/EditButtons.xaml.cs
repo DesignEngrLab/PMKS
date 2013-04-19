@@ -126,9 +126,16 @@ namespace PMKS_Silverlight_App
             }
         }
 
-        private void TargetShapeStream_OnMouseEnter(object sender, MouseEventArgs e)
+        private void TargetShapeStream_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            TargetShapeStream.SelectAll();
+            if (TargetShapeStream.Text == "Enter Target Shape Stream Here.")
+                TargetShapeStream.Text = "";
+
+        }
+
+        private void ExportDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportKinematicData.ExportToCSV(main.pmks);
         }
 
     }

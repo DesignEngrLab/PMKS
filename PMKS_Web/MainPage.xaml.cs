@@ -16,7 +16,7 @@ namespace PMKS_Silverlight_App
     public partial class MainPage : UserControl
     {
         #region Fields
-        private Simulator pmks;
+        public Simulator pmks;
         private readonly List<List<string>> LinkIDs = new List<List<string>>();
         private readonly List<string> JointTypes = new List<string>();
         private readonly List<double[]> InitPositions = new List<double[]>();
@@ -39,7 +39,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty ErrorProperty
             = DependencyProperty.Register("Error", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(1.0, GlobalSettingChanged));
+                                 new PropertyMetadata(0.0001, GlobalSettingChanged));
         public double Error
         {
             get { return (double)GetValue(ErrorProperty); }
@@ -47,7 +47,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty AngleIncrementProperty
             = DependencyProperty.Register("AngleIncrement", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(0.05, GlobalSettingChanged));
+                                 new PropertyMetadata(0.0087266462599716477, GlobalSettingChanged));
         public double AngleIncrement
         {
             get { return (double)GetValue(AngleIncrementProperty); }
@@ -71,18 +71,27 @@ namespace PMKS_Silverlight_App
             get { return (LengthType)GetValue(LengthUnitsProperty); }
             set { SetValue(LengthUnitsProperty, value); }
         }
+        public static readonly DependencyProperty AnalysisStepProperty
+            = DependencyProperty.Register("AnalysisStep", typeof(AnalysisType), typeof(MainPage),
+                                 new PropertyMetadata(AnalysisType.error, GlobalSettingChanged));
+        public AnalysisType AnalysisStep
+        {
+            get { return (AnalysisType)GetValue(AnalysisStepProperty); }
+            set { SetValue(AnalysisStepProperty, value); }
+        }
 
         #endregion
 
         public MainPage()
         {
             InitializeComponent();
-            jointInputTable.main = editButtons.main = linkInputTable.main = mainViewer.main = this;
+            jointInputTable.main = editButtons.main = linkInputTable.main = mainViewer.main =globalSettings.main= this;
 
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
         {
+            /****** bind joint info to datagrid ******/
             var binding = new Binding
             {
                 Source = JointsInfo,
@@ -91,6 +100,7 @@ namespace PMKS_Silverlight_App
             };
             jointInputTable.dataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
 
+            /****** bind link info to link datagrid ******/
             binding = new Binding
             {
                 Source = LinksInfo,
@@ -99,6 +109,7 @@ namespace PMKS_Silverlight_App
             };
             linkInputTable.linkDataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
 
+            /****** bind joint info to link info ******/
             //binding = new Binding
             //{
             //    Source = JointsInfo,
@@ -108,24 +119,40 @@ namespace PMKS_Silverlight_App
             //};
             //BindingOperations.SetBinding(LinksInfo, LinksViewModel.DataCollectionProperty, binding);
 
+            /****** bind speed to speedBox ******/
             binding = new Binding
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,
                 Path = new PropertyPath(SpeedProperty),
-                Converter = new TextToDoubleConverter()
+                Converter = new TextToDoubleConverter(),
+                ConverterParameter = Speed
             };
             globalSettings.speedBox.SetBinding(TextBox.TextProperty, binding);
 
+            /****** bind angle increment to anglebox******/
             binding = new Binding
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,
                 Path = new PropertyPath(AngleIncrementProperty),
-                Converter = new TextToDoubleConverter()
+                Converter = new TextToAngleConverter(this),
+                ConverterParameter = AngleIncrement
             };
             globalSettings.AngleBox.SetBinding(TextBox.TextProperty, binding);
 
+            /****** bind error percentage to errorbox******/
+            binding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(ErrorProperty),
+                Converter = new TextToPercentageConverter(),
+                ConverterParameter = Error
+            };
+            globalSettings.ErrorBox.SetBinding(TextBox.TextProperty, binding);
+
+            /****** bind angle units  to radians toggle ******/
             binding = new Binding
             {
                 Source = this,
@@ -135,6 +162,7 @@ namespace PMKS_Silverlight_App
             };
             globalSettings.RadiansCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
 
+            /****** bind length units to metric checkbox******/
             binding = new Binding
             {
                 Source = this,
@@ -143,11 +171,21 @@ namespace PMKS_Silverlight_App
                 Converter = new BooleanToLengthTypeConverter()
             };
             globalSettings.MetricCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
+            /****** bind accuracy type to error checkbox******/
+            binding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.TwoWay,
+                Path = new PropertyPath(AnalysisStepProperty),
+                Converter = new BooleanToLengthTypeConverter()
+            };
+            globalSettings.ErrorCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
             ParseData();
         }
         #region PMKS Controller Functions
         internal void ParseData(Boolean SettingChanged = false)
         {
+            PlayButton_Unchecked(null, null);
             #region table validation
             if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
@@ -184,7 +222,7 @@ namespace PMKS_Silverlight_App
                 {
                     pmks.InputSpeed = Speed;
                     if (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked)
-                        pmks.MaxSmoothingError = AngleIncrement;
+                        pmks.MaxSmoothingError = Error;
                     else
                         pmks.DeltaAngle = AngleIncrement;
                 }

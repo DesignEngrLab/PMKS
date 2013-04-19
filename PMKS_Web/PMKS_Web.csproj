@@ -81,10 +81,14 @@
     <Compile Include="ConstantsAndEnumerators.cs" />
     <Compile Include="Converters\BooleanToAngleTypeConverter.cs" />
     <Compile Include="Converters\BooleanToLengthTypeConverter.cs" />
+    <Compile Include="Converters\BooleanToAnalysisStepConverter.cs" />
+    <Compile Include="Converters\TextToAngleConverter.cs" />
+    <Compile Include="Converters\TextToPercentageConverter.cs" />
     <Compile Include="Converters\HSLtoRGB.cs" />
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
+    <Compile Include="ExportKinematicData.cs" />
     <Compile Include="Shapes\Joint Shapes\InputRJointShape.cs" />
     <Compile Include="Shapes\Link Shapes\LinkShape.cs" />
     <Compile Include="Shapes\Link Shapes\MyConvexHull.cs" />

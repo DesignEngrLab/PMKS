@@ -50,15 +50,17 @@
                     </Canvas>
                     <Border  Grid.Column="1" Grid.Row="1" BorderBrush="Black" BorderThickness="1" Padding="12,2,8,2" HorizontalAlignment="Center" VerticalAlignment="Center"   >
                         <StackPanel  >
-                            <RadioButton Content="% error" Name="ErrorCheckBox"/>
+                            <RadioButton Content="% error" x:Name="ErrorCheckBox" Checked="ErrorCheckBox_Checked" Unchecked="ErrorCheckBox_Unchecked"/>
                             <RadioButton  Content="Angle" x:Name="AngleCheckBox" />
                         </StackPanel>
                     </Border>
-                    <TextBox Grid.Row="1" MinWidth="60" Background="#229CB46E" Name="ErrorBox" />
-                    <TextBox Grid.Row="1" Grid.Column="2" Background="#226D87B4" MinWidth="60" Name="AngleBox" />
+                <TextBox Grid.Row="1" FontSize="16" MinHeight="38" MinWidth="60" Background="#229CB46E" Name="ErrorBox" 
+                         VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBox Grid.Row="1" FontSize="16" MinHeight="38" MinWidth="60"  Grid.Column="2" Background="#226D87B4" Name="AngleBox" 
+                         VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Gray"/>
                     <Border Grid.Row="1" Grid.Column="3"  BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                         <StackPanel  >
-                            <RadioButton Content="Degrees" Name="DegreesCheckBox"/>
+                        <RadioButton Content="Degrees" Name="DegreesCheckBox" Checked="GlobalSettingChanged" Unchecked="GlobalSettingChanged" />
                             <RadioButton Content="Radians" Name="RadiansCheckBox" />
                         </StackPanel>
                     </Border>
@@ -69,7 +71,7 @@
                     <StackPanel Orientation="Horizontal"  >
                         <Border BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                             <StackPanel>
-                                <RadioButton Content="Metric [mm]" Name="MetricCheckBox"  />
+                                <RadioButton Content="Metric [mm]" Name="MetricCheckBox" Checked="GlobalSettingChanged" Unchecked="GlobalSettingChanged" />
                                 <RadioButton Content="Inches [in]" Name="InchesCheckBox" />
                             </StackPanel>
                         </Border>

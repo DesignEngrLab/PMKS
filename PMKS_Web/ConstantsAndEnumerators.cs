@@ -5,13 +5,12 @@ using System.Windows;
 namespace PMKS_Silverlight_App
 {
     public enum AngleType
-    {
-        Radians, Degrees
-    }
+    { Radians, Degrees }
     public enum LengthType
-    {
-        mm, inches
-    }
+    { mm, inches }
+    public enum AnalysisType
+    { error, fixedDelta }
+
     public static class DisplayConstants
     {
         public const double PenThicknessRatio = 1;
@@ -33,12 +32,12 @@ namespace PMKS_Silverlight_App
         public const double SingleJointLinkRadiusMultipler = 2.5;
         public const double RadiansToDegrees = 180.0 / Math.PI;
         public const double TotalSize = 2000.0;
-        public const double MostNegativeAllowableCoordinate = -TotalSize/2;
+        public const double MostNegativeAllowableCoordinate = -TotalSize / 2;
         public const double DeltaChangeInScaleToStaySame = 0.2;
         public const double DefaultBufferMultipler = 0.5;
-        public const string TargetPathStreamFront=
-            "<Path xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"" 
-            + " Stroke=\"#FFC7C7C7\" StrokeThickness=\"5\"  Data=\"";
+        public const string TargetPathStreamFront =
+            "<Path xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\""
+            + " Stroke=\"#FFC7C7C7\" StrokeThickness=\"2\"  Data=\"";
 
         public const string TargetPathStreamEnd = "\"/>";
 
