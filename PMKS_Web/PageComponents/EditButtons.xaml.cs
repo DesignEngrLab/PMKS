@@ -135,7 +135,7 @@ namespace PMKS_Silverlight_App
 
         private void ExportDataButton_Click(object sender, RoutedEventArgs e)
         {
-            ExportKinematicData.ExportToCSV(main.pmks);
+            ExportKinematicData.ExportToCSV(main.pmks, main);
         }
 
     }
