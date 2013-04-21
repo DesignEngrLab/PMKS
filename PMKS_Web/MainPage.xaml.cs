@@ -85,7 +85,7 @@ namespace PMKS_Silverlight_App
         public MainPage()
         {
             InitializeComponent();
-            jointInputTable.main = editButtons.main = linkInputTable.main = mainViewer.main =globalSettings.main= this;
+            jointInputTable.main = editButtons.main = linkInputTable.main = mainViewer.main = globalSettings.main = this;
 
         }
 
@@ -265,7 +265,7 @@ namespace PMKS_Silverlight_App
                 mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, false);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                PlayButton_Checked(null,null);
+                PlayButton_Checked(null, null);
                 #endregion
             }
             catch (Exception e)
@@ -474,8 +474,11 @@ namespace PMKS_Silverlight_App
             var newScaleFactor = (e.Delta > 1) ?
                mainViewer.ScaleFactor * 1.05 :
                mainViewer.ScaleFactor /= 1.05;
+            var s = (newScaleFactor - mainViewer.ScaleFactor)/2;
+            var newPanAnchor = new Point(mainViewer.PanningAnchor.X - (e.GetPosition(mainViewer).X * s) ,
+                                    mainViewer.PanningAnchor.Y + (e.GetPosition(mainViewer).Y * s));
 
-            mainViewer.MoveScaleCanvas(newScaleFactor, mainViewer.PanningAnchor);
+            mainViewer.MoveScaleCanvas(newScaleFactor, newPanAnchor);
         }
 
         internal void OnLostMouseCapture(object sender, MouseEventArgs e)
@@ -494,9 +497,8 @@ namespace PMKS_Silverlight_App
         internal void OnMouseMove(object sender, MouseEventArgs e)
         {
             if (!Panning) return;
-            var newPanAnchor = new Point(mainViewer.PanningAnchor.X + (e.GetPosition(this).X - ScreenStartPoint.X) / mainViewer.ScaleFactor,
-                                    mainViewer.PanningAnchor.Y - (e.GetPosition(this).Y - ScreenStartPoint.Y) / mainViewer.ScaleFactor);
-
+            var newPanAnchor = new Point(mainViewer.PanningAnchor.X + ((e.GetPosition(this).X - ScreenStartPoint.X) / mainViewer.ScaleFactor),
+                                    mainViewer.PanningAnchor.Y - ((e.GetPosition(this).Y - ScreenStartPoint.Y) / mainViewer.ScaleFactor));
             mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, newPanAnchor);
         }
 

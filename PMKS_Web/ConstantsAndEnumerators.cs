@@ -40,6 +40,9 @@ namespace PMKS_Silverlight_App
             + " Stroke=\"#FFC7C7C7\" StrokeThickness=\"2\"  Data=\"";
 
         public const string TargetPathStreamEnd = "\"/>";
+        public const double SliderRectangleAspectRatio = 1.25;
+        public static double MaxZoomIn = 25;
+        public static double MaxZoomOut = 0.04;
 
     }
     public class JointTypeProvider

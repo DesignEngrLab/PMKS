@@ -6,7 +6,7 @@ namespace Silverlight_PMKS.Shapes.Static_Shapes
 {
     public class Axes :Path
     {
-        public Axes(double strokeThickness, double xOffset, double yOffset)
+        public Axes(double strokeThickness, double xOffset, double yOffset, double width, double height)
 
         {
             Data = new GeometryGroup()
@@ -15,18 +15,19 @@ namespace Silverlight_PMKS.Shapes.Static_Shapes
                         {
                             new LineGeometry()
                                 {
-                                    StartPoint = new Point(xOffset, -1000),
-                                    EndPoint = new Point(xOffset, 1000)
+                                    StartPoint = new Point(xOffset, 0),
+                                    EndPoint = new Point(xOffset, height)
                                 },
                             new LineGeometry()
                                 {
-                                    StartPoint = new Point(-1000, yOffset),
-                                    EndPoint = new Point(1000, yOffset)
+                                    StartPoint = new Point(0, yOffset),
+                                    EndPoint = new Point(width, yOffset)
                                 }
                         }
                 };
             Stroke = new SolidColorBrush(Color.FromArgb(255,80,80,80));
             StrokeThickness = strokeThickness;
         }
+
     }
 }

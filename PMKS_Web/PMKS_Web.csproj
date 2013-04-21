@@ -89,6 +89,7 @@
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
     <Compile Include="ExportKinematicData.cs" />
+    <Compile Include="Shapes\Joint Shapes\PJointShape.cs" />
     <Compile Include="Shapes\Joint Shapes\InputRJointShape.cs" />
     <Compile Include="Shapes\Link Shapes\LinkShape.cs" />
     <Compile Include="Shapes\Link Shapes\MyConvexHull.cs" />

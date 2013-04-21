@@ -24,49 +24,54 @@
         </Grid.RowDefinitions>
         <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
-        <Grid Name="Time_Slider_Grid" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="48" />
-                <RowDefinition />
-                <RowDefinition Height="48" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="24"/>
-                <ColumnDefinition Width="24"/>
-            </Grid.ColumnDefinitions>
-            <ToggleButton x:Name="PlayButton" Checked="PlayButton_Checked" Unchecked="PlayButton_Unchecked"  Grid.ColumnSpan="2" Height="24" >
-                <Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Width="48" Height="24" >
-                    <Path x:Name="PlayForwardShape" Opacity="0" Width="23.4707" Height="15.1179" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" 
+        <Border Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
+                Background="#FFE2D9F7" BorderBrush="Black" >
+            <Grid Name="Time_Slider_Grid" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="48" />
+                    <RowDefinition />
+                    <RowDefinition Height="48" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="24"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.ColumnSpan="2" Text="Time" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <ToggleButton Grid.Row="1" x:Name="PlayButton" Checked="PlayButton_Checked" Unchecked="PlayButton_Unchecked"  Grid.ColumnSpan="2" Height="24" >
+                    <Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Width="48" Height="24" >
+                        <Path x:Name="PlayForwardShape" Opacity="0" Width="23.4707" Height="15.1179" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" 
                             Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 35.1985,11.8L 12.7278,4.74112L 12.7278,18.859L 35.1985,11.8 Z "/>
 
-                    <Path  x:Name="PlayFowardBackShape1" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="30.1645" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 29.7971,7.72192L 18.4367,0.5L 18.4367,14.9438L 29.7971,7.72192 Z "/>
-                    <Path x:Name="PlayFowardBackShape2" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 0.5,7.72192L 11.8604,14.9438L 11.8604,0.5L 0.5,7.72192 Z "/>
-                    <Path x:Name="SlideShape1" Width="32.9354" Height="19.875" Canvas.Left="7.532" Canvas.Top="1.984" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Fill="#FF00FFCB" Data="F1 M 24,21.5489L 39.9677,17.4818L 8.03229,17.4818L 24,21.5489 M 24,2.45078L 8.03228,6.51782L 39.9677,6.51782L 24,2.45078 Z " UseLayoutRounding="False"/>
-                    <Path x:Name="SlideShape2" Width="32.9004" Height="7.7804" Canvas.Left="7.54978" Canvas.Top="7.98105" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Data="F1 M 37.9502,8.48105L 10.0498,8.48105C 8.94521,8.48105 8.04978,9.37646 8.04978,10.481L 8.04978,13.2615C 8.04978,14.3661 8.94521,15.2614 10.0498,15.2614L 37.9502,15.2614C 39.0548,15.2614 39.9502,14.3661 39.9502,13.2615L 39.9502,10.481C 39.9502,9.37646 39.0548,8.48105 37.9502,8.48105 Z "/>
+                        <Path  x:Name="PlayFowardBackShape1" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="30.1645" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 29.7971,7.72192L 18.4367,0.5L 18.4367,14.9438L 29.7971,7.72192 Z "/>
+                        <Path x:Name="PlayFowardBackShape2" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 0.5,7.72192L 11.8604,14.9438L 11.8604,0.5L 0.5,7.72192 Z "/>
+                        <Path x:Name="SlideShape1" Width="32.9354" Height="19.875" Canvas.Left="7.532" Canvas.Top="1.984" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Fill="#FF00FFCB" Data="F1 M 24,21.5489L 39.9677,17.4818L 8.03229,17.4818L 24,21.5489 M 24,2.45078L 8.03228,6.51782L 39.9677,6.51782L 24,2.45078 Z " UseLayoutRounding="False"/>
+                        <Path x:Name="SlideShape2" Width="32.9004" Height="7.7804" Canvas.Left="7.54978" Canvas.Top="7.98105" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Data="F1 M 37.9502,8.48105L 10.0498,8.48105C 8.94521,8.48105 8.04978,9.37646 8.04978,10.481L 8.04978,13.2615C 8.04978,14.3661 8.94521,15.2614 10.0498,15.2614L 37.9502,15.2614C 39.0548,15.2614 39.9502,14.3661 39.9502,13.2615L 39.9502,10.481C 39.9502,9.37646 39.0548,8.48105 37.9502,8.48105 Z "/>
 
 
-                </Canvas>
+                    </Canvas>
 
-            </ToggleButton>
-            <Slider Background="White" Grid.Row="1" Grid.Column="1" Grid.RowSpan="5" Orientation="Vertical" x:Name="timeSlider" 
+                </ToggleButton>
+                <Slider Background="White" Grid.Row="2" Grid.Column="1" Grid.RowSpan="5" Orientation="Vertical" x:Name="timeSlider" 
                     MouseLeftButtonDown="timeSlider_MouseLeftButtonDown" MouseWheel="timeSlider_MouseWheel"  />
-            <Button x:Name="morePositiveTimeButton" Grid.Row="1" Content="+" IsEnabled="False"/>
-            <Button x:Name="moreNegativeTimeButton" Grid.Row="5" Content="+" IsEnabled="False"/>
-            <TextBox x:Name="maxTimeText" Grid.Row="2" Text="99.99"  Foreground="White" Background="#FF7E7E7E" Height="24" Width="48" Grid.ColumnSpan="2" Margin="0,0,0,24" UseLayoutRounding="False" d:LayoutRounding="Auto" >
-                <TextBox.RenderTransform>
-                    <CompositeTransform Rotation="-90" CenterX="24" CenterY="24" />
-                </TextBox.RenderTransform>
-            </TextBox>
-            <TextBox x:Name="minTimeText" Grid.Row="5" Text="0.00" Foreground="White" Height="24" Width="48" Background="#FF7E7E7E" UseLayoutRounding="False" d:LayoutRounding="Auto" Grid.ColumnSpan="2" Margin="0" >
-                <TextBox.RenderTransform>
-                    <CompositeTransform Rotation="-90"  />
-                </TextBox.RenderTransform>
-            </TextBox>
+                <Button x:Name="morePositiveTimeButton" Grid.Row="2" Content="+" IsEnabled="False"/>
+                <Button x:Name="moreNegativeTimeButton" Grid.Row="6" Content="+" IsEnabled="False"/>
+                <TextBox x:Name="maxTimeText" Grid.Row="3" Text="99.99"  Foreground="White" Background="#FF7E7E7E" Height="24" Width="48" Grid.ColumnSpan="2" Margin="0,0,0,24" UseLayoutRounding="False" d:LayoutRounding="Auto" >
+                    <TextBox.RenderTransform>
+                        <CompositeTransform Rotation="-90" CenterX="24" CenterY="24" />
+                    </TextBox.RenderTransform>
+                </TextBox>
+                <TextBox x:Name="minTimeText" Grid.Row="6" Text="0.00" Foreground="White" Height="24" Width="48" Background="#FF7E7E7E" UseLayoutRounding="False" d:LayoutRounding="Auto" Grid.ColumnSpan="2" Margin="0" >
+                    <TextBox.RenderTransform>
+                        <CompositeTransform Rotation="-90"  />
+                    </TextBox.RenderTransform>
+                </TextBox>
 
-        </Grid>
+            </Grid>
+        </Border>
         <Border CornerRadius="4" BorderThickness="1.5" HorizontalAlignment="Left" Margin="10,25,0,4" Grid.RowSpan="2" Background="#FFE2D9F7" BorderBrush="Black" >
             <src:EditButtons  x:Name="editButtons"/></Border>
        

@@ -93,7 +93,8 @@ namespace PMKS_Silverlight_App
         private void TargetShapeStream_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             main.mainViewer.MainCanvas.Children.Remove(main.mainViewer.TargetPath);
-            if (TargetShapeStream.Text.Length != 0 &&
+            main.mainViewer.TargetPath = null;
+            if (!string.IsNullOrWhiteSpace(TargetShapeStream.Text) &&
                 TargetShapeStream.Text != "Enter Target Shape Stream Here.")
             {
                 try
@@ -120,22 +121,25 @@ namespace PMKS_Silverlight_App
             }
             if (string.IsNullOrWhiteSpace(TargetShapeStream.Text))
             {
+                main.mainViewer.TargetPath = null;
                 TargetShapeStream.Text = "Enter Target Shape Stream Here.";
                 TargetShapeStream.FontStyle = FontStyles.Italic;
-                TargetShapeStream.Foreground = new SolidColorBrush(Colors.Black);
+                TargetShapeStream.Foreground = new SolidColorBrush(Color.FromArgb(255,133,133,133));
             }
         }
-
-        private void TargetShapeStream_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (TargetShapeStream.Text == "Enter Target Shape Stream Here.")
-                TargetShapeStream.Text = "";
-
-        }
-
+        
         private void ExportDataButton_Click(object sender, RoutedEventArgs e)
         {
             ExportKinematicData.ExportToCSV(main.pmks, main);
+        }
+
+        private void TargetShapeStream_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (TargetShapeStream.Text == "Enter Target Shape Stream Here.")
+            //    TargetShapeStream.Text = "";
+            //else
+                TargetShapeStream.SelectAll();
+
         }
 
     }

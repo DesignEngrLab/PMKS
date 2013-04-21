@@ -135,6 +135,10 @@ namespace PMKS_Silverlight_App
                 DynamicJointBaseShape displayJoint;
                 switch (pmks.AllJoints[j].jointType)
                 {
+                    case JointTypes.P:
+                        var fixedLink = pmks.AllJoints[j].Link2;
+                        displayJoint = new PJointShape(pmks.AllJoints[j], fixedLink, timeSlider, pmks, jointSize, penThick, XOffset, YOffset);
+                        break;
                     default: displayJoint = new RJointShape(pmks.AllJoints[j], timeSlider, pmks, jointSize, penThick, XOffset, YOffset);
                         break;
                 }
@@ -171,13 +175,13 @@ namespace PMKS_Silverlight_App
                                      List<string> distinctLinkNames, bool FilledIn)
         {
             MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
-            MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset));
+            MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset, MainCanvas.Width, MainCanvas.Height));
             for (int i = 0; i < distinctLinkNames.Count; i++)
             {
                 if (distinctLinkNames[i] == "ground") continue;
                 MainCanvas.Children.Add(new LinkShape(i, distinctLinkNames[i], linkIDs, jointTypes, initPositions,
                                                       XOffset, YOffset, penThick, null,
-                                                      DisplayConstants.DefaultLinkThickness/ScaleFactor));
+                                                      DisplayConstants.DefaultLinkThickness / ScaleFactor));
             }
             for (int i = 0; i < linkIDs.Count; i++)
             {
@@ -189,7 +193,7 @@ namespace PMKS_Silverlight_App
             {
                 MainCanvas.Children.Remove(TargetPath);
                 TargetPath.RenderTransform
-                    = new TranslateTransform {X = XOffset, Y = YOffset};
+                    = new TranslateTransform { X = XOffset, Y = YOffset };
                 MainCanvas.Children.Add(TargetPath);
             }
         }
@@ -285,10 +289,11 @@ namespace PMKS_Silverlight_App
             //    DisplayConstants.DeltaChangeInScaleToStaySame)
             //{
             //    ScaleFactor = newScaleFactor;
-            if (newScaleFactor > 10) newScaleFactor = 10;
-            if (newScaleFactor < 0.1) newScaleFactor = 0.1;
+            if (newScaleFactor > DisplayConstants.MaxZoomIn) newScaleFactor = DisplayConstants.MaxZoomIn;
+            if (newScaleFactor < DisplayConstants.MaxZoomOut) newScaleFactor = DisplayConstants.MaxZoomOut;
             //}
-            var newPanAnchor = new Point((ParentWidth - MainCanvas.Width) / 2, (ParentHeight - MainCanvas.Height) / 2);
+            var newPanAnchor = new Point((ParentWidth - newScaleFactor * MainCanvas.Width) / 2,
+                (ParentHeight - newScaleFactor * MainCanvas.Height) / 2);
             //if ((Math.Abs(newPanAnchor.X - startOffset.X) + Math.Abs(newPanAnchor.Y - startOffset.Y))
             //  / Math.Max(startOffset.X, startOffset.Y) > DisplayConstants.DeltaChangeInScaleToStaySame)
             //startOffset = newPanAnchor;
@@ -298,42 +303,40 @@ namespace PMKS_Silverlight_App
 
         internal void MoveScaleCanvas(double newScaleFactor, Point newPanAnchor, Boolean animate = false)
         {
-            var px = (newPanAnchor.X > 0) ? 0.0 : newPanAnchor.X;
-            var py = (newPanAnchor.Y > 0) ? 0.0 : newPanAnchor.Y;
-
-            if (animate)
+            double px = newPanAnchor.X;
+            double py = newPanAnchor.Y;
+            if (ParentWidth < newScaleFactor*MainCanvas.Width)
             {
-                //    var duration = new Duration(new TimeSpan(0, 0, 1));
-                //var timeAnimation = new DoubleAnimationUsingKeyFrames{}
-                //{
-                //    Duration = duration,
-                //    AutoReverse = false,EasingFunction = 
-                //};
-                //storyBoard = new Storyboard
-                //{
-                //    Duration = duration,
-                //    AutoReverse = !pmks.CompleteCycle,
-                //    RepeatBehavior = RepeatBehavior.Forever
-                //};
-                //storyBoard.Children.Add(timeAnimation);
-                //Storyboard.SetTarget(timeAnimation, this);
-                //Storyboard.SetTargetProperty(timeAnimation, new PropertyPath(UIElement.RenderTransformProperty));
-
-
-                MainCanvas.RenderTransform = new MatrixTransform
-                {
-                    Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, px, ParentHeight - py)
-                };
+                if (px > 0) px = 0;
+                else if (px < (ParentWidth - newScaleFactor*MainCanvas.Width))
+                    px = ParentWidth - newScaleFactor*MainCanvas.Width;
             }
             else
-                MainCanvas.RenderTransform = new MatrixTransform
-                {
-                    Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, px, ParentHeight - py)
-                };
+            {
+                if (px > (ParentWidth - (newScaleFactor*MainCanvas.Width)/2))
+                    px = ParentWidth - (newScaleFactor*MainCanvas.Width)/2;
+                else if (px < 0) px = 0;
+            }
+            if (ParentHeight < newScaleFactor*MainCanvas.Width)
+            {
+                if (py > 0) py = 0;
+                else if (py < (ParentHeight - newScaleFactor*MainCanvas.Height))
+                    py = ParentHeight - newScaleFactor*MainCanvas.Height;
+            }
+            else
+            {
+                if (py > (ParentHeight - (newScaleFactor*MainCanvas.Height)/2))
+                    py = ParentHeight - (newScaleFactor*MainCanvas.Height)/2;
+                else if (py < 0) py = 0;
+            }
             ScaleFactor = newScaleFactor;
-            PanningAnchor = new Point(px, ParentHeight - py);
+            PanningAnchor = new Point(px, py);
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
             jointSize = DisplayConstants.JointSize / ScaleFactor;
+            MainCanvas.RenderTransform = new MatrixTransform
+            {
+                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, PanningAnchor.X, ParentHeight - PanningAnchor.Y)
+            };
         }
 
         public Path TargetPath { get; set; }

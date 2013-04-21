@@ -56,8 +56,10 @@ namespace PMKS_Silverlight_App
             csv += "Links";
             for (int i = 0; i < 3 * pmks.numLinks; i++) csv += ",";
             csv += "\n,";
-            for (int i = 0; i < pmks.numJoints; i++) csv += i.ToString() + ",,,,,,";
-            for (int i = 0; i < pmks.numLinks; i++) csv += pmks.AllLinks[i].name + ",,,";
+            for (int i = 0; i < pmks.numJoints; i++) csv +=
+                "x_"+i+",y_"+i+",Vx_"+i+",Vy_"+i+",Ax_"+i+",Ay_"+i+",";
+            for (int i = 0; i < pmks.numLinks; i++) csv +=
+                "angle_" + pmks.AllLinks[i].name + ",angVel_" + pmks.AllLinks[i].name + ",angAccel_" + pmks.AllLinks[i].name;
             csv += "\n";
             var timeSteps = pmks.JointParameters.Count;
             var times = pmks.JointParameters.Times;
@@ -78,14 +80,16 @@ namespace PMKS_Silverlight_App
         }
         private static string ConvertPMKSDataToTabDelimitedTxt(Simulator pmks)
         {
-            var csv = "TimeSteps\tJoints";
-            for (int i = 0; i < 6 * pmks.numJoints; i++) csv += "\t";
-            csv += "Links";
-            for (int i = 0; i < 3 * pmks.numLinks; i++) csv += "\t";
-            csv += "\n\t";
-            for (int i = 0; i < pmks.numJoints; i++) csv += i.ToString() + "\t\t\t\t\t\t";
-            for (int i = 0; i < pmks.numLinks; i++) csv += pmks.AllLinks[i].name + "\t\t\t";
-            csv += "\n";
+            var tabtxt = "TimeSteps\tJoints";
+            for (int i = 0; i < 6 * pmks.numJoints; i++) tabtxt += "\t";
+            tabtxt += "Links";
+            for (int i = 0; i < 3 * pmks.numLinks; i++) tabtxt += "\t";
+            tabtxt += "\n";
+            for (int i = 0; i < pmks.numJoints; i++) tabtxt +=
+                "\tx_" + i + "\ty_" + i + "\tVx_" + i + "\tVy_" + i + "\tAx_" + i + "\tAy_" + i;
+            for (int i = 0; i < pmks.numLinks; i++) tabtxt +=
+                "\tangle_" + pmks.AllLinks[i].name + "\tangVel_" + pmks.AllLinks[i].name + "\tangAccel_" + pmks.AllLinks[i].name;
+            tabtxt += "\n";
             var timeSteps = pmks.JointParameters.Count;
             var times = pmks.JointParameters.Times;
             var jParams = pmks.JointParameters.Parameters;
@@ -93,15 +97,15 @@ namespace PMKS_Silverlight_App
             var lastLink = pmks.numLinks - 1;
             for (int i = 0; i < timeSteps; i++)
             {
-                csv += times[i] + "\t";
+                tabtxt += times[i] + "\t";
                 for (int j = 0; j < pmks.numJoints; j++)
                     for (int k = 0; k < 6; k++)
-                        csv += jParams[i][pmks.JointReOrdering[j], k] + "\t";
+                        tabtxt += jParams[i][pmks.JointReOrdering[j], k] + "\t";
                 for (int j = 0; j < pmks.numLinks - 1; j++)
-                    csv += lParams[i][j, 0] + "\t" + lParams[i][j, 1] + "\t" + lParams[i][j, 2] + "\t";
-                csv += lParams[i][lastLink, 0] + "\t" + lParams[i][lastLink, 1] + "\t" + lParams[i][lastLink, 2] + "\n";
+                    tabtxt += lParams[i][j, 0] + "\t" + lParams[i][j, 1] + "\t" + lParams[i][j, 2] + "\t";
+                tabtxt += lParams[i][lastLink, 0] + "\t" + lParams[i][lastLink, 1] + "\t" + lParams[i][lastLink, 2] + "\n";
             }
-            return csv;
+            return tabtxt;
         }
 
     }
