@@ -9,30 +9,29 @@
     MouseWheel="OnMouseWheel" 
     MouseLeftButtonUp="OnLostMouseCapture" MouseLeftButtonDown="OnMouseEnter"
     MouseMove="OnMouseMove" 
-    d:DesignHeight="800" d:DesignWidth="1000"><!--MouseEnter="OnMouseEnter" MouseLeave="OnLostMouseCapture" LostMouseCapture="OnLostMouseCapture"-->
-    <UserControl.Resources>
-        <src:JointsViewModel x:Name="JointsInfo" />
-        <src:LinksViewModel x:Name="LinksInfo" />
-    </UserControl.Resources>
-
-    <!--<Grid x:Name="BigGrid" Background="White" >-->
-    <Grid Background="White">
+    d:DesignHeight="800" d:DesignWidth="1000">
+    <Grid Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="71" />
-            <RowDefinition Height="29" />
-            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
-        <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
-        <Border MouseWheel="timeSlider_MouseWheel"  Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
-                Background="#FFD9EDF7" BorderBrush="Black" >
-            <Grid Name="Time_Slider_Grid" >
+        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.RowSpan="2"/>
+        
+        <StackPanel HorizontalAlignment="Left" Grid.RowSpan="2">
+            <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
+            <src:FileAndEditPanel  x:Name="fileAndEditPanel" />
+        </StackPanel>
+        
+            <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />
+            <Border Grid.Row="1" MouseWheel="timeSlider_MouseWheel"  HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
+                Background="#60D9EDF7" BorderBrush="Black" >
+                <Grid Name="Time_Slider_Grid" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="48" />
-                    <RowDefinition />
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="48" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -69,15 +68,10 @@
                         <CompositeTransform Rotation="-90"  />
                     </TextBox.RenderTransform>
                 </TextBox>
-
             </Grid>
         </Border>
-        <Border CornerRadius="4" BorderThickness="1.5" HorizontalAlignment="Left" Margin="10,25,0,4" Grid.RowSpan="2"  Background="#FFD9EDF7" BorderBrush="Black" >
-            <src:EditButtons  x:Name="editButtons"/></Border>
        
-        <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />
         <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
-        <src:OutputStatus Grid.Row="2" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
-        <src:JointInputTable Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Height="202" Width="479" x:Name="jointInputTable"  />
+        <src:OutputStatus Grid.Row="1" Visibility="Collapsed" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
     </Grid>
 </UserControl>

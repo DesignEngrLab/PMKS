@@ -3,6 +3,5 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="PMKS_Silverlight_App.MainViewer">
     <Canvas Background="Transparent" x:Name="MainCanvas">
-        <!--<Path Stroke="#FFC7C7C7" StrokeThickness="5"  Data="M0,50 A25 25 180 1 1 50 50 Z"/>-->
     </Canvas>
 </UserControl>

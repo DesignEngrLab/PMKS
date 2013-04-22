@@ -11,12 +11,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
     public partial class GlobalSettings : UserControl
     {
-        public MainPage main;
+        
         public GlobalSettings()
         {
             InitializeComponent();
@@ -39,8 +40,8 @@ namespace PMKS_Silverlight_App
 
         private void GlobalSettingChanged(object sender = null, RoutedEventArgs e = null)
         {
-            if (main == null) return;
-            main.ParseData(true);
+            if (App.main == null) return;
+            App.main.ParseData(true);
         }
 
     }

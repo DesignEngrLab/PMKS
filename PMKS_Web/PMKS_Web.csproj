@@ -19,7 +19,7 @@
     </SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
-    <XapFilename>Silverlight_PMKS.xap</XapFilename>
+    <XapFilename>PMKS.xap</XapFilename>
     <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
     <SilverlightAppEntry>Silverlight_PMKS.App</SilverlightAppEntry>
     <TestPageFileName>Silverlight_PMKSTestPage.html</TestPageFileName>
@@ -89,6 +89,9 @@
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
     <Compile Include="ExportKinematicData.cs" />
+    <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">
+      <DependentUpon>FileAndEditPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PageComponents\Shapes\Joint Shapes\PJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputRJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\LinkShape.cs" />
@@ -97,9 +100,6 @@
     <Compile Include="PageComponents\Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\RJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\JointShape Base Classes.cs" />
-    <Compile Include="PageComponents\EditButtons.xaml.cs">
-      <DependentUpon>EditButtons.xaml</DependentUpon>
-    </Compile>
     <Compile Include="PageComponents\OutputStatus.xaml.cs">
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
@@ -116,9 +116,6 @@
     <Compile Include="PageComponents\GlobalSettings.xaml.cs">
       <DependentUpon>GlobalSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PageComponents\JointInputTable.xaml.cs">
-      <DependentUpon>JointInputTable.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ViewModelsAndModels\JointData.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -133,7 +130,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
-    <Page Include="PageComponents\EditButtons.xaml">
+    <Page Include="PageComponents\FileAndEditPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -149,10 +146,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PageComponents\JointInputTable.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -165,6 +158,7 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Properties\AppManifest.xml" />
+    <None Include="Properties\OutOfBrowserSettings.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismSimulator_Silverlight.csproj">

@@ -10,13 +10,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
     public partial class LinkInputTable : UserControl
     {
-        public MainPage main { private get; set; }
-
+        
         public LinkInputTable()
         {
             InitializeComponent();
@@ -25,8 +25,8 @@ namespace PMKS_Silverlight_App
 
         internal void UpdateLinksTableAfterDeletion(string[] linksToRemove)
         {
-            ObservableCollection<JointData> jointData = main.JointsInfo.Data;
-            ObservableCollection<LinkData> linkData = main.LinksInfo.Data;
+            ObservableCollection<JointData> jointData = App.main.JointsInfo.Data;
+            ObservableCollection<LinkData> linkData = App.main.LinksInfo.Data;
             foreach (string link in linksToRemove)
             {
                 if (!linkValid(jointData, link))
@@ -56,8 +56,8 @@ namespace PMKS_Silverlight_App
         
         internal void UpdateLinksTableAterAdd(JointData joint)
         {
-            ObservableCollection<LinkData> linkData = main.LinksInfo.Data;
-            ObservableCollection<JointData> jointData = main.JointsInfo.Data;
+            ObservableCollection<LinkData> linkData = App.main.LinksInfo.Data;
+            ObservableCollection<JointData> jointData = App.main.JointsInfo.Data;
             int index = 0;
             while (index < linkData.Count)
             {

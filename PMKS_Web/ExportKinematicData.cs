@@ -11,20 +11,20 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
     public static class ExportKinematicData
     {
-
-        internal static void ExportToCSV(Simulator pmks, MainPage main)
+        internal static void ExportToCSV()
         {
             var saveFileDialog = new SaveFileDialog
                 {
                     DefaultFileName =
                         "KinematicDatafromPMKS."+ DateTime.Now.ToOADate(),
-                    DefaultExt = ".csv",
-                    Filter = "Comma Separated Values file (*.csv)|*.csv|Tab-Delimited text file (*.txt)|*.txt|All Files (*.*)|*.*",
+                    DefaultExt = ".txt",
+                    Filter = "Tab-Delimited text file (*.txt)|*.txt|Comma Separated Values file (*.csv)|*.csv|All Files (*.*)|*.*",
                 };
             bool? result = saveFileDialog.ShowDialog();
             FileInfo fileInfo;
@@ -35,17 +35,17 @@ namespace PMKS_Silverlight_App
                     var fileStream = saveFileDialog.OpenFile();
                     var sw = new StreamWriter(fileStream, Encoding.Unicode);
                     if (System.IO.Path.GetExtension(saveFileDialog.SafeFileName) == ".csv")
-                        sw.Write(ConvertPMKSDataToCSV(pmks));
-                    else sw.Write(ConvertPMKSDataToTabDelimitedTxt(pmks));
+                        sw.Write(ConvertPMKSDataToCSV(App.main.pmks));
+                    else sw.Write(ConvertPMKSDataToTabDelimitedTxt(App.main.pmks));
                     sw.Flush();
                     sw.Close();
                 }
             }
             catch (Exception exc)
             {
-                main.status("********** Unable to write to file " + saveFileDialog.SafeFileName + ". ********");
-                main.status(exc.Message);
-                main.status("********** Unable to write to file " + saveFileDialog.SafeFileName + ". ********");
+                App.main.status("********** Unable to write to file " + saveFileDialog.SafeFileName + ". ********");
+                App.main.status(exc.Message);
+                App.main.status("********** Unable to write to file " + saveFileDialog.SafeFileName + ". ********");
             }
         }
 

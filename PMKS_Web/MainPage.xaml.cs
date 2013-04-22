@@ -21,7 +21,9 @@ namespace PMKS_Silverlight_App
         private readonly List<string> JointTypes = new List<string>();
         private readonly List<double[]> InitPositions = new List<double[]>();
         private int numJoints;
-
+        private int drivingIndex;
+        public JointsViewModel JointsInfo;
+        public LinksViewModel LinksInfo;
         #endregion
         #region Properties
         private static void GlobalSettingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -84,9 +86,9 @@ namespace PMKS_Silverlight_App
 
         public MainPage()
         {
+            JointsInfo = new JointsViewModel();
+            LinksInfo = new LinksViewModel();
             InitializeComponent();
-            jointInputTable.main = editButtons.main = linkInputTable.main = mainViewer.main = globalSettings.main = this;
-
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -98,7 +100,7 @@ namespace PMKS_Silverlight_App
                 Mode = BindingMode.TwoWay,
                 Path = new PropertyPath(JointsViewModel.DataCollectionProperty)
             };
-            jointInputTable.dataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
+            fileAndEditPanel.dataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
 
             /****** bind link info to link datagrid ******/
             binding = new Binding
@@ -182,10 +184,10 @@ namespace PMKS_Silverlight_App
             globalSettings.ErrorCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
             ParseData();
         }
+
         #region PMKS Controller Functions
         internal void ParseData(Boolean SettingChanged = false)
         {
-            PlayButton_Unchecked(null, null);
             #region table validation
             if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
@@ -212,7 +214,9 @@ namespace PMKS_Silverlight_App
             #region Setting Up PMKS
             try
             {
-                pmks = new Simulator(LinkIDs, JointTypes, InitPositions);
+                PlayButton_Unchecked(null, null);
+                DefineInputDriver();
+                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
 
                 if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
                 else status("The mechanism has non-dyadic loops.");
@@ -273,6 +277,14 @@ namespace PMKS_Silverlight_App
             {
                 status(e.Message);
             }
+        }
+
+        private void DefineInputDriver()
+        {
+            var inputDriver = JointsInfo.Data.FirstOrDefault(jd => jd.DrivingInput);
+            if (inputDriver == null)
+                inputDriver = JointsInfo.Data.FirstOrDefault(jd => jd.CanBeDriver);
+            drivingIndex = JointsInfo.Data.IndexOf(inputDriver);
         }
 
         private bool validLinks()
@@ -379,6 +391,7 @@ namespace PMKS_Silverlight_App
             if (numJoints != JointTypes.Count) return false;
             for (int i = 0; i < numJoints; i++)
             {
+                if (i == drivingIndex && !JointsInfo.Data[i].DrivingInput) return false;
                 if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
                 var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
                     StringSplitOptions.RemoveEmptyEntries));
@@ -436,7 +449,8 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < numJoints; i++)
             {
                 if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].XPos) ||
-                    string.IsNullOrWhiteSpace(JointsInfo.Data[i].YPos))
+                    string.IsNullOrWhiteSpace(JointsInfo.Data[i].YPos) ||
+                    string.Equals(JointsInfo.Data[i].Angle, "REQUIRED", StringComparison.InvariantCultureIgnoreCase))
                     return false;
                 InitPositions.Add(string.IsNullOrWhiteSpace(JointsInfo.Data[i].Angle)
                                       ? new[] { Double.Parse(JointsInfo.Data[i].XPos), Double.Parse(JointsInfo.Data[i].YPos) }
@@ -460,10 +474,7 @@ namespace PMKS_Silverlight_App
                 if (InitPositions[i].GetLength(0) != 3 &&
                     (jStr.Split(',', ' ')[0].Equals("p", StringComparison.InvariantCultureIgnoreCase) ||
                     jStr.Split(',', ' ')[0].Equals("rp", StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    jointInputTable.HighlightMissingAngle(i);
                     return false;
-                }
             }
             return true;
         }
@@ -475,8 +486,8 @@ namespace PMKS_Silverlight_App
             var newScaleFactor = (e.Delta > 1) ?
                mainViewer.ScaleFactor * 1.05 :
                mainViewer.ScaleFactor /= 1.05;
-            var s = (newScaleFactor - mainViewer.ScaleFactor)/2;
-            var newPanAnchor = new Point(mainViewer.PanningAnchor.X - (e.GetPosition(mainViewer).X * s) ,
+            var s = (newScaleFactor - mainViewer.ScaleFactor) / 2;
+            var newPanAnchor = new Point(mainViewer.PanningAnchor.X - (e.GetPosition(mainViewer).X * s),
                                     mainViewer.PanningAnchor.Y + (e.GetPosition(mainViewer).Y * s));
 
             mainViewer.MoveScaleCanvas(newScaleFactor, newPanAnchor);

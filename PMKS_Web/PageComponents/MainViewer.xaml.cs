@@ -10,19 +10,20 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Silverlight_PMKS;
 using Silverlight_PMKS.Shapes.Static_Shapes;
 
 namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
     {
+        
         #region Fields
         internal Point PanningAnchor;
         private double width, height, minX, maxX, minY, maxY;
         private Boolean Panning;
         private double penThick;
         private double jointSize;
-        public MainPage main;
         public Storyboard storyBoard { get; private set; }
         #endregion
 
@@ -113,9 +114,9 @@ namespace PMKS_Silverlight_App
         {
             #region draw position, velocity, and acceleration curves
             timeSlider.Maximum = pmks.JointParameters.Times.Last();
-            main.maxTimeText.Text = timeSlider.Maximum.ToString("F");
+            App.main.maxTimeText.Text = timeSlider.Maximum.ToString("F");
             timeSlider.Minimum = pmks.JointParameters.Times[0];
-            main.minTimeText.Text = timeSlider.Minimum.ToString("F");
+            App.main.minTimeText.Text = timeSlider.Minimum.ToString("F");
             var h = (timeSlider.ActualHeight == 0) ? ParentHeight : timeSlider.ActualHeight;
             timeSlider.LargeChange = (timeSlider.Maximum - timeSlider.Minimum) * DisplayConstants.TickDistance / h;
             timeSlider.SmallChange = (timeSlider.Maximum - timeSlider.Minimum) / 1000;
@@ -127,7 +128,7 @@ namespace PMKS_Silverlight_App
                 if (child is LinkShape)
                     ((LinkShape)child).SetBindings(timeSlider, pmks, XOffset, YOffset);
 
-            for (int i = 0; i < jointData.Count; i++)
+            for (int i = 0; i < pmks.numJoints; i++)
             {
                 var j = pmks.JointReOrdering[i];
                 if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
@@ -167,7 +168,7 @@ namespace PMKS_Silverlight_App
             storyBoard.Children.Add(timeAnimation);
             Storyboard.SetTarget(timeAnimation, timeSlider);
             Storyboard.SetTargetProperty(timeAnimation, new PropertyPath(RangeBase.ValueProperty));
-            if ((bool)main.PlayButton.IsChecked)
+            if ((bool)App.main.PlayButton.IsChecked)
                 storyBoard.Begin();
         }
 

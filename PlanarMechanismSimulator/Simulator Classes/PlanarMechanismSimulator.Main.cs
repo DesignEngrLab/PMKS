@@ -172,10 +172,10 @@ namespace PlanarMechanismSimulator
         /// <param name="LinkIDs">The link IDs.</param>
         /// <param name="JointTypes">The pivot types.</param>
         /// <param name="InitPositions">The init positions.</param>
-        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, IList<double[]> InitPositions = null)
+        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes,int DriverIndex = 0, IList<double[]> InitPositions = null)
         {
             // InputSpeed = 1.0;
-            CreateLinkAndPositionDetails(LinkIDs, JointTypes, InitPositions);
+            CreateLinkAndPositionDetails(LinkIDs, JointTypes,DriverIndex, InitPositions);
         }
 
         public Simulator(string data)
@@ -215,12 +215,12 @@ namespace PlanarMechanismSimulator
                 words.RemoveRange(jointTypeIndex, words.Count - jointTypeIndex);
                 linkIDs.Add(words);
             }
-            CreateLinkAndPositionDetails(linkIDs, jointTypes, positions);
+            CreateLinkAndPositionDetails(linkIDs, jointTypes,0, positions);
         }
 
 
         private void CreateLinkAndPositionDetails(IList<List<string>> LinkIDs, IList<string> JointTypeStrings,
-                                                  IList<double[]> Positions = null)
+                                                int DriverIndex, IList<double[]> Positions = null)
         {
             try
             {
@@ -289,7 +289,7 @@ namespace PlanarMechanismSimulator
                     if (newLinkIDs[i].Count > 1)
                         AllJoints[i].Link2 = AllLinks[linkNames.IndexOf(newLinkIDs[i][1])];
                 }
-                inputJoint = AllJoints[0];
+                inputJoint = AllJoints[DriverIndex];
                 if (inputJoint.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
                 if (inputJoint.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
                 if (!inputJoint.Link1.isGround)

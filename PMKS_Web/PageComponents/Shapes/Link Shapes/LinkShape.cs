@@ -82,16 +82,19 @@ namespace PMKS_Silverlight_App
         {
             ((LinkShape)d).RedrawWithNewBufferRadius();
         }
-        private PathGeometry RedrawWithNewBufferRadius()
+        private Geometry RedrawWithNewBufferRadius()
         {
             if (BufferRadius < MinimumBufferRadius) BufferRadius = MinimumBufferRadius;
             if (cvxCenters.Count == 1)
-                Data = new EllipseGeometry
-                        {
-                            Center = cvxCenters[0],
-                            RadiusX = BufferRadius,
-                            RadiusY = BufferRadius
-                        };
+            {
+                Stroke.Opacity = 0.0;
+              return new EllipseGeometry
+                    {
+                        Center = cvxCenters[0],
+                        RadiusX = BufferRadius,
+                        RadiusY = BufferRadius
+                    };
+            }
             Point start;
             var segments = new PathSegmentCollection();
 

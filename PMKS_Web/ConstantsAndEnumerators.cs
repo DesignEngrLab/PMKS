@@ -29,7 +29,7 @@ namespace PMKS_Silverlight_App
         public const double LinkStrokeSaturation = 0.7;
         public const double DefaultLinkThickness = 8.0;
         public const double InitialSlidingJointLengthMultiplier = 3.0;
-        public const double SingleJointLinkRadiusMultipler = 2.5;
+        public const double SingleJointLinkRadiusMultipler = 10;
         public const double RadiansToDegrees = 180.0 / Math.PI;
         public const double TotalSize = 2000.0;
         public const double MostNegativeAllowableCoordinate = -TotalSize / 2;
@@ -49,7 +49,9 @@ namespace PMKS_Silverlight_App
     {
         public List<string> jointTypeList
         {
-            get { return new List<string> { "R (pin joint)", "P (sliding block)", "RP (pin in slot)", "G (gear teeth)" }; }
+            get { return new List<string> { "R (pin joint)"
+                , "P (sliding block)", "RP (pin in slot)", "G (gear teeth)" 
+            }; }
         }
     }
 }

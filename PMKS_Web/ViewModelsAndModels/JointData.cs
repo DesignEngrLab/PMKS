@@ -4,15 +4,18 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
     public class JointData : DependencyObject
     {
+        
         private double _xPos = double.NaN;
         private double _yPos = double.NaN;
         private double _angle = double.NaN;
         private string _jointType;
+        private string _linkNames;
 
         public string JointType
         {
@@ -24,7 +27,29 @@ namespace PMKS_Silverlight_App
             }
         }
 
-        public string LinkNames { get; set; }
+        public string LinkNames
+        {
+            get { return _linkNames; }
+            set
+            {
+                _linkNames = value;
+                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("gnd"))
+                    _linkNames = _linkNames.Replace("gnd", "ground");
+                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("grnd"))
+                    _linkNames = _linkNames.Replace("grnd", "ground");
+                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("grond"))
+                    _linkNames = _linkNames.Replace("grond", "ground");
+                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("gound"))
+                    _linkNames = _linkNames.Replace("gound", "ground");
+                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("groud"))
+                    _linkNames = _linkNames.Replace("groud", "ground");
+                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("0"))
+                    _linkNames = _linkNames.Replace("0", "ground");
+
+                if (Application.Current.RootVisual != null)
+                    App.main.linkInputTable.UpdateLinksTableAterAdd(this);
+            }
+        }
 
         public string XPos
         {
@@ -41,7 +66,7 @@ namespace PMKS_Silverlight_App
             get
             {
                 if (LinkNames != null)
-                    return LinkNames.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries);
+                    return LinkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 else return new string[0];
             }
         }
@@ -56,6 +81,10 @@ namespace PMKS_Silverlight_App
             }
         }
 
+        public Boolean DrivingInput { get; set; }
+        public Boolean CanBeDriver { get { return (LinkNames != null && LinkNames.Contains("ground")); } }
+
+
         public double getYPos()
         {
             return _yPos;
@@ -68,7 +97,15 @@ namespace PMKS_Silverlight_App
 
         public string Angle
         {
-            get { return (double.IsNaN(_angle)) ? "" : _angle.ToString(CultureInfo.InvariantCulture); }
+            get
+            {
+                if (string.Equals(JointType, "P", StringComparison.InvariantCultureIgnoreCase) ||
+                 string.Equals(JointType, "RP", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return (double.IsNaN(_angle)) ? "REQUIRED" : _angle.ToString(CultureInfo.InvariantCulture);
+                }
+                return (double.IsNaN(_angle)) ? "" : _angle.ToString(CultureInfo.InvariantCulture);
+            }
             set
             {
                 if (!double.TryParse(value, out _angle))

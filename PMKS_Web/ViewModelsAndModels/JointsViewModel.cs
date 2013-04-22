@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
-using System.Reflection;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 namespace PMKS_Silverlight_App
 {
@@ -43,7 +31,7 @@ namespace PMKS_Silverlight_App
                     //new JointData {JointType = "r", XPos = "20.0", YPos = "0.0",LinkNames = "coupler output "},
                     //new JointData{JointType = "r", XPos = "21.0", YPos = "10", LinkNames ="output ground"}
                     //,new JointData()
-                    new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input"},
+                    new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input",DrivingInput = true},
                     new JointData {JointType = "R (pin joint)", XPos = "25.0", YPos = "0.0", LinkNames = "input"}
                 };
         }
