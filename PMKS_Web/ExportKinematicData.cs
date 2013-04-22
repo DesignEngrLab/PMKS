@@ -51,11 +51,7 @@ namespace PMKS_Silverlight_App
 
         private static string ConvertPMKSDataToCSV(Simulator pmks)
         {
-            var csv = "TimeSteps,Joints";
-            for (int i = 0; i < 6 * pmks.numJoints; i++) csv += ",";
-            csv += "Links";
-            for (int i = 0; i < 3 * pmks.numLinks; i++) csv += ",";
-            csv += "\n,";
+            var csv = "TimeSteps,";
             for (int i = 0; i < pmks.numJoints; i++) csv +=
                 "x_"+i+",y_"+i+",Vx_"+i+",Vy_"+i+",Ax_"+i+",Ay_"+i+",";
             for (int i = 0; i < pmks.numLinks; i++) csv +=
@@ -80,11 +76,7 @@ namespace PMKS_Silverlight_App
         }
         private static string ConvertPMKSDataToTabDelimitedTxt(Simulator pmks)
         {
-            var tabtxt = "TimeSteps\tJoints";
-            for (int i = 0; i < 6 * pmks.numJoints; i++) tabtxt += "\t";
-            tabtxt += "Links";
-            for (int i = 0; i < 3 * pmks.numLinks; i++) tabtxt += "\t";
-            tabtxt += "\n";
+            var tabtxt = "TimeSteps\t";
             for (int i = 0; i < pmks.numJoints; i++) tabtxt +=
                 "\tx_" + i + "\ty_" + i + "\tVx_" + i + "\tVy_" + i + "\tAx_" + i + "\tAy_" + i;
             for (int i = 0; i < pmks.numLinks; i++) tabtxt +=

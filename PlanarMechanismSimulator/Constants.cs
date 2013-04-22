@@ -18,6 +18,7 @@ namespace PlanarMechanismSimulator
         public const double epsilonSame = 10e-12;
 
         public const double epsilon = 10e-9;
+        internal const double ErrorInDeterminingCompleteCycle = 0.01;
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
         public const double SmallPerturbationFraction = 0.003;

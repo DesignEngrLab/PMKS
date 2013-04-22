@@ -24,8 +24,8 @@
         </Grid.RowDefinitions>
         <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
-        <Border Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
-                Background="#FFE2D9F7" BorderBrush="Black" >
+        <Border MouseWheel="timeSlider_MouseWheel"  Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
+                Background="#FFD9EDF7" BorderBrush="Black" >
             <Grid Name="Time_Slider_Grid" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -55,8 +55,8 @@
                     </Canvas>
 
                 </ToggleButton>
-                <Slider Background="White" Grid.Row="2" Grid.Column="1" Grid.RowSpan="5" Orientation="Vertical" x:Name="timeSlider" 
-                    MouseLeftButtonDown="timeSlider_MouseLeftButtonDown" MouseWheel="timeSlider_MouseWheel"  />
+                <Slider Grid.Row="2" Grid.Column="1" Grid.RowSpan="5" Orientation="Vertical" x:Name="timeSlider" 
+                    MouseLeftButtonDown="timeSlider_MouseLeftButtonDown"  />
                 <Button x:Name="morePositiveTimeButton" Grid.Row="2" Content="+" IsEnabled="False"/>
                 <Button x:Name="moreNegativeTimeButton" Grid.Row="6" Content="+" IsEnabled="False"/>
                 <TextBox x:Name="maxTimeText" Grid.Row="3" Text="99.99"  Foreground="White" Background="#FF7E7E7E" Height="24" Width="48" Grid.ColumnSpan="2" Margin="0,0,0,24" UseLayoutRounding="False" d:LayoutRounding="Auto" >
@@ -72,7 +72,7 @@
 
             </Grid>
         </Border>
-        <Border CornerRadius="4" BorderThickness="1.5" HorizontalAlignment="Left" Margin="10,25,0,4" Grid.RowSpan="2" Background="#FFE2D9F7" BorderBrush="Black" >
+        <Border CornerRadius="4" BorderThickness="1.5" HorizontalAlignment="Left" Margin="10,25,0,4" Grid.RowSpan="2"  Background="#FFD9EDF7" BorderBrush="Black" >
             <src:EditButtons  x:Name="editButtons"/></Border>
        
         <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />

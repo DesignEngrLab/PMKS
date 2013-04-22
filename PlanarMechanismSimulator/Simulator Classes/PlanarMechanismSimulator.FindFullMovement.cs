@@ -113,29 +113,61 @@ namespace PlanarMechanismSimulator
             DefineMovementBooleans();
         }
 
+
         public void DefineMovementBooleans()
         {
-            if (!lessThanFullRotation() && AllJoints.All(j => j.jointType != JointTypes.G))
+            if (lessThanFullRotation())
+                AdditionalGearCycling = CompleteCycle = false;
+            else
             {
-                /* move negative times to positive times */
-                var cycleTime = 2 * Math.PI / InputSpeed;
-                while (JointParameters.Times[0] < 0.0)
+                var cycleTime = 2*Math.PI/InputSpeed;
+                var forwardTime = cycleTime + JointParameters.Times[0];
+                var initState = JointParameters.Parameters[0];
+                var indexTop = JointParameters.LastIndex;
+                while (JointParameters.Times[indexTop] > forwardTime)
                 {
-                    var time = JointParameters.Times[0];
-                    var parameters = JointParameters.Parameters[0];
-                    JointParameters.RemoveAt(0);
-                    JointParameters.AddNearEnd(time + cycleTime, parameters);
-
-                    parameters = LinkParameters.Parameters[0];
-                    LinkParameters.RemoveAt(0);
-                    LinkParameters.AddNearEnd(time + cycleTime, parameters);
+                    indexTop--;
                 }
-                AdditionalGearCycling = false;
-                CompleteCycle = true;
+                var maxRMSError = 0.0;
+                var tau = forwardTime - JointParameters.Times[indexTop];
+                var deltaTime = JointParameters.Times[indexTop + 1] - JointParameters.Times[indexTop];
+                var previousState = JointParameters.Parameters[indexTop];
+                var nextState = JointParameters.Parameters[indexTop + 1];
+                for (int i = 0; i < numJoints; i++)
+                {
+                    var xCycle = FindXatTime(tau, deltaTime, previousState[i, 0], nextState[i, 0],
+                                             previousState[i, 2], nextState[i, 2], previousState[i, 4],
+                                             nextState[i, 4]);
+                    var error = (xCycle - initState[i, 0])*(xCycle - initState[i, 0]);
+                    if (maxRMSError < error) maxRMSError = error;
+                    var yCycle = FindXatTime(tau, deltaTime, previousState[i, 1], nextState[i, 1],
+                                             previousState[i, 3], nextState[i, 3], previousState[i, 5],
+                                             nextState[i, 5]);
+                    error = (yCycle - initState[i, 1])*(yCycle - initState[i, 1]);
+                    if (maxRMSError < error) maxRMSError = error;
+                }
+                CompleteCycle = (maxRMSError < Constants.ErrorInDeterminingCompleteCycle);
+                AdditionalGearCycling = AllJoints.Any(j => j.jointType == JointTypes.G);
+                if (CompleteCycle)
+                {
+                    while (indexTop < JointParameters.LastIndex)
+                    {
+                        JointParameters.RemoveAt(indexTop + 1);
+                        LinkParameters.RemoveAt(indexTop + 1);
+                    }
+                    while (JointParameters.Times[0] < 0.0)
+                    {
+                        var time = JointParameters.Times[0];
+                        var parameters = JointParameters.Parameters[0];
+                        JointParameters.RemoveAt(0);
+                        JointParameters.AddNearEnd(time + cycleTime, parameters);
+
+                        parameters = LinkParameters.Parameters[0];
+                        LinkParameters.RemoveAt(0);
+                        LinkParameters.AddNearEnd(time + cycleTime, parameters);
+                    }
+                }
             }
-            else if (!lessThanFullRotation() && AllJoints.Any(j => j.jointType == JointTypes.G))
-                AdditionalGearCycling = CompleteCycle = true;
-            else AdditionalGearCycling = CompleteCycle = false;
         }
 
         private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
@@ -322,7 +354,7 @@ namespace PlanarMechanismSimulator
 
                 if (validPosition)
                 {
-                    if (Forward)
+                    if (Forward == (InputSpeed > 0))
                         lock (InputRange)
                         {
                             InputRange[1] = links[inputLinkIndex].Angle;
@@ -358,7 +390,7 @@ namespace PlanarMechanismSimulator
                     currentTime += timeStep;
                     double[,] jointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
                     double[,] linkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
-                    if (Forward)
+                    if (Forward == (InputSpeed > 0))
                     {
                         lock (JointParameters)
                             JointParameters.AddNearEnd(currentTime, jointParams);
@@ -405,7 +437,7 @@ namespace PlanarMechanismSimulator
                     else
                     {
                         startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
-                        startingPosChange =Math.Sign(startingPosChange)* Math.Max(Math.Abs(startingPosChange), Constants.MinimumStepSize);
+                        startingPosChange = Math.Sign(startingPosChange) * Math.Max(Math.Abs(startingPosChange), Constants.MinimumStepSize);
                     }
                 } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError);
                 //var tempStep = startingPosChange;
@@ -416,7 +448,7 @@ namespace PlanarMechanismSimulator
 
                 if (validPosition)
                 {
-                    if (Forward)
+                    if (Forward == (InputSpeed > 0))
                         lock (InputRange)
                         {
                             InputRange[1] = links[inputLinkIndex].Angle;
@@ -452,7 +484,7 @@ namespace PlanarMechanismSimulator
                     currentTime += timeStep;
                     double[,] jointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
                     double[,] linkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
-                    if (Forward)
+                    if (Forward == (InputSpeed > 0))
                     {
                         lock (JointParameters)
                             JointParameters.AddNearEnd(currentTime, jointParams);

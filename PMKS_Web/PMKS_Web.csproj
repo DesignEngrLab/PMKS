@@ -89,14 +89,14 @@
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
     <Compile Include="ExportKinematicData.cs" />
-    <Compile Include="Shapes\Joint Shapes\PJointShape.cs" />
-    <Compile Include="Shapes\Joint Shapes\InputRJointShape.cs" />
-    <Compile Include="Shapes\Link Shapes\LinkShape.cs" />
-    <Compile Include="Shapes\Link Shapes\MyConvexHull.cs" />
-    <Compile Include="Shapes\Static Shapes\Axes.cs" />
-    <Compile Include="Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
-    <Compile Include="Shapes\Joint Shapes\RJointShape.cs" />
-    <Compile Include="Shapes\Joint Shapes\JointShape Base Classes.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\PJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\InputRJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Link Shapes\LinkShape.cs" />
+    <Compile Include="PageComponents\Shapes\Link Shapes\MyConvexHull.cs" />
+    <Compile Include="PageComponents\Shapes\Static Shapes\Axes.cs" />
+    <Compile Include="PageComponents\Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\RJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\JointShape Base Classes.cs" />
     <Compile Include="PageComponents\EditButtons.xaml.cs">
       <DependentUpon>EditButtons.xaml</DependentUpon>
     </Compile>
@@ -104,9 +104,9 @@
       <DependentUpon>OutputStatus.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\CheckBoxVisibilityConverter.cs" />
-    <Compile Include="Shapes\Vector Shapes\AccelerationVector.cs" />
-    <Compile Include="Shapes\Vector Shapes\VelocityVector.cs" />
-    <Compile Include="Shapes\Vector Shapes\PositionPath.cs" />
+    <Compile Include="PageComponents\Shapes\Vector Shapes\AccelerationVector.cs" />
+    <Compile Include="PageComponents\Shapes\Vector Shapes\VelocityVector.cs" />
+    <Compile Include="PageComponents\Shapes\Vector Shapes\PositionPath.cs" />
     <Compile Include="Converters\TimeToJointParameterConverter.cs" />
     <Compile Include="ViewModelsAndModels\LinksViewModel.cs" />
     <Compile Include="ViewModelsAndModels\JointsViewModel.cs" />

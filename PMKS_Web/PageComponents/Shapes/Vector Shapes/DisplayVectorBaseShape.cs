@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using PlanarMechanismSimulator;
@@ -56,7 +57,8 @@ namespace PMKS_Silverlight_App
         protected static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var vector = ((DisplayVectorBaseShape)d);
-            if (vector.End == null || vector.Start == null) return;
+            if (vector.End == null || vector.Start == null || vector.Start.Contains(double.NaN)
+                || vector.End.Contains(double.NaN)) return;
             var xStart = vector.Start[0] + vector.xOffset;
             var yStart = vector.Start[1] + vector.yOffset;
             ((LineGeometry)vector.Data).StartPoint = new Point(xStart, yStart);

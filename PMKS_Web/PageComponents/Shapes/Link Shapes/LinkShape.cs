@@ -221,7 +221,7 @@ namespace PMKS_Silverlight_App
         private static void OnTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var linkShape = ((LinkShape)d);
-            if (linkShape.Coordinates == null) return;
+            if (linkShape.Coordinates == null || linkShape.Coordinates.Contains(double.NaN)) return;
             linkShape.RenderTransform = new TransformGroup
             {
                 Children = new TransformCollection

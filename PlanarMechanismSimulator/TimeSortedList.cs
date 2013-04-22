@@ -7,13 +7,25 @@ namespace PlanarMechanismSimulator
 {
     public class TimeSortedList : IList<KeyValuePair<double, double[,]>>
     {
-        private int lastSpot = -1;
+        /// <summary>
+        /// Gets the last index.
+        /// </summary>
+        /// <value>
+        /// The last index.
+        /// </value>
+        public int LastIndex
+        {
+            get { return _lastIndex; }
+            private set { _lastIndex = value; }
+        }
+
         private readonly List<double[,]> parameterValues = new List<double[,]>();
         private readonly List<double> timeKeys = new List<double>();
+        private int _lastIndex = -1;
 
         public int Count
         {
-            get { return lastSpot + 1; }
+            get { return LastIndex + 1; }
         }
 
         public List<double> Times
@@ -30,7 +42,7 @@ namespace PlanarMechanismSimulator
 
         internal void Add(double time, double[,] parameters)
         {
-            if (Count == 0 || time > Times[lastSpot])
+            if (Count == 0 || time > Times[LastIndex])
                 //if count =0; then time is added to the first spot
                 //if count =/0 then time is added to the next spot based on lastspot value
                
@@ -41,7 +53,7 @@ namespace PlanarMechanismSimulator
             else //inserting time at some intermediate value
                 
             {
-                int ub = lastSpot; //ub = upperbound say 5
+                int ub = LastIndex; //ub = upperbound say 5
                 int lb = 0; //lb = lower bound 
                 int i; //counter
                 do
@@ -55,29 +67,29 @@ namespace PlanarMechanismSimulator
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }
-            lastSpot++;
+            LastIndex++;
         }
 
         internal void AddNearEnd(double time, double[,] parameters)
         {
-            if (Count == 0 || time > Times[lastSpot])
+            if (Count == 0 || time > Times[LastIndex])
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
             }
             else
             {
-                int i = lastSpot;
+                int i = LastIndex;
                 while (Times[i] > time) i--;
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }
-            lastSpot++;
+            LastIndex++;
         }
 
         internal void AddNearBegin(double time, double[,] parameters)
         {
-            if (Count == 0 || time > Times[lastSpot])
+            if (Count == 0 || time > Times[LastIndex])
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
@@ -89,7 +101,7 @@ namespace PlanarMechanismSimulator
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }
-            lastSpot++;
+            LastIndex++;
         }
 
         public void Add(KeyValuePair<double, double[,]> item)
@@ -156,7 +168,7 @@ namespace PlanarMechanismSimulator
         {
             Times.RemoveAt(index);
             Parameters.RemoveAt(index);
-            lastSpot--;
+            LastIndex--;
         }
 
         public KeyValuePair<double, double[,]> this[int index]

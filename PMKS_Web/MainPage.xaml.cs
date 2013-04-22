@@ -226,6 +226,7 @@ namespace PMKS_Silverlight_App
                     else
                         pmks.DeltaAngle = AngleIncrement;
                 }
+                else return;
             }
             catch (Exception e)
             {
