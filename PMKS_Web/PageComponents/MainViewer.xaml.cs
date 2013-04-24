@@ -295,30 +295,30 @@ namespace PMKS_Silverlight_App
         {
             double px = newPanAnchor.X ;
             double py = newPanAnchor.Y;
-            if (ParentWidth < newScaleFactor * MainCanvas.Width)
-            {
-                if (px > 0) px = 0;
-                else if (px < (ParentWidth - newScaleFactor * MainCanvas.Width))
-                    px = ParentWidth - newScaleFactor * MainCanvas.Width;
-            }
-            else
-            {
-                if (px > (ParentWidth - (newScaleFactor * MainCanvas.Width) / 2))
-                    px = ParentWidth - (newScaleFactor * MainCanvas.Width) / 2;
-                else if (px < 0) px = 0;
-            }
-            if (ParentHeight < newScaleFactor * MainCanvas.Width)
-            {
-                if (py > 0) py = 0;
-                else if (py < (ParentHeight - newScaleFactor * MainCanvas.Height))
-                    py = ParentHeight - newScaleFactor * MainCanvas.Height;
-            }
-            else
-            {
-                if (py > (ParentHeight - (newScaleFactor * MainCanvas.Height) / 2))
-                    py = ParentHeight - (newScaleFactor * MainCanvas.Height) / 2;
-                else if (py < 0) py = 0;
-            }
+            //if (ParentWidth < newScaleFactor * MainCanvas.Width)
+            //{
+            //    if (px > 0) px = 0;
+            //    else if (px < (ParentWidth - newScaleFactor * MainCanvas.Width))
+            //        px = ParentWidth - newScaleFactor * MainCanvas.Width;
+            //}
+            //else
+            //{
+            //    if (px > (ParentWidth - (newScaleFactor * MainCanvas.Width) / 2))
+            //        px = ParentWidth - (newScaleFactor * MainCanvas.Width) / 2;
+            //    else if (px < 0) px = 0;
+            //}
+            //if (ParentHeight < newScaleFactor * MainCanvas.Width)
+            //{
+            //    if (py > 0) py = 0;
+            //    else if (py < (ParentHeight - newScaleFactor * MainCanvas.Height))
+            //        py = ParentHeight - newScaleFactor * MainCanvas.Height;
+            //}
+            //else
+            //{
+            //    if (py > (ParentHeight - (newScaleFactor * MainCanvas.Height) / 2))
+            //        py = ParentHeight - (newScaleFactor * MainCanvas.Height) / 2;
+            //    else if (py < 0) py = 0;
+            //}
             ScaleFactor = newScaleFactor;
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
             jointSize = DisplayConstants.JointSize / ScaleFactor;

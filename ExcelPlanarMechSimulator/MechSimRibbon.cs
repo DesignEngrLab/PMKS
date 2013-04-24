@@ -73,7 +73,7 @@ namespace ExcelPlanarMechSimulator
                     else throw new Exception("One or more link names required for joint at row " + (i + 1).ToString());
 
                 }
-                pms = new Simulator(LinkIDs, typList, Positions);
+                pms = new Simulator(LinkIDs, typList, 0, Positions);
 
                 if (pms.IsDyadic) Globals.Sheet1.Range["h3"].Value2 = "The mechanism is comprised of only of dyads.";
                 else Globals.Sheet1.Range["h3"].Value2 = "The mechanism has non-dyadic loops.";
