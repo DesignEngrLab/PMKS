@@ -19,7 +19,6 @@ namespace PMKS_Silverlight_App
     {
 
         #region Fields
-        internal Point PanningAnchor;
         private double canvasWidth, canvasHeight, minX, maxX, minY, maxY;
         private double penThick;
         private double jointSize;
@@ -294,7 +293,7 @@ namespace PMKS_Silverlight_App
 
         internal void MoveScaleCanvas(double newScaleFactor, Point newPanAnchor, Boolean animate = false)
         {
-            double px = newPanAnchor.X;
+            double px = newPanAnchor.X ;
             double py = newPanAnchor.Y;
             if (ParentWidth < newScaleFactor * MainCanvas.Width)
             {
@@ -321,16 +320,15 @@ namespace PMKS_Silverlight_App
                 else if (py < 0) py = 0;
             }
             ScaleFactor = newScaleFactor;
-            PanningAnchor = new Point(px, py);
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
             jointSize = DisplayConstants.JointSize / ScaleFactor;
             MainCanvas.RenderTransform = new CompositeTransform
-                {
-                    ScaleX = ScaleFactor,
-                    ScaleY = ScaleFactor,
-                    TranslateX = PanningAnchor.X,
-                    TranslateY = PanningAnchor.Y
-                };
+            {
+                ScaleX = ScaleFactor,
+                ScaleY = ScaleFactor,
+                TranslateX = px,
+                TranslateY = py
+            }; 
         }
 
         public Path TargetPath { get; set; }
