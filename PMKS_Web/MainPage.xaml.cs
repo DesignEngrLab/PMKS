@@ -221,6 +221,7 @@ namespace PMKS_Silverlight_App
                 if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
                 else status("The mechanism has non-dyadic loops.");
                 int dof = pmks.DegreesOfFreedom;
+                App.main.fileAndEditPanel.ReportDOF(dof);
                 status("Degrees of freedom = " + dof);
                 if (dof == 1)
                 {
@@ -488,7 +489,7 @@ namespace PMKS_Silverlight_App
                mainViewer.ScaleFactor /= 1.05;
             var s = (newScaleFactor - mainViewer.ScaleFactor) / 2;
             var newPanAnchor = new Point(mainViewer.PanningAnchor.X - (e.GetPosition(mainViewer).X * s),
-                                    mainViewer.PanningAnchor.Y + (e.GetPosition(mainViewer).Y * s));
+                                    mainViewer.PanningAnchor.Y - (e.GetPosition(mainViewer).Y * s));
 
             mainViewer.MoveScaleCanvas(newScaleFactor, newPanAnchor);
         }
@@ -509,8 +510,8 @@ namespace PMKS_Silverlight_App
         internal void OnMouseMove(object sender, MouseEventArgs e)
         {
             if (!Panning) return;
-            var newPanAnchor = new Point(mainViewer.PanningAnchor.X + ((e.GetPosition(this).X - ScreenStartPoint.X) / mainViewer.ScaleFactor),
-                                    mainViewer.PanningAnchor.Y - ((e.GetPosition(this).Y - ScreenStartPoint.Y) / mainViewer.ScaleFactor));
+            var newPanAnchor = new Point(mainViewer.PanningAnchor.X + (e.GetPosition(this).X - ScreenStartPoint.X),
+                                    mainViewer.PanningAnchor.Y + (e.GetPosition(this).Y - ScreenStartPoint.Y));
             mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, newPanAnchor);
         }
 
@@ -550,6 +551,13 @@ namespace PMKS_Silverlight_App
             PlayButton_Unchecked(sender, e);
             if (e.Delta > 0) timeSlider.Value += timeSlider.LargeChange;
             else timeSlider.Value -= timeSlider.LargeChange;
+        }
+
+        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+
+            mainViewer.Width = Application.Current.Host.Content.ActualWidth;
+            mainViewer.Height = Application.Current.Host.Content.ActualHeight;
         }
     }
 }

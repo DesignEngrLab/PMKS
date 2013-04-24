@@ -22,7 +22,7 @@ namespace PMKS_Silverlight_App
             var saveFileDialog = new SaveFileDialog
                 {
                     DefaultFileName =
-                        "KinematicDatafromPMKS."+ DateTime.Now.ToOADate(),
+                        "KinematicDatafromPMKS." + DateTime.Now.ToOADate(),
                     DefaultExt = ".txt",
                     Filter = "Tab-Delimited text file (*.txt)|*.txt|Comma Separated Values file (*.csv)|*.csv|All Files (*.*)|*.*",
                 };
@@ -51,11 +51,11 @@ namespace PMKS_Silverlight_App
 
         private static string ConvertPMKSDataToCSV(Simulator pmks)
         {
-            var csv = "TimeSteps,";
+            var csv = "TimeSteps";
             for (int i = 0; i < pmks.numJoints; i++) csv +=
-                "x_"+i+",y_"+i+",Vx_"+i+",Vy_"+i+",Ax_"+i+",Ay_"+i+",";
+                ",x_" + i + ",y_" + i + ",Vx_" + i + ",Vy_" + i + ",Ax_" + i + ",Ay_" + i;
             for (int i = 0; i < pmks.numLinks; i++) csv +=
-                "angle_" + pmks.AllLinks[i].name + ",angVel_" + pmks.AllLinks[i].name + ",angAccel_" + pmks.AllLinks[i].name;
+                ",angle_" + pmks.AllLinks[i].name + ",angVel_" + pmks.AllLinks[i].name + ",angAccel_" + pmks.AllLinks[i].name;
             csv += "\n";
             var timeSteps = pmks.JointParameters.Count;
             var times = pmks.JointParameters.Times;
@@ -76,7 +76,7 @@ namespace PMKS_Silverlight_App
         }
         private static string ConvertPMKSDataToTabDelimitedTxt(Simulator pmks)
         {
-            var tabtxt = "TimeSteps\t";
+            var tabtxt = "TimeSteps";
             for (int i = 0; i < pmks.numJoints; i++) tabtxt +=
                 "\tx_" + i + "\ty_" + i + "\tVx_" + i + "\tVy_" + i + "\tAx_" + i + "\tAy_" + i;
             for (int i = 0; i < pmks.numLinks; i++) tabtxt +=

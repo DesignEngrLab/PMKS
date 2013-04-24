@@ -261,7 +261,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
                              j.Link2 != inputLink && j.Link2 != groundLink)
                     unknownObjects.Add(j);
-                else if (j.jointType == JointTypes.P )
+                else if (j.jointType == JointTypes.P)
                 {
                     unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
                     if (j.Link2 != inputLink && j.Link2 != groundLink)
@@ -275,8 +275,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 {
                     unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
                     if (j.Link2 != inputLink && j.Link2 != groundLink)
-                    unknownObjects.Add(j);
-                    }
+                        unknownObjects.Add(j);
+                }
             }
             #endregion
 
@@ -370,33 +370,36 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
         internal Boolean Solve()
         {
-            //return false;
-            SetInitialInputAndGroundJointStates();
-            var rows = new List<double[]>();
-            var answers = new List<double>();
-            foreach (var eq in equations)
-                if (eq is JointToJointEquation)
-                {
-                    rows.Add(((JointToJointEquation)eq).GetRow1Coefficients());
-                    answers.Add(((JointToJointEquation)eq).GetRow1Constant());
-                    rows.Add(((JointToJointEquation)eq).GetRow2Coefficients());
-                    answers.Add(((JointToJointEquation)eq).GetRow2Constant());
-                }
-                else
-                {
-                    rows.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowCoefficients());
-                    answers.Add(0.0);
-                }
-            var rowOrdering = ChooseBestRowOrder(rows);
-            for (int j = 0; j < numUnknowns; j++)
+            try
             {
-                StarMath.SetRow(j, A, rows[rowOrdering[j]]);
-                b[j] = answers[rowOrdering[j]];
+                SetInitialInputAndGroundJointStates();
+                var rows = new List<double[]>();
+                var answers = new List<double>();
+                foreach (var eq in equations)
+                    if (eq is JointToJointEquation)
+                    {
+                        rows.Add(((JointToJointEquation)eq).GetRow1Coefficients());
+                        answers.Add(((JointToJointEquation)eq).GetRow1Constant());
+                        rows.Add(((JointToJointEquation)eq).GetRow2Coefficients());
+                        answers.Add(((JointToJointEquation)eq).GetRow2Constant());
+                    }
+                    else
+                    {
+                        rows.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowCoefficients());
+                        answers.Add(0.0);
+                    }
+                var rowOrdering = ChooseBestRowOrder(rows);
+                for (int j = 0; j < numUnknowns; j++)
+                {
+                    StarMath.SetRow(j, A, rows[rowOrdering[j]]);
+                    b[j] = answers[rowOrdering[j]];
+                }
+                var x = StarMath.solve(A, b);
+                if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
+                PutStateVarsBackInJointsAndLinks(x);
+                return true;
             }
-            var x = StarMath.solve(A, b);
-            if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
-            PutStateVarsBackInJointsAndLinks(x);
-            return true;
+            catch { return false; }
         }
 
         private int[] ChooseBestRowOrder(List<double[]> rows)

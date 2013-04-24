@@ -17,11 +17,10 @@ namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
     {
-        
+
         #region Fields
         internal Point PanningAnchor;
-        private double width, height, minX, maxX, minY, maxY;
-        private Boolean Panning;
+        private double canvasWidth, canvasHeight, minX, maxX, minY, maxY;
         private double penThick;
         private double jointSize;
         public Storyboard storyBoard { get; private set; }
@@ -72,23 +71,14 @@ namespace PMKS_Silverlight_App
 
         private double ParentHeight
         {
-            get
-            {
-                return Application.Current.Host.Content.ActualHeight;
-                return (((FrameworkElement)Parent).ActualHeight == 0)
-                           ? Application.Current.Host.Content.ActualHeight
-                           : ActualHeight;
-            }
+            get { return (double.IsNaN(Height)) ? Application.Current.Host.Content.ActualHeight : Height; }
         }
 
         private double ParentWidth
         {
             get
             {
-                return Application.Current.Host.Content.ActualWidth;
-                return (((FrameworkElement)Parent).ActualWidth == 0)
-                           ? Application.Current.Host.Content.ActualWidth
-                           : ActualWidth;
+                return (double.IsNaN(Width)) ? Application.Current.Host.Content.ActualWidth : Width;
             }
         }
         #endregion
@@ -216,8 +206,8 @@ namespace PMKS_Silverlight_App
             {
                 maxX = maxY = 5 * DisplayConstants.AxesBuffer;
             }
-            width = maxX - minX;
-            height = maxY - minY;
+            canvasWidth = maxX - minX;
+            canvasHeight = maxY - minY;
         }
         internal void UpdateRanges(Simulator pmks)
         {
@@ -240,8 +230,8 @@ namespace PMKS_Silverlight_App
                     if (maxY < pmks.JointParameters.Parameters[j][i, 1])
                         maxY = pmks.JointParameters.Parameters[j][i, 1];
                 }
-            width = maxX - minX;
-            height = maxY - minY;
+            canvasWidth = maxX - minX;
+            canvasHeight = maxY - minY;
         }
 
         internal void FindVelocityAndAccelerationScalers(Simulator pmks)
@@ -266,24 +256,24 @@ namespace PMKS_Silverlight_App
                     if (maxAy < ay) maxAy = ay;
                 }
 
-            VelocityFactor = Math.Min(width / maxVx, height / maxVy);
+            VelocityFactor = Math.Min(canvasWidth / maxVx, canvasHeight / maxVy);
 
-            AccelFactor = Math.Min(width / maxAx, height / maxAy);
+            AccelFactor = Math.Min(canvasWidth / maxAx, canvasHeight / maxAy);
 
         }
 
 
         internal void UpdateScaleAndCenter()
         {
-            XOffset = DisplayConstants.DefaultBufferMultipler * width - minX;
-            YOffset = DisplayConstants.DefaultBufferMultipler * height - minY;
+            XOffset = DisplayConstants.DefaultBufferMultipler * canvasWidth - minX;
+            YOffset = DisplayConstants.DefaultBufferMultipler * canvasHeight - minY;
             // for the meantime, we decided to not change the size of the canvas. Keep fixed size.
             //XOffset = YOffset = -DisplayConstants.MostNegativeAllowableCoordinate;
             //MainCanvas.Width = DisplayConstants.TotalSize;
             //MainCanvas.Height = DisplayConstants.TotalSize;
             ///////////////////////
-            MainCanvas.Width = width + 2 * DisplayConstants.DefaultBufferMultipler * width;
-            MainCanvas.Height = height + 2 * DisplayConstants.DefaultBufferMultipler * height;
+            MainCanvas.Width = canvasWidth + 2 * DisplayConstants.DefaultBufferMultipler * canvasWidth;
+            MainCanvas.Height = canvasHeight + 2 * DisplayConstants.DefaultBufferMultipler * canvasHeight;
 
             var newScaleFactor = Math.Min(ParentWidth / (MainCanvas.Width), ParentHeight / (MainCanvas.Height));
             //if (Math.Abs(newScaleFactor - ScaleFactor) / Math.Max(newScaleFactor, ScaleFactor) >
@@ -306,38 +296,41 @@ namespace PMKS_Silverlight_App
         {
             double px = newPanAnchor.X;
             double py = newPanAnchor.Y;
-            if (ParentWidth < newScaleFactor*MainCanvas.Width)
+            if (ParentWidth < newScaleFactor * MainCanvas.Width)
             {
                 if (px > 0) px = 0;
-                else if (px < (ParentWidth - newScaleFactor*MainCanvas.Width))
-                    px = ParentWidth - newScaleFactor*MainCanvas.Width;
+                else if (px < (ParentWidth - newScaleFactor * MainCanvas.Width))
+                    px = ParentWidth - newScaleFactor * MainCanvas.Width;
             }
             else
             {
-                if (px > (ParentWidth - (newScaleFactor*MainCanvas.Width)/2))
-                    px = ParentWidth - (newScaleFactor*MainCanvas.Width)/2;
+                if (px > (ParentWidth - (newScaleFactor * MainCanvas.Width) / 2))
+                    px = ParentWidth - (newScaleFactor * MainCanvas.Width) / 2;
                 else if (px < 0) px = 0;
             }
-            if (ParentHeight < newScaleFactor*MainCanvas.Width)
+            if (ParentHeight < newScaleFactor * MainCanvas.Width)
             {
                 if (py > 0) py = 0;
-                else if (py < (ParentHeight - newScaleFactor*MainCanvas.Height))
-                    py = ParentHeight - newScaleFactor*MainCanvas.Height;
+                else if (py < (ParentHeight - newScaleFactor * MainCanvas.Height))
+                    py = ParentHeight - newScaleFactor * MainCanvas.Height;
             }
             else
             {
-                if (py > (ParentHeight - (newScaleFactor*MainCanvas.Height)/2))
-                    py = ParentHeight - (newScaleFactor*MainCanvas.Height)/2;
+                if (py > (ParentHeight - (newScaleFactor * MainCanvas.Height) / 2))
+                    py = ParentHeight - (newScaleFactor * MainCanvas.Height) / 2;
                 else if (py < 0) py = 0;
             }
             ScaleFactor = newScaleFactor;
             PanningAnchor = new Point(px, py);
             penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
             jointSize = DisplayConstants.JointSize / ScaleFactor;
-            MainCanvas.RenderTransform = new MatrixTransform
-            {
-                Matrix = new Matrix(ScaleFactor, 0, 0, -ScaleFactor, PanningAnchor.X, ParentHeight - PanningAnchor.Y)
-            };
+            MainCanvas.RenderTransform = new CompositeTransform
+                {
+                    ScaleX = ScaleFactor,
+                    ScaleY = ScaleFactor,
+                    TranslateX = PanningAnchor.X,
+                    TranslateY = PanningAnchor.Y
+                };
         }
 
         public Path TargetPath { get; set; }

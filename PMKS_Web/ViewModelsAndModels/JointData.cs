@@ -10,7 +10,7 @@ namespace PMKS_Silverlight_App
 {
     public class JointData : DependencyObject
     {
-        
+
         private double _xPos = double.NaN;
         private double _yPos = double.NaN;
         private double _angle = double.NaN;
@@ -81,10 +81,6 @@ namespace PMKS_Silverlight_App
             }
         }
 
-        public Boolean DrivingInput { get; set; }
-        public Boolean CanBeDriver { get { return (LinkNames != null && LinkNames.Contains("ground")); } }
-
-
         public double getYPos()
         {
             return _yPos;
@@ -143,7 +139,18 @@ namespace PMKS_Silverlight_App
         public static readonly DependencyProperty AccelVisibleProperty = DependencyProperty.Register("AccelVisible",
                                           typeof(Boolean), typeof(JointData),
                                           new PropertyMetadata(false));
+        public Boolean DrivingInput
+        {
+            get { return (Boolean)GetValue(DrivingInputProperty); }
+            set { SetValue(DrivingInputProperty, value); }
+        }
 
+        public static readonly DependencyProperty DrivingInputProperty = DependencyProperty.Register("DrivingInput",
+                                          typeof(Boolean), typeof(JointData),
+                                          new PropertyMetadata(false));
+
+
+        public Boolean CanBeDriver { get { return (LinkNames != null && LinkNames.Contains("ground")); } }
 
         internal static bool ConvertTextToData(string text, out List<JointData> jointsInfo)
         {
@@ -178,12 +185,13 @@ namespace PMKS_Silverlight_App
                     angleTemp = words[index];
                     index++;
                 }
-                bool posV = true, velV = true, accelV = true;
+                bool posV = false, velV = false, accelV = false, driver = false;
                 if (words.Count() > index && Boolean.TryParse(words[index], out posV))
                     if (words.Count() > ++index && Boolean.TryParse(words[index], out velV))
                         if (words.Count() > ++index && Boolean.TryParse(words[index], out accelV))
-                        {
-                        }
+                            if (words.Count() > ++index && Boolean.TryParse(words[index], out driver))
+                            {
+                            }
                 words.RemoveRange(jointTypeIndex, words.Count - jointTypeIndex);
                 var linkIDStr = words.Aggregate("", (current, s) => current + ("," + s));
                 linkIDStr = linkIDStr.Remove(0, 1);
@@ -196,7 +204,8 @@ namespace PMKS_Silverlight_App
                         LinkNames = linkIDStr,
                         PosVisible = posV,
                         VelocityVisible = velV,
-                        AccelerationVisible = accelV
+                        AccelerationVisible = accelV,
+                        DrivingInput = driver
                     });
             }
             return true;
@@ -214,13 +223,15 @@ namespace PMKS_Silverlight_App
                 text += jInfo.XPos + ",";
                 text += jInfo.YPos;
                 text += (!string.IsNullOrWhiteSpace(jInfo.Angle)) ? "," + jInfo.Angle : "";
-                var boolStr = "";
-                if (!jInfo.AccelerationVisible) boolStr = ",false";
-                if (!jInfo.VelocityVisible || !jInfo.AccelerationVisible)
-                    boolStr = "," + jInfo.VelocityVisible.ToString() + boolStr;
-                if (!jInfo.PosVisible || !jInfo.VelocityVisible || !jInfo.AccelerationVisible)
-                    boolStr = "," + jInfo.PosVisible.ToString() + boolStr;
-                text += boolStr + "\n";
+                var boolStr = "," + jInfo.PosVisible
+                    +"," + jInfo.VelocityVisible 
+                    + "," + jInfo.AccelerationVisible
+                    +"," + jInfo.DrivingInput;
+                while (boolStr.EndsWith(",False"))
+                {
+                    boolStr = boolStr.Remove(boolStr.Length - 6);
+                }
+                text += boolStr+"\n";
             }
             return text;
         }

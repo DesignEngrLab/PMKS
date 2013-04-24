@@ -62,7 +62,7 @@ namespace PMKS_Silverlight_App
                     if (jointDataList.All(jd => !jd.DrivingInput))
                         jointDataList.First(jd => jd.CanBeDriver).DrivingInput = true;
                 }
-
+            
             App.main.JointsInfo.Data.Add(new JointData());
             App.main.ParseData();
 
@@ -215,5 +215,19 @@ namespace PMKS_Silverlight_App
         #endregion
 
 
+        internal void ReportDOF(int dof)
+        {
+            DOFTextBox.Text = dof.ToString();
+            if (dof == 1)
+            {
+                DOFBorder.Background = new SolidColorBrush(Color.FromArgb(255, 0, 158, 36));
+                DOFBorder.BorderBrush = new SolidColorBrush(Colors.White);
+            }
+            else
+            {
+                DOFBorder.Background = new SolidColorBrush(Color.FromArgb(255,156,46,46));
+                DOFBorder.BorderBrush = new SolidColorBrush(Colors.Black);
+            }
+        }
     }
 }

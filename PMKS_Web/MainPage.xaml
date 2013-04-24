@@ -9,23 +9,27 @@
     MouseWheel="OnMouseWheel" 
     MouseLeftButtonUp="OnLostMouseCapture" MouseLeftButtonDown="OnMouseEnter"
     MouseMove="OnMouseMove" 
-    d:DesignHeight="800" d:DesignWidth="1000">
+    d:DesignHeight="800" d:DesignWidth="1000" SizeChanged="UserControl_SizeChanged">
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.RowSpan="2"/>
-        
+        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.RowSpan="2" RenderTransformOrigin="0.0,0.5" >
+            <src:MainViewer.RenderTransform>
+                <CompositeTransform ScaleY="-1"/>
+            </src:MainViewer.RenderTransform>
+        </src:MainViewer>
+
         <StackPanel HorizontalAlignment="Left" Grid.RowSpan="2">
             <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" HorizontalAlignment="Left" FontSize="18" Width="418"/>
             <src:FileAndEditPanel  x:Name="fileAndEditPanel" />
         </StackPanel>
-        
-            <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />
-            <Border Grid.Row="1" MouseWheel="timeSlider_MouseWheel"  HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
+
+        <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />
+        <Border Grid.Row="1" MouseWheel="timeSlider_MouseWheel"  HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
                 Background="#60D9EDF7" BorderBrush="Black" >
-                <Grid Name="Time_Slider_Grid" >
+            <Grid Name="Time_Slider_Grid" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -70,7 +74,7 @@
                 </TextBox>
             </Grid>
         </Border>
-       
+
         <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         <src:OutputStatus Grid.Row="1" Visibility="Collapsed" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
     </Grid>

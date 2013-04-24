@@ -19,7 +19,7 @@ namespace PMKS_Silverlight_App
         public const double TickDistance = 24.0; // one-quarter of an inch
         public const double JointSize = 4.0; // one-sixteenth of an inch
         public const double AxesBuffer = 10; // one inch
-        public const double UnCroppedDimension = 2000;
+        public const double UnCroppedDimension = 999999;
         public const double LinkFillOpacity = 0.5;
         public const double LinkHueMultiplier = 180.0 / Math.PI;
         public const double LinkFillLuminence = 0.8;

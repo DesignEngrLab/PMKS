@@ -16,14 +16,15 @@
 
                 </StackPanel>
                 <StackPanel Margin="4,0" Orientation="Horizontal" HorizontalAlignment="Right">
-   
+
                     <TextBlock Text="Edit Commands" VerticalAlignment="Center" Margin="20,0,0,0" />
                     <ToggleButton x:Name="CollapseExpandButton" Checked="ToggleButton_Checked" 
                               Unchecked="ToggleButton_Unchecked">
                         <ToggleButton.Content>
                             <Canvas Height="6" Width="12">
                                 <Path x:Name="CollapseExpandArrow" StrokeLineJoin="Round" Stroke="Black" Data="F1 M 0.5,0.5L 6,6L 11.5,0.5" StrokeThickness="2" RenderTransformOrigin="0.5,0.5"/>
-                            </Canvas>
+                            </Canvas>
+
                         </ToggleButton.Content>
                     </ToggleButton>
 
@@ -87,7 +88,7 @@
                         <s:DataGridTemplateColumn Header="V">
                             <s:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox Tag="{Binding}" Click="VelocityVisible_Click" IsChecked="False" 
+                                    <CheckBox Tag="{Binding}" Click="VelocityVisible_Click" IsChecked="{Binding VelocityVisible}" 
                                   VerticalAlignment="Center"  HorizontalAlignment="Center" />
                                 </DataTemplate>
                             </s:DataGridTemplateColumn.CellTemplate>
@@ -95,7 +96,7 @@
                         <s:DataGridTemplateColumn Header="A">
                             <s:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox Tag="{Binding}" Click="AccelerationVisible_Click" IsChecked="False" 
+                                    <CheckBox Tag="{Binding}" Click="AccelerationVisible_Click" IsChecked="{Binding AccelerationVisible}" 
                                   VerticalAlignment="Center"  HorizontalAlignment="Center" />
                                 </DataTemplate>
                             </s:DataGridTemplateColumn.CellTemplate>
@@ -103,9 +104,17 @@
 
                     </s:DataGrid.Columns>
                 </s:DataGrid>
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left">
                     <Button Content="Remove Row" Name="RemoveButton" Click="RemoveButton_Click" Width="105"/>
                     <Button Content="Clear All Rows" Name="ClearButton" Click="ClearButton_Click" Width="103"/>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" >
+                    <TextBlock VerticalAlignment="Center" Text="DOF =" FontSize="14"/>
+                    <Border x:Name="DOFBorder" Background="#FF9C2E2E" Margin="1" BorderThickness="2" BorderBrush="Black" CornerRadius="3">
+                        <TextBlock x:Name="DOFTextBox" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" 
+                                   Width="30" FontSize="14" Foreground="White" />
+                    </Border>
                 </StackPanel>
             </Grid>
         </StackPanel>
