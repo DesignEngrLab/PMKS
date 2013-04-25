@@ -489,11 +489,11 @@ namespace PMKS_Silverlight_App
                 : mainViewer.ScaleFactor / 1.05;
 
             double delta = mainViewer.ScaleFactor - newScaleFactor;
-            ScreenStartPoint = e.GetPosition(mainViewer.MainCanvas);
-             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+            var center = e.GetPosition(mainViewer.MainCanvas);
+            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
-            mainViewer.MoveScaleCanvas(newScaleFactor, new Point(delta * ScreenStartPoint.X +oldTx,
-                      delta * ScreenStartPoint.Y+oldTy));
+            mainViewer.MoveScaleCanvas(newScaleFactor, new Point(delta * center.X + oldTx,
+                      delta * center.Y + oldTy));
         }
 
         internal void MouseUpStopPanning(object sender, MouseEventArgs e)
@@ -510,7 +510,7 @@ namespace PMKS_Silverlight_App
             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
             ScreenStartPoint.X -= oldTx;
-            ScreenStartPoint.Y -= oldTy;
+            ScreenStartPoint.Y += oldTy;
         }
 
 
