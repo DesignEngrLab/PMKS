@@ -172,10 +172,10 @@ namespace PlanarMechanismSimulator
         /// <param name="LinkIDs">The link IDs.</param>
         /// <param name="JointTypes">The pivot types.</param>
         /// <param name="InitPositions">The init positions.</param>
-        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes,int DriverIndex = 0, IList<double[]> InitPositions = null)
+        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, int DriverIndex = 0, IList<double[]> InitPositions = null)
         {
             // InputSpeed = 1.0;
-            CreateLinkAndPositionDetails(LinkIDs, JointTypes,DriverIndex, InitPositions);
+            CreateLinkAndPositionDetails(LinkIDs, JointTypes, DriverIndex, InitPositions);
         }
 
         public Simulator(string data)
@@ -188,7 +188,7 @@ namespace PlanarMechanismSimulator
             var linkIDs = new List<List<string>>();
             foreach (var pivotSentence in pivotSentences)
             {
-                var words = pivotSentence.Split(' ').ToList();
+                var words = pivotSentence.Split(new[] { ' ', ',', '\t', '|' }).ToList();
                 words.RemoveAll(string.IsNullOrWhiteSpace);
                 var lastJointType = words.LastOrDefault(s => s.Equals("R", StringComparison.InvariantCultureIgnoreCase)
                                                               ||
@@ -215,7 +215,7 @@ namespace PlanarMechanismSimulator
                 words.RemoveRange(jointTypeIndex, words.Count - jointTypeIndex);
                 linkIDs.Add(words);
             }
-            CreateLinkAndPositionDetails(linkIDs, jointTypes,0, positions);
+            CreateLinkAndPositionDetails(linkIDs, jointTypes, 0, positions);
         }
 
 

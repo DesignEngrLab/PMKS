@@ -6,16 +6,29 @@ namespace SimulatorConsoleApplication
     {
         static void Main(string[] args)
         {
-            var data = "gnd input r 0.0 0.0 \n"
-                       + "input coupler rp 0.0 1.0 0\n"
-                       + " coupler R 12.0 0.0 \n"
-                       + "coupler ground r 5.0 0\n";
+            //            var data = "ground,input,R,0,0\n"+
+            //"input,coupler,R,0,0.098\n"+
+            //"coupler,follower,R,0.224,0.333\n"+
+            //"follower,one,R,0.528,0.265\n"+
+            //"one,ground,R,0.48,0.071\n"+
+            //"coupler,a,R,0.165,0.603\n"+
+            //"follower,a,R,0.376,0.469";
+
+
+            var data = "ground,input,R,0,0\n"
+            + "input,coupler,R,0,0.98\n"
+            + "coupler,follower,R,2.24,3.33\n"
+            + "follower,one,R,5.28,2.65\n"
+            + "one,ground,R,4.8,0.71\n"
+            + "coupler,a,R,1.65,6.03\n"
+            + "follower,a,R,3.76,4.69\n";
+
             var pms = new PlanarMechanismSimulator.Simulator(data);
             pms.InputSpeed = 123.0;
             pms.MaxSmoothingError = 0.01;
             Console.WriteLine("start");
             pms.FindFullMovement();
-            
+
             Console.WriteLine("done");
             Console.ReadKey();
         }

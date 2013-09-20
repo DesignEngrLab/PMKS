@@ -334,24 +334,37 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                      * answers. Which will prevent runaway situations like x=y and y=x. */
                     var rowsWithlowestOccuringVar =
                         rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1)).OrderBy(r => r.Count).ToList();
-                    var rowWithlowestOccuringVar =
-                           (m == 0 || rowsWithlowestOccuringVar.Count == 1 || matrixOrders[0][lowestOccurringVariable.Item1] !=
-                              rowNonZeroes.IndexOf(rowsWithlowestOccuringVar[0])) ?
-                      rowsWithlowestOccuringVar[0] :
-                      rowsWithlowestOccuringVar[1];
-                    matrixOrders[m][lowestOccurringVariable.Item1] = rowNonZeroes.IndexOf(rowWithlowestOccuringVar);
-                    targetIndices.Remove(lowestOccurringVariable);
-                    rowNonZeroesTemp.Remove(rowWithlowestOccuringVar);
-                    var tuplesToUpdate =
-                        targetIndices.Where(tuple => rowWithlowestOccuringVar.Contains(tuple.Item1)).ToList();
-                    foreach (var tuple in tuplesToUpdate)
+                    if (rowsWithlowestOccuringVar.Count == 0)
                     {
-                        targetIndices.Remove(tuple);
-                        targetIndices.Add(new Tuple<int, int>(tuple.Item1, tuple.Item2 - 1));
+                        //matrixOrders[m] = null;
+                        matrixOrders[m][lowestOccurringVariable.Item1] = -1;
+                        targetIndices.Clear();
+                        break;
+                    }
+                    else
+                    {
+                        var rowWithlowestOccuringVar =
+                               (m == 0 || rowsWithlowestOccuringVar.Count == 1 || matrixOrders[0][lowestOccurringVariable.Item1] !=
+                                  rowNonZeroes.IndexOf(rowsWithlowestOccuringVar[0])) ?
+                          rowsWithlowestOccuringVar[0] :
+                          rowsWithlowestOccuringVar[1];
+                        matrixOrders[m][lowestOccurringVariable.Item1] = rowNonZeroes.IndexOf(rowWithlowestOccuringVar);
+
+                        targetIndices.Remove(lowestOccurringVariable);
+                        rowNonZeroesTemp.Remove(rowWithlowestOccuringVar);
+                        var tuplesToUpdate =
+                            targetIndices.Where(tuple => rowWithlowestOccuringVar.Contains(tuple.Item1)).ToList();
+                        foreach (var tuple in tuplesToUpdate)
+                        {
+                            targetIndices.Remove(tuple);
+                            targetIndices.Add(new Tuple<int, int>(tuple.Item1, tuple.Item2 - 1));
+                        }
                     }
                     j++;
                 }
             }
+            if (matrixOrders[0].Any(x => x < 0)) matrixOrders[0] = null;
+            if (matrixOrders[1].Any(x => x < 0)) matrixOrders[1] = null;
         }
 
 
@@ -404,6 +417,9 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
         private int[] ChooseBestRowOrder(List<double[]> rows)
         {
+            if (matrixOrders[0] == null && matrixOrders[1] == null) return null;
+            if (matrixOrders[0] == null) return matrixOrders[1];
+            if (matrixOrders[1] == null) return matrixOrders[0];
             var order0Value = 1.0;
             var order1Value = 1.0;
 
