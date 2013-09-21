@@ -315,57 +315,42 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         private void DefineTwoMatrixOrders(List<List<int>> rowNonZeroes)
         {
             matrixOrders = new int[2][];
-            for (int m = 0; m < 2; m++)
-            {
-                matrixOrders[m] = new int[numUnknowns];
-                var rowNonZeroesTemp = new List<List<int>>(rowNonZeroes);
-                var targetIndices = new List<Tuple<int, int>>();
-                for (int i = 0; i < numUnknowns; i++)
-                    targetIndices.Add(new Tuple<int, int>(i, rowNonZeroesTemp.Count(r => r.Contains(i))));
-                var j = 0;
-                while (targetIndices.Count > 0)
-                {
-                    var lowestOccurence = targetIndices.Min(t => t.Item2);
-                    var lowestOccurringVariable = targetIndices.First(t => t.Item2 == lowestOccurence);
-                    /* if there are multiple possible rows to use, use the one with the fewest
-                     * dependencies on other variables. Why? Because it will be easier to solve, yes.
-                     * But more importantly it can prevent nonsensical solutions. If there are fewer
-                     * relationships in the equations coefficients then there are more in the equations'
-                     * answers. Which will prevent runaway situations like x=y and y=x. */
-                    var rowsWithlowestOccuringVar =
-                        rowNonZeroesTemp.Where(r => r.Contains(lowestOccurringVariable.Item1)).OrderBy(r => r.Count).ToList();
-                    if (rowsWithlowestOccuringVar.Count == 0)
-                    {
-                        //matrixOrders[m] = null;
-                        matrixOrders[m][lowestOccurringVariable.Item1] = -1;
-                        targetIndices.Clear();
-                        break;
-                    }
-                    else
-                    {
-                        var rowWithlowestOccuringVar =
-                               (m == 0 || rowsWithlowestOccuringVar.Count == 1 || matrixOrders[0][lowestOccurringVariable.Item1] !=
-                                  rowNonZeroes.IndexOf(rowsWithlowestOccuringVar[0])) ?
-                          rowsWithlowestOccuringVar[0] :
-                          rowsWithlowestOccuringVar[1];
-                        matrixOrders[m][lowestOccurringVariable.Item1] = rowNonZeroes.IndexOf(rowWithlowestOccuringVar);
+            var matrixOrdersList = new List<int[]>();
+            recurseFindOrders(rowNonZeroes, matrixOrdersList, new List<int>());
+            while (matrixOrdersList.Count > 2)
+                matrixOrdersList.RemoveAt(1);
+            if (matrixOrdersList.Count == 0) throw new Exception("No valid matrix formulations found.");
+            matrixOrders[0] = matrixOrdersList[0];
 
-                        targetIndices.Remove(lowestOccurringVariable);
-                        rowNonZeroesTemp.Remove(rowWithlowestOccuringVar);
-                        var tuplesToUpdate =
-                            targetIndices.Where(tuple => rowWithlowestOccuringVar.Contains(tuple.Item1)).ToList();
-                        foreach (var tuple in tuplesToUpdate)
-                        {
-                            targetIndices.Remove(tuple);
-                            targetIndices.Add(new Tuple<int, int>(tuple.Item1, tuple.Item2 - 1));
-                        }
-                    }
-                    j++;
+            if (matrixOrdersList.Count > 1) matrixOrders[1] = matrixOrdersList[1];
+        }
+
+        private void recurseFindOrders(List<List<int>> rowNonZeroes, List<int[]> matrixOrdersList, List<int> order)
+        {
+            var index = order.Count;
+            if (index == numUnknowns)
+            {
+                matrixOrdersList.Add(order.ToArray());
+                return;
+            }
+            var possibleChoices = rowNonZeroes.Where((r, j) => r.Contains(index) && !order.Contains(j));
+            if (possibleChoices.Count() == 0) return;
+            if (possibleChoices.Count() == 1)
+            {
+                order.Add(rowNonZeroes.IndexOf(possibleChoices.First()));
+                recurseFindOrders(rowNonZeroes, matrixOrdersList, order);
+            }
+            else
+            {
+                foreach (var choice in possibleChoices)
+                {
+                    var orderCopy = new List<int>(order);
+                    orderCopy.Add(rowNonZeroes.IndexOf(choice));
+                    recurseFindOrders(rowNonZeroes, matrixOrdersList, orderCopy);
                 }
             }
-            if (matrixOrders[0].Any(x => x < 0)) matrixOrders[0] = null;
-            if (matrixOrders[1].Any(x => x < 0)) matrixOrders[1] = null;
         }
+
 
 
         private bool jointIsKnownState(joint j, link l)
