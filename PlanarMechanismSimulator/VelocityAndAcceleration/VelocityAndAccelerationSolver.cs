@@ -317,12 +317,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             matrixOrders = new int[2][];
             var matrixOrdersList = new List<int[]>();
             recurseFindOrders(rowNonZeroes, matrixOrdersList, new List<int>());
-            while (matrixOrdersList.Count > 2)
-                matrixOrdersList.RemoveAt(1);
             if (matrixOrdersList.Count == 0) throw new Exception("No valid matrix formulations found.");
             matrixOrders[0] = matrixOrdersList[0];
 
-            if (matrixOrdersList.Count > 1) matrixOrders[1] = matrixOrdersList[1];
+            if (matrixOrdersList.Count > 1) matrixOrders[1] = matrixOrdersList.Last();
         }
 
         private void recurseFindOrders(List<List<int>> rowNonZeroes, List<int[]> matrixOrdersList, List<int> order)
@@ -415,7 +413,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 value = MultiplicativeDistanceToOne(rows[matrixOrders[1][i]][i]);
                 if (value < order1Value) order1Value = value;
             }
-            if (order0Value >= order1Value) return matrixOrders[0];
+            if (order0Value >= order1Value) 
+                return matrixOrders[0];
             return matrixOrders[1];
         }
         public double MultiplicativeDistanceToOne(double x)
