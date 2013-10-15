@@ -45,28 +45,29 @@ namespace PMKS_Silverlight_App
             {
                 Filter = "Text Files (*.txt)|*.txt|Comma-Separated Values (.csv)|*.csv"
             };
-            if (dialog.ShowDialog() == true)
-                using (var reader = dialog.File.OpenText())
-                {
-                    List<JointData> jointDataList = null;
-                    if (JointData.ConvertTextToData(reader.ReadToEnd(), out jointDataList))
-                    {
-                        App.main.JointsInfo.Data.Clear();
-                        App.main.LinksInfo.Data.Clear();
-                        foreach (var j in jointDataList)
-                        {
-                            App.main.JointsInfo.Data.Add(j);
-                            App.main.linkInputTable.UpdateLinksTableAterAdd(j);
-                        }
-                    }
-                    if (jointDataList.All(jd => !jd.DrivingInput))
-                        jointDataList.First(jd => jd.CanBeDriver).DrivingInput = true;
-                }
-            
-            App.main.JointsInfo.Data.Add(new JointData());
+            if (dialog.ShowDialog() == true) ConvertTextToData(dialog.File.OpenText().ReadToEnd());
+            else App.main.JointsInfo.Data.Add(new JointData());
             App.main.ParseData();
-
         }
+
+        public void ConvertTextToData(string mechString)
+        {
+            List<JointData> jointDataList = null;
+            if (JointData.ConvertTextToData(mechString, out jointDataList))
+            {
+                App.main.JointsInfo.Data.Clear();
+                App.main.LinksInfo.Data.Clear();
+                foreach (var j in jointDataList)
+                {
+                    App.main.JointsInfo.Data.Add(j);
+                    App.main.linkInputTable.UpdateLinksTableAterAdd(j);
+                }
+            }
+        }
+
+
+
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new SaveFileDialog()
@@ -108,7 +109,7 @@ namespace PMKS_Silverlight_App
             App.main.ParseData();
         }
 
-        private void TargetShapeStream_OnTextChanged(object sender, TextChangedEventArgs e)
+        public void TargetShapeStream_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             App.main.mainViewer.MainCanvas.Children.Remove(App.main.mainViewer.TargetPath);
             App.main.mainViewer.TargetPath = null;
@@ -225,7 +226,7 @@ namespace PMKS_Silverlight_App
             }
             else
             {
-                DOFBorder.Background = new SolidColorBrush(Color.FromArgb(255,156,46,46));
+                DOFBorder.Background = new SolidColorBrush(Color.FromArgb(255, 156, 46, 46));
                 DOFBorder.BorderBrush = new SolidColorBrush(Colors.Black);
             }
         }

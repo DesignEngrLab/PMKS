@@ -37,7 +37,7 @@ namespace PMKS_Silverlight_App
         public const double DefaultBufferMultipler = 0.5;
         public const string TargetPathStreamFront =
             "<Path xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\""
-            + " Stroke=\"#FFC7C7C7\" StrokeThickness=\"2\"  Data=\"";
+            + " Stroke=\"#AAC7C7C7\" StrokeThickness=\"2\"  Data=\"";
 
         public const string TargetPathStreamEnd = "\"/>";
         public const double SliderRectangleAspectRatio = 1.25;

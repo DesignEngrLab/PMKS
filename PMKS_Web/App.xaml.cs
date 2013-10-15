@@ -29,6 +29,17 @@ namespace Silverlight_PMKS
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             this.RootVisual = main = new MainPage();
+            if (e.InitParams.ContainsKey("TargetShapeText"))
+            {
+                main.fileAndEditPanel.TargetShapeStream.Text = e.InitParams["TargetShapeText"];
+                main.fileAndEditPanel.TargetShapeStream_OnTextChanged(null, null);
+            }
+            if (e.InitParams.ContainsKey("InitMechanism"))
+            {
+                var initMechString = e.InitParams["InitMechanism"];
+                initMechString = initMechString.Replace("|", "\n");
+                main.fileAndEditPanel.ConvertTextToData(initMechString);
+            }
         }
 
         private void Application_Exit(object sender, EventArgs e)

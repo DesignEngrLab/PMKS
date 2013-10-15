@@ -208,6 +208,9 @@ namespace PMKS_Silverlight_App
                         DrivingInput = driver
                     });
             }
+            jointsInfo.Add(new JointData());
+            if (jointsInfo.All(jd => !jd.DrivingInput))
+                jointsInfo.First(jd => jd.CanBeDriver).DrivingInput = true;
             return true;
         }
 

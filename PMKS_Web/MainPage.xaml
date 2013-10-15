@@ -75,6 +75,6 @@
         </Border>
 
         <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
-        <src:OutputStatus Grid.Row="1" Visibility="Collapsed" x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+        <src:OutputStatus Grid.Row="1" Visibility="Collapsed"  x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
     </Grid>
 </UserControl>
