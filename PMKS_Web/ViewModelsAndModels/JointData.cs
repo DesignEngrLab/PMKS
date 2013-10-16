@@ -160,7 +160,7 @@ namespace PMKS_Silverlight_App
             if (pivotSentences.Count == 0) return false;
             foreach (var pivotSentence in pivotSentences)
             {
-                var words = pivotSentence.Split(',', ' ').ToList();
+                var words = pivotSentence.Split(',', ' ', '|').ToList();
                 words.RemoveAll(string.IsNullOrWhiteSpace);
                 var lastJointType = words.LastOrDefault(s => s.Equals("R", StringComparison.InvariantCultureIgnoreCase)
                                                              ||
@@ -185,13 +185,26 @@ namespace PMKS_Silverlight_App
                     angleTemp = words[index];
                     index++;
                 }
-                bool posV = false, velV = false, accelV = false, driver = false;
-                if (words.Count() > index && Boolean.TryParse(words[index], out posV))
-                    if (words.Count() > ++index && Boolean.TryParse(words[index], out velV))
-                        if (words.Count() > ++index && Boolean.TryParse(words[index], out accelV))
-                            if (words.Count() > ++index && Boolean.TryParse(words[index], out driver))
-                            {
-                            }
+                var bools = new bool[4];
+                if (words.Count() > index && (words[index].Contains("+") || words[index].Contains("-")))
+                {
+                    var plusMinusString = words[index];
+                    int i = 0;
+                    while (i < plusMinusString.Length)
+                    {
+                        if (!plusMinusString[i].Equals('-')) bools[i] = true;
+                        i++;
+                    }
+                }
+                else
+                {
+                    int i = 0;
+                    while (index + i < words.Count)
+                    {
+                        Boolean.TryParse(words[index], out bools[i]);
+                        i++;
+                    }
+                }
                 words.RemoveRange(jointTypeIndex, words.Count - jointTypeIndex);
                 var linkIDStr = words.Aggregate("", (current, s) => current + ("," + s));
                 linkIDStr = linkIDStr.Remove(0, 1);
@@ -202,10 +215,10 @@ namespace PMKS_Silverlight_App
                         YPos = Ytemp,
                         Angle = angleTemp,
                         LinkNames = linkIDStr,
-                        PosVisible = posV,
-                        VelocityVisible = velV,
-                        AccelerationVisible = accelV,
-                        DrivingInput = driver
+                        PosVisible = bools[0],
+                        VelocityVisible = bools[1],
+                        AccelerationVisible = bools[2],
+                        DrivingInput = bools[3]
                     });
             }
             jointsInfo.Add(new JointData());
@@ -226,15 +239,20 @@ namespace PMKS_Silverlight_App
                 text += jInfo.XPos + ",";
                 text += jInfo.YPos;
                 text += (!string.IsNullOrWhiteSpace(jInfo.Angle)) ? "," + jInfo.Angle : "";
-                var boolStr = "," + jInfo.PosVisible
-                    +"," + jInfo.VelocityVisible 
-                    + "," + jInfo.AccelerationVisible
-                    +"," + jInfo.DrivingInput;
-                while (boolStr.EndsWith(",False"))
-                {
-                    boolStr = boolStr.Remove(boolStr.Length - 6);
-                }
-                text += boolStr+"\n";
+                var boolStr = ","
+                              + (jInfo.PosVisible ? '+' : '-')
+                              + (jInfo.VelocityVisible ? '+' : '-')
+                              + (jInfo.AccelerationVisible ? '+' : '-')
+                              + (jInfo.DrivingInput ? '+' : '-');
+                //var boolStr = "," + jInfo.PosVisible
+                //    + "," + jInfo.VelocityVisible
+                //    + "," + jInfo.AccelerationVisible
+                //    + "," + jInfo.DrivingInput;
+                //while (boolStr.EndsWith(",False"))
+                //{
+                //    boolStr = boolStr.Remove(boolStr.Length - 6);
+                //}
+                text += boolStr + "\n";
             }
             return text;
         }

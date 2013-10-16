@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Windows;
+using System.Windows.Browser;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -28,18 +29,9 @@ namespace Silverlight_PMKS
         public static MainPage main;
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            this.RootVisual = main = new MainPage();
-            if (e.InitParams.ContainsKey("TargetShapeText"))
-            {
-                main.fileAndEditPanel.TargetShapeStream.Text = e.InitParams["TargetShapeText"];
-                main.fileAndEditPanel.TargetShapeStream_OnTextChanged(null, null);
-            }
-            if (e.InitParams.ContainsKey("InitMechanism"))
-            {
-                var initMechString = e.InitParams["InitMechanism"];
-                initMechString = initMechString.Replace("|", "\n");
-                main.fileAndEditPanel.ConvertTextToData(initMechString);
-            }
+            RootVisual = main = new MainPage();
+            UrlArgumentHandling.UrlToTargetShape(main);
+            UrlArgumentHandling.UrlToMechanism(main);
         }
 
         private void Application_Exit(object sender, EventArgs e)

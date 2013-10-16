@@ -39,6 +39,7 @@ namespace PMKS_Silverlight_App
             "<Path xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\""
             + " Stroke=\"#AAC7C7C7\" StrokeThickness=\"2\"  Data=\"";
 
+        public const string TargetShapeQueryText = "Enter Target Shape Stream Here.";
         public const string TargetPathStreamEnd = "\"/>";
         public const double SliderRectangleAspectRatio = 1.25;
         public static double MaxZoomIn = 25;

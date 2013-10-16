@@ -88,6 +88,7 @@
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
+    <Compile Include="URLArgumentHandling.cs" />
     <Compile Include="ExportKinematicData.cs" />
     <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">
       <DependentUpon>FileAndEditPanel.xaml</DependentUpon>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows;
+using System.Windows.Browser;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using PlanarMechanismSimulator;
 using PMKS_Silverlight_App;
 using Silverlight_PMKS;
 
@@ -23,6 +25,7 @@ namespace PMKS_Silverlight_App
         {
             InitializeComponent();
             CollapseExpandButton.IsChecked = true;
+            TargetShapeStream.Text = DisplayConstants.TargetShapeQueryText;
         }
 
 
@@ -114,7 +117,7 @@ namespace PMKS_Silverlight_App
             App.main.mainViewer.MainCanvas.Children.Remove(App.main.mainViewer.TargetPath);
             App.main.mainViewer.TargetPath = null;
             if (!string.IsNullOrWhiteSpace(TargetShapeStream.Text) &&
-                TargetShapeStream.Text != "Enter Target Shape Stream Here.")
+                !TargetShapeStream.Text.Equals(DisplayConstants.TargetShapeQueryText))
             {
                 try
                 {
@@ -141,16 +144,12 @@ namespace PMKS_Silverlight_App
             if (string.IsNullOrWhiteSpace(TargetShapeStream.Text))
             {
                 App.main.mainViewer.TargetPath = null;
-                TargetShapeStream.Text = "Enter Target Shape Stream Here.";
+                TargetShapeStream.Text = DisplayConstants.TargetShapeQueryText;
                 TargetShapeStream.FontStyle = FontStyles.Italic;
                 TargetShapeStream.Foreground = new SolidColorBrush(Color.FromArgb(255, 133, 133, 133));
             }
         }
 
-        private void ExportDataButton_Click(object sender, RoutedEventArgs e)
-        {
-            ExportKinematicData.ExportToCSV();
-        }
 
         private void TargetShapeStream_GotFocus(object sender, RoutedEventArgs e)
         {
@@ -230,5 +229,30 @@ namespace PMKS_Silverlight_App
                 DOFBorder.BorderBrush = new SolidColorBrush(Colors.Black);
             }
         }
+
+
+        private void ExportDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportKinematicData.ExportToCSV();
+        }
+        private void MakeURLButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            string url = HtmlPage.Document.DocumentUri.AbsoluteUri;
+            url = url.Split(' ', '?', '&')[0];
+            url += "?"
+                + UrlArgumentHandling.TargetShapeToUrl(TargetShapeStream)
+                + UrlArgumentHandling.MechanismToUrl(App.main);
+            UrlTextBox.Text = url;
+            UrlPopUpStackPanel.Visibility= Visibility.Visible; 
+            UrlTextBox.Focus();
+            UrlTextBox.SelectAll();
+        }
+        private void ExitUrlPopupButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            UrlPopUpStackPanel.Visibility = Visibility.Collapsed; 
+
+        }
+
     }
 }

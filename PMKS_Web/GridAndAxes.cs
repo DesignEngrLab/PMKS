@@ -175,7 +175,7 @@ namespace Silverlight_PMKS
 
         #endregion
         override  
-        protected override void OnRhjender(DrawingContext dc)
+        protected override void OnRender(DrawingContext dc)
         {
             var lineThicknessHoriz = GridThick / WindowHeight;
             var gapThicknessHoriz = (GridSpacing - GridThick) / WindowHeight;
