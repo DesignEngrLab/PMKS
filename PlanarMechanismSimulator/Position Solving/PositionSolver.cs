@@ -726,6 +726,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                 {
                     var length = thisLink.lengthBetween(j, knownJoint);
                     var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
+                    ///bug!!: this angle should be between two fixed joints or a fixed and a sliding, but 
+                    ///not the slider position.
                     angle += angleChange;
                     assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
                                         knownJoint.y + length * Math.Sin(angle));

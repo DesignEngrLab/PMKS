@@ -321,9 +321,9 @@ namespace PlanarMechanismSimulator
                      * applies to P-joints as RP-joints will behave differently. */
                     if (groundPivots[i].jointType == JointTypes.P)
                     {
-                        var tempLinkRef = inputJoint.Link1;
-                        inputJoint.Link1 = inputJoint.Link2;
-                        inputJoint.Link2 = tempLinkRef;
+                        var tempLinkRef = groundPivots[i].Link1;
+                        groundPivots[i].Link1 = groundPivots[i].Link2;
+                        groundPivots[i].Link2 = tempLinkRef;
                         groundPivots.RemoveAt(i);
                     }
                 }
