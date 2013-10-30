@@ -56,10 +56,10 @@ namespace PlanarMechanismSimulator.PositionSolving
             ConvergedWithinLimit = new ToKnownBestFConvergence(0, Constants.epsilon);
             optMethod.Add(ConvergedWithinLimit);
             optMethod.Add(new DeltaFConvergence(1e-5));
-           // optMethod.Add(new FixedOrGoldenSection(1e-2, 0));
+            // optMethod.Add(new FixedOrGoldenSection(1e-2, 0));
             optMethod.Add(new FixedOrGoldenSection(0.1 * Constants.epsilonSame, 0));
             optMethod.Add(new MaxIterationsConvergence(Constants.MaxItersInNonDyadicSolver));
-          //  optMethod.Add(new DeltaFConvergence(0.01 * Constants.epsilonSame));
+            //  optMethod.Add(new DeltaFConvergence(0.01 * Constants.epsilonSame));
         }
 
         internal Boolean SolutionFound()
@@ -99,12 +99,12 @@ namespace PlanarMechanismSimulator.PositionSolving
                 j.y = xStar[2 * i + 1];
                 j.positionKnown = KnownState.Fully;
 
-                var tempError = (xStar[2 * i] - xInit[2 * i]) * (xStar[2 * i] - xInit[2 * i]) + 
-                    (xStar[2 * i+1] - xInit[2 * i+1]) * (xStar[2 * i+1] - xInit[2 * i+1]);
+                var tempError = (xStar[2 * i] - xInit[2 * i]) * (xStar[2 * i] - xInit[2 * i]) +
+                    (xStar[2 * i + 1] - xInit[2 * i + 1]) * (xStar[2 * i + 1] - xInit[2 * i + 1]);
                 if (posError < tempError) posError = tempError;
             }
             foreach (var c in links)
-                if (c.AngleIsKnown==KnownState.Unknown)
+                if (c.AngleIsKnown == KnownState.Unknown)
                     posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
             return true;
         }
@@ -120,7 +120,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             var xMax = joints.Max(j => j.xInitial);
             var yMin = joints.Min(j => j.yInitial);
             var yMax = joints.Max(j => j.yInitial);
-            var maxLength = links.Max(l0 => l0.Lengths.Max());
+            var maxLength = links.Max(l0 => l0.MaxLength);
             var range = Constants.rangeMultiplier * (new[] { xMax - xMin, yMax - yMin, maxLength }).Max();
             var offset = (xMin + xMax + yMin + yMax) / 4 - (range / 2);
             do

@@ -348,7 +348,7 @@ namespace PlanarMechanismSimulator
                 foreach (var eachLink in AllLinks)
                 {
                     eachLink.DetermineLengthsAndReferences();
-                    totalLength += eachLink.Lengths.Sum();
+                    totalLength += eachLink.TotalLength;
                     numLengths += eachLink.joints.Count * (eachLink.joints.Count - 1) / 2;
                 }
                 AverageLength = totalLength / numLengths;
@@ -497,7 +497,7 @@ namespace PlanarMechanismSimulator
                         var j = AllJoints[JointReOrdering[i]];
                         j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[i][0];
                         j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[i][1];
-                        if (InitPositions[i].GetLength(0) > 2)
+                        if (InitPositions[i].GetLength(0) > 2 && j.jointType != JointTypes.R)
                             j.InitSlideAngle = InitPositions[i][2];
                     }
                 }
@@ -524,7 +524,7 @@ namespace PlanarMechanismSimulator
                     var j = AllJoints[JointReOrdering[i]];
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
-                    if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
+                    if (j.jointType != JointTypes.R)
                         j.InitSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
@@ -575,8 +575,8 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
-                    throw new Exception("Link lengths for all links need to be set first.");
+                //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
+                //    throw new Exception("Link lengths for all links need to be set first.");
                 if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
@@ -606,8 +606,8 @@ namespace PlanarMechanismSimulator
         {
             try
             {
-                if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
-                    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
+                //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
+                //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
                 inputJoint.xInitial = inputX;
                 inputJoint.yInitial = inputY;
                 AllJoints[inputJointIndex + 1].xInitial = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]);

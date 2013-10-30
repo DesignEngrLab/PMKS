@@ -52,8 +52,8 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// The initial slide angle
         /// </summary>
-       //public double InitSlideAngle = Double.NaN;
-        public double InitSlideAngle = 0.0;
+       public double InitSlideAngle = Double.NaN;
+        //public double InitSlideAngle = 0.0;
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
         internal double SlideVelocity { get; set; }
         internal double SlideAcceleration { get; set; }

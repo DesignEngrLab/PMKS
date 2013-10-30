@@ -275,26 +275,19 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         private void InitializeJointsAndLinks(double positionChange)
         {
+            /* reset known states and error accumulator. */
             _posError = 0.0;
-            joint fixedGndJoint = null;
-            for (int i = 0; i < numJoints; i++)
-            {
-                var j = joints[i];
-                if (i >= inputJointIndex && j.FixedWithRespectTo(groundLink) && fixedGndJoint == null)
-                {
-                    fixedGndJoint = j;
-                    /* there has to be at least one joint connected to ground which is fixed to ground. */
-                    // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
-                    assignJointPosition(j, groundLink, j.xLast, j.yLast);
-                }
-                else j.positionKnown = KnownState.Unknown;
-            }
-            for (int i = 0; i < numLinks; i++)
-            {
-                var l = links[i];
-                l.AngleIsKnown = KnownState.Unknown;
-            }
+            foreach (var j in joints) j.positionKnown = KnownState.Unknown;
+            foreach (var l in links) l.AngleIsKnown = KnownState.Unknown;
+
+            /* reset ground link and joints */
+            var fixedGndJoint = joints.First(j => j.FixedWithRespectTo(groundLink));
+            /* there has to be at least one joint connected to ground which is fixed to ground. */
+            // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
+            assignJointPosition(fixedGndJoint, groundLink, fixedGndJoint.xInitial, fixedGndJoint.yInitial);
             setLinkPositionFromRotate(fixedGndJoint, groundLink, 0.0);
+
+            /* now, set input link. */
             if (inputJoint.jointType == JointTypes.R)
                 setLinkPositionFromRotate(inputJoint, inputLink, positionChange);
             else if (inputJoint.jointType == JointTypes.P)
@@ -378,18 +371,19 @@ namespace PlanarMechanismSimulator.PositionSolving
                 Math.Tan(knownJointB.SlideAngle), ptB);
         }
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
-        {
-            var thetaA = slopeJoint.SlideAngle;
-            var distance = thisLink.signedLengthBetween(positionJoint, slopeJoint);
-            return new point(slopeJoint.x + distance * Math.Cos(thetaA + Math.PI / 2),
-                slopeJoint.y + distance * Math.Sin(thetaA + Math.PI / 2));
+        {                                                                                
+            var length = thisLink.DistanceBetweenSlides(positionJoint, slopeJoint);
+            var angle = slopeJoint.SlideAngle - Math.PI/2;
+            while (angle < -Math.PI / 2) angle += Math.PI;
+            return new point(slopeJoint.x - length * Math.Cos(angle),
+                slopeJoint.y - length * Math.Sin(angle));
         }
 
         // the basis of R-P-R dyad determination method is the complex little function
         private point solveRPRIntersection(joint j, joint knownJoint1, joint knownJoint2, out double angleChange)
         {
             var rAC = j.Link2.lengthBetween(j, knownJoint2);
-            var rBC = j.Link1.lengthBetween(j, knownJoint1);
+            var rBC = j.Link1.DistanceBetweenSlides(j, knownJoint1);
 
             double oldTheta = Constants.angle(knownJoint2.xLast, knownJoint2.yLast, j.xLast, j.yLast);
             var alpha = j.Link2.angleOfBlockToJoint(j, knownJoint2);
@@ -694,6 +688,7 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
+            if (thisLink == null) return;
             if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
             if (double.IsNaN(angleChange))
             {
@@ -721,30 +716,40 @@ namespace PlanarMechanismSimulator.PositionSolving
 
             foreach (var j in thisLink.joints.Where(j => j.positionKnown != KnownState.Fully))
             {
-
                 if (knownJoint.FixedWithRespectTo(thisLink) && knownJoint.positionKnown == KnownState.Fully)
                 {
-                    var length = thisLink.lengthBetween(j, knownJoint);
-                    var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
-                    ///bug!!: this angle should be between two fixed joints or a fixed and a sliding, but 
-                    ///not the slider position.
-                    angle += angleChange;
-                    assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
-                                        knownJoint.y + length * Math.Sin(angle));
+                    if (j.FixedWithRespectTo(thisLink))
+                    {
+                        var length = thisLink.lengthBetween(j, knownJoint);
+                        var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
+                        angle += angleChange;
+                        assignJointPosition(j, thisLink, knownJoint.x + length*Math.Cos(angle),
+                            knownJoint.y + length*Math.Sin(angle));
+                    }
+                    else
+                    {
+                        var length = thisLink.DistanceBetweenSlides(j, knownJoint);
+                        var angle = j.SlideAngle - Math.PI/2;
+                        angle += angleChange;
+                        while (angle < -Math.PI/2) angle += Math.PI;
+                        assignJointPosition(j, thisLink, knownJoint.x + length*Math.Cos(angle),
+                            knownJoint.y + length*Math.Sin(angle));
+                    }
                 }
                 var otherLink = j.OtherLink(thisLink);
                 if (otherLink == null) continue;
 
-                if (j.positionKnown == KnownState.Fully)
-                    setLinkPositionFromRotate(j, otherLink, (j.jointType == JointTypes.P) ? angleChange : double.NaN);
-                else if (j.jointType == JointTypes.P)
+                if (j.jointType == JointTypes.P)
                     setLinkPositionFromRotate(j, otherLink, angleChange);
+                else if (j.positionKnown == KnownState.Fully)
+                    setLinkPositionFromRotate(j, otherLink);
             }
         }
 
         private void setLinkPositionFromTranslation(joint knownJoint, link thisLink,
             double deltaX, double deltaY, double angle = double.NaN)
         {
+            if (thisLink == null) return;
             foreach (var j in thisLink.joints.Where(j => j != knownJoint && j.positionKnown != KnownState.Fully))
             {
                 if (double.IsNaN(angle))
@@ -782,7 +787,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         private bool FindPartiallyKnownRPSlotOnLink(joint unkJoint, link link, out joint knownJoint, joint notJoint = null)
         {
             knownJoint = null;
-            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.RP && j != notJoint && j != unkJoint  
+            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.RP && j != notJoint && j != unkJoint
                 && ((j.positionKnown == KnownState.Fully && !j.FixedWithRespectTo(link))
                 || (j.positionKnown == KnownState.Partially && j.FixedWithRespectTo(link))));
             return knownJoint != null;
