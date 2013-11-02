@@ -285,8 +285,13 @@ namespace PlanarMechanismSimulator.PositionSolving
             /* there has to be at least one joint connected to ground which is fixed to ground. */
             // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
             assignJointPosition(fixedGndJoint, groundLink, fixedGndJoint.xInitial, fixedGndJoint.yInitial);
-            setLinkPositionFromRotate(fixedGndJoint, groundLink, 0.0);
-
+            groundLink.AngleIsKnown= KnownState.Fully;
+            foreach (var j in groundLink.joints)
+            {
+                assignJointPosition(j, groundLink, j.xInitial, j.yInitial);
+                if (j.jointType == JointTypes.P && j.OtherLink(groundLink) != null)
+                    setLinkPositionFromRotate(j, j.OtherLink(groundLink), 0.0);
+            }
             /* now, set input link. */
             if (inputJoint.jointType == JointTypes.R)
                 setLinkPositionFromRotate(inputJoint, inputLink, positionChange);
@@ -371,9 +376,9 @@ namespace PlanarMechanismSimulator.PositionSolving
                 Math.Tan(knownJointB.SlideAngle), ptB);
         }
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
-        {                                                                                
+        {
             var length = thisLink.DistanceBetweenSlides(positionJoint, slopeJoint);
-            var angle = slopeJoint.SlideAngle - Math.PI/2;
+            var angle = slopeJoint.SlideAngle - Math.PI / 2;
             while (angle < -Math.PI / 2) angle += Math.PI;
             return new point(slopeJoint.x - length * Math.Cos(angle),
                 slopeJoint.y - length * Math.Sin(angle));
@@ -632,7 +637,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink)
         {
             var distanceBetweenJoints = Constants.distance(fixedJoint, slideJoint);
-            var dist2Slide = thisLink.lengthBetween(fixedJoint, slideJoint);
+            var dist2Slide = thisLink.DistanceBetweenSlides(fixedJoint, slideJoint);
             if (dist2Slide > distanceBetweenJoints)
             {
                 posResult = PositionAnalysisResults.InvalidPosition;
@@ -714,7 +719,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = KnownState.Fully;
 
-            foreach (var j in thisLink.joints.Where(j => j.positionKnown != KnownState.Fully))
+            foreach (var j in thisLink.joints.Where(j => j != knownJoint && j.positionKnown != KnownState.Fully))
             {
                 if (knownJoint.FixedWithRespectTo(thisLink) && knownJoint.positionKnown == KnownState.Fully)
                 {
@@ -723,17 +728,17 @@ namespace PlanarMechanismSimulator.PositionSolving
                         var length = thisLink.lengthBetween(j, knownJoint);
                         var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
                         angle += angleChange;
-                        assignJointPosition(j, thisLink, knownJoint.x + length*Math.Cos(angle),
-                            knownJoint.y + length*Math.Sin(angle));
+                        assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
+                            knownJoint.y + length * Math.Sin(angle));
                     }
                     else
                     {
                         var length = thisLink.DistanceBetweenSlides(j, knownJoint);
-                        var angle = j.SlideAngle - Math.PI/2;
+                        var angle = j.SlideAngle - Math.PI / 2;
                         angle += angleChange;
-                        while (angle < -Math.PI/2) angle += Math.PI;
-                        assignJointPosition(j, thisLink, knownJoint.x + length*Math.Cos(angle),
-                            knownJoint.y + length*Math.Sin(angle));
+                        while (angle < -Math.PI / 2) angle += Math.PI;
+                        assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
+                            knownJoint.y + length * Math.Sin(angle));
                     }
                 }
                 var otherLink = j.OtherLink(thisLink);
@@ -750,6 +755,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             double deltaX, double deltaY, double angle = double.NaN)
         {
             if (thisLink == null) return;
+            if (thisLink.AngleIsKnown == KnownState.Fully) return;
             foreach (var j in thisLink.joints.Where(j => j != knownJoint && j.positionKnown != KnownState.Fully))
             {
                 if (double.IsNaN(angle))
