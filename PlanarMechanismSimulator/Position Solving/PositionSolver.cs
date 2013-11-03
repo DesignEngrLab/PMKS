@@ -285,7 +285,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             /* there has to be at least one joint connected to ground which is fixed to ground. */
             // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
             assignJointPosition(fixedGndJoint, groundLink, fixedGndJoint.xInitial, fixedGndJoint.yInitial);
-            groundLink.AngleIsKnown= KnownState.Fully;
+            groundLink.AngleIsKnown = KnownState.Fully;
             foreach (var j in groundLink.joints)
             {
                 assignJointPosition(j, groundLink, j.xInitial, j.yInitial);
@@ -755,14 +755,17 @@ namespace PlanarMechanismSimulator.PositionSolving
             double deltaX, double deltaY, double angle = double.NaN)
         {
             if (thisLink == null) return;
-            if (thisLink.AngleIsKnown == KnownState.Fully) return;
+            // if (thisLink.AngleIsKnown == KnownState.Fully) return;
             foreach (var j in thisLink.joints.Where(j => j != knownJoint && j.positionKnown != KnownState.Fully))
             {
-                if (double.IsNaN(angle))
-                    assignJointPosition(j, thisLink, j.xLast + deltaX, j.yLast + deltaY);
-                else
-                    assignJointPosition(j, thisLink, j.xLast + deltaX * Math.Cos(angle),
-                        j.yLast + deltaY * Math.Sin(angle));
+                if (knownJoint.FixedWithRespectTo(thisLink))
+                {
+                    if (double.IsNaN(angle))
+                        assignJointPosition(j, thisLink, j.xLast + deltaX, j.yLast + deltaY);
+                    else
+                        assignJointPosition(j, thisLink, j.xLast + deltaX * Math.Cos(angle),
+                            j.yLast + deltaY * Math.Sin(angle));
+                }
                 if (!j.FixedWithRespectTo(thisLink)) continue;
                 if (j.jointType == JointTypes.P)
                     setLinkPositionFromTranslation(j, j.OtherLink(thisLink), deltaX, deltaY, j.SlideAngle);
