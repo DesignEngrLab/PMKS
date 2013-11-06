@@ -120,10 +120,10 @@ namespace PlanarMechanismSimulator
                 AdditionalGearCycling = CompleteCycle = false;
             else
             {
-                var cycleTime = 2*Math.PI/InputSpeed;
+                var cycleTime = 2 * Math.PI / InputSpeed;
                 var forwardTime = cycleTime + JointParameters.Times[0];
                 var initState = JointParameters.Parameters[0];
-                var indexTop = JointParameters.LastIndex;
+                var indexTop = JointParameters.LastIndex - 1;
                 while (JointParameters.Times[indexTop] > forwardTime)
                 {
                     indexTop--;
@@ -138,12 +138,12 @@ namespace PlanarMechanismSimulator
                     var xCycle = FindXatTime(tau, deltaTime, previousState[i, 0], nextState[i, 0],
                                              previousState[i, 2], nextState[i, 2], previousState[i, 4],
                                              nextState[i, 4]);
-                    var error = (xCycle - initState[i, 0])*(xCycle - initState[i, 0]);
+                    var error = (xCycle - initState[i, 0]) * (xCycle - initState[i, 0]);
                     if (maxRMSError < error) maxRMSError = error;
                     var yCycle = FindXatTime(tau, deltaTime, previousState[i, 1], nextState[i, 1],
                                              previousState[i, 3], nextState[i, 3], previousState[i, 5],
                                              nextState[i, 5]);
-                    error = (yCycle - initState[i, 1])*(yCycle - initState[i, 1]);
+                    error = (yCycle - initState[i, 1]) * (yCycle - initState[i, 1]);
                     if (maxRMSError < error) maxRMSError = error;
                 }
                 CompleteCycle = (maxRMSError < Constants.ErrorInDeterminingCompleteCycle);

@@ -22,6 +22,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <PublishUrl>publish\</PublishUrl>
     <InstallUrl />
@@ -31,7 +32,6 @@
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <IsWebBootstrapper>False</IsWebBootstrapper>
     <ProductName>ExcelPlanarMechSimulator</ProductName>
     <PublisherName />
     <SupportUrl />
@@ -57,6 +57,11 @@
     <BootstrapperPackage Include="Microsoft.Office.PIARedist.2007">
       <Visible>False</Visible>
       <ProductName>Microsoft Office 2007 Primary Interop Assemblies</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
@@ -95,7 +100,7 @@
     <ManifestCertificateThumbprint>462E884F4AFB5656A52A63A4458865EAFD4235BD</ManifestCertificateThumbprint>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.Office.Tools, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -104,11 +109,11 @@
     <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+    <Reference Include="Microsoft.Vbe.Interop, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+    <Reference Include="Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="OptimizationToolbox">
@@ -208,7 +213,7 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="ExcelPlanarMechSimulator.xlsx" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ExcelPlanarMechSimulator.xlsx&quot;" />
+        <ProjectProperties HostName="ExcelPlanarMechSimulator.xlsx" HostPackage="{3F2B7691-D1D1-402F-9370-2704A737CF60}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files\Microsoft Office 15\root\Office15\Excel.exe" DebugInfoCommandLine="/x &quot;[$OUTPUT]ExcelPlanarMechSimulator.xlsx&quot;" />
         <Host Name="Excel Document" Path=".\ExcelPlanarMechSimulator.xlsx" GeneratedCodeNamespace="ExcelPlanarMechSimulator">
           <HostItem Name="Sheet1" Code="Sheet1.cs" CanonicalName="Sheet1" DisplayName="Inputs" Blueprint="Sheet1.Designer.xml" GeneratedCode="Sheet1.Designer.cs" />
           <HostItem Name="Sheet2" Code="Sheet2.cs" CanonicalName="Sheet2" DisplayName="Joint Data" Blueprint="Sheet2.Designer.xml" GeneratedCode="Sheet2.Designer.cs" />
