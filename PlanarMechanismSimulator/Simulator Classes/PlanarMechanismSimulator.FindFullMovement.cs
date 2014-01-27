@@ -117,58 +117,61 @@ namespace PlanarMechanismSimulator
         public void DefineMovementBooleans()
         {
             if (lessThanFullRotation())
-                AdditionalGearCycling = CompleteCycle = false;
-            else
             {
-                var cycleTime = 2 * Math.PI / InputSpeed;
-                var forwardTime = cycleTime + JointParameters.Times[0];
-                var initState = JointParameters.Parameters[0];
-                var indexTop = JointParameters.LastIndex - 1;
-                while (JointParameters.Times[indexTop] > forwardTime)
+                AdditionalGearCycling = false;
+                CompleteCycle = false;
+                Time_Span = JointParameters.Times.Last() - JointParameters.Times[0];
+                return;
+            }
+            Time_Span = CyclePeriodTime = 2 * Math.PI / InputSpeed;
+            var forwardTime = CyclePeriodTime + JointParameters.Times[0];
+            var initState = JointParameters.Parameters[0];
+            var indexTop = JointParameters.LastIndex - 1;
+            while (JointParameters.Times[indexTop] > forwardTime)
+            {
+                indexTop--;
+            }
+            var maxRMSError = 0.0;
+            var tau = forwardTime - JointParameters.Times[indexTop];
+            var deltaTime = JointParameters.Times[indexTop + 1] - JointParameters.Times[indexTop];
+            var previousState = JointParameters.Parameters[indexTop];
+            var nextState = JointParameters.Parameters[indexTop + 1];
+            for (int i = 0; i < numJoints; i++)
+            {
+                var xCycle = FindPositionatTime(tau, deltaTime, previousState[i, 0], nextState[i, 0],
+                    previousState[i, 2], nextState[i, 2], previousState[i, 4],
+                    nextState[i, 4]);
+                var error = (xCycle - initState[i, 0]) * (xCycle - initState[i, 0]);
+                if (maxRMSError < error) maxRMSError = error;
+                var yCycle = FindPositionatTime(tau, deltaTime, previousState[i, 1], nextState[i, 1],
+                    previousState[i, 3], nextState[i, 3], previousState[i, 5],
+                    nextState[i, 5]);
+                error = (yCycle - initState[i, 1]) * (yCycle - initState[i, 1]);
+                if (maxRMSError < error) maxRMSError = error;
+            }
+            CompleteCycle = (maxRMSError < Constants.ErrorInDeterminingCompleteCycle);
+            AdditionalGearCycling = AllJoints.Any(j => j.jointType == JointTypes.G);
+            if (CompleteCycle)
+            {
+                while (indexTop < JointParameters.LastIndex)
                 {
-                    indexTop--;
+                    JointParameters.RemoveAt(indexTop + 1);
+                    LinkParameters.RemoveAt(indexTop + 1);
                 }
-                var maxRMSError = 0.0;
-                var tau = forwardTime - JointParameters.Times[indexTop];
-                var deltaTime = JointParameters.Times[indexTop + 1] - JointParameters.Times[indexTop];
-                var previousState = JointParameters.Parameters[indexTop];
-                var nextState = JointParameters.Parameters[indexTop + 1];
-                for (int i = 0; i < numJoints; i++)
+                while (JointParameters.Times[0] < 0.0)
                 {
-                    var xCycle = FindXatTime(tau, deltaTime, previousState[i, 0], nextState[i, 0],
-                                             previousState[i, 2], nextState[i, 2], previousState[i, 4],
-                                             nextState[i, 4]);
-                    var error = (xCycle - initState[i, 0]) * (xCycle - initState[i, 0]);
-                    if (maxRMSError < error) maxRMSError = error;
-                    var yCycle = FindXatTime(tau, deltaTime, previousState[i, 1], nextState[i, 1],
-                                             previousState[i, 3], nextState[i, 3], previousState[i, 5],
-                                             nextState[i, 5]);
-                    error = (yCycle - initState[i, 1]) * (yCycle - initState[i, 1]);
-                    if (maxRMSError < error) maxRMSError = error;
-                }
-                CompleteCycle = (maxRMSError < Constants.ErrorInDeterminingCompleteCycle);
-                AdditionalGearCycling = AllJoints.Any(j => j.jointType == JointTypes.G);
-                if (CompleteCycle)
-                {
-                    while (indexTop < JointParameters.LastIndex)
-                    {
-                        JointParameters.RemoveAt(indexTop + 1);
-                        LinkParameters.RemoveAt(indexTop + 1);
-                    }
-                    while (JointParameters.Times[0] < 0.0)
-                    {
-                        var time = JointParameters.Times[0];
-                        var parameters = JointParameters.Parameters[0];
-                        JointParameters.RemoveAt(0);
-                        JointParameters.AddNearEnd(time + cycleTime, parameters);
+                    var time = JointParameters.Times[0];
+                    var parameters = JointParameters.Parameters[0];
+                    JointParameters.RemoveAt(0);
+                    JointParameters.AddNearEnd(time + CyclePeriodTime, parameters);
 
-                        parameters = LinkParameters.Parameters[0];
-                        LinkParameters.RemoveAt(0);
-                        LinkParameters.AddNearEnd(time + cycleTime, parameters);
-                    }
+                    parameters = LinkParameters.Parameters[0];
+                    LinkParameters.RemoveAt(0);
+                    LinkParameters.AddNearEnd(time + CyclePeriodTime, parameters);
                 }
             }
         }
+
 
         private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
         {
@@ -537,6 +540,5 @@ namespace PlanarMechanismSimulator
             }
             return linkParams;
         }
-
     }
 }
