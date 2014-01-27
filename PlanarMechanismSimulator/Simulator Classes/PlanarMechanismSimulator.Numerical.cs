@@ -125,7 +125,7 @@ namespace PlanarMechanismSimulator
         }
 
 
-        public double FindLinkPositionAtTime(double queryTime, int LinkIndex)
+        public double FindLinkAngleAtTime(double queryTime, int LinkIndex)
         {
             setTimeIndices(queryTime);
             if (Math.Abs(tau) < Constants.epsilonSame)
@@ -165,7 +165,7 @@ namespace PlanarMechanismSimulator
                 LinkParameters.Parameters[nextQueryIndex][LinkIndex, 1],
                 LinkParameters.Parameters[prevQueryIndex][LinkIndex, 2],
                 LinkParameters.Parameters[nextQueryIndex][LinkIndex, 2]);
-      
+
         }
 
         public double FindLinkAccelerationAtTime(double queryTime, int LinkIndex)
@@ -176,15 +176,16 @@ namespace PlanarMechanismSimulator
             return FindAccelerationatTime(tau, nextToPrevTime,
                 LinkParameters.Parameters[prevQueryIndex][LinkIndex, 2],
                 LinkParameters.Parameters[nextQueryIndex][LinkIndex, 2]);
-      
+
         }
 
 
 
         private void setTimeIndices(double queryTime)
         {
-             if (queryTime == lastQueryTime) return; /* you are at a same time step - no need to change static vars. */
+            if (queryTime == lastQueryTime) return; /* you are at a same time step - no need to change static vars. */
             /* you are at a new time step */
+            if (queryTime > Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
             if (queryTime >= prevQueryTime && queryTime <= nextQueryTime)
             {
                 /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */

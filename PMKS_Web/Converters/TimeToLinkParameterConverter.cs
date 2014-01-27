@@ -24,7 +24,7 @@ namespace PMKS_Silverlight_App
             double angleStateVar;
             switch (stateVariableTypeIndex)
             {
-                case 0: angleStateVar = pmks.FindLinkPositionAtTime(currentTime, LinkIndex);
+                case 0: angleStateVar = pmks.FindLinkAngleAtTime(currentTime, LinkIndex);
                     break;
                 case 1: angleStateVar = pmks.FindLinkVelocityAtTime(currentTime, LinkIndex);
                     break;
