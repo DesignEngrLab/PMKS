@@ -30,7 +30,7 @@ namespace PlanarMechanismSimulator
             LinkParameters = new TimeSortedList { { 0.0, initLinkParams } };
 
             InputRange = new[] { inputLink.AngleInitial, inputLink.AngleInitial };
-
+            if (double.IsNaN(InputSpeed) || InputSpeed == 0.0) InputSpeed = Constants.DefaultInputSpeed;
             #endregion
 #if DEBUGSERIAL
             if (useErrorMethod)
@@ -170,6 +170,7 @@ namespace PlanarMechanismSimulator
                     LinkParameters.AddNearEnd(time + CyclePeriodTime, parameters);
                 }
             }
+            InitializeQueryVars();
         }
 
 

@@ -29,6 +29,7 @@ namespace PlanarMechanismSimulator
         public const double ErrorEstimateInertia = 2.0;
         public const double ErrorSizeIncrease = 1.2;
         public const long MaxItersInNonDyadicSolver = 300;
+        public const double DefaultInputSpeed = 1.0;
 
         public static Boolean sameCloseZero(double x1)
         {

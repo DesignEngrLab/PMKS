@@ -46,7 +46,7 @@ namespace PlanarMechanismSimulator
 
         private double lastQueryTime, prevQueryTime, nextQueryTime, nextToPrevTime;
         private int prevQueryIndex, nextQueryIndex;
-        protected static double tau;
+        protected double tau;
 
         public double[] FindJointPositionAtTime(double queryTime, int JointIndex)
         {
@@ -180,6 +180,13 @@ namespace PlanarMechanismSimulator
         }
 
 
+        private void InitializeQueryVars()
+        {
+            lastQueryTime = prevQueryTime = nextQueryTime = nextToPrevTime = 0.0;
+            prevQueryIndex = nextQueryIndex = 0;
+            tau = 0.0;
+        }
+
 
         private void setTimeIndices(double queryTime)
         {
@@ -194,7 +201,7 @@ namespace PlanarMechanismSimulator
             {
                 while (queryTime < prevQueryTime)
                 {
-                    if (prevQueryIndex == 0)
+                    if (prevQueryIndex <= 0)
                     {
                         if (!CompleteCycle) break;
                         queryTime += Time_Span;
@@ -213,7 +220,7 @@ namespace PlanarMechanismSimulator
                 }
                 while (queryTime > nextQueryTime)
                 {
-                    if (nextQueryIndex == LinkParameters.LastIndex)
+                    if (nextQueryIndex >= LinkParameters.LastIndex)
                     {
                         if (!CompleteCycle) break;
                         queryTime += Time_Span;

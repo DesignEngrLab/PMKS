@@ -75,11 +75,12 @@ namespace PlanarMechanismSimulator
         //}
 
 
+
         /// <summary>
-        /// Gets or sets the fixed time step.
+        /// Gets or sets the maximum smoothing error.
         /// </summary>
         /// <value>
-        /// The fixed time step.
+        /// The maximum smoothing error.
         /// </value>
         public double MaxSmoothingError
         {
