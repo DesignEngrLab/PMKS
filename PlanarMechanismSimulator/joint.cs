@@ -2,22 +2,7 @@
 
 namespace PlanarMechanismSimulator
 {
-    public enum JointTypes
-    {
-        R,
-        P,
-        RP,
-        G
-        // non-slip roll, like rack and pinion - although this challenges the 2 DOF nature of just gear teeth
-        // cabling or belt or chain
-    };
 
-    internal enum KnownState
-    {
-        Unknown,
-        Partially,
-        Fully
-    };
     public class point
     {
         /// <summary>
@@ -168,6 +153,5 @@ namespace PlanarMechanismSimulator
         }
     }
 
-    internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
 
 }

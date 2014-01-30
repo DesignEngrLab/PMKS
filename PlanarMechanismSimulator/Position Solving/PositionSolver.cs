@@ -18,7 +18,6 @@ namespace PlanarMechanismSimulator.PositionSolving
             }
         }
         double _posError = 0.0;
-        internal enum PositionAnalysisResults { NoSolvableDyadFound, Normal, InvalidPosition, BranchingProbable }
         private NonDyadicPositionSolver NDPS;
 
         private PositionAnalysisResults posResult;

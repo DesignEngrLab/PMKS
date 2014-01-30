@@ -109,23 +109,25 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The complete cycle.
         /// </value>
-        public Boolean CompleteCycle { get; private set; }
+        public CycleTypes CycleType { get; private set; }
+
 
         /// <summary>
-        /// Gets whether there is potentially additional cycling due to gears.
+        /// Gets the begin time.
         /// </summary>
         /// <value>
-        /// The additional gear cycling.
+        /// The begin time.
         /// </value>
-        public Boolean AdditionalGearCycling { get; private set; }
+        public double BeginTime { get;private set; }
+
 
         /// <summary>
-        /// Gets the cycle period time.
+        /// Gets the end time.
         /// </summary>
         /// <value>
-        /// The cycle period time.
+        /// The end time.
         /// </value>
-        public double CyclePeriodTime { get; private set; }
+        public double EndTime { get;private set; }
 
         /// <summary>
         /// Gets the time span.
@@ -133,7 +135,10 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The time span.
         /// </value>
-        public double Time_Span { get; private set; }
+        public double Time_Span
+        {
+            get { return EndTime - BeginTime; }
+        }
 
 
         #endregion
@@ -697,6 +702,5 @@ namespace PlanarMechanismSimulator
                 return 3 * (AllLinks.Count - 1) - 2 * oneDOFJoints - twoDOFJoints;
             }
         }
-
     }
 }

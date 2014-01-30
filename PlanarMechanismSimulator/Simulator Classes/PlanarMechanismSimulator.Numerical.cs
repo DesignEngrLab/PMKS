@@ -192,50 +192,34 @@ namespace PlanarMechanismSimulator
         {
             if (queryTime == lastQueryTime) return; /* you are at a same time step - no need to change static vars. */
             /* you are at a new time step */
-            if (queryTime > Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
+            // if (queryTime > JointParameters.Times[0] + Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
             if (queryTime >= prevQueryTime && queryTime <= nextQueryTime)
             {
                 /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */
             }
             else
             {
+                while (queryTime < BeginTime) queryTime += Time_Span;
+                while (queryTime > EndTime) queryTime -= Time_Span;
+
                 while (queryTime < prevQueryTime)
                 {
-                    if (prevQueryIndex <= 0)
-                    {
-                        if (!CompleteCycle) break;
-                        queryTime += Time_Span;
-                        nextQueryIndex = LinkParameters.LastIndex;
-                        nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                        prevQueryIndex = LinkParameters.LastIndex - 1;
-                        prevQueryTime = LinkParameters.Times[prevQueryIndex];
-                    }
-                    else
-                    {
-                        nextQueryIndex = prevQueryIndex;
-                        nextQueryTime = prevQueryTime;
-                        prevQueryIndex--;
-                        prevQueryTime = LinkParameters.Times[prevQueryIndex];
-                    }
+                    nextQueryIndex = prevQueryIndex;
+                    prevQueryIndex--;
+                    if (prevQueryIndex < 0) prevQueryIndex = LinkParameters.LastIndex;
+                    if (nextQueryIndex < 0) nextQueryIndex = LinkParameters.LastIndex;
+                    prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                    nextQueryTime = LinkParameters.Times[nextQueryIndex];
                 }
                 while (queryTime > nextQueryTime)
                 {
-                    if (nextQueryIndex >= LinkParameters.LastIndex)
-                    {
-                        if (!CompleteCycle) break;
-                        queryTime += Time_Span;
-                        nextQueryIndex = 1;
-                        nextQueryTime = LinkParameters.Times[1];
-                        prevQueryIndex = 0;
-                        prevQueryTime = LinkParameters.Times[0];
-                    }
-                    else
-                    {
-                        prevQueryIndex = nextQueryIndex;
-                        prevQueryTime = nextQueryTime;
-                        nextQueryIndex++;
-                        nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                    }
+                    prevQueryIndex = nextQueryIndex;
+                    nextQueryIndex++;
+                    if (prevQueryIndex > LinkParameters.LastIndex) prevQueryIndex = 0;
+                    if (nextQueryIndex > LinkParameters.LastIndex) nextQueryIndex = 0;
+
+                    prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                    nextQueryTime = LinkParameters.Times[nextQueryIndex];
                 }
             }
             tau = queryTime - prevQueryTime;

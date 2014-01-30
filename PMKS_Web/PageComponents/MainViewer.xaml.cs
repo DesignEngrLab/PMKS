@@ -145,13 +145,13 @@ namespace PMKS_Silverlight_App
                     From = timeSlider.Minimum,
                     To = timeSlider.Maximum,
                     Duration = duration,
-                    AutoReverse = !pmks.CompleteCycle,
+                    AutoReverse = pmks.CycleType!=CycleTypes.OneCycle,
                     RepeatBehavior = RepeatBehavior.Forever
                 };
             storyBoard = new Storyboard
                 {
                     Duration = duration,
-                    AutoReverse = !pmks.CompleteCycle,
+                    AutoReverse = pmks.CycleType != CycleTypes.OneCycle,
                     RepeatBehavior = RepeatBehavior.Forever
                 };
             storyBoard.Children.Add(timeAnimation);

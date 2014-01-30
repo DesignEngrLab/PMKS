@@ -110,67 +110,64 @@ namespace PlanarMechanismSimulator
 #endif
             }
 #endif
-            DefineMovementBooleans();
+            DefineMovementCharacteristics();
         }
 
 
-        public void DefineMovementBooleans()
+        private void DefineMovementCharacteristics()
         {
+            BeginTime = JointParameters.Times[0];
+            EndTime = JointParameters.Times.Last();
+            InitializeQueryVars();
             if (lessThanFullRotation())
-            {
-                AdditionalGearCycling = false;
-                CompleteCycle = false;
-                Time_Span = JointParameters.Times.Last() - JointParameters.Times[0];
+            {  //if the crank input couldn't rotate all the way around,then this is easy... 
+                CycleType = CycleTypes.LessThanFullCycle;
                 return;
             }
-            Time_Span = CyclePeriodTime = 2 * Math.PI / InputSpeed;
-            var forwardTime = CyclePeriodTime + JointParameters.Times[0];
-            var initState = JointParameters.Parameters[0];
-            var indexTop = JointParameters.LastIndex - 1;
-            while (JointParameters.Times[indexTop] > forwardTime)
+            // if the simulation did go all the way around then, we should be careful to ensure is connects correctly.
+            var cyclePeriodTime = 2 * Math.PI / InputSpeed;
+            if (DoesMechanismRepeatOnCrankCycle(cyclePeriodTime))
             {
-                indexTop--;
-            }
-            var maxRMSError = 0.0;
-            var tau = forwardTime - JointParameters.Times[indexTop];
-            var deltaTime = JointParameters.Times[indexTop + 1] - JointParameters.Times[indexTop];
-            var previousState = JointParameters.Parameters[indexTop];
-            var nextState = JointParameters.Parameters[indexTop + 1];
-            for (int i = 0; i < numJoints; i++)
-            {
-                var xCycle = FindPositionatTime(tau, deltaTime, previousState[i, 0], nextState[i, 0],
-                    previousState[i, 2], nextState[i, 2], previousState[i, 4],
-                    nextState[i, 4]);
-                var error = (xCycle - initState[i, 0]) * (xCycle - initState[i, 0]);
-                if (maxRMSError < error) maxRMSError = error;
-                var yCycle = FindPositionatTime(tau, deltaTime, previousState[i, 1], nextState[i, 1],
-                    previousState[i, 3], nextState[i, 3], previousState[i, 5],
-                    nextState[i, 5]);
-                error = (yCycle - initState[i, 1]) * (yCycle - initState[i, 1]);
-                if (maxRMSError < error) maxRMSError = error;
-            }
-            CompleteCycle = (maxRMSError < Constants.ErrorInDeterminingCompleteCycle);
-            AdditionalGearCycling = AllJoints.Any(j => j.jointType == JointTypes.G);
-            if (CompleteCycle)
-            {
-                while (indexTop < JointParameters.LastIndex)
-                {
-                    JointParameters.RemoveAt(indexTop + 1);
-                    LinkParameters.RemoveAt(indexTop + 1);
-                }
+                CycleType = CycleTypes.OneCycle;
                 while (JointParameters.Times[0] < 0.0)
                 {
                     var time = JointParameters.Times[0];
                     var parameters = JointParameters.Parameters[0];
                     JointParameters.RemoveAt(0);
-                    JointParameters.AddNearEnd(time + CyclePeriodTime, parameters);
+                    JointParameters.AddNearEnd(time + cyclePeriodTime, parameters);
 
                     parameters = LinkParameters.Parameters[0];
                     LinkParameters.RemoveAt(0);
-                    LinkParameters.AddNearEnd(time + CyclePeriodTime, parameters);
+                    LinkParameters.AddNearEnd(time + cyclePeriodTime, parameters);
                 }
+                BeginTime = JointParameters.Times[0];
+                EndTime = BeginTime + cyclePeriodTime;
+                // to be more exact, place EndTime at one cycle of rotation
             }
-            InitializeQueryVars();
+            else
+            {
+                CycleType = CycleTypes.MoreThanOneCycle;
+            }
+        }
+
+        private bool DoesMechanismRepeatOnCrankCycle(double cyclePeriodTime)
+        {
+            // Does the mechanism return to the same place?
+            // even though the crank goes all the way around, other joints of the mechanism may be in different places.
+            var initState = JointParameters.Parameters[0];
+            var topTime = JointParameters.Times[0] + cyclePeriodTime;
+
+            for (int i = 0; i < numJoints; i++)
+            {
+                var topJointLocation = FindJointPositionAtTime(topTime, i);
+                var initJointLocationX = initState[i, 0];
+                var initJointLocationY = initState[i, 1];
+                if (Math.Abs(topJointLocation[0] - initJointLocationX) > Constants.ErrorInDeterminingCompleteCycle
+                    || Math.Abs(topJointLocation[1] - initJointLocationY) > Constants.ErrorInDeterminingCompleteCycle)
+                    return false;
+            }
+            return true;
+
         }
 
 

@@ -247,14 +247,19 @@ namespace PMKS_Silverlight_App
                 var now = DateTime.Now;
                 pmks.FindFullMovement();
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
-                if (pmks.AdditionalGearCycling)
-                    status(pmks.CompleteCycle
-                               ? "Input rotates a full 360 degrees but motion is not yet cyclic (more rotations are required)."
-                               : "Input cannot rotate a full 360 degrees.");
-                else
-                    status(pmks.CompleteCycle
-                               ? "Completes a full cycle and repeats"
-                               : "Input cannot rotate a full 360 degrees.");
+                switch (pmks.CycleType)
+                {
+                    case CycleTypes.LessThanFullCycle:
+                        status("Input cannot rotate a full 360 degrees.");
+                        break;
+                    case CycleTypes.OneCycle:
+                        status("Mechanism is completely cyclic with input.");
+                        break;
+                    case CycleTypes.MoreThanOneCycle:
+                        status(
+                            "Input rotates a full 360 degrees but motion is not yet cyclic (more rotations are required).");
+                        break;
+                }
                 #endregion
                 #region draw curves
                 status("Drawing...");
@@ -527,7 +532,7 @@ namespace PMKS_Silverlight_App
             if (mainViewer.storyBoard == null) return;
             SlideShape1.Opacity = SlideShape2.Opacity = 0;
             mainViewer.storyBoard.Begin();
-            if (pmks.CompleteCycle)
+            if (pmks.CycleType== CycleTypes.OneCycle)
             {
                 PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = 0;
                 PlayForwardShape.Opacity = 1;
