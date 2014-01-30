@@ -1,0 +1,10 @@
+ground,input,R,0,0,+--+
+input,coupler,R,0,50,+---
+coupler,follower,R,294,180,+---
+follower,ground,R,430,75,+---
+follower,r1,R,440,320,+---
+r1,r,R,770,240,+---
+r,ground,P,770,220,10,+---
+coupler,s1,R,165,275,+---
+s1,slider,R,-186,355,+---
+slider,ground,P,-186,340,0,+---

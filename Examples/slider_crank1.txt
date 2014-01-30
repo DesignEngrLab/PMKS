@@ -1,0 +1,4 @@
+ground,input,R,0,0,---+
+input,coupler,R,0,50,----
+coupler,follower,R,120,370,----
+follower,ground,P,120,300,0,----

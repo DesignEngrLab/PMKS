@@ -1,0 +1,4 @@
+ground, input,R,0,0,+--+
+input f,P,25,0,0,+---
+f c,R,30,50,+---
+c ground,R,0,44,+---
