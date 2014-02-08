@@ -156,6 +156,7 @@ namespace PlanarMechanismSimulator
         public link inputLink { get; private set; }
         public link groundLink { get; private set; }
         private List<joint> additionalRefjoints;
+        private int outputJointIndex = -1;
         private const string nameBaseForGearConnector = "auto_generated_gear_connect_";
 
         /// <summary>
@@ -195,6 +196,19 @@ namespace PlanarMechanismSimulator
         /// <param name="InitPositions">The init positions.</param>
         public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, int DriverIndex = 0, IList<double[]> InitPositions = null)
         {
+            // InputSpeed = 1.0;
+            CreateLinkAndPositionDetails(LinkIDs, JointTypes, DriverIndex, InitPositions);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Simulator"/> class.
+        /// </summary>
+        /// <param name="LinkIDs">The link IDs.</param>
+        /// <param name="JointTypes">The pivot types.</param>
+        /// <param name="InitPositions">The init positions.</param>
+        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, int OutputJoint, int DriverIndex = 0, IList<double[]> InitPositions = null)
+        {
+            outputJointIndex = OutputJoint;
             // InputSpeed = 1.0;
             CreateLinkAndPositionDetails(LinkIDs, JointTypes, DriverIndex, InitPositions);
         }
@@ -515,6 +529,7 @@ namespace PlanarMechanismSimulator
                 {
                     if (InitPositions[i] != null)
                     {
+                        if (JointReOrdering[i]==outputJointIndex) continue;
                         var j = AllJoints[JointReOrdering[i]];
                         j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[i][0];
                         j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[i][1];

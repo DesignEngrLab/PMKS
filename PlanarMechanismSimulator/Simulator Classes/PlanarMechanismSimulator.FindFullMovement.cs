@@ -142,6 +142,8 @@ namespace PlanarMechanismSimulator
                 }
                 BeginTime = JointParameters.Times[0];
                 EndTime = BeginTime + cyclePeriodTime;
+                BeginTime = 0.0;
+                EndTime =  cyclePeriodTime;
                 // to be more exact, place EndTime at one cycle of rotation
             }
             else

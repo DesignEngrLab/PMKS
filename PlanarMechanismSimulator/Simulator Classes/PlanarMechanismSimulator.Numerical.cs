@@ -206,8 +206,13 @@ namespace PlanarMechanismSimulator
                 {
                     nextQueryIndex = prevQueryIndex;
                     prevQueryIndex--;
-                    if (prevQueryIndex < 0) prevQueryIndex = LinkParameters.LastIndex;
-                    if (nextQueryIndex < 0) nextQueryIndex = LinkParameters.LastIndex;
+                    if (prevQueryIndex < 0)
+                    {
+                        prevQueryIndex = LinkParameters.LastIndex;
+                        ////prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                        ////nextQueryTime = LinkParameters.Times[nextQueryIndex];
+                        ////break;
+                    }
                     prevQueryTime = LinkParameters.Times[prevQueryIndex];
                     nextQueryTime = LinkParameters.Times[nextQueryIndex];
                 }
@@ -215,8 +220,13 @@ namespace PlanarMechanismSimulator
                 {
                     prevQueryIndex = nextQueryIndex;
                     nextQueryIndex++;
-                    if (prevQueryIndex > LinkParameters.LastIndex) prevQueryIndex = 0;
-                    if (nextQueryIndex > LinkParameters.LastIndex) nextQueryIndex = 0;
+                    if (nextQueryIndex > LinkParameters.LastIndex)
+                    {
+                        nextQueryIndex = 0;
+                        //prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                        //nextQueryTime = LinkParameters.Times[nextQueryIndex];
+                        //break;
+                    }
 
                     prevQueryTime = LinkParameters.Times[prevQueryIndex];
                     nextQueryTime = LinkParameters.Times[nextQueryIndex];

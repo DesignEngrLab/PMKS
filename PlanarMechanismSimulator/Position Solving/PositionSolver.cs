@@ -285,7 +285,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
             assignJointPosition(fixedGndJoint, groundLink, fixedGndJoint.xInitial, fixedGndJoint.yInitial);
             groundLink.AngleIsKnown = KnownState.Fully;
-            foreach (var j in groundLink.joints)
+            foreach (var j in groundLink.joints.Where(j=>j!=fixedGndJoint))
             {
                 assignJointPosition(j, groundLink, j.xInitial, j.yInitial);
                 if (j.jointType == JointTypes.P && j.OtherLink(groundLink) != null)
@@ -703,10 +703,10 @@ namespace PlanarMechanismSimulator.PositionSolving
                             && j.FixedWithRespectTo(thisLink));
                     if (knownJoint == null) return;
                 }
-                var j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown != KnownState.Unknown
+                var j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
                     && j.FixedWithRespectTo(thisLink));
-                if (j2 == null)
-                    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully);
+                //if (j2 == null)
+                //    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully);
                 //j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
                 if (j2 == null) return;
                 var new_j2j_Angle = Constants.angle(knownJoint, j2);
