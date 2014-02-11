@@ -1,7 +1,9 @@
 ﻿#region
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using StarMathLib;
 #endregion
 
@@ -286,6 +288,11 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 if (unknownObject is joint) numUnknowns += 2;
                 else numUnknowns++;
             }
+            if (numUnknowns > 200)
+            {
+                SkipMatrixInversionUntilSparseSolverIsDefined = true;
+                return;
+            }
             A = new double[numUnknowns, numUnknowns];
             b = new double[numUnknowns];
             /* While unknownObjects is saved, the data for their positions in the matrix is also stored in the equation objects*/
@@ -315,28 +322,44 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         private void DefineTwoMatrixOrders(List<List<int>> rowNonZeroes)
         {
             matrixOrders = new int[2][];
-            var matrixOrdersList = new List<int[]>();
-            recurseFindOrders(rowNonZeroes, matrixOrdersList, new List<int>());
-            if (matrixOrdersList.Count == 0) throw new Exception("No valid matrix formulations found.");
-            matrixOrders[0] = matrixOrdersList[0];
+            orderFound = new[] { false, false };
+            var now = DateTime.Now;
+            Parallel.For(0, 2, i => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), i, now));
+            if (matrixOrders[0] == null & matrixOrders[1] == null)
+                throw new Exception("No valid matrix formulations found.");
+            if (matrixOrders[0] == null)
+            {
+                matrixOrders[0] = matrixOrders[1];
+                matrixOrders[1] = null;
+            }
 
-            if (matrixOrdersList.Count > 1) matrixOrders[1] = matrixOrdersList.Last();
         }
 
-        private void recurseFindOrders(List<List<int>> rowNonZeroes, List<int[]> matrixOrdersList, List<int> order)
+
+
+        private Boolean[] orderFound;
+        private void DepthFirstToFindOrder(List<List<int>> rowNonZeroes, List<int> order, int rowIndex, DateTime start)
         {
+            if (orderFound[rowIndex]) return;
+            if (DateTime.Now - start > Constants.MaxTimeToFindMatrixOrders)
+            {
+                orderFound[rowIndex] = true;
+                return;
+            }
             var index = order.Count;
             if (index == numUnknowns)
             {
-                matrixOrdersList.Add(order.ToArray());
+                matrixOrders[rowIndex] = order.ToArray();
+                orderFound[rowIndex] = true;
                 return;
             }
-            var possibleChoices = rowNonZeroes.Where((r, j) => r.Contains(index) && !order.Contains(j));
-            if (possibleChoices.Count() == 0) return;
+            var possibleChoices = (rowIndex == 0) ? rowNonZeroes.Where((r, j) => r.Contains(index) && !order.Contains(j)) :
+             rowNonZeroes.Where((r, j) => r.Contains(index) && !order.Contains(j)).Reverse();
+            if (!possibleChoices.Any()) return;
             if (possibleChoices.Count() == 1)
             {
                 order.Add(rowNonZeroes.IndexOf(possibleChoices.First()));
-                recurseFindOrders(rowNonZeroes, matrixOrdersList, order);
+                DepthFirstToFindOrder(rowNonZeroes, order, rowIndex, start);
             }
             else
             {
@@ -344,7 +367,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 {
                     var orderCopy = new List<int>(order);
                     orderCopy.Add(rowNonZeroes.IndexOf(choice));
-                    recurseFindOrders(rowNonZeroes, matrixOrdersList, orderCopy);
+                    DepthFirstToFindOrder(rowNonZeroes, orderCopy, rowIndex, start);
                 }
             }
         }
@@ -366,6 +389,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
         internal Boolean Solve()
         {
+            if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
             try
             {
                 SetInitialInputAndGroundJointStates();
@@ -413,7 +437,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 value = MultiplicativeDistanceToOne(rows[matrixOrders[1][i]][i]);
                 if (value < order1Value) order1Value = value;
             }
-            if (order0Value >= order1Value) 
+            if (order0Value >= order1Value)
                 return matrixOrders[0];
             return matrixOrders[1];
         }
@@ -423,6 +447,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             return (Math.Abs(x) > 1) ? 1 / Math.Abs(x) : Math.Abs(x);
 
         }
+
+        public bool SkipMatrixInversionUntilSparseSolverIsDefined { get; private set; }
     }
 }
 

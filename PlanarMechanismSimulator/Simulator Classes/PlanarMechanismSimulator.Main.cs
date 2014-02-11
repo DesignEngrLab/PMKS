@@ -398,11 +398,10 @@ namespace PlanarMechanismSimulator
 
         private void addReferencePivotsToSlideOnlyLinks()
         {
-            if (AllLinks.All(c => c.joints.Count(j => j.FixedWithRespectTo(c)) > 0)) return;
+            if (AllLinks.All(c => c.joints.Any(j => j.FixedWithRespectTo(c)))) return;
             additionalRefjoints = new List<joint>();
-            foreach (var c in AllLinks)
+            foreach (var c in AllLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
             {
-                if (c.joints.Count(j => j.FixedWithRespectTo(c)) > 0) continue;
                 var newJoint = new joint(false, "r") { Link1 = c };
                 c.joints.Add(newJoint);
                 AllJoints.Add(newJoint);
@@ -422,8 +421,8 @@ namespace PlanarMechanismSimulator
                     xSum += otherJoint.xInitial;
                     ySum += otherJoint.yInitial;
                 }
-                thisAdditionalJoint.xInitial = xSum / thisAdditionalJoint.Link1.joints.Count - 1;
-                thisAdditionalJoint.yInitial = ySum / thisAdditionalJoint.Link1.joints.Count - 1;
+                thisAdditionalJoint.xInitial = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                thisAdditionalJoint.yInitial = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
             }
         }
 
@@ -528,8 +527,8 @@ namespace PlanarMechanismSimulator
                 for (int i = 0; i < numJoints; i++)
                 {
                     if (InitPositions[i] != null)
-                    {
-                        if (JointReOrdering[i]==outputJointIndex) continue;
+                    {                                                   
+                    if (i == JointReOrdering[outputJointIndex]) continue;
                         var j = AllJoints[JointReOrdering[i]];
                         j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[i][0];
                         j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[i][1];
@@ -557,7 +556,9 @@ namespace PlanarMechanismSimulator
                 var k = 0;
                 for (int i = 0; i < numJoints; i++)
                 {
+                    if (i == JointReOrdering[outputJointIndex]) continue;
                     var j = AllJoints[JointReOrdering[i]];
+                    if (j.Link2 == null) continue;
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
                     if (j.jointType != JointTypes.R)

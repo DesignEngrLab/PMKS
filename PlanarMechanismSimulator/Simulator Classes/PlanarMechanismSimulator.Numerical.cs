@@ -190,6 +190,9 @@ namespace PlanarMechanismSimulator
 
         private void setTimeIndices(double queryTime)
         {
+            while (queryTime < BeginTime) queryTime += Time_Span;
+            while (queryTime > EndTime) queryTime -= Time_Span;
+
             if (queryTime == lastQueryTime) return; /* you are at a same time step - no need to change static vars. */
             /* you are at a new time step */
             // if (queryTime > JointParameters.Times[0] + Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
@@ -199,9 +202,6 @@ namespace PlanarMechanismSimulator
             }
             else
             {
-                while (queryTime < BeginTime) queryTime += Time_Span;
-                while (queryTime > EndTime) queryTime -= Time_Span;
-
                 while (queryTime < prevQueryTime)
                 {
                     nextQueryIndex = prevQueryIndex;

@@ -376,7 +376,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         }
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
         {
-            var length = thisLink.DistanceBetweenSlides(positionJoint, slopeJoint);
+            var length = thisLink.DistanceBetweenSlides(slopeJoint, positionJoint);
             var angle = slopeJoint.SlideAngle - Math.PI / 2;
             while (angle < -Math.PI / 2) angle += Math.PI;
             return new point(slopeJoint.x - length * Math.Cos(angle),
@@ -486,13 +486,14 @@ namespace PlanarMechanismSimulator.PositionSolving
         private point solveViaSlopeToCircleIntersectionRPP(joint j, joint circCenterIndex, joint slideIndex,
              out double angleChange)
         { /* in this case, the slide is on the rotating link and the block is on the sliding link */
-            var rAC = j.Link1.lengthBetween(j, circCenterIndex);
+            var rAC = j.Link1.DistanceBetweenSlides(j, circCenterIndex);
             double slopeB = Math.Tan(slideIndex.SlideAngle);
             var ptB = defineParallelLineThroughJoint(j, slideIndex, j.Link2);
             // need to find proper link1 angle and thus slideAngle for goal, 
             // this will set up the line that goes through the point
-            var alpha = j.Link2.angleOfBlockToJoint(j, slideIndex);
-            var actualSlideAngle = slideIndex.SlideAngle + alpha;
+            //var alpha = j.Link2.angleOfBlockToJoint(j, slideIndex);
+            //var actualSlideAngle = slideIndex.SlideAngle + alpha;
+            var actualSlideAngle = j.SlideAngle;
             var thetaNeg = actualSlideAngle + Math.PI / 2;
             var orthoPt = new point(circCenterIndex.x + rAC * Math.Cos(thetaNeg), circCenterIndex.y + rAC * Math.Sin(thetaNeg));
             var slopeA = Math.Tan(thetaNeg);

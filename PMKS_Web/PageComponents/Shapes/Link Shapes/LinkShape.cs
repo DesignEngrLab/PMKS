@@ -45,8 +45,8 @@ namespace PMKS_Silverlight_App
                     var jPoint = new Point(initPositions[j][0] + xOffset, initPositions[j][1] + yOffset);
                     centers.Add(jPoint);
                     // need to add points for sliding joints that are ? distance from the joint along the angle.
-                    if (jointTypes[j][0].Equals('p') || jointTypes[j][0].Equals('P') || (jointTypes[j].Length > 1 &&
-                        (jointTypes[j][1].Equals('p') || jointTypes[j][1].Equals('P'))))
+                    if (linkIDs[j][0].Equals(name) && (jointTypes[j][0].Equals('p') || jointTypes[j][0].Equals('P') || (jointTypes[j].Length > 1 &&
+                        (jointTypes[j][1].Equals('p') || jointTypes[j][1].Equals('P'))))   )
                     {
                         var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
                                  Math.Cos(initPositions[j][2]);

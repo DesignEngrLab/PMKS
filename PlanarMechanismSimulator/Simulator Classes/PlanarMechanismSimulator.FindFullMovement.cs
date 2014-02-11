@@ -143,7 +143,7 @@ namespace PlanarMechanismSimulator
                 BeginTime = JointParameters.Times[0];
                 EndTime = BeginTime + cyclePeriodTime;
                 BeginTime = 0.0;
-                EndTime =  cyclePeriodTime;
+                EndTime = cyclePeriodTime;
                 // to be more exact, place EndTime at one cycle of rotation
             }
             else
@@ -182,7 +182,8 @@ namespace PlanarMechanismSimulator
             var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
             var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData);
 
-            double smallTimeStep = Constants.SmallPerturbationFraction * FixedTimeStep;
+            double smallTimeStep = (double.IsNaN(FixedTimeStep)) ? Constants.SmallPerturbationFraction :
+                Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
             {
                 for (int i = 0; i <= inputJointIndex; i++)

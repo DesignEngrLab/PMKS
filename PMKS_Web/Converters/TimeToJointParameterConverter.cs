@@ -18,11 +18,20 @@ namespace PMKS_Silverlight_App
         protected  int stateVariableTypeIndex;
         protected  int JointIndex;
         protected  Simulator pmks;
+        protected Boolean includeAngle;
+        protected double initSlideAngle;
+        protected int slideLinkIndex;
 
         public TimeToJointParameterConverter(joint j, StateVariableType jointState, Simulator pmks)
         {
             stateVariableTypeIndex = (int)jointState;
             JointIndex = pmks.AllJoints.IndexOf(j);
+            if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
+            {
+                includeAngle = true;
+                initSlideAngle = j.InitSlideAngle;
+                slideLinkIndex = pmks.AllLinks.IndexOf(j.Link1);
+            }
             this.pmks = pmks;
         }
 
@@ -45,13 +54,13 @@ namespace PMKS_Silverlight_App
                 default: result = pmks.FindJointAccelerationAtTime(currentTime, JointIndex);
                     break;
             }
-            return result;
-            switch (stateVariableTypeIndex)
+            if (includeAngle && stateVariableTypeIndex==0)
             {
-                case 0: return pmks.FindJointPositionAtTime(currentTime, JointIndex);
-                case 1: return pmks.FindJointVelocityAtTime(currentTime, JointIndex);
-                default: return pmks.FindJointAccelerationAtTime(currentTime, JointIndex);
+                var angle =DisplayConstants.RadiansToDegrees*(initSlideAngle + pmks.FindLinkAngleAtTime(currentTime, slideLinkIndex));
+                result = new[] {result[0], result[1], angle};
             }
+            return result;
+
         }
 
     }

@@ -8,6 +8,7 @@ namespace PlanarMechanismSimulator
 {
     public static class Constants
     {
+
         /// <summary>
         ///   This is used below in the close enough to zero booleans to match points
         ///   (see below: sameCloseZero). In order to avoid strange round-off issues - 
@@ -30,7 +31,8 @@ namespace PlanarMechanismSimulator
         public const double ErrorSizeIncrease = 1.2;
         public const long MaxItersInNonDyadicSolver = 300;
         public const double DefaultInputSpeed = 1.0;
-
+                                                                
+        public static TimeSpan MaxTimeToFindMatrixOrders =new TimeSpan((long)2000000);
         public static Boolean sameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilonSame;

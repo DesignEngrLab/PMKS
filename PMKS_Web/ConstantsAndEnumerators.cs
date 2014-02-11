@@ -42,8 +42,9 @@ namespace PMKS_Silverlight_App
         public const string TargetShapeQueryText = "Enter Target Shape Stream Here.";
         public const string TargetPathStreamEnd = "\"/>";
         public const double SliderRectangleAspectRatio = 1.25;
-        public static double MaxZoomIn = 25;
-        public static double MaxZoomOut = 0.04;
+        public const double MaxZoomIn = 25;
+        public const double MaxZoomOut = 0.04;
+        public const double PJointSizeIncrease = 2.5;
 
     }
     public class JointTypeProvider
