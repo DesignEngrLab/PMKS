@@ -67,7 +67,7 @@ namespace PMKS_Silverlight_App
                 csv += times[i] + ",";
                 for (int j = 0; j < pmks.numJoints; j++)
                     for (int k = 0; k < 6; k++)
-                        csv += jParams[i][pmks.JointReOrdering[j], k] + ",";
+                        csv += jParams[i][pmks.JointNewIndexFromOriginal[j], k] + ",";
                 for (int j = 0; j < pmks.numLinks - 1; j++)
                     csv += lParams[i][j, 0] + "," + lParams[i][j, 1] + "," + lParams[i][j, 2] + ",";
                 csv += lParams[i][lastLink, 0] + "," + lParams[i][lastLink, 1] + "," + lParams[i][lastLink, 2] + "\n";
@@ -92,7 +92,7 @@ namespace PMKS_Silverlight_App
                 tabtxt += times[i] + "\t";
                 for (int j = 0; j < pmks.numJoints; j++)
                     for (int k = 0; k < 6; k++)
-                        tabtxt += jParams[i][pmks.JointReOrdering[j], k] + "\t";
+                        tabtxt += jParams[i][pmks.JointNewIndexFromOriginal[j], k] + "\t";
                 for (int j = 0; j < pmks.numLinks - 1; j++)
                     tabtxt += lParams[i][j, 0] + "\t" + lParams[i][j, 1] + "\t" + lParams[i][j, 2] + "\t";
                 tabtxt += lParams[i][lastLink, 0] + "\t" + lParams[i][lastLink, 1] + "\t" + lParams[i][lastLink, 2] + "\n";

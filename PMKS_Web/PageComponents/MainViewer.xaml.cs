@@ -119,7 +119,7 @@ namespace PMKS_Silverlight_App
 
             for (int i = 0; i < pmks.numJoints; i++)
             {
-                var j = pmks.JointReOrdering[i];
+                var j = pmks.JointNewIndexFromOriginal[i];
                 if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
                 MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XOffset, YOffset) { StrokeThickness = penThick });
                 DynamicJointBaseShape displayJoint;

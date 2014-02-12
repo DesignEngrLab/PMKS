@@ -24,7 +24,15 @@ namespace PlanarMechanismSimulator
         public string Status { get; private set; }
 
         public double[] InputRange { get; private set; }
-        public int[] JointReOrdering { get; private set; }
+
+
+        /// <summary>
+        /// Gets the new index of a joint (value in the cell) given the original position.
+        /// </summary>
+        /// <value>
+        /// The joint new index from original.
+        /// </value>
+        public int[] JointNewIndexFromOriginal { get; private set; }
         private double _deltaAngle = Constants.DefaultStepSize;
 
         private double _maxSmoothingError = double.NaN;
@@ -118,7 +126,7 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The begin time.
         /// </value>
-        public double BeginTime { get;private set; }
+        public double BeginTime { get; private set; }
 
 
         /// <summary>
@@ -127,7 +135,7 @@ namespace PlanarMechanismSimulator
         /// <value>
         /// The end time.
         /// </value>
-        public double EndTime { get;private set; }
+        public double EndTime { get; private set; }
 
         /// <summary>
         /// Gets the time span.
@@ -156,7 +164,15 @@ namespace PlanarMechanismSimulator
         public link inputLink { get; private set; }
         public link groundLink { get; private set; }
         private List<joint> additionalRefjoints;
-        private int outputJointIndex = -1;
+
+        /// <summary>
+        /// Gets the indices of joints (in the new PMKS order, not the order originially given)
+        /// that are not to be updated or assigned from the AssignPositions function.
+        /// </summary>
+        /// <value>
+        /// The index of the output joint.
+        /// </value>
+        public int[] FixedJointIndices { get; private set; }
         private const string nameBaseForGearConnector = "auto_generated_gear_connect_";
 
         /// <summary>
@@ -196,21 +212,23 @@ namespace PlanarMechanismSimulator
         /// <param name="InitPositions">The init positions.</param>
         public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, int DriverIndex = 0, IList<double[]> InitPositions = null)
         {
-            // InputSpeed = 1.0;
             CreateLinkAndPositionDetails(LinkIDs, JointTypes, DriverIndex, InitPositions);
+            FixedJointIndices = new int[0];
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Simulator"/> class.
+        /// Initializes a new instance of the <see cref="Simulator" /> class.
         /// </summary>
         /// <param name="LinkIDs">The link IDs.</param>
         /// <param name="JointTypes">The pivot types.</param>
+        /// <param name="DriverIndex">Index of the driver.</param>
         /// <param name="InitPositions">The init positions.</param>
-        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, int OutputJoint, int DriverIndex = 0, IList<double[]> InitPositions = null)
+        /// <param name="FixedJointIndices">The fixed or unassignable joint indices.</param>
+        public Simulator(IList<List<string>> LinkIDs, IList<string> JointTypes, int DriverIndex = 0, IList<double[]> InitPositions = null,
+            int[] FixedJointIndices = null)
         {
-            outputJointIndex = OutputJoint;
-            // InputSpeed = 1.0;
             CreateLinkAndPositionDetails(LinkIDs, JointTypes, DriverIndex, InitPositions);
+            this.FixedJointIndices = FixedJointIndices.Select(index => JointNewIndexFromOriginal[index]).ToArray();
         }
 
         public Simulator(string data)
@@ -373,9 +391,9 @@ namespace PlanarMechanismSimulator
                 AllJoints.Add(inputJoint);
                 AllJoints.AddRange(groundPivots);
 
-                JointReOrdering = new int[numJoints];
+                JointNewIndexFromOriginal = new int[numJoints];
                 for (int i = 0; i < numJoints; i++)
-                    JointReOrdering[i] = AllJoints.IndexOf(origOrder[i]);
+                    JointNewIndexFromOriginal[i] = AllJoints.IndexOf(origOrder[i]);
                 setAdditionalReferencePositions();
                 setGearData();
                 var totalLength = 0.0;
@@ -527,9 +545,10 @@ namespace PlanarMechanismSimulator
                 for (int i = 0; i < numJoints; i++)
                 {
                     if (InitPositions[i] != null)
-                    {                                                   
-                    if (i == JointReOrdering[outputJointIndex]) continue;
-                        var j = AllJoints[JointReOrdering[i]];
+                    {
+                        var newIndex = JointNewIndexFromOriginal[i];
+                        if (FixedJointIndices.Contains(newIndex)) continue;
+                        var j = AllJoints[newIndex];
                         j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[i][0];
                         j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[i][1];
                         if (InitPositions[i].GetLength(0) > 2 && j.jointType != JointTypes.R)
@@ -556,9 +575,9 @@ namespace PlanarMechanismSimulator
                 var k = 0;
                 for (int i = 0; i < numJoints; i++)
                 {
-                    if (i == JointReOrdering[outputJointIndex]) continue;
-                    var j = AllJoints[JointReOrdering[i]];
-                    if (j.Link2 == null) continue;
+                    var newIndex = JointNewIndexFromOriginal[i];
+                    if (FixedJointIndices.Contains(newIndex)) continue;
+                    var j = AllJoints[newIndex];
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
                     if (j.jointType != JointTypes.R)

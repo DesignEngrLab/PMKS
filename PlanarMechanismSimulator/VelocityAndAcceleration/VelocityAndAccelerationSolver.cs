@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using StarMathLib;
 #endregion
@@ -324,7 +325,28 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             matrixOrders = new int[2][];
             orderFound = new[] { false, false };
             var now = DateTime.Now;
+
+#if SILVERLIGHT
+            var forwardThread = new Thread(() =>
+            {
+                DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now);
+                forwardDone.Set();
+            });
+            var backwardThread = new Thread(() =>
+            {
+                DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now);
+                backwardDone.Set();
+            });
+            forwardThread.Start();
+            backwardThread.Start();
+            if (forwardDone.WaitOne() && backwardDone.WaitOne())
+            {
+                //forwardDone = new AutoResetEvent(false);
+                //backwardDone = new AutoResetEvent(false);
+            }
+#else
             Parallel.For(0, 2, i => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), i, now));
+ #endif
             if (matrixOrders[0] == null & matrixOrders[1] == null)
                 throw new Exception("No valid matrix formulations found.");
             if (matrixOrders[0] == null)
@@ -336,6 +358,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         }
 
 
+        private static AutoResetEvent forwardDone = new AutoResetEvent(false);
+        private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
         private Boolean[] orderFound;
         private void DepthFirstToFindOrder(List<List<int>> rowNonZeroes, List<int> order, int rowIndex, DateTime start)

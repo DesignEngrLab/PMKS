@@ -127,8 +127,21 @@ namespace PlanarMechanismSimulator
             // if the simulation did go all the way around then, we should be careful to ensure is connects correctly.
             var cyclePeriodTime = 2 * Math.PI / InputSpeed;
             if (DoesMechanismRepeatOnCrankCycle(cyclePeriodTime))
-            {
+            {                                             
+                BeginTime = 0.0;
+                EndTime = cyclePeriodTime;
                 CycleType = CycleTypes.OneCycle;
+                while (JointParameters.Times.Last() >= EndTime)
+                {
+                    var time = JointParameters.Times.Last();
+                    var parameters = JointParameters.Parameters.Last();
+                    JointParameters.RemoveAt(JointParameters.LastIndex);
+                    JointParameters.AddNearBegin(time - cyclePeriodTime, parameters);
+
+                    parameters = LinkParameters.Parameters.Last();
+                    LinkParameters.RemoveAt(LinkParameters.LastIndex);
+                    LinkParameters.AddNearEnd(time - cyclePeriodTime, parameters);
+                }
                 while (JointParameters.Times[0] < 0.0)
                 {
                     var time = JointParameters.Times[0];
@@ -140,11 +153,6 @@ namespace PlanarMechanismSimulator
                     LinkParameters.RemoveAt(0);
                     LinkParameters.AddNearEnd(time + cyclePeriodTime, parameters);
                 }
-                BeginTime = JointParameters.Times[0];
-                EndTime = BeginTime + cyclePeriodTime;
-                BeginTime = 0.0;
-                EndTime = cyclePeriodTime;
-                // to be more exact, place EndTime at one cycle of rotation
             }
             else
             {

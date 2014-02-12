@@ -47,7 +47,9 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         internal Boolean DefineNewPositions(double positionChange)
         {
+            posResult = PositionAnalysisResults.Normal;
             InitializeJointsAndLinks(positionChange);
+            if (posResult == PositionAnalysisResults.InvalidPosition) return false;
             var numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
             if (numUnknownJoints == 0) return true;
             do
@@ -285,7 +287,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             // todo: if not, should probably create one in Simulator set-up functions (PlanarMechanismSimulator.Main.cs).
             assignJointPosition(fixedGndJoint, groundLink, fixedGndJoint.xInitial, fixedGndJoint.yInitial);
             groundLink.AngleIsKnown = KnownState.Fully;
-            foreach (var j in groundLink.joints.Where(j=>j!=fixedGndJoint))
+            foreach (var j in groundLink.joints.Where(j => j != fixedGndJoint))
             {
                 assignJointPosition(j, groundLink, j.xInitial, j.yInitial);
                 if (j.jointType == JointTypes.P && j.OtherLink(groundLink) != null)
@@ -636,17 +638,22 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink)
         {
+            var angle = 0.0;
             var distanceBetweenJoints = Constants.distance(fixedJoint, slideJoint);
-            var dist2Slide = thisLink.DistanceBetweenSlides(fixedJoint, slideJoint);
+            var dist2Slide = thisLink.DistanceBetweenSlides(slideJoint, fixedJoint);
             if (dist2Slide > distanceBetweenJoints)
             {
                 posResult = PositionAnalysisResults.InvalidPosition;
                 return double.NaN;
             }
+
+
+
             var oldDistance = Constants.distance(fixedJoint.xLast, fixedJoint.yLast,
                 slideJoint.xLast, slideJoint.yLast);
-            if (slideJoint.SlideAngle > 0) return Math.Acos(dist2Slide / distanceBetweenJoints) - Math.Acos(dist2Slide / oldDistance);
+            if (slideJoint.SlideAngle < 0) return Math.Acos(dist2Slide / distanceBetweenJoints) - Math.Acos(dist2Slide / oldDistance);
             return Math.Acos(dist2Slide / oldDistance) - Math.Acos(dist2Slide / distanceBetweenJoints);
+            return angle - thisLink.AngleLast;
         }
         #endregion
 
@@ -706,15 +713,16 @@ namespace PlanarMechanismSimulator.PositionSolving
                 }
                 var j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
                     && j.FixedWithRespectTo(thisLink));
-                //if (j2 == null)
-                //    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully);
-                //j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.knownState != KnownState.Unknown);
+                if (j2 == null)
+                    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully);
+                if (j2 == null) j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Partially
+                     && !j.FixedWithRespectTo(thisLink));
                 if (j2 == null) return;
                 var new_j2j_Angle = Constants.angle(knownJoint, j2);
                 var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
                 angleChange = new_j2j_Angle - old_j2j_Angle;
                 if (j2.SlidingWithRespectTo(thisLink))
-                    angleChange += solveRotateSlotToPin(knownJoint, j2, thisLink);
+                    angleChange = solveRotateSlotToPin(knownJoint, j2, thisLink);
             }
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = KnownState.Fully;

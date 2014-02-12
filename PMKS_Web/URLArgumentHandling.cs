@@ -28,9 +28,9 @@ namespace PMKS_Silverlight_App
         }
         internal static void UrlToMechanism(MainPage main)
         {
-            // var initMechString = "";
+            //var initMechString = "";
             var initMechString =
-                "ground input R 0 5 0 0000|input coupler P -2.3 3.98 1.6 1110|output coupler P -9 0 0 1000|output ground R -13.2 0.98 0 1111|";
+                "ground input R 0 8 1 0001|input output R 0 10 0 0000| output ground RP 10 0 -1 1000|output R 20 -15 1000|";
 
             if (string.IsNullOrWhiteSpace(initMechString) && HtmlPage.Document.QueryString.ContainsKey("mech"))
                 initMechString = HtmlPage.Document.QueryString["mech"];
