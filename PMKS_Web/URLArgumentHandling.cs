@@ -30,7 +30,7 @@ namespace PMKS_Silverlight_App
         {
             //var initMechString = "";
             var initMechString =
-                "ground input R 0 8 1 0001|input output R 0 10 0 0000| output ground RP 10 0 -1 1000|output R 20 -15 1000|";
+                "ground input R 7 5 1 0001|coupler input R -2.3 3.98 1.6 0110|output coupler P 10 0 0 0000|ground output R 8 3 0 0110|coupler R 0 0 0000|";
 
             if (string.IsNullOrWhiteSpace(initMechString) && HtmlPage.Document.QueryString.ContainsKey("mech"))
                 initMechString = HtmlPage.Document.QueryString["mech"];

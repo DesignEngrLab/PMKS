@@ -145,7 +145,7 @@ namespace PMKS_Silverlight_App
                     From = timeSlider.Minimum,
                     To = timeSlider.Maximum,
                     Duration = duration,
-                    AutoReverse = pmks.CycleType!=CycleTypes.OneCycle,
+                    AutoReverse = pmks.CycleType != CycleTypes.OneCycle,
                     RepeatBehavior = RepeatBehavior.Forever
                 };
             storyBoard = new Storyboard
@@ -211,14 +211,24 @@ namespace PMKS_Silverlight_App
         internal void UpdateRanges(Simulator pmks)
         {
             if (pmks == null) return;
-            minX = -DisplayConstants.AxesBuffer;
-            minY = -DisplayConstants.AxesBuffer;
-            maxX = DisplayConstants.AxesBuffer;
-            maxY = DisplayConstants.AxesBuffer;
-            var numJoints = pmks.JointParameters.Parameters[0].GetLength(0);
+            var origMinX = minX = -DisplayConstants.AxesBuffer;
+            var origMinY = minY = -DisplayConstants.AxesBuffer;
+            var origMaxX = maxX = DisplayConstants.AxesBuffer;
+            var origMaxY = maxY = DisplayConstants.AxesBuffer;
 
+            for (int i = 0; i < pmks.numJoints; i++)
+            {
+                if (origMinX > pmks.JointParameters.Parameters[0][i, 0])
+                    origMinX = pmks.JointParameters.Parameters[0][i, 0];
+                if (origMinY > pmks.JointParameters.Parameters[0][i, 1])
+                    origMinY = pmks.JointParameters.Parameters[0][i, 1];
+                if (origMaxX < pmks.JointParameters.Parameters[0][i, 0])
+                    origMaxX = pmks.JointParameters.Parameters[0][i, 0];
+                if (origMaxY < pmks.JointParameters.Parameters[0][i, 1])
+                    origMaxY = pmks.JointParameters.Parameters[0][i, 1];
+            }
             for (int j = 0; j < pmks.JointParameters.Count; j++)
-                for (int i = 0; i < numJoints; i++)
+                for (int i = 0; i < pmks.numJoints; i++)
                 {
                     if (minX > pmks.JointParameters.Parameters[j][i, 0])
                         minX = pmks.JointParameters.Parameters[j][i, 0];
@@ -229,8 +239,21 @@ namespace PMKS_Silverlight_App
                     if (maxY < pmks.JointParameters.Parameters[j][i, 1])
                         maxY = pmks.JointParameters.Parameters[j][i, 1];
                 }
-            canvasWidth = maxX - minX;
-            canvasHeight = maxY - minY;
+            if ((maxX - minX) > 3 * (origMaxX - origMinX))
+            {
+                canvasWidth = 3 * (origMaxX - origMinX);
+                minX = origMinX - (origMaxX - origMinX);
+                maxX = origMaxX + (origMaxX - origMinX);
+            }
+            else canvasWidth = (maxX - minX);
+            if ((maxY - minY) > 3 * (origMaxY - origMinY))
+            {
+                canvasHeight = 3 * (origMaxY - origMinY);
+                minY = origMinY - (origMaxY - origMinY);
+                maxY = origMaxY + (origMaxY - origMinY);
+
+            }
+            else canvasHeight = (maxY - minY);
         }
 
         internal void FindVelocityAndAccelerationScalers(Simulator pmks)
@@ -293,7 +316,7 @@ namespace PMKS_Silverlight_App
 
         internal void MoveScaleCanvas(double newScaleFactor, Point newPanAnchor, Boolean animate = false)
         {
-            double px = newPanAnchor.X ;
+            double px = newPanAnchor.X;
             double py = newPanAnchor.Y;
             //if (ParentWidth < newScaleFactor * MainCanvas.Width)
             //{
@@ -328,7 +351,7 @@ namespace PMKS_Silverlight_App
                 ScaleY = ScaleFactor,
                 TranslateX = px,
                 TranslateY = py
-            }; 
+            };
         }
 
         public Path TargetPath { get; set; }

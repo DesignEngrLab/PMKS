@@ -327,23 +327,25 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             var now = DateTime.Now;
 
 #if SILVERLIGHT
-            var forwardThread = new Thread(() =>
-            {
-                DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now);
-                forwardDone.Set();
-            });
-            var backwardThread = new Thread(() =>
-            {
-                DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now);
-                backwardDone.Set();
-            });
-            forwardThread.Start();
-            backwardThread.Start();
-            if (forwardDone.WaitOne() && backwardDone.WaitOne())
-            {
+            DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now);
+            DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now);
+            //var forwardThread = new Thread(() =>
+            //{
+            //    DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now);
+            //    forwardDone.Set();
+            //});
+            //var backwardThread = new Thread(() =>
+            //{
+            //    DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now);
+            //    backwardDone.Set();
+            //});
+            //forwardThread.Start();
+            //backwardThread.Start();
+            //if (forwardDone.WaitOne() && backwardDone.WaitOne())
+            //{
                 //forwardDone = new AutoResetEvent(false);
                 //backwardDone = new AutoResetEvent(false);
-            }
+            //}
 #else
             Parallel.For(0, 2, i => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), i, now));
  #endif
