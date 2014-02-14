@@ -122,17 +122,17 @@ namespace PlanarMechanismSimulator
                     }
                     if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
                     {
-                        if (!Constants.sameCloseZero(iJoint.InitSlideAngle, jJoint.InitSlideAngle))
+                        if (!Constants.sameCloseZero(iJoint.SlideAngle, jJoint.SlideAngle))
                         {
                             distanceToSlideLine.Add(key, 0.0);
-                            angleFromBlockToJoint.Add(key, iJoint.InitSlideAngle - jJoint.InitSlideAngle);
+                            angleFromBlockToJoint.Add(key, iJoint.SlideAngle - jJoint.SlideAngle);
                         }
                         else
                         {
                             distance = Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial,
                                 jJoint.yInitial);
                             var theta = Constants.angle(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial,
-                                jJoint.yInitial) - Math.PI / 2 - iJoint.InitSlideAngle;
+                                jJoint.yInitial) - Math.PI / 2 - iJoint.SlideAngle;
                             distanceToSlideLine.Add(key, Math.Abs(distance * Math.Cos(theta)));
                             angleFromBlockToJoint.Add(key, 0.0);
                         }
@@ -140,7 +140,7 @@ namespace PlanarMechanismSimulator
                     if (iJoint.SlidingWithRespectTo(this) || iJoint.jointType == JointTypes.P)
                     {
                         Boolean belowLinePositiveSlope;
-                        var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.InitSlideAngle,
+                        var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.SlideAngle,
                             out belowLinePositiveSlope);
                         if (belowLinePositiveSlope) signForDistance = -1;
                         distance = Constants.distance(orthoPt.x, orthoPt.y, jJoint.xInitial, jJoint.yInitial);
@@ -150,7 +150,7 @@ namespace PlanarMechanismSimulator
                     {
                         var reversekey = numJoints * j + i;
                         Boolean belowLinePositiveSlope;
-                        var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.InitSlideAngle,
+                        var orthoPt = findOrthoPoint(iJoint, jJoint, jJoint.SlideAngle,
                             out belowLinePositiveSlope);
                         if (belowLinePositiveSlope) signForDistance = -1;
                         distance = Constants.distance(orthoPt.x, orthoPt.y, iJoint.xInitial, iJoint.yInitial);

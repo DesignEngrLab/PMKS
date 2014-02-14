@@ -13,7 +13,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         protected readonly joint joint2;
         protected int joint2XIndex = -1;
         protected int joint2YIndex = -1;
-        protected readonly link link;
+        public readonly link link;
         protected int linkIndex = -1;
         protected readonly bool joint1IsKnown;
         protected readonly bool joint2IsKnown;
@@ -73,7 +73,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
     internal abstract class VelocityJointToJoint : JointToJointEquation
     {
-        protected readonly bool linkIsKnown;
+        public bool linkIsKnown;
         protected VelocityJointToJoint(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown, bool linkIsKnown)
             : base(joint1, joint2, link, Joint1IsKnown, Joint2IsKnown)
         {

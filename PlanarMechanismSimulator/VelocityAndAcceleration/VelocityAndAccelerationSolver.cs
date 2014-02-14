@@ -151,7 +151,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     + joints[gearData.gearCenter2Index].vy * gearData.radius2) / (gearData.radius1 + gearData.radius2);
             }
         }
-        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
+        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
+            bool linkIsKnown)
         {
             if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
                 return new VelocityEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown, linkIsKnown);
@@ -236,7 +237,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             foreach (var j in inputLink.joints.Where(j => j.SlidingWithRespectTo(inputLink)))
                 equations.Add(MakeJointToJointEquations(j, inputJoint, inputLink, false, true, true));
 
-            /* now address the input link - again, only the joints that slide w.r.t. ground. */
+            /* now address the ground link - again, only the joints that slide w.r.t. ground. */
             foreach (var j in groundLink.joints.Where(j => j.SlidingWithRespectTo(groundLink)))
                 equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, false, true, true));
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
@@ -246,6 +247,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 var otherLink = pJoint.OtherLink(inputLink);
                 otherLink.Velocity = inputLink.Velocity;
                 unknownObjects.Remove(otherLink);
+                foreach (var eq in equations.Where(eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
+                    ((VelocityJointToJoint)eq).linkIsKnown = true;
             }
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
             foreach (var pJoint in groundLink.joints.Where(j => j.jointType == JointTypes.P))
@@ -253,6 +256,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 var otherLink = pJoint.OtherLink(groundLink);
                 otherLink.Velocity = 0.0;
                 unknownObjects.Remove(otherLink);
+                foreach (var eq in equations.Where(eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
+                    ((VelocityJointToJoint)eq).linkIsKnown = true;
             }
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
@@ -270,7 +275,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     if (j.Link2 != inputLink && j.Link2 != groundLink)
                     {
                         unknownObjects.Add(j);
-                        if (j.Link1 != inputLink && j.Link1 != groundLink)
+                        if (j.Link1 != groundLink /*&& j.Link1 != inputLink*/)
                             equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
                     }
                 }
@@ -343,12 +348,12 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             //backwardThread.Start();
             //if (forwardDone.WaitOne() && backwardDone.WaitOne())
             //{
-                //forwardDone = new AutoResetEvent(false);
-                //backwardDone = new AutoResetEvent(false);
+            //forwardDone = new AutoResetEvent(false);
+            //backwardDone = new AutoResetEvent(false);
             //}
 #else
             Parallel.For(0, 2, i => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), i, now));
- #endif
+#endif
             if (matrixOrders[0] == null & matrixOrders[1] == null)
                 throw new Exception("No valid matrix formulations found.");
             if (matrixOrders[0] == null)
@@ -406,7 +411,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 || ((l == inputLink || j.OtherLink(l) == inputLink) && !j.SlidingWithRespectTo(inputLink)));
         }
 
-        protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown);
+        protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
+            bool linkIsKnown);
 
         protected abstract void SetInitialInputAndGroundLinkStates();
         protected abstract void SetInitialInputAndGroundJointStates();

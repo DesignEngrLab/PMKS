@@ -95,7 +95,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                                 assignJointPosition(j, j.Link2, sJPoint);
 
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromRotate(j, j.Link2);
+                                setLinkPositionFromRotate(j, j.Link2, angleChange);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 // setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
@@ -711,11 +711,10 @@ namespace PlanarMechanismSimulator.PositionSolving
         {
             if (thisLink == null) return;
             //if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
+            if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
+                angleChange = thisLink.Angle - thisLink.AngleLast;
             if (double.IsNaN(angleChange))
-            {
-                if (thisLink.AngleIsKnown == KnownState.Fully)
-                    angleChange = thisLink.Angle - thisLink.AngleLast;
-                //var j1 = knownJoint;
+            {     //var j1 = knownJoint;
                 if (!knownJoint.FixedWithRespectTo(thisLink))
                 {
                     knownJoint = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
@@ -735,7 +734,6 @@ namespace PlanarMechanismSimulator.PositionSolving
                 if (j2.SlidingWithRespectTo(thisLink))
                     angleChange += solveRotateSlotToPin(knownJoint, j2, thisLink);
             }
-
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = KnownState.Fully;
 
