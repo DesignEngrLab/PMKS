@@ -14,7 +14,7 @@ namespace PlanarMechanismSimulator
                 joints[i].yNumerical = joints[i].yLast + joints[i].vy * deltaTime + 0.5 * joints[i].ay * deltaTime * deltaTime;
             }
             for (int i = 0; i < inputLinkIndex; i++)
-                links[i].Angle = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
+                links[i].AngleNumerical = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
         }
 
         private void NumericalVelocity(double deltaTime, List<joint> joints, List<link> links)

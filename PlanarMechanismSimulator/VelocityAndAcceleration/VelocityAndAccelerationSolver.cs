@@ -17,9 +17,11 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
     internal class AccelerationSolver : VelocityAndAccelerationSolver
     {
         internal AccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                              int inputLinkIndex, double InputSpeed, Dictionary<int, gearData> gearsData)
-            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData)
+                              int inputLinkIndex, double inputSpeed, Dictionary<int, gearData> gearsData, double averageLength)
+            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, inputSpeed, gearsData)
         {
+            maximumJointValue = Constants.JointAccelerationLimitFactor * averageLength * inputSpeed * inputSpeed;
+            maximumLinkValue = Constants.LinkAccelerationLimitFactor * inputSpeed * inputSpeed;
         }
         protected override void SetInitialInputAndGroundLinkStates()
         {
@@ -45,30 +47,45 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             else if (inputJoint.jointType != JointTypes.P)
                 throw new Exception("Currently only R or P can be the input joints.");
         }
-        protected override void PutStateVarsBackInJointsAndLinks(double[] x)
+
+        protected override Boolean PutStateVarsBackInJointsAndLinks(double[] x)
         {
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link) ((link)o).Acceleration = x[index++];
+                if (o is link)
+                {
+                    var a = x[index++];
+                    if (Math.Abs(a) > maximumLinkValue) return false;
+                    ((link)o).Acceleration = a;
+                }
                 else if (o is joint)
                 {
-                    ((joint)o).ax = x[index++];
-                    ((joint)o).ay = x[index++];
+                    var ax = x[index++];
+                    var ay = x[index++];
+                    if (Math.Abs(ax) > maximumJointValue || Math.Abs(ay) > maximumJointValue) return false;
+                    ((joint)o).ax = ax;
+                    ((joint)o).ay = ay;
                 }
                 else if (o is Tuple<link, joint>)
                     ((Tuple<link, joint>)o).Item2.SlideAcceleration = x[index++];
             }
-            if (gearsData == null) return;
-            foreach (var gearData in gearsData.Values)
+            if (gearsData != null)
             {
-                var j = joints[gearData.gearTeethIndex];
-                j.ax = (joints[gearData.gearCenter1Index].ax * gearData.radius1
-                    + joints[gearData.gearCenter2Index].ax * gearData.radius2) / (gearData.radius1 + gearData.radius2);
-                j.ay = (joints[gearData.gearCenter1Index].ay * gearData.radius1
-                    + joints[gearData.gearCenter2Index].ay * gearData.radius2) / (gearData.radius1 + gearData.radius2);
+                foreach (var gearData in gearsData.Values)
+                {
+                    var j = joints[gearData.gearTeethIndex];
+                    j.ax = (joints[gearData.gearCenter1Index].ax * gearData.radius1
+                            + joints[gearData.gearCenter2Index].ax * gearData.radius2) /
+                           (gearData.radius1 + gearData.radius2);
+                    j.ay = (joints[gearData.gearCenter1Index].ay * gearData.radius1
+                            + joints[gearData.gearCenter2Index].ay * gearData.radius2) /
+                           (gearData.radius1 + gearData.radius2);
+                }
             }
+            return true;
         }
+
 
         protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
         {
@@ -87,9 +104,11 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
     internal class VelocitySolver : VelocityAndAccelerationSolver
     {
         internal VelocitySolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-            int inputLinkIndex, double InputSpeed, Dictionary<int, gearData> gearsData)
-            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData)
+            int inputLinkIndex, double inputSpeed, Dictionary<int, gearData> gearsData, double averageLength)
+            : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, inputSpeed, gearsData)
         {
+            maximumJointValue = Constants.JointVelocityLimitFactor * averageLength * Math.Abs(inputSpeed);
+            maximumLinkValue = Constants.LinkVelocityLimitFactor * Math.Abs(inputSpeed);
         }
         protected override void SetInitialInputAndGroundLinkStates()
         {
@@ -127,29 +146,42 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             else if (inputJoint.jointType != JointTypes.P)
                 throw new Exception("Currently only R or P can be the input joints.");
         }
-        protected override void PutStateVarsBackInJointsAndLinks(double[] x)
+        protected override Boolean PutStateVarsBackInJointsAndLinks(double[] x)
         {
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link) ((link)o).Velocity = x[index++];
+                if (o is link)
+                {
+                    var v = x[index++];
+                    if (Math.Abs(v) > maximumJointValue) return false;
+                    ((link)o).Velocity = v;
+                }
                 else if (o is joint)
                 {
-                    ((joint)o).vx = x[index++];
-                    ((joint)o).vy = x[index++];
+                    var vx = x[index++];
+                    var vy = x[index++];
+                    if (Math.Abs(vx) > maximumJointValue || Math.Abs(vy) > maximumJointValue) return false;
+                    ((joint)o).vx = vx;
+                    ((joint)o).vy = vy;
                 }
                 else if (o is Tuple<link, joint>)
                     ((Tuple<link, joint>)o).Item2.SlideVelocity = x[index++];
             }
-            if (gearsData == null) return;
-            foreach (var gearData in gearsData.Values)
+            if (gearsData != null)
             {
-                var j = joints[gearData.gearTeethIndex];
-                j.vx = (joints[gearData.gearCenter1Index].vx * gearData.radius1
-                    + joints[gearData.gearCenter2Index].vx * gearData.radius2) / (gearData.radius1 + gearData.radius2);
-                j.vy = (joints[gearData.gearCenter1Index].vy * gearData.radius1
-                    + joints[gearData.gearCenter2Index].vy * gearData.radius2) / (gearData.radius1 + gearData.radius2);
+                foreach (var gearData in gearsData.Values)
+                {
+                    var j = joints[gearData.gearTeethIndex];
+                    j.vx = (joints[gearData.gearCenter1Index].vx * gearData.radius1
+                            + joints[gearData.gearCenter2Index].vx * gearData.radius2) /
+                           (gearData.radius1 + gearData.radius2);
+                    j.vy = (joints[gearData.gearCenter1Index].vy * gearData.radius1
+                            + joints[gearData.gearCenter2Index].vy * gearData.radius2) /
+                           (gearData.radius1 + gearData.radius2);
+                }
             }
+            return true;
         }
         protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
             bool linkIsKnown)
@@ -173,7 +205,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         protected readonly int firstInputJointIndex;
         protected readonly int inputJointIndex;
         protected readonly double inputSpeed;
-
+        protected double maximumJointValue;
+        protected double maximumLinkValue;
         protected readonly joint inputJoint;
         protected readonly joint groundReferenceJoint;
         protected readonly List<EquationBase> equations;
@@ -194,10 +227,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         /// <param name="firstInputJointIndex">First index of the input joint.</param>
         /// <param name="inputJointIndex">Index of the input joint.</param>
         /// <param name="inputLinkIndex">Index of the input link.</param>
-        /// <param name="InputSpeed">The input speed.</param>
+        /// <param name="inputSpeed">The input speed.</param>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
         public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                                             int inputLinkIndex, double InputSpeed, Dictionary<int, gearData> gearsData)
+                                             int inputLinkIndex, double inputSpeed, Dictionary<int, gearData> gearsData)
         {
             /************ Initialization ************/
             this.joints = joints;
@@ -208,7 +241,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             inputLink = links[inputLinkIndex];
             groundLink = links[inputLinkIndex + 1];
             this.joints = joints;
-            inputSpeed = InputSpeed;
+            this.inputSpeed = inputSpeed;
             this.gearsData = gearsData;
             equations = new List<EquationBase>();
 
@@ -331,29 +364,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             orderFound = new[] { false, false };
             var now = DateTime.Now;
 
-#if SILVERLIGHT
-            DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now);
-            DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now);
-            //var forwardThread = new Thread(() =>
-            //{
-            //    DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now);
-            //    forwardDone.Set();
-            //});
-            //var backwardThread = new Thread(() =>
-            //{
-            //    DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now);
-            //    backwardDone.Set();
-            //});
-            //forwardThread.Start();
-            //backwardThread.Start();
-            //if (forwardDone.WaitOne() && backwardDone.WaitOne())
-            //{
-            //forwardDone = new AutoResetEvent(false);
-            //backwardDone = new AutoResetEvent(false);
-            //}
-#else
-            Parallel.For(0, 2, i => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), i, now));
-#endif
+            var forwardTask = Task.Factory.StartNew(() => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 0, now));
+            var backwardTask = Task.Factory.StartNew(() => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now));
+            Task.WaitAll(forwardTask, backwardTask);
+
             if (matrixOrders[0] == null & matrixOrders[1] == null)
                 throw new Exception("No valid matrix formulations found.");
             if (matrixOrders[0] == null)
@@ -361,12 +375,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 matrixOrders[0] = matrixOrders[1];
                 matrixOrders[1] = null;
             }
-
         }
 
-
-        private static AutoResetEvent forwardDone = new AutoResetEvent(false);
-        private static AutoResetEvent backwardDone = new AutoResetEvent(false);
 
         private Boolean[] orderFound;
         private void DepthFirstToFindOrder(List<List<int>> rowNonZeroes, List<int> order, int rowIndex, DateTime start)
@@ -416,7 +426,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
         protected abstract void SetInitialInputAndGroundLinkStates();
         protected abstract void SetInitialInputAndGroundJointStates();
-        protected abstract void PutStateVarsBackInJointsAndLinks(double[] x);
+        protected abstract Boolean PutStateVarsBackInJointsAndLinks(double[] x);
 
 
         internal Boolean Solve()
@@ -441,6 +451,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                         answers.Add(0.0);
                     }
                 var rowOrdering = ChooseBestRowOrder(rows);
+                if (rowOrdering == null) return false;
                 for (int j = 0; j < numUnknowns; j++)
                 {
                     StarMath.SetRow(j, A, rows[rowOrdering[j]]);
@@ -448,8 +459,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 }
                 var x = StarMath.solve(A, b);
                 if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
-                PutStateVarsBackInJointsAndLinks(x);
-                return true;
+                return PutStateVarsBackInJointsAndLinks(x);
             }
             catch { return false; }
         }

@@ -42,6 +42,7 @@ namespace PlanarMechanismSimulator
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
         internal double SlideVelocity { get; set; }
         internal double SlideAcceleration { get; set; }
+        public double[] SlideLimits { get; internal set; }
         internal double x { get; set; }
         internal double y { get; set; }
         internal double xNumerical { get; set; }
@@ -148,7 +149,18 @@ namespace PlanarMechanismSimulator
                 yLast = yLast,
                 yNumerical = yNumerical,
                 isGround = isGround,
-                jointType = jointType
+                jointType = jointType  ,
+                ax = ax,
+                ay=ay,
+                SlideAcceleration = SlideAcceleration,
+                positionKnown = positionKnown,
+                SlideLimits = SlideLimits,
+                vx = vx,
+                vy = vy,
+                vxLast = vxLast,
+                vyLast = vyLast,
+                SlideVelocity = SlideVelocity
+               
             };
         }
     }

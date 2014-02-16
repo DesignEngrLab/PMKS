@@ -186,13 +186,13 @@ namespace PMKS_Silverlight_App
                     index++;
                 }
                 var bools = new bool[4];
-                if (words.Count() > index && (words[index].Contains("1") || words[index].Contains("0")))
+                if (words.Count() > index && (words[index].Contains("t") || words[index].Contains("f")))
                 {
                     var plusMinusString = words[index];
                     int i = 0;
                     while (i < plusMinusString.Length)
                     {
-                        if (!plusMinusString[i].Equals('0')) bools[i] = true;
+                        if (!plusMinusString[i].Equals('t')) bools[i] = true;
                         i++;
                     }
                 }
@@ -240,10 +240,10 @@ namespace PMKS_Silverlight_App
                 text += jInfo.YPos;
                 text += (!string.IsNullOrWhiteSpace(jInfo.Angle)) ? "," + jInfo.Angle : "";
                 var boolStr = ","
-                              + (jInfo.PosVisible ? '1' : '0')
-                              + (jInfo.VelocityVisible ? '1' : '0')
-                              + (jInfo.AccelerationVisible ? '1' : '0')
-                              + (jInfo.DrivingInput ? '1' : '0');
+                              + (jInfo.PosVisible ? 't' : 'f')
+                              + (jInfo.VelocityVisible ? 't' : 'f')
+                              + (jInfo.AccelerationVisible ? 't' : 'f')
+                              + (jInfo.DrivingInput ? 't' : 'f');
                 //var boolStr = "," + jInfo.PosVisible
                 //    + "," + jInfo.VelocityVisible
                 //    + "," + jInfo.AccelerationVisible

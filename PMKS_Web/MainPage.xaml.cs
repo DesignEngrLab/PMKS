@@ -208,7 +208,7 @@ namespace PMKS_Silverlight_App
             mainViewer.Clear();
             mainViewer.UpdateRanges(InitPositions);
             mainViewer.UpdateScaleAndCenter();
-            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, true);
+            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames);
             #endregion
 
             #region Setting Up PMKS
@@ -273,7 +273,7 @@ namespace PMKS_Silverlight_App
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);
                 mainViewer.UpdateScaleAndCenter();
-                mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames, false);
+                mainViewer.DrawStaticShapes(pmks);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 PlayButton_Checked(null, null);
@@ -532,7 +532,7 @@ namespace PMKS_Silverlight_App
             if (mainViewer.storyBoard == null) return;
             SlideShape1.Opacity = SlideShape2.Opacity = 0;
             mainViewer.storyBoard.Begin();
-            if (pmks.CycleType== CycleTypes.OneCycle)
+            if (pmks.CycleType == CycleTypes.OneCycle)
             {
                 PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = 0;
                 PlayForwardShape.Opacity = 1;

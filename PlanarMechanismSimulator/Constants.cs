@@ -31,8 +31,14 @@ namespace PlanarMechanismSimulator
         public const double ErrorSizeIncrease = 1.2;
         public const long MaxItersInNonDyadicSolver = 300;
         public const double DefaultInputSpeed = 1.0;
-                                                                
-        public static TimeSpan MaxTimeToFindMatrixOrders =new TimeSpan((long)2000000);
+
+        public static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan((long)2000000);
+        public const double XRangeLimitFactor = 5.0;
+        public const double YRangeLimitFactor = 5.0;
+        public const double JointAccelerationLimitFactor = 75.0;
+        public const double LinkAccelerationLimitFactor = 75.0;
+        public const double JointVelocityLimitFactor = 75.0;
+        public const double LinkVelocityLimitFactor = 75.0;
         public static Boolean sameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilonSame;

@@ -28,7 +28,7 @@ namespace PMKS_Silverlight_App
         public const double LinkStrokeLuminence = 0.3;
         public const double LinkStrokeSaturation = 0.7;
         public const double DefaultLinkThickness = 8.0;
-        public const double InitialSlidingJointLengthMultiplier = 3.0;
+        public const double InitialSlidingJointLengthMultiplier = 1.0;
         public const double SingleJointLinkRadiusMultipler = 10;
         public const double RadiansToDegrees = 180.0 / Math.PI;
         public const double TotalSize = 2000.0;
