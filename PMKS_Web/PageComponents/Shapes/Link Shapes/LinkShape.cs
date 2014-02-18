@@ -45,6 +45,8 @@ namespace PMKS_Silverlight_App
                 if (j.SlidingWithRespectTo(thisLink))
                 {
                     var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
+                    while (slideAngle < -Math.PI / 2) slideAngle += Math.PI;
+                    while (slideAngle > Math.PI / 2) slideAngle -= Math.PI;
                     var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
                              Math.Cos(slideAngle);
                     var dy = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
@@ -76,7 +78,8 @@ namespace PMKS_Silverlight_App
                     }
                     var flip = false;
                     link.findOrthoPoint(thisLink.joints[(int)j.SlideLimits[0]], j, slideAngle, out flip);
-                    if (flip) slideAngle += Math.PI;
+                    if (flip) 
+                        slideAngle += Math.PI;
                   borderShape.Transform=   holeShape.Transform = new CompositeTransform
                     {
                         Rotation = DisplayConstants.RadiansToDegrees*slideAngle,

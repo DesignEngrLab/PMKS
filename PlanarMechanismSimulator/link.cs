@@ -180,8 +180,8 @@ namespace PlanarMechanismSimulator
                     {
                         var result = iJoint.SlideAngle -
                                      Constants.angle(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial);
-                        while (result < 0) result += Math.PI;
-                        while (result > Math.PI) result -= Math.PI;
+                        while (result < -Math.PI / 2) result += Math.PI;
+                        while (result > Math.PI / 2) result -= Math.PI;
                         angleFromBlockToJoint.Add(key, result);
                     }
                     if (jJoint.jointType == JointTypes.P)
@@ -189,8 +189,8 @@ namespace PlanarMechanismSimulator
                         var reversekey = numJoints * j + i;
                         var result = jJoint.SlideAngle -
                                      Constants.angle(jJoint.xInitial, jJoint.yInitial, iJoint.xInitial, iJoint.yInitial);
-                        while (result < 0) result += Math.PI;
-                        while (result > Math.PI) result -= Math.PI;
+                        while (result < -Math.PI / 2) result += Math.PI;
+                        while (result > Math.PI / 2) result -= Math.PI;
                         angleFromBlockToJoint.Add(reversekey, result);
                     }
                 }
