@@ -160,32 +160,6 @@ namespace PMKS_Silverlight_App
             if ((bool)App.main.PlayButton.IsChecked)
                 storyBoard.Begin();
         }
-        public void DrawStaticShapes(List<List<string>> linkIDs, List<string> jointTypes, List<double[]> initPositions,
-                     List<string> distinctLinkNames)
-        {
-            MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
-            MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset, MainCanvas.Width, MainCanvas.Height));
-            for (int i = 0; i < distinctLinkNames.Count; i++)
-            {
-                if (distinctLinkNames[i] == "ground") continue;
-                MainCanvas.Children.Add(new LinkShape(i, distinctLinkNames[i], linkIDs, jointTypes, initPositions,
-                                                      XOffset, YOffset, penThick, null,
-                                                      DisplayConstants.DefaultLinkThickness / ScaleFactor));
-            }
-            for (int i = 0; i < linkIDs.Count; i++)
-            {
-                MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, initPositions[i][0] + XOffset,
-                                                             initPositions[i][1] + YOffset,
-                                                             linkIDs[i].Contains("ground"), false));
-            }
-            if (TargetPath != null)
-            {
-                MainCanvas.Children.Remove(TargetPath);
-                TargetPath.RenderTransform
-                    = new TranslateTransform { X = XOffset, Y = YOffset };
-                MainCanvas.Children.Add(TargetPath);
-            }
-        }
 
         public void DrawStaticShapes(Simulator pmks)
         {
@@ -197,7 +171,7 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < pmks.numLinks; i++)
             {
                 if (!pmks.AllLinks[i].isGround)
-                    MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, null,
+                    MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize,null,
                                                           DisplayConstants.DefaultLinkThickness / ScaleFactor));
             }
             for (int i = 0; i < pmks.numJoints; i++)

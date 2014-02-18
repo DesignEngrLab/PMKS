@@ -47,7 +47,7 @@ namespace PMKS_Silverlight_App
                     _linkNames = _linkNames.Replace("0", "ground");
 
                 if (Application.Current.RootVisual != null)
-                    App.main.linkInputTable.UpdateLinksTableAterAdd(this);
+                    App.main.linkInputTable.UpdateLinksTableAfterAdd(this);
             }
         }
 
@@ -192,7 +192,7 @@ namespace PMKS_Silverlight_App
                     int i = 0;
                     while (i < plusMinusString.Length)
                     {
-                        if (!plusMinusString[i].Equals('t')) bools[i] = true;
+                        if (plusMinusString[i].Equals('t')) bools[i] = true;
                         i++;
                     }
                 }

@@ -208,16 +208,18 @@ namespace PMKS_Silverlight_App
             mainViewer.Clear();
             mainViewer.UpdateRanges(InitPositions);
             mainViewer.UpdateScaleAndCenter();
-            mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames);
             #endregion
 
             #region Setting Up PMKS
+#if trycatch
             try
             {
+#endif
                 PlayButton_Unchecked(null, null);
                 DefineInputDriver();
-                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
-
+                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);          
+            //mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames);
+                                                           mainViewer.DrawStaticShapes(pmks);
                 if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
                 else status("The mechanism has non-dyadic loops.");
                 int dof = pmks.DegreesOfFreedom;
@@ -232,16 +234,20 @@ namespace PMKS_Silverlight_App
                         pmks.DeltaAngle = AngleIncrement;
                 }
                 else return;
+            
+#if trycatch
             }
             catch (Exception e)
             {
                 status("Incomplete or incorrect data: \n" + e.InnerException);
                 return;
             }
+#endif
             #endregion
-
+                 #if trycatch
             try
             {
+#endif
                 #region Simulation of mechanism
                 status("Analyzing...");
                 var now = DateTime.Now;
@@ -278,11 +284,13 @@ namespace PMKS_Silverlight_App
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
                 PlayButton_Checked(null, null);
                 #endregion
+                #if trycatch
             }
             catch (Exception e)
             {
                 status(e.Message);
             }
+#endif
         }
 
         private void DefineInputDriver()

@@ -54,7 +54,7 @@ namespace PMKS_Silverlight_App
                 }
         }
         
-        internal void UpdateLinksTableAterAdd(JointData joint)
+        internal void UpdateLinksTableAfterAdd(JointData joint)
         {
             ObservableCollection<LinkData> linkData = App.main.LinksInfo.Data;
             ObservableCollection<JointData> jointData = App.main.JointsInfo.Data;

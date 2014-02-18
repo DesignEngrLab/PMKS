@@ -28,8 +28,10 @@ namespace PMKS_Silverlight_App
                 };
             bool? result = saveFileDialog.ShowDialog();
             FileInfo fileInfo;
+            #if trycatch
             try
             {
+#endif
                 if (result == true)
                 {
                     var fileStream = saveFileDialog.OpenFile();
@@ -40,6 +42,7 @@ namespace PMKS_Silverlight_App
                     sw.Flush();
                     sw.Close();
                 }
+                #if trycatch
             }
             catch (Exception exc)
             {
@@ -47,6 +50,7 @@ namespace PMKS_Silverlight_App
                 App.main.status(exc.Message);
                 App.main.status("********** Unable to write to file " + saveFileDialog.SafeFileName + ". ********");
             }
+#endif
         }
 
         private static string ConvertPMKSDataToCSV(Simulator pmks)

@@ -315,19 +315,23 @@ namespace PlanarMechanismSimulator.PositionSolving
             } while (posResult != PositionAnalysisResults.NoSolvableDyadFound &&
                      numUnknownJoints > 0);
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
-            {
+            {  
+#if trycatch
                 try
                 {
+#endif
                     //if (NDPS == null)
                     NDPS = new NonDyadicPositionSolver(this);
                     var NDPSError = 0.0;
                     if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
                     PositionError = NDPSError;
+      #if trycatch
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("Error in setting up and running NonDyadicPositionSolver.");
                 }
+#endif
             }
             if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY)) 
                 return false;
@@ -340,18 +344,18 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         private void UpdateSliderLengthLimits()
         {
-            foreach (var j in joints.Where(jt => !double.IsNaN(jt.InitSlideAngle)))
+            foreach (var j in joints.Where(jt => jt.SlideLimits!=null))
             {
-                var refJoint = j.Link1.joints.First(jt => jt.FixedWithRespectTo(j.Link1));
+                var refJoint = j.Link1.joints[(int) j.SlideLimits[0]];
                 bool dummy;
                 var orthoPt = link.findOrthoPoint(refJoint, j, j.SlideAngle, out dummy);
 
-                var a = new[] { orthoPt.x - refJoint.xInitial, orthoPt.y - refJoint.yInitial };
+                var a = new[] { orthoPt.x - refJoint.x, orthoPt.y - refJoint.y };
                 a = StarMath.normalize(a);
-                var b = new[] { j.xInitial - orthoPt.x, j.yInitial - orthoPt.y };
+                var b = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
                 var cross = StarMath.crossProduct2(a, b);
-                if (j.SlideLimits[2] < cross) j.SlideLimits[2] = cross;
-                else if (j.SlideLimits[0] > cross) j.SlideLimits[0] = cross;
+                if (j.SlideLimits[3] < cross) j.SlideLimits[3] = cross;
+                else if (j.SlideLimits[1] > cross) j.SlideLimits[1] = cross;
             }
         }
 

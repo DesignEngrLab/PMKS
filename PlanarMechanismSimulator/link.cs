@@ -103,6 +103,7 @@ namespace PlanarMechanismSimulator
                     j.InitSlideAngle -= AngleInitial;
                     while (j.InitSlideAngle < -Math.PI / 2) j.InitSlideAngle += Math.PI;
                     while (j.InitSlideAngle > Math.PI / 2) j.InitSlideAngle -= Math.PI;
+                    j.SlideLimits = null;
                 }
             }
             lengths = new Dictionary<int, double>();
@@ -138,7 +139,7 @@ namespace PlanarMechanismSimulator
                             angleFromBlockToJoint.Add(key, 0.0);
                         }
                     }
-                    else if (iJoint.SlidingWithRespectTo(this) || iJoint.jointType == JointTypes.P)
+                    else if (iJoint.SlidingWithRespectTo(this))// && iJoint.jointType == JointTypes.P)
                     {
                         Boolean belowLinePositiveSlope;
                         var orthoPt = findOrthoPoint(jJoint, iJoint, iJoint.SlideAngle,
@@ -153,10 +154,10 @@ namespace PlanarMechanismSimulator
                             a = StarMath.normalize(a);
                             var b = new[] { iJoint.xInitial - orthoPt.x, iJoint.yInitial - orthoPt.y };
                             var cross = StarMath.crossProduct2(a, b);
-                            jJoint.SlideLimits = new[] { cross, cross, cross };
+                            iJoint.SlideLimits = new[] {j, cross, cross, cross };
                         }
                     }
-                    else if (jJoint.SlidingWithRespectTo(this) || jJoint.jointType == JointTypes.P)
+                    else if (jJoint.SlidingWithRespectTo(this))// && jJoint.jointType == JointTypes.P)
                     {
                         var reversekey = numJoints * j + i;
                         Boolean belowLinePositiveSlope;
@@ -172,7 +173,7 @@ namespace PlanarMechanismSimulator
                             a = StarMath.normalize(a);
                             var b = new[] { jJoint.xInitial - orthoPt.x, jJoint.yInitial - orthoPt.y };
                             var cross = StarMath.crossProduct2(a, b);
-                            jJoint.SlideLimits = new[] { cross, cross, cross };
+                            jJoint.SlideLimits = new[] {i, cross, cross, cross };
                         }
                     }
                     if (iJoint.jointType == JointTypes.P)
@@ -245,7 +246,7 @@ namespace PlanarMechanismSimulator
         /// <param name="lineAngle">The line angle.</param>
         /// <param name="belowLinePositiveSlope">if set to <c>true</c> [below line positive slope].</param>
         /// <returns></returns>
-        internal static point findOrthoPoint(joint refJoint, joint slideJoint, double lineAngle, out Boolean belowLinePositiveSlope)
+        public static point findOrthoPoint(joint refJoint, joint slideJoint, double lineAngle, out Boolean belowLinePositiveSlope)
         {
             if (Constants.sameCloseZero(lineAngle))
             {

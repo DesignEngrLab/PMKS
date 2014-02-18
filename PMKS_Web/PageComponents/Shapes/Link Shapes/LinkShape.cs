@@ -20,69 +20,12 @@ namespace PMKS_Silverlight_App
         private link thisLink;
         private joint fixedJoint;
         private int updatedStateVars = 0;
+        private GeometryGroup slideBorders, slideHoles;
         #endregion
 
         #region Constructor
 
-        public LinkShape(int linkNum, string name, List<List<string>> linkIDs, List<string> jointTypes,
-            List<double[]> initPositions, double xOffset, double yOffset, double strokeThickness,
-            Slider bufferRadiusSlider,
-            double startingBufferRadius)
-        {
-            this.name = name;
-            Fill = new SolidColorBrush(AHSLtoARGBColor.Convert(DisplayConstants.LinkFillOpacity,
-                DisplayConstants.LinkHueMultiplier*linkNum,
-                DisplayConstants.LinkFillSaturation,
-                DisplayConstants.LinkFillLuminence));
-            Stroke = new SolidColorBrush(AHSLtoARGBColor.Convert(DisplayConstants.LinkStrokeOpacity,
-                DisplayConstants.LinkHueMultiplier*linkNum,
-                DisplayConstants.LinkStrokeSaturation,
-                DisplayConstants.LinkStrokeLuminence));
-            StrokeThickness = strokeThickness;
-            Height = Width = DisplayConstants.UnCroppedDimension;
-            var centers = new List<Point>();
-            for (int j = 0; j < linkIDs.Count; j++)
-                if (linkIDs[j].Contains(name))
-                {
-                    var jPoint = new Point(initPositions[j][0] + xOffset, initPositions[j][1] + yOffset);
-                    centers.Add(jPoint);
-                    // need to add points for sliding joints that are ? distance from the joint along the angle.
-                    if (linkIDs[j][0].Equals(name) &&
-                        (jointTypes[j][0].Equals('p') || jointTypes[j][0].Equals('P') || (jointTypes[j].Length > 1 &&
-                                                                                          (jointTypes[j][1].Equals('p') ||
-                                                                                           jointTypes[j][1].Equals('P')))))
-                    {
-                        var dx = DisplayConstants.InitialSlidingJointLengthMultiplier*startingBufferRadius*
-                                 Math.Cos(initPositions[j][2]);
-                        var dy = DisplayConstants.InitialSlidingJointLengthMultiplier*startingBufferRadius*
-                                 Math.Sin(initPositions[j][2]);
-                        centers.Add(new Point(jPoint.X + dx, jPoint.Y + dy));
-                        centers.Add(new Point(jPoint.X - dx, jPoint.Y - dy));
-                    }
-                }
-            if (centers.Count == 1)
-            {
-                MinimumBufferRadius = DisplayConstants.SingleJointLinkRadiusMultipler * startingBufferRadius;
-                cvxCenters = centers;
-            }
-            else
-            {
-                MinimumBufferRadius = 0.0;
-                cvxCenters = MIConvexHull.Find(centers);
-            }
-            // the next line can be removed one the binding is established.
-            BufferRadius = startingBufferRadius;
-            //var binding = new Binding
-            //   {
-            //       Source = bufferRadiusSlider,
-            //       Mode = BindingMode.TwoWay,
-            //       Path = new PropertyPath(RangeBase.ValueProperty),
-            //   };
-            //SetBinding(BufferRadiusProperty, binding);
-            Data = RedrawWithNewBufferRadius();
-        }
-
-        public LinkShape(int linkNum,link thisLink,  double xOffset, double yOffset, double strokeThickness, Slider bufferRadiusSlider, 
+        public LinkShape(int linkNum, link thisLink, double xOffset, double yOffset, double strokeThickness, double radius, Slider bufferRadiusSlider,
             double startingBufferRadius)
         {
             this.name = thisLink.name;
@@ -101,17 +44,48 @@ namespace PMKS_Silverlight_App
             {
                 if (j.SlidingWithRespectTo(thisLink))
                 {
-                        //var dx = DisplayConstants.InitialSlidingJointLengthMultiplier*startingBufferRadius*
-                        //         Math.Cos(j.InitSlideAngle);
-                        //var dy = DisplayConstants.InitialSlidingJointLengthMultiplier*startingBufferRadius*
-                        //         Math.Sin(j.InitSlideAngle);
                     var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
-                    centers.Add(new Point(j.xInitial + xOffset - (j.SlideLimits[2] - j.SlideLimits[1]) * Math.Cos(slideAngle),
-                            j.yInitial + yOffset - (j.SlideLimits[2] - j.SlideLimits[1]) * Math.Sin(slideAngle)));
-                    centers.Add(new Point(j.xInitial + xOffset - (j.SlideLimits[0] - j.SlideLimits[1]) * Math.Cos(slideAngle),
-                            j.yInitial + yOffset - (j.SlideLimits[0] - j.SlideLimits[1]) * Math.Sin(slideAngle)));
+                    var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
+                             Math.Cos(slideAngle);
+                    var dy = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
+                             Math.Sin(slideAngle);
+                    centers.Add(new Point(j.xInitial + xOffset + dx, j.yInitial + yOffset + dy));
+                    centers.Add(new Point(j.xInitial + xOffset - dx, j.yInitial + yOffset - dy));
 
-                     
+                    var blockWidth = DisplayConstants.PJointSizeIncrease * radius * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+                    var blockHeight = DisplayConstants.PJointSizeIncrease * radius / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+                    var slideWidth = j.SlideLimits[3] - j.SlideLimits[1]+blockWidth;
+                    var origX = j.SlideLimits[2] - j.SlideLimits[1] + blockWidth/2;
+              
+                    var holeShape = new RectangleGeometry
+                    {
+                        Rect = new Rect(new Point(-origX, -blockHeight / 2), new Size(slideWidth, blockHeight))
+                    };
+                    var borderShape = new RectangleGeometry
+                    {
+                        RadiusX = startingBufferRadius,
+                        RadiusY = startingBufferRadius,
+                        Rect =
+                            new Rect(new Point(-origX - startingBufferRadius, -blockHeight / 2 - startingBufferRadius),
+                                new Size(slideWidth + 2 * startingBufferRadius, blockHeight + 2 * startingBufferRadius))
+                    };
+                    if (slideHoles == null)
+                    {
+                        slideHoles = new GeometryGroup {FillRule = FillRule.Nonzero,Children = new GeometryCollection()};
+                        slideBorders = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
+                    }
+                    var flip = false;
+                    link.findOrthoPoint(thisLink.joints[(int)j.SlideLimits[0]], j, slideAngle, out flip);
+                    if (flip) slideAngle += Math.PI;
+                  borderShape.Transform=   holeShape.Transform = new CompositeTransform
+                    {
+                        Rotation = DisplayConstants.RadiansToDegrees*slideAngle,
+                        TranslateX = j.xInitial + xOffset,
+                        TranslateY = j.yInitial + yOffset
+                    };
+                    slideHoles.Children.Add(holeShape);
+                      slideBorders.Children.Add(borderShape);
+
                 }
                 else centers.Add(new Point(j.xInitial + xOffset, j.yInitial + yOffset));
             }
@@ -147,12 +121,12 @@ namespace PMKS_Silverlight_App
             if (cvxCenters.Count == 1)
             {
                 Stroke.Opacity = 0.0;
-              return new EllipseGeometry
-                    {
-                        Center = cvxCenters[0],
-                        RadiusX = BufferRadius,
-                        RadiusY = BufferRadius
-                    };
+                return new EllipseGeometry
+                      {
+                          Center = cvxCenters[0],
+                          RadiusX = BufferRadius,
+                          RadiusY = BufferRadius
+                      };
             }
             Point start;
             var segments = new PathSegmentCollection();
@@ -188,9 +162,9 @@ namespace PMKS_Silverlight_App
                     Size = size
                 });
             }
-            return new PathGeometry
+            var basicBodyGeometry = new PathGeometry
                 {
-                    FillRule = FillRule.EvenOdd,
+                    FillRule = FillRule.Nonzero,
                     Figures = new PathFigureCollection
                         {
                             new PathFigure
@@ -202,6 +176,15 @@ namespace PMKS_Silverlight_App
                                 }
                         }
                 };
+            if (slideHoles == null)
+                return basicBodyGeometry;
+            slideBorders.Children.Add(basicBodyGeometry);
+            return new GeometryGroup
+            {
+                FillRule = FillRule.EvenOdd,
+                Children = new GeometryCollection
+                {slideBorders,slideHoles}
+            };
         }
 
         Point findThisPoint(Point thisPt, Point nextPt, double radius)

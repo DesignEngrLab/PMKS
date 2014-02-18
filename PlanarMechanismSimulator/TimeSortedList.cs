@@ -220,14 +220,18 @@ namespace PlanarMechanismSimulator
         {
             get
             {
+                #if trycatch
                 try
                 {
+#endif
                     return new KeyValuePair<double, double[,]>(timeKeys[position],parameterValues[position]);
+                #if trycatch
                 }
                 catch (IndexOutOfRangeException)
                 {
                     throw new InvalidOperationException();
                 }
+#endif
             }
         }
 

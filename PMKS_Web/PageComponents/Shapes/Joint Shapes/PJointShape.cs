@@ -24,8 +24,8 @@ namespace PMKS_Silverlight_App
             : base(j, timeSlider, pmks, radius, strokeThickness, xOffset, yOffset)
         {
             this.fixedLink = fixedLink;
-            w = DisplayConstants.PJointSizeIncrease * radius * Math.Sqrt(DisplayConstants.SliderRectangleAspectRatio);
-            h = DisplayConstants.PJointSizeIncrease * radius / Math.Sqrt(DisplayConstants.SliderRectangleAspectRatio);
+            w = DisplayConstants.PJointSizeIncrease * radius * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+            h = DisplayConstants.PJointSizeIncrease * radius / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
             Data = new RectangleGeometry
             {
                 Rect = new Rect(new Point(0, 0), new Point(w, h))

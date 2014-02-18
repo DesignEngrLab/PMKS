@@ -295,10 +295,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
             /**** Then there is the matter of the sliding velocities.. ****/
-            for (int i = 0; i < firstInputJointIndex; i++)
+            for (int i = 0; i < inputJointIndex; i++)
             {
                 var j = joints[i];
-                if (j.jointType == JointTypes.R) unknownObjects.Add(j);
+                if (j.jointType == JointTypes.R && i<firstInputJointIndex) unknownObjects.Add(j);
                 else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
                              j.Link2 != inputLink && j.Link2 != groundLink)
                     unknownObjects.Add(j);
@@ -432,8 +432,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         internal Boolean Solve()
         {
             if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
+            #if trycatch
             try
             {
+#endif
                 SetInitialInputAndGroundJointStates();
                 var rows = new List<double[]>();
                 var answers = new List<double>();
@@ -460,8 +462,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 var x = StarMath.solve(A, b);
                 if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
                 return PutStateVarsBackInJointsAndLinks(x);
+            #if trycatch
             }
             catch { return false; }
+#endif
         }
 
         private int[] ChooseBestRowOrder(List<double[]> rows)
