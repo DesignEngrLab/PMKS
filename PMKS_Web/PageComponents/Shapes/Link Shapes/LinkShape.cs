@@ -56,9 +56,9 @@ namespace PMKS_Silverlight_App
 
                     var blockWidth = DisplayConstants.PJointSizeIncrease * radius * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
                     var blockHeight = DisplayConstants.PJointSizeIncrease * radius / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-                    var slideWidth = j.SlideLimits[3] - j.SlideLimits[1]+blockWidth;
-                    var origX = j.SlideLimits[2] - j.SlideLimits[1] + blockWidth/2;
-              
+                    var slideWidth = j.SlideLimits[3] - j.SlideLimits[1] + blockWidth;
+                    var origX = j.SlideLimits[2] - j.SlideLimits[1] + blockWidth / 2;
+
                     var holeShape = new RectangleGeometry
                     {
                         Rect = new Rect(new Point(-origX, -blockHeight / 2), new Size(slideWidth, blockHeight))
@@ -73,21 +73,21 @@ namespace PMKS_Silverlight_App
                     };
                     if (slideHoles == null)
                     {
-                        slideHoles = new GeometryGroup {FillRule = FillRule.Nonzero,Children = new GeometryCollection()};
+                        slideHoles = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                         slideBorders = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                     }
                     var flip = false;
                     link.findOrthoPoint(thisLink.joints[(int)j.SlideLimits[0]], j, slideAngle, out flip);
-                    if (flip) 
-                        slideAngle += Math.PI;
-                  borderShape.Transform=   holeShape.Transform = new CompositeTransform
-                    {
-                        Rotation = DisplayConstants.RadiansToDegrees*slideAngle,
-                        TranslateX = j.xInitial + xOffset,
-                        TranslateY = j.yInitial + yOffset
-                    };
+                    if (flip && slideAngle >= 0) slideAngle -= Math.PI;
+                    else if (!flip && slideAngle < 0) slideAngle += Math.PI;
+                    borderShape.Transform = holeShape.Transform = new CompositeTransform
+                      {
+                          Rotation = DisplayConstants.RadiansToDegrees * slideAngle,
+                          TranslateX = j.xInitial + xOffset,
+                          TranslateY = j.yInitial + yOffset
+                      };
                     slideHoles.Children.Add(holeShape);
-                      slideBorders.Children.Add(borderShape);
+                    slideBorders.Children.Add(borderShape);
 
                 }
                 else centers.Add(new Point(j.xInitial + xOffset, j.yInitial + yOffset));
@@ -185,8 +185,7 @@ namespace PMKS_Silverlight_App
             return new GeometryGroup
             {
                 FillRule = FillRule.EvenOdd,
-                Children = new GeometryCollection
-                {slideBorders,slideHoles}
+                Children = new GeometryCollection { slideBorders, slideHoles }
             };
         }
 
