@@ -56,7 +56,11 @@ namespace PlanarMechanismSimulator.PositionSolving
             InitializeJointsAndLinks(positionChange);
             if (posResult == PositionAnalysisResults.InvalidPosition) return false;
             var numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
-            if (numUnknownJoints == 0) return true;
+            if (numUnknownJoints == 0)
+            {
+                UpdateSliderLengthLimits();
+                return true;
+            }
             do
             {
                 posResult = PositionAnalysisResults.NoSolvableDyadFound;
@@ -315,17 +319,17 @@ namespace PlanarMechanismSimulator.PositionSolving
             } while (posResult != PositionAnalysisResults.NoSolvableDyadFound &&
                      numUnknownJoints > 0);
             if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
-            {  
+            {
 #if trycatch
                 try
                 {
 #endif
-                    //if (NDPS == null)
-                    NDPS = new NonDyadicPositionSolver(this);
-                    var NDPSError = 0.0;
-                    if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
-                    PositionError = NDPSError;
-      #if trycatch
+                //if (NDPS == null)
+                NDPS = new NonDyadicPositionSolver(this);
+                var NDPSError = 0.0;
+                if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
+                PositionError = NDPSError;
+#if trycatch
                 }
                 catch (Exception e)
                 {
@@ -333,7 +337,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                 }
 #endif
             }
-            if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY)) 
+            if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))
                 return false;
 
             UpdateSliderLengthLimits();
@@ -344,16 +348,15 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         private void UpdateSliderLengthLimits()
         {
-            foreach (var j in joints.Where(jt => jt.SlideLimits!=null))
+            foreach (var j in joints.Where(jt => jt.SlideLimits != null))
             {
-                var refJoint = j.Link1.joints[(int) j.SlideLimits[0]];
-                bool dummy;
-                var orthoPt = link.findOrthoPoint(refJoint, j, j.SlideAngle, out dummy);
+                var refJoint = j.Link1.joints[(int)j.SlideLimits[0]];
+                var orthoPt = link.findOrthoPoint(refJoint, j, j.SlideAngle);
 
-                var a = new[] { orthoPt.x - refJoint.x, orthoPt.y - refJoint.y };
+                var a = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };
                 a = StarMath.normalize(a);
                 var b = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
-                var cross = StarMath.crossProduct2(a, b);
+                var cross = StarMath.crossProduct2(b,a);
                 if (j.SlideLimits[3] < cross) j.SlideLimits[3] = cross;
                 else if (j.SlideLimits[1] > cross) j.SlideLimits[1] = cross;
             }
@@ -725,7 +728,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             return ptPos;
         }
 
-        private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink)
+        private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink, double angleChange)
         {
             var distanceBetweenJoints = Constants.distance(fixedJoint, slideJoint);
             var dist2Slide = thisLink.DistanceBetweenSlides(slideJoint, fixedJoint);
@@ -734,14 +737,16 @@ namespace PlanarMechanismSimulator.PositionSolving
                 posResult = PositionAnalysisResults.InvalidPosition;
                 return double.NaN;
             }
-
-
-
             var oldDistance = Constants.distance(fixedJoint.xLast, fixedJoint.yLast,
                 slideJoint.xLast, slideJoint.yLast);
-            //if (slideJoint.SlideAngle < 0) return Math.Asin(dist2Slide / distanceBetweenJoints) - Math.Asin(dist2Slide / oldDistance);
-            return Math.Asin(dist2Slide / oldDistance) - Math.Asin(dist2Slide / distanceBetweenJoints);
+            var changeInSlideAngle = Math.Asin(dist2Slide / distanceBetweenJoints) - Math.Asin(dist2Slide / oldDistance);
 
+            var angleNegative = thisLink.AngleLast + angleChange - changeInSlideAngle;
+            var anglePositive = thisLink.AngleLast + angleChange + changeInSlideAngle;
+
+            if (Math.Abs(angleNegative - thisLink.AngleNumerical) > Math.Abs(anglePositive - thisLink.AngleNumerical))
+                return anglePositive - thisLink.Angle;
+            else return angleNegative - thisLink.Angle;
         }
         #endregion
 
@@ -811,7 +816,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                 var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
                 angleChange = new_j2j_Angle - old_j2j_Angle;
                 if (j2.SlidingWithRespectTo(thisLink))
-                    angleChange += solveRotateSlotToPin(knownJoint, j2, thisLink);
+                    angleChange = solveRotateSlotToPin(knownJoint, j2, thisLink, angleChange);
             }
             while (angleChange < -Math.PI / 2) angleChange += Math.PI;
             while (angleChange > Math.PI / 2) angleChange -= Math.PI;

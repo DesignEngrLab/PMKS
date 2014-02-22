@@ -56,7 +56,9 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Enumerators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
