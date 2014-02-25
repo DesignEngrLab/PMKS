@@ -99,44 +99,41 @@ namespace PlanarMechanismSimulator
             while (linkAngle < -Math.PI / 2) linkAngle += Math.PI;
             while (linkAngle > Math.PI / 2) linkAngle -= Math.PI;
             Angle = AngleInitial = AngleNumerical = AngleLast = linkAngle;
-            foreach (var j in joints)
+            foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
             {
-                j.SlideLimits = null;
-                if (j.jointType == JointTypes.R) j.InitSlideAngle = Double.NaN;
-                else if (j.SlidingWithRespectTo(this))
-                {
-                    j.InitSlideAngle -= AngleInitial;
-                    while (j.InitSlideAngle < -Math.PI / 2) j.InitSlideAngle += Math.PI;
-                    while (j.InitSlideAngle > Math.PI / 2) j.InitSlideAngle -= Math.PI;
-                }
+                j.InitSlideAngle -= AngleInitial;
+                //while (j.InitSlideAngle < -Math.PI / 2) j.InitSlideAngle += Math.PI;
+                //while (j.InitSlideAngle > Math.PI / 2) j.InitSlideAngle -= Math.PI;
             }
+
             lengths = new Dictionary<int, double>();
+
+            distanceToSlideLine = new Dictionary<int, double>();
+            angleFromBlockToJoint = new Dictionary<int, double>();
             for (int i = 0; i < joints.Count - 1; i++)
                 for (int j = i + 1; j < joints.Count; j++)
                 {
                     var iJoint = joints[i];
                     var jJoint = joints[j];
-                    var key = numJoints * i + j;
-                    if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
-                        lengths.Add(key, Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                }
-            distanceToSlideLine = new Dictionary<int, double>();
-            angleFromBlockToJoint = new Dictionary<int, double>();
-            for (int i = 0; i < joints.Count; i++)
-                for (int j = 0; j < joints.Count; j++)
-                {
-                    var iJoint = joints[i];
-                    var jJoint = joints[j];
-                    if (i == j || (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this)))
+                    if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
                         continue;
-                    if (iJoint.SlidingWithRespectTo(this))
-                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
-                    else if (jJoint.SlidingWithRespectTo(this))
-                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
+                    if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
+                        lengths.Add(numJoints * i + j,
+                                Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
                     if (iJoint.jointType == JointTypes.P)
+                    {
+                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
                         addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                    }
                     if (jJoint.jointType == JointTypes.P)
+                    {
+                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
                         addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                    }
+                    if (iJoint.jointType == JointTypes.RP)
+                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
+                    if (jJoint.jointType == JointTypes.RP)
+                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
                 }
         }
 
@@ -145,14 +142,20 @@ namespace PlanarMechanismSimulator
             var key = numJoints * slideIndex + fixedIndex;
             var orthoPt = findOrthoPoint(fixedJoint, slideJoint, slideJoint.SlideAngle);
             var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
-            var fixedVector = new[] { fixedJoint.xInitial - orthoPt.x, fixedJoint.yInitial - orthoPt.y };   
-            distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector,  fixedVector));
+            var fixedVector = new[] { fixedJoint.xInitial - orthoPt.x, fixedJoint.yInitial - orthoPt.y };
+            distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, fixedVector));
 
-            if (slideJoint.SlideLimits == null)
+            if (slideJoint.SlideLimits == null && slideJoint.SlidingWithRespectTo(this))
             {
-               var fixedUnitVector = StarMath.normalize(fixedVector);
+                var cross = 0.0;
                 var slideVector = new[] { slideJoint.xInitial - orthoPt.x, slideJoint.yInitial - orthoPt.y };
-                var cross = StarMath.crossProduct2(slideVector,fixedUnitVector);
+                if (Constants.sameCloseZero(fixedVector[0]) && Constants.sameCloseZero(fixedVector[1]))
+                    cross = StarMath.dotProduct(slideUnitVector, slideVector);
+                else
+                {
+                    var fixedUnitVector = StarMath.normalize(fixedVector);
+                    cross = StarMath.crossProduct2(slideVector, fixedUnitVector);
+                }
                 slideJoint.SlideLimits = new[] { fixedIndex, cross, cross, cross };
             }
         }
@@ -160,7 +163,7 @@ namespace PlanarMechanismSimulator
         private void addBlockAngleDictionaryEntry(joint pJoint, joint refJoint, int pIndex, int refIndex)
         {
             var key = numJoints * pIndex + refIndex;
-            var result = refJoint.SlideAngle -
+            var result = pJoint.SlideAngle -
                          Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
             angleFromBlockToJoint.Add(key, result);
         }
@@ -174,14 +177,29 @@ namespace PlanarMechanismSimulator
             return lengths[numJoints * i + j];
         }
 
-        internal double DistanceBetweenSlides(joint slidingJoint, joint referenceJoint)
+        /// <summary>
+        /// returns the shortest distance between the sliding joint and the reference point.
+        /// This is a signed distance! Given the unit vector created from the slide angle, 
+        /// the positive distance is "on the left" or counter-clockwise, while a negative
+        /// distance is "on the right" or clockwise.
+        /// </summary>
+        /// <param name="slidingJoint">The sliding joint.</param>
+        /// <param name="referenceJoint">The reference joint.</param>
+        /// <returns></returns>
+        public double DistanceBetweenSlides(joint slidingJoint, joint referenceJoint)
         {
             if (slidingJoint == referenceJoint) return 0.0;
             var slideIndex = joints.IndexOf(slidingJoint);
             var fixedIndex = joints.IndexOf(referenceJoint);
 
             return distanceToSlideLine[numJoints * slideIndex + fixedIndex];
-        }       
+        }
+        /// <summary>
+        /// returns the angle between the slide and the reference joint.
+        /// </summary>
+        /// <param name="blockJoint">The block joint.</param>
+        /// <param name="referenceJoint">The reference joint.</param>
+        /// <returns></returns>
         internal double angleOfBlockToJoint(joint blockJoint, joint referenceJoint)
         {
             if (blockJoint == referenceJoint) return 0.0;

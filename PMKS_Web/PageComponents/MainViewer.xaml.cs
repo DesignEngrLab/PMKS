@@ -13,6 +13,7 @@ using System.Windows.Media;
 using Silverlight_PMKS;
 using Silverlight_PMKS.Shapes.Static_Shapes;
 
+
 namespace PMKS_Silverlight_App
 {
     public partial class MainViewer : UserControl
@@ -102,9 +103,10 @@ namespace PMKS_Silverlight_App
         internal void DrawDynamicShapes(Simulator pmks, ObservableCollection<JointData> jointData, Slider timeSlider)
         {
             #region draw position, velocity, and acceleration curves
-            timeSlider.Maximum = pmks.JointParameters.Times.Last();
+
+            timeSlider.Maximum = pmks.EndTime;
             App.main.maxTimeText.Text = timeSlider.Maximum.ToString("F");
-            timeSlider.Minimum = pmks.JointParameters.Times[0];
+            timeSlider.Minimum = pmks.BeginTime;
             App.main.minTimeText.Text = timeSlider.Minimum.ToString("F");
             var h = (timeSlider.ActualHeight == 0) ? ParentHeight : timeSlider.ActualHeight;
             timeSlider.LargeChange = (timeSlider.Maximum - timeSlider.Minimum) * DisplayConstants.TickDistance / h;
@@ -121,7 +123,8 @@ namespace PMKS_Silverlight_App
             {
                 var j = pmks.JointNewIndexFromOriginal[i];
                 if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
-                MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XOffset, YOffset) { StrokeThickness = penThick });
+                MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XOffset, YOffset, pmks.CycleType == CycleTypes.OneCycle,
+                     penThick));
                 DynamicJointBaseShape displayJoint;
                 switch (pmks.AllJoints[j].jointType)
                 {
@@ -167,18 +170,29 @@ namespace PMKS_Silverlight_App
             MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
             /* add new ones (based on XOffset and YOffest */
             MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset, MainCanvas.Width, MainCanvas.Height));
+            /* remove old ground shapes */
+            while (MainCanvas.Children.Any(s => s is Shape && ((Shape)s).Tag != null && (string)((Shape)s).Tag == "ground"))
+                MainCanvas.Children.Remove(MainCanvas.Children.First(s => s is Shape && ((Shape)s).Tag != null && (string)((Shape)s).Tag == "ground"));
             /* now add the link shapes */
             for (int i = 0; i < pmks.numLinks; i++)
             {
-                if (!pmks.AllLinks[i].isGround)
-                    MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize,null,
-                                                          DisplayConstants.DefaultLinkThickness / ScaleFactor));
+                if (pmks.AllLinks[i].isGround)
+                {
+                    var groundLinkShape = new GroundLinkShape(pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize,
+                                                          DisplayConstants.DefaultLinkThickness / ScaleFactor);
+                    foreach (var shape in groundLinkShape.Shapes)
+                        if (shape != null) MainCanvas.Children.Add(shape);
+                }
+                else MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize, null,
+                                                       DisplayConstants.DefaultLinkThickness / ScaleFactor));
             }
-            for (int i = 0; i < pmks.numJoints; i++)
+            foreach (var j in pmks.AllJoints)
             {
-                MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, pmks.AllJoints[pmks.JointNewIndexFromOriginal[i]].xInitial + XOffset,
-                                                             pmks.AllJoints[pmks.JointNewIndexFromOriginal[i]].yInitial + YOffset,
-                                                            pmks.AllJoints[pmks.JointNewIndexFromOriginal[i]].isGround, false));
+                if (j.jointType == JointTypes.R)
+                    MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, j.xInitial + XOffset, j.yInitial + YOffset, j.isGround));
+                else if (j.jointType == JointTypes.P)
+                    MainCanvas.Children.Add(new InputPJointShape(jointSize, penThick, j.xInitial + XOffset, j.yInitial + YOffset,
+                        j.InitSlideAngle + j.Link1.AngleInitial, j.isGround));
             }
             if (TargetPath != null)
             {

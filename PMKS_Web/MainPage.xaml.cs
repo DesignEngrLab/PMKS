@@ -281,7 +281,7 @@ namespace PMKS_Silverlight_App
                 mainViewer.UpdateScaleAndCenter();
                 mainViewer.DrawStaticShapes(pmks);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
-                status("...done (" + (DateTime.Now - now).TotalMilliseconds.ToString() + "ms).");
+                status("...done (" + (DateTime.Now - now).TotalMilliseconds + "ms).");
                 PlayButton_Checked(null, null);
                 #endregion
                 #if trycatch

@@ -136,20 +136,20 @@ namespace PlanarMechanismSimulator
             double vNext = LinkParameters.Parameters[nextQueryIndex][LinkIndex, 1];
             double aPrevious = LinkParameters.Parameters[prevQueryIndex][LinkIndex, 2];
             double aNext = LinkParameters.Parameters[nextQueryIndex][LinkIndex, 2];
-            const double fullCircle = 2 * Math.PI;
-            while (posPrevious < 0) { posPrevious += fullCircle; }
-            while (posNext < 0) { posNext += fullCircle; }
-            while (posPrevious >= fullCircle) { posPrevious -= fullCircle; }
-            while (posNext >= fullCircle) { posNext -= fullCircle; }
+            
+            while (posPrevious < 0) { posPrevious += Constants.FullCircle; }
+            while (posNext < 0) { posNext += Constants.FullCircle; }
+            while (posPrevious >= Constants.FullCircle) { posPrevious -= Constants.FullCircle; }
+            while (posNext >= Constants.FullCircle) { posNext -= Constants.FullCircle; }
 
             var positiveVel = (FindVelocityatTime(tau, nextToPrevTime, vPrevious, vNext, aPrevious, aNext) >= 0);
             if (positiveVel && posPrevious > posNext && Math.Abs(posPrevious - posNext) > Math.PI)
             {
-                posPrevious -= fullCircle;
+                posPrevious -= Constants.FullCircle;
             }
             while (!positiveVel && posPrevious < posNext && Math.Abs(posPrevious - posNext) > Math.PI)
             {
-                posNext -= fullCircle;
+                posNext -= Constants.FullCircle;
             }
             return FindPositionatTime(tau, nextToPrevTime, posPrevious, posNext, vPrevious, vNext, aPrevious, aNext);
         }
@@ -209,9 +209,9 @@ namespace PlanarMechanismSimulator
                     if (prevQueryIndex < 0)
                     {
                         prevQueryIndex = LinkParameters.LastIndex;
-                        ////prevQueryTime = LinkParameters.Times[prevQueryIndex];
-                        ////nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                        ////break;
+                        prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                        nextQueryTime = LinkParameters.Times[nextQueryIndex];
+                        break;
                     }
                     prevQueryTime = LinkParameters.Times[prevQueryIndex];
                     nextQueryTime = LinkParameters.Times[nextQueryIndex];
@@ -223,9 +223,9 @@ namespace PlanarMechanismSimulator
                     if (nextQueryIndex > LinkParameters.LastIndex)
                     {
                         nextQueryIndex = 0;
-                        //prevQueryTime = LinkParameters.Times[prevQueryIndex];
-                        //nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                        //break;
+                        prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                        nextQueryTime = LinkParameters.Times[nextQueryIndex];
+                        break;
                     }
 
                     prevQueryTime = LinkParameters.Times[prevQueryIndex];

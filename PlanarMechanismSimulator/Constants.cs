@@ -39,6 +39,7 @@ namespace PlanarMechanismSimulator
         public const double LinkAccelerationLimitFactor = 75.0;
         public const double JointVelocityLimitFactor = 75.0;
         public const double LinkVelocityLimitFactor = 75.0;
+        public const double FullCircle = 2 * Math.PI;
         public static Boolean sameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilonSame;

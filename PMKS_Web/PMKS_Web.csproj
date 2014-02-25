@@ -88,6 +88,9 @@
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\InputPJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Link Shapes\GroundLinkShape.cs" />
+    <Compile Include="PageComponents\Shapes\SlideShapeMaker.cs" />
     <Compile Include="URLArgumentHandling.cs" />
     <Compile Include="ExportKinematicData.cs" />
     <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">
@@ -158,6 +161,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Resource Include="groundhashMED.png" />
     <Content Include="Properties\AppManifest.xml" />
     <None Include="Properties\OutOfBrowserSettings.xml" />
   </ItemGroup>

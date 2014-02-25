@@ -163,7 +163,7 @@ namespace PlanarMechanismSimulator
         public int inputLinkIndex { get; private set; }
         public link inputLink { get; private set; }
         public link groundLink { get; private set; }
-        private List<joint> additionalRefjoints;
+
 
         /// <summary>
         /// Gets the indices of joints (in the new PMKS order, not the order originially given)
@@ -356,7 +356,7 @@ namespace PlanarMechanismSimulator
             }
             inputLink = inputJoint.Link2;
             inferAdditionalGearLinks();
-            addReferencePivotsToSlideOnlyLinks();
+            var additionalRefjoints = addReferencePivotsToSlideOnlyLinks();
             numLinks = AllLinks.Count; //count the number of links in the system
             numJoints = AllJoints.Count; //count the number of pivots in the system
             /* reorder links, move input link and ground link to back of list */
@@ -396,17 +396,9 @@ namespace PlanarMechanismSimulator
             JointNewIndexFromOriginal = new int[numJoints];
             for (int i = 0; i < numJoints; i++)
                 JointNewIndexFromOriginal[i] = AllJoints.IndexOf(origOrder[i]);
-            setAdditionalReferencePositions();
-            setGearData();
-            var totalLength = 0.0;
-            int numLengths = 0;
-            foreach (var eachLink in AllLinks)
-            {
-                eachLink.DetermineLengthsAndReferences();
-                totalLength += eachLink.TotalLength;
-                numLengths += eachLink.joints.Count * (eachLink.joints.Count - 1) / 2;
-            }
-            AverageLength = totalLength / numLengths;
+
+            setAdditionalReferencePositions(additionalRefjoints);
+
 #if trycatch
             }
             catch (Exception e)
@@ -418,10 +410,10 @@ namespace PlanarMechanismSimulator
 #endif
         }
 
-        private void addReferencePivotsToSlideOnlyLinks()
+        private List<joint> addReferencePivotsToSlideOnlyLinks()
         {
-            if (AllLinks.All(c => c.joints.Any(j => j.FixedWithRespectTo(c)))) return;
-            additionalRefjoints = new List<joint>();
+            if (AllLinks.All(c => c.joints.Any(j => j.FixedWithRespectTo(c)))) return null;
+            var additionalRefjoints = new List<joint>();
             foreach (var c in AllLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
             {
                 var newJoint = new joint(false, "r") { Link1 = c };
@@ -429,23 +421,41 @@ namespace PlanarMechanismSimulator
                 AllJoints.Add(newJoint);
                 additionalRefjoints.Add(newJoint);
             }
+            return additionalRefjoints;
         }
-        private void setAdditionalReferencePositions()
+        private void setAdditionalReferencePositions(IEnumerable<joint> additionalRefjoints = null)
         {
-            if (additionalRefjoints == null) return;
-            foreach (var thisAdditionalJoint in additionalRefjoints)
+            foreach (var j in AllJoints)
             {
-                var xSum = 0.0;
-                var ySum = 0.0;
-                foreach (var otherJoint in thisAdditionalJoint.Link1.joints)
-                {
-                    if (otherJoint == thisAdditionalJoint) continue;
-                    xSum += otherJoint.xInitial;
-                    ySum += otherJoint.yInitial;
-                }
-                thisAdditionalJoint.xInitial = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
-                thisAdditionalJoint.yInitial = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                j.SlideLimits = null;
+                if (j.jointType == JointTypes.R) j.InitSlideAngle = Double.NaN;
             }
+            if (additionalRefjoints != null)
+            {
+                foreach (var thisAdditionalJoint in additionalRefjoints)
+                {
+                    var xSum = 0.0;
+                    var ySum = 0.0;
+                    foreach (var otherJoint in thisAdditionalJoint.Link1.joints)
+                    {
+                        if (otherJoint == thisAdditionalJoint) continue;
+                        xSum += otherJoint.xInitial;
+                        ySum += otherJoint.yInitial;
+                    }
+                    thisAdditionalJoint.xInitial = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                    thisAdditionalJoint.yInitial = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                }
+            }
+            setGearData();
+            var totalLength = 0.0;
+            int numLengths = 0;
+            foreach (var eachLink in AllLinks)
+            {
+                eachLink.DetermineLengthsAndReferences();
+                totalLength += eachLink.TotalLength;
+                numLengths += eachLink.joints.Count * (eachLink.joints.Count - 1) / 2;
+            }
+            AverageLength = totalLength / numLengths;
         }
 
         private void inferAdditionalGearLinks()
@@ -562,8 +572,6 @@ namespace PlanarMechanismSimulator
                 }
             }
             setAdditionalReferencePositions();
-            setGearData();
-            foreach (var eachLink in AllLinks) eachLink.DetermineLengthsAndReferences();
 #if trycatch
             }
             catch (Exception e)
@@ -594,8 +602,6 @@ namespace PlanarMechanismSimulator
                     j.InitSlideAngle = InitPositions[k++];
             }
             setAdditionalReferencePositions();
-            setGearData();
-            foreach (var eachLink in AllLinks) eachLink.DetermineLengthsAndReferences();
 #if trycatch
             }
             catch (Exception e)

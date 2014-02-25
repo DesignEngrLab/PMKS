@@ -353,10 +353,17 @@ namespace PlanarMechanismSimulator.PositionSolving
                 var refJoint = j.Link1.joints[(int)j.SlideLimits[0]];
                 var orthoPt = link.findOrthoPoint(refJoint, j, j.SlideAngle);
 
-                var a = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };
-                a = StarMath.normalize(a);
-                var b = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
-                var cross = StarMath.crossProduct2(b,a);
+                var refVector = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };
+                var slideVector = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
+
+                var cross = 0.0;
+                if (Constants.sameCloseZero(refVector[0]) && Constants.sameCloseZero(refVector[1]))
+                    cross = StarMath.dotProduct(new[] { Math.Cos(j.SlideAngle), Math.Sin(j.SlideAngle) }, slideVector);
+                else
+                {
+                    refVector = StarMath.normalize(refVector);
+                    cross = StarMath.crossProduct2(slideVector, refVector);
+                }
                 if (j.SlideLimits[3] < cross) j.SlideLimits[3] = cross;
                 else if (j.SlideLimits[1] > cross) j.SlideLimits[1] = cross;
             }
@@ -467,14 +474,9 @@ namespace PlanarMechanismSimulator.PositionSolving
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
         {
             var length = thisLink.DistanceBetweenSlides(slopeJoint, positionJoint);
-            var angle = slopeJoint.SlideAngle - Math.PI / 2;
-            while (angle < -Math.PI / 2) angle += Math.PI;
-            return new point(slopeJoint.x - length * Math.Cos(angle),
-                slopeJoint.y - length * Math.Sin(angle));
-
-            //bool dummy;
-            //var orthoPt = link.findOrthoPoint(positionJoint, slopeJoint, slopeJoint.SlideAngle, out dummy);
-            //return new point(slopeJoint.x + (positionJoint.x - orthoPt.x), slopeJoint.y + (positionJoint.y - orthoPt.y));
+            var angle = slopeJoint.SlideAngle + Math.PI / 2;
+            return new point(slopeJoint.x + length * Math.Cos(angle),
+                slopeJoint.y + length * Math.Sin(angle));
         }
 
         // the basis of R-P-R dyad determination method is the complex little function
@@ -542,8 +544,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                     jPoint = new point(xExtNeg, yExtNeg);
                     break;
             }
-            while (angleChange < -Math.PI / 2) angleChange += Math.PI;
-            while (angleChange > Math.PI / 2) angleChange -= Math.PI;
+            //while (angleChange < -Math.PI / 2) angleChange += Math.PI;
+            //while (angleChange > Math.PI / 2) angleChange -= Math.PI;
             return jPoint;
         }
 
@@ -818,8 +820,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                 if (j2.SlidingWithRespectTo(thisLink))
                     angleChange = solveRotateSlotToPin(knownJoint, j2, thisLink, angleChange);
             }
-            while (angleChange < -Math.PI / 2) angleChange += Math.PI;
-            while (angleChange > Math.PI / 2) angleChange -= Math.PI;
+            //while (angleChange < -Math.PI / 2) angleChange += Math.PI;
+            //while (angleChange > Math.PI / 2) angleChange -= Math.PI;
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = KnownState.Fully;
 
@@ -841,7 +843,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                         var length = thisLink.DistanceBetweenSlides(j, knownJoint);
                         var angle = j.SlideAngle - Math.PI / 2;
                         angle += angleChange;
-                        while (angle < -Math.PI / 2) angle += Math.PI;
+                        //while (angle < -Math.PI / 2) angle += Math.PI;
                         assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
                             knownJoint.y + length * Math.Sin(angle));
                     }

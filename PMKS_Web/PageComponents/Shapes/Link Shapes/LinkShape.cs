@@ -25,10 +25,10 @@ namespace PMKS_Silverlight_App
 
         #region Constructor
 
-        public LinkShape(int linkNum, link thisLink, double xOffset, double yOffset, double strokeThickness, double radius, Slider bufferRadiusSlider,
+        public LinkShape(int linkNum, link thisLink, double xOffset, double yOffset, double strokeThickness, double jointSize, Slider bufferRadiusSlider,
             double startingBufferRadius)
         {
-            this.name = thisLink.name;
+            name = thisLink.name;
             Fill = new SolidColorBrush(AHSLtoARGBColor.Convert(DisplayConstants.LinkFillOpacity,
                                                                DisplayConstants.LinkHueMultiplier * linkNum,
                                                                DisplayConstants.LinkFillSaturation,
@@ -44,9 +44,10 @@ namespace PMKS_Silverlight_App
             {
                 if (j.SlidingWithRespectTo(thisLink))
                 {
+
                     var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
-                    while (slideAngle < -Math.PI / 2) slideAngle += Math.PI;
-                    while (slideAngle > Math.PI / 2) slideAngle -= Math.PI;
+                    //while (slideAngle < -Math.PI / 2) slideAngle += Math.PI;
+                    //while (slideAngle > Math.PI / 2) slideAngle -= Math.PI;
                     var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
                              Math.Cos(slideAngle);
                     var dy = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
@@ -54,40 +55,15 @@ namespace PMKS_Silverlight_App
                     centers.Add(new Point(j.xInitial + xOffset + dx, j.yInitial + yOffset + dy));
                     centers.Add(new Point(j.xInitial + xOffset - dx, j.yInitial + yOffset - dy));
 
-                    var blockWidth = DisplayConstants.PJointSizeIncrease * radius * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-                    var blockHeight = DisplayConstants.PJointSizeIncrease * radius / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-                    var slideWidth = j.SlideLimits[3] - j.SlideLimits[1] + blockWidth;
-                    var origX = j.SlideLimits[2] - j.SlideLimits[1] + blockWidth / 2;
-
-                    var holeShape = new RectangleGeometry
-                    {
-                        Rect = new Rect(new Point(-origX, -blockHeight / 2), new Size(slideWidth, blockHeight))
-                    };
-                    var borderShape = new RectangleGeometry
-                    {
-                        RadiusX = startingBufferRadius,
-                        RadiusY = startingBufferRadius,
-                        Rect =
-                            new Rect(new Point(-origX - startingBufferRadius, -blockHeight / 2 - startingBufferRadius),
-                                new Size(slideWidth + 2 * startingBufferRadius, blockHeight + 2 * startingBufferRadius))
-                    };
                     if (slideHoles == null)
                     {
                         slideHoles = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                         slideBorders = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                     }
-                    var flip = false;
-                    link.findOrthoPoint(thisLink.joints[(int)j.SlideLimits[0]], j, slideAngle, out flip);
-                    if (flip && slideAngle >= 0) slideAngle -= Math.PI;
-                    else if (!flip && slideAngle < 0) slideAngle += Math.PI;
-                    borderShape.Transform = holeShape.Transform = new CompositeTransform
-                      {
-                          Rotation = DisplayConstants.RadiansToDegrees * slideAngle,
-                          TranslateX = j.xInitial + xOffset,
-                          TranslateY = j.yInitial + yOffset
-                      };
-                    slideHoles.Children.Add(holeShape);
-                    slideBorders.Children.Add(borderShape);
+                    if (j.jointType == JointTypes.P)
+                        slideHoles.Children.Add(SlideShapeMaker.MakePSlotHole(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
+                    else slideHoles.Children.Add(SlideShapeMaker.MakeRPSlotHole(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
+                    slideBorders.Children.Add(SlideShapeMaker.MakePSlotBorder(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
 
                 }
                 else centers.Add(new Point(j.xInitial + xOffset, j.yInitial + yOffset));
