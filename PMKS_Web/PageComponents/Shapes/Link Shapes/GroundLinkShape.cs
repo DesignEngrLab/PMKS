@@ -30,15 +30,26 @@ namespace PMKS_Silverlight_App
                 switch (j.jointType)
                 {
                     case JointTypes.R:
-                        innerShape = new Ellipse
+                        //innerShape = new Ellipse
+                        //{
+                        //    Stroke = new SolidColorBrush(Colors.Black),
+                        //    Fill = new SolidColorBrush(Colors.Black),
+                        //    StrokeThickness = strokeThickness,
+                        //    Tag = "ground",
+                        //    Height = jointSize,
+                        //    Width = jointSize,
+                        //    RenderTransform = new TranslateTransform { X = j.xInitial + xOffset, Y = j.yInitial + yOffset }
+                        //}; 
+                        innerShape = new Line
                         {
                             Stroke = new SolidColorBrush(Colors.Black),
                             Fill = new SolidColorBrush(Colors.Black),
                             StrokeThickness = strokeThickness,
                             Tag = "ground",
-                            Height = jointSize,
-                            Width = jointSize,
-                            RenderTransform = new TranslateTransform { X = j.xInitial + xOffset, Y = j.yInitial + yOffset }
+                            X1 = j.xInitial + xOffset - 2 * triangleSideLength,
+                            Y1 = j.yInitial + yOffset - triangleSideLength,
+                            X2 = j.xInitial + xOffset + 2 * triangleSideLength,
+                            Y2 = j.yInitial + yOffset - triangleSideLength,
                         };
                         // innerShape = null;
                         outerShape = new Polygon
@@ -148,9 +159,9 @@ namespace PMKS_Silverlight_App
                         break;
                     default: //this would be gear
                         throw new NotImplementedException();
-                }                                  
-                Shapes.Insert(0, innerShape);
-                Shapes.Insert(0, outerShape);
+                }
+                Shapes.Add(innerShape);
+                Shapes.Add(outerShape);
             }
         }
         #endregion

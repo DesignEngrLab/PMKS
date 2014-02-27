@@ -173,17 +173,15 @@ namespace PMKS_Silverlight_App
             /* remove old ground shapes */
             while (MainCanvas.Children.Any(s => s is Shape && ((Shape)s).Tag != null && (string)((Shape)s).Tag == "ground"))
                 MainCanvas.Children.Remove(MainCanvas.Children.First(s => s is Shape && ((Shape)s).Tag != null && (string)((Shape)s).Tag == "ground"));
-            /* now add the link shapes */
-            for (int i = 0; i < pmks.numLinks; i++)
-            {
-                if (pmks.AllLinks[i].isGround)
-                {
-                    var groundLinkShape = new GroundLinkShape(pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize,
+            /* now add the link shapes */                                
+                    var groundLinkShape = new GroundLinkShape(pmks.groundLink, XOffset, YOffset, penThick, jointSize,
                                                           DisplayConstants.DefaultLinkThickness / ScaleFactor);
                     foreach (var shape in groundLinkShape.Shapes)
                         if (shape != null) MainCanvas.Children.Add(shape);
-                }
-                else MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize, null,
+            for (int i = 0; i < pmks.numLinks; i++)
+            {
+                if (!pmks.AllLinks[i].isGround)
+               MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize, null,
                                                        DisplayConstants.DefaultLinkThickness / ScaleFactor));
             }
             foreach (var j in pmks.AllJoints)

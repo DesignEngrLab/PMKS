@@ -14,10 +14,10 @@ using PlanarMechanismSimulator;
 
 namespace PMKS_Silverlight_App
 {
-    public class InputRJointShape : FixedJointBaseShape
+    public class InputRJointShape : InputJointBaseShape
     {
         public InputRJointShape(double radius, double strokeThickness, double xPosition, double yPosition, bool isGround)
-            : base(radius, strokeThickness, xPosition, yPosition, isGround, false)
+            : base(radius, strokeThickness, xPosition, yPosition, isGround)
         {
             Data = new EllipseGeometry
             {
@@ -32,6 +32,5 @@ namespace PMKS_Silverlight_App
             //    Y = yOffset
             //};
         }
-
     }
 }

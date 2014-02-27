@@ -175,12 +175,11 @@ namespace PlanarMechanismSimulator.PositionSolving
                                      && FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* in this case, the block is on the rotating link and the slide is on the sliding link */
-                                var sJPoint = solveViaSlopeToCircleIntersectionPPR(j, knownJoint1, knownJoint2,
-                                    out angleChange);
+                                var sJPoint = solveViaSlopeToCircleIntersectionPPR(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link2, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
                                 setLinkPositionFromRotate(j, j.Link1);
-                                setLinkPositionFromRotate(j, j.Link2, angleChange);
+                                setLinkPositionFromRotate(j, j.Link2);
                                 //setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast,
                                 //    j.SlideAngle);
                                 //setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
@@ -192,11 +191,10 @@ namespace PlanarMechanismSimulator.PositionSolving
                                      FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* in this case, the slide is on the rotating link and the block is on the sliding link */
-                                point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, knownJoint1, knownJoint2,
-                                    out angleChange);
+                                point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, j.Link2, sJPoint);
                                 if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-                                setLinkPositionFromRotate(j, j.Link1, angleChange);
+                                setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
                                 //setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
@@ -551,8 +549,7 @@ namespace PlanarMechanismSimulator.PositionSolving
 
 
 
-        private point solveViaSlopeToCircleIntersectionPPR(joint j, joint slideJoint, joint circCenterJoint,
-             out double angleChange)
+        private point solveViaSlopeToCircleIntersectionPPR(joint j, joint slideJoint, joint circCenterJoint)
         {
             /* in this case, the block is on the rotating link and the slide is on the sliding link */
             var circleLink = j.Link2;
@@ -571,26 +568,18 @@ namespace PlanarMechanismSimulator.PositionSolving
 
             var oldTheta = Constants.angle(slideJoint.xLast, slideJoint.yLast, j.xLast, j.yLast);
             if (distNegSquared < distPosSquared)
-            {
-                angleChange = thetaNeg - oldTheta;
                 return new point(xNeg, yNeg);
-            }
-            angleChange = thetaPos - oldTheta;
             return new point(xPos, yPos);
         }
 
-        private point solveViaSlopeToCircleIntersectionRPP(joint j, joint circCenterJoint, joint slideJoint,
-             out double angleChange)
+        private point solveViaSlopeToCircleIntersectionRPP(joint j, joint circCenterJoint, joint slideJoint)
         { /* in this case, the slide is on the rotating link and the block is on the sliding link */
-            var rAC = j.Link1.DistanceBetweenSlides(j, circCenterJoint);
             double slopeB = Math.Tan(slideJoint.SlideAngle);
             var ptB = defineParallelLineThroughJoint(j, slideJoint, j.Link2);
-            // need to find proper link1 angle and thus slideAngle for goal, 
-            // this will set up the line that goes through the point
-            //var alpha = j.Link2.angleOfBlockToJoint(j, slideIndex);
-            //var actualSlideAngle = slideIndex.SlideAngle + alpha;
+
             var actualSlideAngle = j.SlideAngle;
-            var thetaNeg = actualSlideAngle - Math.PI / 2;
+            var thetaNeg = actualSlideAngle - Math.PI / 2;   
+            var rAC = j.Link1.DistanceBetweenSlides(j, circCenterJoint);
             var orthoPt = new point(circCenterJoint.x + rAC * Math.Cos(thetaNeg), circCenterJoint.y + rAC * Math.Sin(thetaNeg));
             var slopeA = Math.Tan(actualSlideAngle);
             var ptNeg = Constants.solveViaIntersectingLines(slopeA, orthoPt, slopeB, ptB);
@@ -602,13 +591,8 @@ namespace PlanarMechanismSimulator.PositionSolving
             var ptPos = Constants.solveViaIntersectingLines(slopeA, orthoPt, slopeB, ptB);
             var distPosSquared = Constants.distanceSqared(ptPos.x, ptPos.y, j.xNumerical, j.yNumerical);
 
-            var oldTheta = Constants.angle(circCenterJoint.xLast, circCenterJoint.yLast, j.xLast, j.yLast);
             if (distNegSquared < distPosSquared)
-            {
-                angleChange = 0.0;// thetaNeg - oldTheta;
-                return ptNeg;
-            }
-            angleChange = 0.0;//thetaPos - oldTheta;
+            return ptNeg;                            
             return ptPos;
         }
         #endregion

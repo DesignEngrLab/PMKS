@@ -15,10 +15,10 @@ using PlanarMechanismSimulator;
 
 namespace PMKS_Silverlight_App
 {
-    public class InputPJointShape : FixedJointBaseShape
+    public class InputPJointShape : InputJointBaseShape
     {
         public InputPJointShape(double jointSize, double strokeThickness, double xPosition, double yPosition, double angle, bool isGround)
-            : base(jointSize, strokeThickness, xPosition, yPosition, isGround, false)
+            : base(jointSize, strokeThickness, xPosition, yPosition, isGround)
         {
             var w = DisplayConstants.PJointSizeIncrease * jointSize * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
             var h = DisplayConstants.PJointSizeIncrease * jointSize / DisplayConstants.SliderRectangleAspectRatioSqareRoot;

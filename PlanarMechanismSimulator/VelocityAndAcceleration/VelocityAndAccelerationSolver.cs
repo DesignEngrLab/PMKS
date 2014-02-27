@@ -275,23 +275,10 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, false, true, true));
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
             /**** Set velocity of any links connected to input by a P joint and remove link from unknowns ****/
-            foreach (var pJoint in inputLink.joints.Where(j => j.jointType == JointTypes.P))
-            {
-                var otherLink = pJoint.OtherLink(inputLink);
-                otherLink.Velocity = inputLink.Velocity;
-                unknownObjects.Remove(otherLink);
-                foreach (var eq in equations.Where(eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
-                    ((VelocityJointToJoint)eq).linkIsKnown = true;
-            }
+            RecursiveAssignmentOfKnownPAngularVelocities(groundLink);    
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
-            foreach (var pJoint in groundLink.joints.Where(j => j.jointType == JointTypes.P))
-            {
-                var otherLink = pJoint.OtherLink(groundLink);
-                otherLink.Velocity = 0.0;
-                unknownObjects.Remove(otherLink);
-                foreach (var eq in equations.Where(eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
-                    ((VelocityJointToJoint)eq).linkIsKnown = true;
-            }
+            RecursiveAssignmentOfKnownPAngularVelocities(inputLink);
+
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
             /**** Then there is the matter of the sliding velocities.. ****/
@@ -358,6 +345,25 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             DefineTwoMatrixOrders(rowNonZeroes);
         }
 
+        private void RecursiveAssignmentOfKnownPAngularVelocities(link refLink)
+        {
+            foreach (var pJoint in refLink.joints.Where(j => j.jointType == JointTypes.P))
+            {
+                var otherLink = pJoint.OtherLink(refLink);
+                if (unknownObjects.Contains(otherLink))
+                {
+                    otherLink.Velocity = refLink.Velocity;
+                    unknownObjects.Remove(otherLink);
+                    foreach (
+                        var eq in
+                            equations.Where(
+                                eq => eq is VelocityJointToJoint && ((VelocityJointToJoint) eq).link == otherLink))
+                        ((VelocityJointToJoint) eq).linkIsKnown = true;
+                    RecursiveAssignmentOfKnownPAngularVelocities(otherLink);
+                }
+            }
+        }
+
         private void DefineTwoMatrixOrders(List<List<int>> rowNonZeroes)
         {
             matrixOrders = new int[2][];
@@ -368,8 +374,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             var backwardTask = Task.Factory.StartNew(() => DepthFirstToFindOrder(rowNonZeroes, new List<int>(), 1, now));
             Task.WaitAll(forwardTask, backwardTask);
 
-            if (matrixOrders[0] == null & matrixOrders[1] == null)
-                throw new Exception("No valid matrix formulations found.");
+            if (matrixOrders[0] == null & matrixOrders[1] == null) return;
+                //throw new Exception("No valid matrix formulations found.");
             if (matrixOrders[0] == null)
             {
                 matrixOrders[0] = matrixOrders[1];
