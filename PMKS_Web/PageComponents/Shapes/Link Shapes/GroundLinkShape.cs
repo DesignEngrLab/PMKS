@@ -64,28 +64,30 @@ namespace PMKS_Silverlight_App
                         {
                             Tag = "ground",
                             Data =
-                                SlideShapeMaker.MakePSlotHole(j, groundLink,  xOffset, yOffset, jointSize,
+                                SlideShapeMaker.MakePSlotHole(j, groundLink, xOffset, yOffset, jointSize,
                                     startingBufferRadius),
                             Stroke = new SolidColorBrush(Colors.Black),
                             Fill = new SolidColorBrush(Colors.White),
-                            StrokeThickness = strokeThickness
+                            StrokeThickness = strokeThickness,
+
+
                         };
                         outerShape = new Path
                         {
                             Tag = "ground",
                             Data =
-                                SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset,  yOffset, jointSize,
+                                SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
                                     startingBufferRadius),
                             Fill = new ImageBrush
                             {
                                 ImageSource = new BitmapImage(new Uri("../groundhashMED.png", UriKind.Relative)),
                                 Stretch = Stretch.UniformToFill
                                 //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
-                            // in order to do this, you will need code to handle the tiling - not native to Silverlight
-                            // use Shazzam (http://shazzam-tool.com/) to make the shader fx
-                            // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
-                            // or 
-                            }   
+                                // in order to do this, you will need code to handle the tiling - not native to Silverlight
+                                // use Shazzam (http://shazzam-tool.com/) to make the shader fx
+                                // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
+                                // or 
+                            }
                             //Fill = new SolidColorBrush(Colors.DarkGray)
                         };
                         break;
@@ -96,7 +98,7 @@ namespace PMKS_Silverlight_App
                             {
                                 Tag = "ground",
                                 Data =
-                                    SlideShapeMaker.MakeRPSlotHole(j, groundLink,  xOffset,  yOffset, jointSize,
+                                    SlideShapeMaker.MakeRPSlotHole(j, groundLink, xOffset, yOffset, jointSize,
                                         startingBufferRadius),
                                 Stroke = new SolidColorBrush(Colors.Black),
                                 Fill = new SolidColorBrush(Colors.White),
@@ -106,7 +108,7 @@ namespace PMKS_Silverlight_App
                             {
                                 Tag = "ground",
                                 Data =
-                                    SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset,  yOffset, jointSize,
+                                    SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
                                         startingBufferRadius),
                                 Fill = new ImageBrush
                                 {
@@ -146,9 +148,9 @@ namespace PMKS_Silverlight_App
                         break;
                     default: //this would be gear
                         throw new NotImplementedException();
-                }
-                Shapes.Add(outerShape);
-                Shapes.Add(innerShape);
+                }                                  
+                Shapes.Insert(0, innerShape);
+                Shapes.Insert(0, outerShape);
             }
         }
         #endregion

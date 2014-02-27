@@ -523,7 +523,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                                    distthetaIntPosSquared, distthetaIntNegSquared,
                                    distthetaExtPosSquared, distthetaExtNegSquared
                                };
-            var minDist = distance.Min();
+            var minDist = distance.Where(x=>!double.IsNaN(x)).Min();
             point jPoint;
             switch (distance.IndexOf(minDist))
             {
@@ -579,36 +579,36 @@ namespace PlanarMechanismSimulator.PositionSolving
             return new point(xPos, yPos);
         }
 
-        private point solveViaSlopeToCircleIntersectionRPP(joint j, joint circCenterIndex, joint slideIndex,
+        private point solveViaSlopeToCircleIntersectionRPP(joint j, joint circCenterJoint, joint slideJoint,
              out double angleChange)
         { /* in this case, the slide is on the rotating link and the block is on the sliding link */
-            var rAC = j.Link1.DistanceBetweenSlides(j, circCenterIndex);
-            double slopeB = Math.Tan(slideIndex.SlideAngle);
-            var ptB = defineParallelLineThroughJoint(j, slideIndex, j.Link2);
+            var rAC = j.Link1.DistanceBetweenSlides(j, circCenterJoint);
+            double slopeB = Math.Tan(slideJoint.SlideAngle);
+            var ptB = defineParallelLineThroughJoint(j, slideJoint, j.Link2);
             // need to find proper link1 angle and thus slideAngle for goal, 
             // this will set up the line that goes through the point
             //var alpha = j.Link2.angleOfBlockToJoint(j, slideIndex);
             //var actualSlideAngle = slideIndex.SlideAngle + alpha;
             var actualSlideAngle = j.SlideAngle;
-            var thetaNeg = actualSlideAngle + Math.PI / 2;
-            var orthoPt = new point(circCenterIndex.x + rAC * Math.Cos(thetaNeg), circCenterIndex.y + rAC * Math.Sin(thetaNeg));
-            var slopeA = Math.Tan(thetaNeg);
+            var thetaNeg = actualSlideAngle - Math.PI / 2;
+            var orthoPt = new point(circCenterJoint.x + rAC * Math.Cos(thetaNeg), circCenterJoint.y + rAC * Math.Sin(thetaNeg));
+            var slopeA = Math.Tan(actualSlideAngle);
             var ptNeg = Constants.solveViaIntersectingLines(slopeA, orthoPt, slopeB, ptB);
             var distNegSquared = Constants.distanceSqared(ptNeg.x, ptNeg.y, j.xNumerical, j.yNumerical);
 
-            var thetaPos = thetaNeg + Math.PI;
-            orthoPt = new point(circCenterIndex.x + rAC * Math.Cos(thetaPos), circCenterIndex.y + rAC * Math.Sin(thetaPos));
-            slopeA = Math.Tan(thetaPos);
+            var thetaPos = actualSlideAngle + Math.PI / 2;
+            orthoPt = new point(circCenterJoint.x + rAC * Math.Cos(thetaPos), circCenterJoint.y + rAC * Math.Sin(thetaPos));
+            slopeA = Math.Tan(actualSlideAngle);
             var ptPos = Constants.solveViaIntersectingLines(slopeA, orthoPt, slopeB, ptB);
             var distPosSquared = Constants.distanceSqared(ptPos.x, ptPos.y, j.xNumerical, j.yNumerical);
 
-            var oldTheta = Constants.angle(circCenterIndex.xLast, circCenterIndex.yLast, j.xLast, j.yLast);
+            var oldTheta = Constants.angle(circCenterJoint.xLast, circCenterJoint.yLast, j.xLast, j.yLast);
             if (distNegSquared < distPosSquared)
             {
-                angleChange = thetaNeg - oldTheta;
+                angleChange = 0.0;// thetaNeg - oldTheta;
                 return ptNeg;
             }
-            angleChange = thetaPos - oldTheta;
+            angleChange = 0.0;//thetaPos - oldTheta;
             return ptPos;
         }
         #endregion
