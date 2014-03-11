@@ -22,8 +22,8 @@ namespace PMKS_Silverlight_App
         public PJointShape(joint j, link fixedLink, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
             : base(j, timeSlider, pmks, radius, strokeThickness, xOffset, yOffset)
         {
-            w = DisplayConstants.PJointSizeIncrease * radius * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-            h = DisplayConstants.PJointSizeIncrease * radius / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+            w = 2 * radius * DisplayConstants.SliderRectangleWidthIncrease;
+            h = 2 * radius;
             Data = new RectangleGeometry
             {
                 Rect = new Rect(new Point(0, 0), new Point(w, h))
@@ -47,9 +47,5 @@ namespace PMKS_Silverlight_App
             };
         }
 
-        internal override void ClearBindings()
-        {
-            ClearValue(CoordinatesProperty);
-        }
     }
 }

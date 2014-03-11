@@ -13,85 +13,62 @@ using PMKS_Silverlight_App;
 
 namespace PMKS_Silverlight_App
 {
-    public class GroundLinkShape : Shape
+    public class GroundLinkShape : Panel
     {
-        public List<Shape> Shapes { get; private set; }
-
-
         #region Constructor
         public GroundLinkShape(link groundLink, double xOffset, double yOffset, double strokeThickness, double jointSize,
                             double startingBufferRadius)
         {
-            Shapes = new List<Shape>();
+            Name = "ground";
+            Canvas.SetZIndex(this, 0);
             double triangleSideLength = 2.5 * jointSize;
-            Shape innerShape, outerShape;
             foreach (var j in groundLink.joints)
             {
                 switch (j.jointType)
                 {
                     case JointTypes.R:
-                        //innerShape = new Ellipse
-                        //{
-                        //    Stroke = new SolidColorBrush(Colors.Black),
-                        //    Fill = new SolidColorBrush(Colors.Black),
-                        //    StrokeThickness = strokeThickness,
-                        //    Tag = "ground",
-                        //    Height = jointSize,
-                        //    Width = jointSize,
-                        //    RenderTransform = new TranslateTransform { X = j.xInitial + xOffset, Y = j.yInitial + yOffset }
-                        //}; 
-                        innerShape = new Line
+
+                        Children.Add(new Line
                         {
                             Stroke = new SolidColorBrush(Colors.Black),
-                            Fill = new SolidColorBrush(Colors.Black),
                             StrokeThickness = strokeThickness,
-                            Tag = "ground",
                             X1 = j.xInitial + xOffset - 2 * triangleSideLength,
                             Y1 = j.yInitial + yOffset - triangleSideLength,
                             X2 = j.xInitial + xOffset + 2 * triangleSideLength,
                             Y2 = j.yInitial + yOffset - triangleSideLength,
-                        };
-                        // innerShape = null;
-                        outerShape = new Polygon
+                        });
+                        Children.Add(new Polygon
                         {
                             Stroke = new SolidColorBrush(Colors.Black),
                             Fill = new SolidColorBrush(Colors.Black),
                             StrokeThickness = strokeThickness,
-                            Tag = "ground",
                             Points = new PointCollection
                             {
                                 new Point(j.xInitial+xOffset,j.yInitial+ yOffset),
                                 new Point(j.xInitial+xOffset - triangleSideLength,j.yInitial+ yOffset - triangleSideLength),
                                 new Point(j.xInitial+xOffset + triangleSideLength,j.yInitial+ yOffset - triangleSideLength)    
                      
-                            },
-                            //RenderTransform = new TranslateTransform { X = xPosition, Y = yPosition }
-                            //,Width = DisplayConstants.UnCroppedDimension,
-                            //Height = DisplayConstants.UnCroppedDimension
-                        };
+                            }
+                        });
                         break;
                     case JointTypes.P:
-                        innerShape = new Path
+                        Children.Add(new Path
                         {
-                            Tag = "ground",
                             Data =
                                 SlideShapeMaker.MakePSlotHole(j, groundLink, xOffset, yOffset, jointSize,
                                     startingBufferRadius),
                             Stroke = new SolidColorBrush(Colors.Black),
                             Fill = new SolidColorBrush(Colors.White),
-                            StrokeThickness = strokeThickness,
-
-
-                        };
-                        outerShape = new Path
+                            StrokeThickness = strokeThickness
+                        });
+                        Children.Add(new Path
                         {
-                            Tag = "ground",
                             Data =
                                 SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
                                     startingBufferRadius),
                             Fill = new ImageBrush
                             {
-                                ImageSource = new BitmapImage(new Uri("../groundhashMED.png", UriKind.Relative)),
+                                ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
                                 Stretch = Stretch.UniformToFill
                                 //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
                                 // in order to do this, you will need code to handle the tiling - not native to Silverlight
@@ -100,68 +77,66 @@ namespace PMKS_Silverlight_App
                                 // or 
                             }
                             //Fill = new SolidColorBrush(Colors.DarkGray)
-                        };
+                        });
                         break;
                     case JointTypes.RP:
                         if (j.SlidingWithRespectTo(groundLink))
                         {
-                            innerShape = new Path
-                            {
-                                Tag = "ground",
-                                Data =
-                                    SlideShapeMaker.MakeRPSlotHole(j, groundLink, xOffset, yOffset, jointSize,
-                                        startingBufferRadius),
-                                Stroke = new SolidColorBrush(Colors.Black),
-                                Fill = new SolidColorBrush(Colors.White),
-                                StrokeThickness = strokeThickness
-                            };
-                            outerShape = new Path
-                            {
-                                Tag = "ground",
-                                Data =
-                                    SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
-                                        startingBufferRadius),
-                                Fill = new ImageBrush
-                                {
-                                    ImageSource = new BitmapImage()
-                                }
-                            };
+                            Children.Add(new Path
+                              {
+                                  Data =
+                                      SlideShapeMaker.MakeRPSlotHole(j, groundLink, xOffset, yOffset, jointSize,
+                                          startingBufferRadius),
+                                  Stroke = new SolidColorBrush(Colors.Black),
+                                  Fill = new SolidColorBrush(Colors.White),
+                                  StrokeThickness = strokeThickness
+                              });
+                            Children.Add(new Path
+                              {
+                                  Data =
+                                      SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
+                                          startingBufferRadius),
+                                  Fill = new ImageBrush
+                                  {
+                                      ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
+                                      Stretch = Stretch.UniformToFill
+                                      //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
+                                      // in order to do this, you will need code to handle the tiling - not native to Silverlight
+                                      // use Shazzam (http://shazzam-tool.com/) to make the shader fx
+                                      // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
+                                      // or 
+                                  }
+                              });
                         }
                         else
                         {
-                            innerShape = new Ellipse
+                            Children.Add(new Ellipse
                             {
                                 Stroke = new SolidColorBrush(Colors.Black),
                                 Fill = new SolidColorBrush(Colors.Black),
                                 StrokeThickness = strokeThickness,
-                                Name = "ground",
                                 Height = jointSize,
                                 Width = jointSize,
                                 RenderTransform = new TranslateTransform { X = j.xInitial + xOffset, Y = j.yInitial + yOffset }
 
-                            };
-                            outerShape = new Polygon
+                            });
+                            Children.Add(new Polygon
                             {
                                 Stroke = new SolidColorBrush(Colors.Black),
                                 Fill = new SolidColorBrush(Colors.Black),
                                 StrokeThickness = strokeThickness,
-                                Name = "ground",
                                 Points = new PointCollection
                             {
                                 new Point(j.xInitial+xOffset, j.yInitial+yOffset),
                                 new Point(j.xInitial+xOffset - triangleSideLength,j.yInitial+ yOffset - triangleSideLength),
                                 new Point(j.xInitial+xOffset + triangleSideLength,j.yInitial+ yOffset - triangleSideLength)
-                            },
-                                //Width = DisplayConstants.UnCroppedDimension,
-                                //Height = DisplayConstants.UnCroppedDimension
-                            };
+                            }
+                            });
                         }
                         break;
                     default: //this would be gear
                         throw new NotImplementedException();
                 }
-                Shapes.Add(innerShape);
-                Shapes.Add(outerShape);
             }
         }
         #endregion

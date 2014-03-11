@@ -27,7 +27,7 @@ namespace PMKS_Silverlight_App
         public const double LinkStrokeOpacity = 0.75;
         public const double LinkStrokeLuminence = 0.3;
         public const double LinkStrokeSaturation = 0.7;
-        public const double DefaultLinkThickness = 8.0;
+        public const double DefaultBufferRadius = 8.0;
         public const double InitialSlidingJointLengthMultiplier = 1.0;
         public const double SingleJointLinkRadiusMultipler = 1.0;
         public const double RadiansToDegrees = 180.0 / Math.PI;
@@ -41,19 +41,22 @@ namespace PMKS_Silverlight_App
 
         public const string TargetShapeQueryText = "Enter Target Shape Stream Here.";
         public const string TargetPathStreamEnd = "\"/>";
-        public const double SliderRectangleAspectRatioSqareRoot = 1.25;
+        public const double SliderRectangleWidthIncrease = 1.5;
         public const double MaxZoomIn = 25;
         public const double MaxZoomOut = 0.04;
-        public const double PJointSizeIncrease = 2.5;
-
+        public const double MaxUnselectedOpacity = 0.7;
+        public const double IconIncreaseRadiusFactor = 1.8;
     }
     public class JointTypeProvider
     {
         public List<string> jointTypeList
         {
-            get { return new List<string> { "R (pin joint)"
+            get
+            {
+                return new List<string> { "R (pin joint)"
                 , "P (sliding block)", "RP (pin in slot)", "G (gear teeth)" 
-            }; }
+            };
+            }
         }
     }
 }

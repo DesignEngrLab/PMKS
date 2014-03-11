@@ -70,6 +70,7 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Windows.Controls.Data, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Controls.Data.Input, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Windows.Controls.Navigation, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Data, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Windows.Browser" />
@@ -88,7 +89,9 @@
     <Compile Include="Converters\TimeToLinkParameterConverter.cs" />
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
-    <Compile Include="PageComponents\Shapes\Joint Shapes\InputPJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\DynamicShapes\InputJointBaseShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\InputPJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\DynamicJointBaseShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\GroundLinkShape.cs" />
     <Compile Include="PageComponents\Shapes\SlideShapeMaker.cs" />
     <Compile Include="URLArgumentHandling.cs" />
@@ -96,13 +99,13 @@
     <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">
       <DependentUpon>FileAndEditPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PageComponents\Shapes\Joint Shapes\PJointShape.cs" />
-    <Compile Include="PageComponents\Shapes\Joint Shapes\InputRJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\DynamicShapes\PJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\InputRJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\LinkShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\MyConvexHull.cs" />
     <Compile Include="PageComponents\Shapes\Static Shapes\Axes.cs" />
     <Compile Include="PageComponents\Shapes\Vector Shapes\DisplayVectorBaseShape.cs" />
-    <Compile Include="PageComponents\Shapes\Joint Shapes\RJointShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\DynamicShapes\RJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\JointShape Base Classes.cs" />
     <Compile Include="PageComponents\OutputStatus.xaml.cs">
       <DependentUpon>OutputStatus.xaml</DependentUpon>
@@ -134,6 +137,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Resource Include="Properties\ShapeResourceDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
     <Page Include="PageComponents\FileAndEditPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -161,7 +168,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Resource Include="groundhashMED.png" />
+    <Resource Include="Properties\groundhashMED.png" />
     <Content Include="Properties\AppManifest.xml" />
     <None Include="Properties\OutOfBrowserSettings.xml" />
   </ItemGroup>

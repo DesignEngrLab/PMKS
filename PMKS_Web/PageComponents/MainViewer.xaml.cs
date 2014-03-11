@@ -23,12 +23,15 @@ namespace PMKS_Silverlight_App
         private double canvasWidth, canvasHeight, minX, maxX, minY, maxY;
         private double penThick;
         private double jointSize;
+        private GroundLinkShape groundLinkShape;
+        private Axes axes;
         public Storyboard storyBoard { get; private set; }
         #endregion
 
         public MainViewer()
         {
             InitializeComponent();
+
         }
 
         #region Properties
@@ -164,33 +167,41 @@ namespace PMKS_Silverlight_App
                 storyBoard.Begin();
         }
 
-        public void DrawStaticShapes(Simulator pmks)
+        public void DrawStaticShapes(Simulator pmks, ObservableCollection<JointData> jointData)
         {
             /* remove old Axes */
-            MainCanvas.Children.Remove(MainCanvas.Children.FirstOrDefault(a => (a is Axes)));
+            MainCanvas.Children.Remove(axes);
             /* add new ones (based on XOffset and YOffest */
-            MainCanvas.Children.Add(new Axes(penThick, XOffset, YOffset, MainCanvas.Width, MainCanvas.Height));
+            axes = new Axes(penThick, XOffset, YOffset, MainCanvas.Width, MainCanvas.Height);
+            MainCanvas.Children.Add(axes);
+            initialPositionIcons.Clear();
+            for (int index = 0; index < pmks.AllJoints.Count; index++)
+            {
+                InputJointBaseShape inputJointBaseShape = null;
+                var j = pmks.AllJoints[pmks.JointNewIndexFromOriginal[index]];
+                if (j.jointType == JointTypes.R)
+                    inputJointBaseShape = new InputRJointShape(jointSize, penThick, j.xInitial + XOffset,
+                        j.yInitial + YOffset, j.isGround, jointData[index]);
+                else if (j.jointType == JointTypes.P)
+                    inputJointBaseShape = new InputPJointShape(jointSize, penThick, j.xInitial + XOffset,
+                           j.yInitial + YOffset,
+                           j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointData[index]);
+                MainCanvas.Children.Add(inputJointBaseShape);
+                initialPositionIcons.Add(inputJointBaseShape);
+            }
             /* remove old ground shapes */
-            while (MainCanvas.Children.Any(s => s is Shape && ((Shape)s).Tag != null && (string)((Shape)s).Tag == "ground"))
-                MainCanvas.Children.Remove(MainCanvas.Children.First(s => s is Shape && ((Shape)s).Tag != null && (string)((Shape)s).Tag == "ground"));
-            /* now add the link shapes */                                
-                    var groundLinkShape = new GroundLinkShape(pmks.groundLink, XOffset, YOffset, penThick, jointSize,
-                                                          DisplayConstants.DefaultLinkThickness / ScaleFactor);
-                    foreach (var shape in groundLinkShape.Shapes)
-                        if (shape != null) MainCanvas.Children.Add(shape);
+            MainCanvas.Children.Remove(groundLinkShape);
+
+            groundLinkShape = new GroundLinkShape(pmks.groundLink, XOffset, YOffset, penThick, jointSize,
+                                                 DisplayConstants.DefaultBufferRadius / ScaleFactor);
+            MainCanvas.Children.Add(groundLinkShape);
+
+            /* now add the link shapes */
             for (int i = 0; i < pmks.numLinks; i++)
             {
                 if (!pmks.AllLinks[i].isGround)
-               MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize, null,
-                                                       DisplayConstants.DefaultLinkThickness / ScaleFactor));
-            }
-            foreach (var j in pmks.AllJoints)
-            {
-                if (j.jointType == JointTypes.R)
-                    MainCanvas.Children.Add(new InputRJointShape(jointSize, penThick, j.xInitial + XOffset, j.yInitial + YOffset, j.isGround));
-                else if (j.jointType == JointTypes.P)
-                    MainCanvas.Children.Add(new InputPJointShape(jointSize, penThick, j.xInitial + XOffset, j.yInitial + YOffset,
-                        j.InitSlideAngle + j.Link1.AngleInitial, j.isGround));
+                    MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XOffset, YOffset, penThick, jointSize, null,
+                                                            DisplayConstants.DefaultBufferRadius / ScaleFactor));
             }
             if (TargetPath != null)
             {
@@ -296,7 +307,36 @@ namespace PMKS_Silverlight_App
             AccelFactor = Math.Min(canvasWidth / maxAx, canvasHeight / maxAy);
 
         }
+        List<InputJointBaseShape> initialPositionIcons = new List<InputJointBaseShape>();
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            if (multiSelect) return;
+            var jointMoved = false;
+            foreach (var inputJointBaseShape in initialPositionIcons)
+                jointMoved = (inputJointBaseShape.OnMouseMove(e) || jointMoved);
+            //if (jointMoved)
+            //    App.main.ParseData(false, false);
+            base.OnMouseMove(e);
+        }
 
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            foreach (var inputJointBaseShape in initialPositionIcons)
+                if (!e.Handled)
+                    inputJointBaseShape.OnMouseLeftButtonDown(e, multiSelect);
+            base.OnMouseLeftButtonDown(e);
+        }
+
+        public Boolean multiSelect;
+       
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            foreach (var inputJointBaseShape in initialPositionIcons)
+                //if (!e.Handled)
+                inputJointBaseShape.OnMouseLeftButtonUp(e, multiSelect);
+             if (e.Handled) App.main.ParseData();
+            base.OnMouseLeftButtonUp(e);
+        }
 
         internal void UpdateScaleAndCenter()
         {

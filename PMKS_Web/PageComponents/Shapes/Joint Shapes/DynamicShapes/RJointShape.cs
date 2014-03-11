@@ -43,9 +43,5 @@ namespace PMKS_Silverlight_App
             };
         }
 
-        internal override void ClearBindings()
-        {
-            ClearValue(CoordinatesProperty);
-        }
     }
 }

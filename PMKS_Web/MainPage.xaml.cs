@@ -89,6 +89,7 @@ namespace PMKS_Silverlight_App
             JointsInfo = new JointsViewModel();
             LinksInfo = new LinksViewModel();
             InitializeComponent();
+            InputJointBaseShape.LoadShapes();
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -186,7 +187,7 @@ namespace PMKS_Silverlight_App
         }
 
         #region PMKS Controller Functions
-        internal void ParseData(Boolean SettingChanged = false)
+        internal void ParseData(Boolean SettingChanged = false, Boolean AutoPlay = true)
         {
             #region table validation
             if (JointsInfo == null) return;
@@ -217,9 +218,8 @@ namespace PMKS_Silverlight_App
 #endif
                 PlayButton_Unchecked(null, null);
                 DefineInputDriver();
-                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);          
-            //mainViewer.DrawStaticShapes(LinkIDs, JointTypes, InitPositions, distinctLinkNames);
-                                                           mainViewer.DrawStaticShapes(pmks);
+                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
+
                 if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
                 else status("The mechanism has non-dyadic loops.");
                 int dof = pmks.DegreesOfFreedom;
@@ -233,8 +233,12 @@ namespace PMKS_Silverlight_App
                     else
                         pmks.DeltaAngle = AngleIncrement;
                 }
-                else return;
-            
+                else
+                {
+                    mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
+                    return;
+                }
+
 #if trycatch
             }
             catch (Exception e)
@@ -244,7 +248,7 @@ namespace PMKS_Silverlight_App
             }
 #endif
             #endregion
-                 #if trycatch
+#if trycatch
             try
             {
 #endif
@@ -279,12 +283,13 @@ namespace PMKS_Silverlight_App
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);
                 mainViewer.UpdateScaleAndCenter();
-                mainViewer.DrawStaticShapes(pmks);
+                mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds + "ms).");
-                PlayButton_Checked(null, null);
+                if (AutoPlay)
+                    PlayButton_Checked(null, null);
                 #endregion
-                #if trycatch
+#if trycatch
             }
             catch (Exception e)
             {
@@ -434,6 +439,19 @@ namespace PMKS_Silverlight_App
             }
             return true;
         }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Ctrl || e.Key == Key.Shift) mainViewer.multiSelect = true;
+            base.OnKeyDown(e);
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            if (e.Key == Key.Shift || e.Key == Key.Ctrl) mainViewer.multiSelect = false;
+            base.OnKeyUp(e);
+        }
+
 
         private List<string> distinctLinkNames;
         private bool Panning;

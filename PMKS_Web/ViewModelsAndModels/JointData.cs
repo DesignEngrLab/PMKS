@@ -11,9 +11,9 @@ namespace PMKS_Silverlight_App
     public class JointData : DependencyObject
     {
 
-        private double _xPos = double.NaN;
-        private double _yPos = double.NaN;
-        private double _angle = double.NaN;
+        public double _xPos = double.NaN;
+        public double _yPos = double.NaN;
+        public double _angle = double.NaN;
         private string _jointType;
         private string _linkNames;
 
@@ -81,15 +81,6 @@ namespace PMKS_Silverlight_App
             }
         }
 
-        public double getYPos()
-        {
-            return _yPos;
-        }
-
-        public double getXPos()
-        {
-            return _xPos;
-        }
 
         public string Angle
         {

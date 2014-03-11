@@ -21,8 +21,8 @@ namespace PMKS_Silverlight_App
             var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
 
 
-            var blockWidth = DisplayConstants.PJointSizeIncrease * jointSize * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-            var blockHeight = DisplayConstants.PJointSizeIncrease * jointSize / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+            var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
+            var blockHeight = 2 * jointSize ;
             var slideWidth = (j.SlideLimits != null)
                 ? j.SlideLimits[3] - j.SlideLimits[1] + blockWidth
                 : 3 * blockWidth;
@@ -52,8 +52,8 @@ namespace PMKS_Silverlight_App
             var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
 
 
-            var blockWidth = DisplayConstants.PJointSizeIncrease * jointSize * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-            var blockHeight = DisplayConstants.PJointSizeIncrease * jointSize / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+            var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
+            var blockHeight = 2 * jointSize;
             var slideWidth = (j.SlideLimits != null)
                 ? j.SlideLimits[3] - j.SlideLimits[1] + blockWidth
                 : 3 * blockWidth;
@@ -79,8 +79,8 @@ namespace PMKS_Silverlight_App
         internal static RectangleGeometry MakePSlotBorder(joint j, link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
         {
             var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
-            var blockWidth = DisplayConstants.PJointSizeIncrease * jointSize * DisplayConstants.SliderRectangleAspectRatioSqareRoot;
-            var blockHeight = DisplayConstants.PJointSizeIncrease * jointSize / DisplayConstants.SliderRectangleAspectRatioSqareRoot;
+            var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
+            var blockHeight = 2 * jointSize ;
             var slideWidth = (j.SlideLimits != null)
                 ? j.SlideLimits[3] - j.SlideLimits[1] + blockWidth
                 : 3 * blockWidth;
