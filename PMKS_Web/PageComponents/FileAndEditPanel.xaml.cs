@@ -67,6 +67,7 @@ namespace PMKS_Silverlight_App
                 }
             }
         }
+       
 
 
 
@@ -132,8 +133,8 @@ namespace PMKS_Silverlight_App
                     App.main.mainViewer.TargetPath.RenderTransform
                         = new TranslateTransform
                         {
-                            X = App.main.mainViewer.XOffset,
-                            Y = App.main.mainViewer.YOffset
+                            X = App.main.mainViewer.XAxisOffset,
+                            Y = App.main.mainViewer.YAxisOffset
                         };
                     App.main.mainViewer.MainCanvas.Children.Add(App.main.mainViewer.TargetPath);
                     return;

@@ -18,7 +18,7 @@ namespace PMKS_Silverlight_App
         public const double AccelLengthRatio = 0.5;
         public const double TickDistance = 24.0; // one-quarter of an inch
         public const double JointSize = 4.0; // one-sixteenth of an inch
-        public const double AxesBuffer = 10; // one inch
+        public const double AxesBuffer = 24; // one inch
         public const double UnCroppedDimension = 999999;
         public const double LinkFillOpacity = 0.5;
         public const double LinkHueMultiplier = 180.0 / Math.PI;
@@ -46,6 +46,8 @@ namespace PMKS_Silverlight_App
         public const double MaxZoomOut = 0.04;
         public const double MaxUnselectedOpacity = 0.7;
         public const double IconIncreaseRadiusFactor = 1.8;
+        public const double ZoomTime = 0.75;
+        public const double ExtraAxesLengthFactor = 0.0;
     }
     public class JointTypeProvider
     {

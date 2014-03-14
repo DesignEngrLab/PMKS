@@ -24,8 +24,9 @@ namespace PMKS_Silverlight_App
         protected Boolean isGround;
         private bool mouseMoving;
         private Point moveReference;
-        protected readonly double yCoord;
-        protected readonly double xCoord;
+        protected double yCoord;
+        protected double xCoord;
+        protected double angle;
         protected static ResourceDictionary shapeResourceDictionary;
         private readonly double iconOpacityRadius;
 
@@ -59,20 +60,25 @@ namespace PMKS_Silverlight_App
                   X = -translateIcon.ActualWidth / 2,
                   Y = -translateIcon.ActualHeight / 2
               };
+            SetPosition(xPosition, yPosition, angle);
+
+        }
+
+        public void SetPosition(double xPosition, double yPosition, double angle)
+        {
             xCoord = xPosition;
             yCoord = yPosition;
 
+            this.angle = (double.IsNaN(angle)) ? 0.0 : angle;
             SetZIndex(this, 32766);
             RenderTransformOrigin = new Point(0.5, 0.5);
 
             //  RenderTransform =     new TranslateTransform{X = xPosition,Y=yPosition};
-            RenderTransform = new TransformGroup
+            RenderTransform = new CompositeTransform
             {
-                Children = new TransformCollection
-                {
-                    new TranslateTransform{X = xPosition,Y=yPosition},
-                    new RotateTransform{    Angle  = DisplayConstants.RadiansToDegrees * angle}
-}
+                TranslateX = xPosition,
+                TranslateY = yPosition,
+                Rotation = DisplayConstants.RadiansToDegrees * angle
             };
         }
 
@@ -101,7 +107,7 @@ namespace PMKS_Silverlight_App
 
         internal Boolean OnMouseMove(MouseEventArgs e)
         {
-            var delta = e.GetPosition((UIElement)this.Parent);
+            var delta = e.GetPosition(App.main.mainViewer.MainCanvas);
             if (mouseMoving)
             {
                 this.RenderTransform = new TranslateTransform
@@ -109,8 +115,17 @@ namespace PMKS_Silverlight_App
                     X = delta.X,
                     Y = delta.Y
                 };
+                var deltaX = delta.X - moveReference.X;
+                var deltaY = delta.Y - moveReference.Y;
+                jointData._xPos += deltaX;
+                jointData._yPos += deltaY;
+                xCoord += deltaX;
+                yCoord += deltaY;
+                moveReference = delta;
+                jointData.RefreshTablePositions();
                 return true;
             }
+
             var xDifference = Math.Abs(delta.X - xCoord);
             var yDifference = Math.Abs(delta.Y - yCoord);
             var radialDifference = xDifference + yDifference;
@@ -127,19 +142,18 @@ namespace PMKS_Silverlight_App
             translateIcon.Opacity = 1.0;
             //CaptureMouse();
             if (multiSelect) return;
-            moveReference = e.GetPosition((UIElement)this.Parent);
+            moveReference = e.GetPosition(App.main.mainViewer.MainCanvas);
             e.Handled = true;
         }
 
         internal void OnMouseLeftButtonUp(MouseButtonEventArgs e, bool multiSelect)
         {
             if (!mouseIsContained || multiSelect) return;
-            var delta = e.GetPosition((UIElement)this.Parent);
+            
+
 
             mouseMoving = false;
             //ReleaseMouseCapture();      
-            jointData._xPos += delta.X - moveReference.X;
-            jointData._yPos += delta.Y - moveReference.Y;
             e.Handled = true;
 
         }

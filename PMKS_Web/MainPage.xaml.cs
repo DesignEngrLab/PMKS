@@ -194,11 +194,12 @@ namespace PMKS_Silverlight_App
             numJoints = TrimEmptyJoints();
             if (pmks != null && !SettingChanged && SameTopology() && SameParameters()) return;
 
-
+            var same_topology = false;
             if (pmks != null && SameTopology() && DataListsSameLength())
             {
                 DefinePositions();
                 pmks.AssignPositions(InitPositions);
+                same_topology = true;
             }
             if (!validLinks()) return;
 
@@ -206,16 +207,14 @@ namespace PMKS_Silverlight_App
             #endregion
 
             #region Just Draw Axes and Joints
-            mainViewer.Clear();
-            mainViewer.UpdateRanges(InitPositions);
-            mainViewer.UpdateScaleAndCenter();
             #endregion
 
             #region Setting Up PMKS
 #if trycatch
             try
             {
-#endif
+#endif               
+                mainViewer.ClearDynamicShapesAndBindings(same_topology);
                 PlayButton_Unchecked(null, null);
                 DefineInputDriver();
                 pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
@@ -234,8 +233,10 @@ namespace PMKS_Silverlight_App
                         pmks.DeltaAngle = AngleIncrement;
                 }
                 else
-                {
-                    mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
+                {                           
+                    mainViewer.UpdateRanges(InitPositions);            
+                    mainViewer.UpdateScaleAndCenter();
+                    mainViewer.DrawStaticShapes(pmks, JointsInfo.Data, same_topology);
                     return;
                 }
 
@@ -279,11 +280,10 @@ namespace PMKS_Silverlight_App
                     status("...nothing to draw. Error in simulation.");
                     return;
                 }
-                mainViewer.Clear();
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);
-                mainViewer.UpdateScaleAndCenter();
-                mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
+              if (!same_topology)  mainViewer.UpdateScaleAndCenter(); 
+                mainViewer.DrawStaticShapes(pmks, JointsInfo.Data, same_topology);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds + "ms).");
                 if (AutoPlay)
@@ -523,7 +523,7 @@ namespace PMKS_Silverlight_App
             var center = e.GetPosition(mainViewer.MainCanvas);
             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
-            mainViewer.MoveScaleCanvas(newScaleFactor, new Point(delta * center.X + oldTx,
+            mainViewer.MoveScaleCanvasFromMouse(newScaleFactor, new Point(delta * center.X + oldTx,
                       delta * center.Y + oldTy));
         }
 
@@ -550,7 +550,7 @@ namespace PMKS_Silverlight_App
             if (!Panning) return;
             var newPanAnchor = new Point(e.GetPosition(this).X - ScreenStartPoint.X,
                                     ScreenStartPoint.Y - e.GetPosition(this).Y);
-            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, newPanAnchor);
+            mainViewer.MoveScaleCanvasFromMouse(mainViewer.ScaleFactor, newPanAnchor);
         }
 
         private void PlayButton_Checked(object sender, RoutedEventArgs e)

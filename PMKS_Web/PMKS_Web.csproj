@@ -94,6 +94,7 @@
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\DynamicJointBaseShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\GroundLinkShape.cs" />
     <Compile Include="PageComponents\Shapes\SlideShapeMaker.cs" />
+    <Compile Include="PMKSBackgroundWorker.cs" />
     <Compile Include="URLArgumentHandling.cs" />
     <Compile Include="ExportKinematicData.cs" />
     <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">

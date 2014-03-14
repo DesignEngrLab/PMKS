@@ -4,7 +4,7 @@
              xmlns:s="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Data"
              xmlns:src="clr-namespace:PMKS_Silverlight_App">
     <UserControl.Resources>
-        <src:JointTypeProvider x:Name="jointTypeProvider"/>
+        <src:JointTypeProvider x:Name="jointTypeProvider" />
     </UserControl.Resources>
     <Border CornerRadius="4" BorderThickness="1.5" BorderBrush="Black" Background="#60D9EDF7" >
         <Grid>
@@ -49,8 +49,8 @@
 
                     <s:DataGrid Margin="-20,0,0,0" Background="Transparent" Grid.Row="1" x:Name="dataGrid" AutoGenerateColumns="False"  CanUserResizeColumns="True" 
                 CanUserReorderColumns="True" 
-                CanUserSortColumns="False" HeadersVisibility="All"
-                CellEditEnded="dataGrid_CellEditEnded" MaxHeight="500" BeginningEdit="dataGrid_AddNewRow"   >
+                CanUserSortColumns="False" HeadersVisibility="All" 
+                CellEditEnded="dataGrid_CellEditEnded" MaxHeight="500" BeginningEdit="dataGrid_AddNewRow"    >
                         <s:DataGrid.Columns>
                             <s:DataGridTemplateColumn Header="Input" >
                                 <s:DataGridTemplateColumn.CellTemplate>
@@ -76,7 +76,7 @@
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellEditingTemplate>
                             </s:DataGridTemplateColumn>
-                            <s:DataGridTextColumn Header="X Pos."  Binding="{Binding XPos}" />
+                            <s:DataGridTextColumn Header="X Pos."  Binding="{Binding XPos}"  />
                             <s:DataGridTextColumn Header="Y Pos." Binding="{Binding YPos}"/>
                             <s:DataGridTextColumn Header="Angle" Binding="{Binding Angle}"/>
                             <s:DataGridTemplateColumn Header="P">

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -8,12 +10,12 @@ using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
-    public class JointData : DependencyObject
+    public class JointData : DependencyObject, INotifyPropertyChanged
     {
 
-        public double _xPos = double.NaN;
-        public double _yPos = double.NaN;
-        public double _angle = double.NaN;
+        public double _xPos;
+        public double _yPos;
+        public double _angle;
         private string _jointType;
         private string _linkNames;
 
@@ -53,14 +55,35 @@ namespace PMKS_Silverlight_App
 
         public string XPos
         {
-            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString(CultureInfo.InvariantCulture); }
+            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString("G", CultureInfo.InvariantCulture); }
             set
             {
                 if (!double.TryParse(value, out _xPos))
-                    _xPos = double.NaN;
+                    _xPos = double.NaN;           
             }
         }
 
+        public string YPos
+        {
+            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString("G", CultureInfo.InvariantCulture); }
+            set
+            {
+                if (!double.TryParse(value, out _yPos))
+                    _yPos = double.NaN;
+            }
+        }
+        // Declare the PropertyChanged event
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        // OnPropertyChanged will raise the PropertyChanged event passing the
+        // source property that is being updated.
+        private void onPropertyChanged(object sender, string propertyName)
+        {
+            if (this.PropertyChanged != null)
+            {
+                PropertyChanged(sender, new PropertyChangedEventArgs(propertyName));
+            }
+        }
         public string[] LinkNamesList
         {
             get
@@ -68,16 +91,6 @@ namespace PMKS_Silverlight_App
                 if (LinkNames != null)
                     return LinkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 else return new string[0];
-            }
-        }
-
-        public string YPos
-        {
-            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString(CultureInfo.InvariantCulture); }
-            set
-            {
-                if (!double.TryParse(value, out _yPos))
-                    _yPos = double.NaN;
             }
         }
 
@@ -246,6 +259,15 @@ namespace PMKS_Silverlight_App
                 text += boolStr + "\n";
             }
             return text;
+        }
+
+
+        public void RefreshTablePositions()
+        {
+            //if (App.main != null)
+            //    App.main.fileAndEditPanel.dataGrid.InvalidateMeasure();      
+            onPropertyChanged(this, "XPos");
+            onPropertyChanged(this, "YPos");
         }
     }
 }
