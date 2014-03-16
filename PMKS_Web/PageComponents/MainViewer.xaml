@@ -3,6 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="PMKS_Silverlight_App.MainViewer">
 
-    <Canvas Background="Transparent" x:Name="MainCanvas" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+    <Canvas Background="Transparent" x:Name="MainCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
 </UserControl>

@@ -27,6 +27,44 @@ namespace PMKS_Silverlight_App
          *  DisplayConstants.AxesBuffer which is set to 1/4 in. or 24 pixels */
         private double _kinematicSpaceWidth, _kinematicSpaceHeight, minX, maxX, minY, maxY;
 
+        List<InputJointBaseShape> initialPositionIcons = new List<InputJointBaseShape>();
+
+        public Boolean multiSelect;
+        internal Point startMovingReference;
+
+        private double xPanAnchor, yPanAnchor;
+
+        private double penThick;
+        private double jointSize;
+        private GroundLinkShape groundLinkShape;
+        private Axes axes;
+        private double _scaleFactor;
+        private bool inTheMidstMoving;
+
+        #endregion
+
+        #region Constructor
+        public MainViewer()
+        {
+            InitializeComponent();
+            MainCanvas.Width = MainCanvas.Height = DisplayConstants.UltimateWindowWidth / DisplayConstants.MaxZoomOut;
+            XAxisOffset = DisplayConstants.UltimateWindowWidth / (2 * DisplayConstants.MaxZoomOut);
+            YAxisOffset = DisplayConstants.UltimateWindowWidth / (2 * DisplayConstants.MaxZoomOut);
+
+            axes = new Axes(penThick, XAxisOffset, YAxisOffset, MainCanvas.Width, MainCanvas.Height);
+            Children.Add(axes);
+        }
+        #endregion
+
+        #region Properties
+        public UIElementCollection Children { get { return MainCanvas.Children; } }
+        /// <summary>
+        /// Gets or sets the target path.
+        /// </summary>
+        /// <value>
+        /// The target path.
+        /// </value>
+        public Path TargetPath { get; set; }
         /// <summary>
         /// Gets the x axis offset.
         /// </summary>
@@ -35,22 +73,21 @@ namespace PMKS_Silverlight_App
         /// </value>
         public double XAxisOffset { get; private set; }
 
+        /// <summary>
+        /// Gets the y axis offset.
+        /// </summary>
+        /// <value>
+        /// The y axis offset.
+        /// </value>
         public double YAxisOffset { get; private set; }
 
-        private double penThick;
-        private double jointSize;
-        private GroundLinkShape groundLinkShape;
-        private Axes axes;
-        public Storyboard storyBoard { get; private set; }
-        #endregion
-
-        public MainViewer()
-        {
-            InitializeComponent();
-
-        }
-
-        #region Properties
+        /// <summary>
+        /// Gets the story board.
+        /// </summary>
+        /// <value>
+        /// The story board.
+        /// </value>
+        public Storyboard animateMechanismStoryBoard { get; private set; }
 
         /// <summary>
         /// Gets the scale factor.
@@ -58,7 +95,18 @@ namespace PMKS_Silverlight_App
         /// <value>
         /// The scale factor.
         /// </value>
-        public double ScaleFactor = 1.0;
+        public double ScaleFactor
+        {
+            get { return _scaleFactor; }
+            set
+            {
+                _scaleFactor = value;
+                penThick = DisplayConstants.PenThicknessRatio / _scaleFactor;
+                jointSize = DisplayConstants.JointSize / _scaleFactor;
+                axes.StrokeThickness = penThick;
+            }
+        }
+
         /// <summary>
         /// Gets the accel factor.
         /// </summary>
@@ -88,7 +136,7 @@ namespace PMKS_Silverlight_App
         }
         #endregion
 
-
+        #region Methods
         internal void DrawDynamicShapes(Simulator pmks, ObservableCollection<JointData> jointData, Slider timeSlider)
         {
             #region draw position, velocity, and acceleration curves
@@ -104,7 +152,7 @@ namespace PMKS_Silverlight_App
 
 
             /************ creating the shapes ***************/
-            foreach (var child in MainCanvas.Children)
+            foreach (var child in Children)
                 if (child is LinkShape)
                     ((LinkShape)child).SetBindings(timeSlider, pmks, XAxisOffset, YAxisOffset);
 
@@ -112,7 +160,7 @@ namespace PMKS_Silverlight_App
             {
                 var j = pmks.JointNewIndexFromOriginal[i];
                 if (pmks.AllJoints[j].FixedWithRespectTo(pmks.groundLink)) continue;
-                MainCanvas.Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XAxisOffset, YAxisOffset, pmks.CycleType == CycleTypes.OneCycle,
+                Children.Add(new PositionPath(j, pmks.JointParameters, jointData[i], XAxisOffset, YAxisOffset, pmks.CycleType == CycleTypes.OneCycle,
                      penThick));
                 DynamicJointBaseShape displayJoint;
                 switch (pmks.AllJoints[j].jointType)
@@ -124,9 +172,9 @@ namespace PMKS_Silverlight_App
                     default: displayJoint = new RJointShape(pmks.AllJoints[j], timeSlider, pmks, jointSize, penThick, XAxisOffset, YAxisOffset);
                         break;
                 }
-                MainCanvas.Children.Add(displayJoint);
-                MainCanvas.Children.Add(new AccelerationVector(pmks.AllJoints[j], timeSlider, pmks, AccelFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
-                MainCanvas.Children.Add(new VelocityVector(pmks.AllJoints[j], timeSlider, pmks, VelocityFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
+                Children.Add(displayJoint);
+                Children.Add(new AccelerationVector(pmks.AllJoints[j], timeSlider, pmks, AccelFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
+                Children.Add(new VelocityVector(pmks.AllJoints[j], timeSlider, pmks, VelocityFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
             }
             /******************************************************************/
             #endregion
@@ -140,24 +188,25 @@ namespace PMKS_Silverlight_App
                     AutoReverse = pmks.CycleType != CycleTypes.OneCycle,
                     RepeatBehavior = RepeatBehavior.Forever
                 };
-            storyBoard = new Storyboard
+            animateMechanismStoryBoard = new Storyboard
                 {
                     Duration = duration,
                     AutoReverse = pmks.CycleType != CycleTypes.OneCycle,
                     RepeatBehavior = RepeatBehavior.Forever
                 };
-            storyBoard.Children.Add(timeAnimation);
+            animateMechanismStoryBoard.Children.Add(timeAnimation);
             Storyboard.SetTarget(timeAnimation, timeSlider);
             Storyboard.SetTargetProperty(timeAnimation, new PropertyPath(RangeBase.ValueProperty));
             if ((bool)App.main.PlayButton.IsChecked)
-                storyBoard.Begin();
+                animateMechanismStoryBoard.Begin();
         }
 
         public void DrawStaticShapes(Simulator pmks, ObservableCollection<JointData> jointData, bool sameTopology)
         {
-            if (!sameTopology)
-            {
-                MainCanvas.Children.Clear();
+            //if (!sameTopology)
+            //{
+                Children.Clear();
+                Children.Add(axes);
                 initialPositionIcons.Clear();
                 for (int index = 0; index < pmks.AllJoints.Count; index++)
                 {
@@ -168,57 +217,50 @@ namespace PMKS_Silverlight_App
                     {
                         case JointTypes.R:
                             inputJointBaseShape =
-                                new InputRJointShape(jointSize, penThick, j.xInitial + XAxisOffset,
-                                    j.yInitial + YAxisOffset, j.isGround, jointData[index]);
+                                new InputRJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
+                                    YAxisOffset, j.isGround, jointData[index]);
                             break;
                         case JointTypes.P:
                             inputJointBaseShape =
-                                new InputPJointShape(jointSize, penThick, j.xInitial + XAxisOffset,
-                                    j.yInitial + YAxisOffset,
-                                    j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointData[index]);
+                                new InputPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
+                                    YAxisOffset, j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointData[index]);
                             break;
                     }
-                    MainCanvas.Children.Add(inputJointBaseShape);
+                    Children.Add(inputJointBaseShape);
                     initialPositionIcons.Add(inputJointBaseShape);
                 }
-            }
-            else
-            {
-                //for (int index = 0; index < pmks.AllJoints.Count; index++)
-                //{
-                //    var j = pmks.AllJoints[pmks.JointNewIndexFromOriginal[index]];
-                //    var icon = initialPositionIcons[index];
-                //    icon.SetPosition(j.xInitial + XAxisOffset,
-                //        j.yInitial + YAxisOffset,
-                //        j.InitSlideAngle + j.Link1.AngleInitial);
-                //}
-            }
-            /* remove old Axes */
-            MainCanvas.Children.Remove(axes);
-            /* add new ones (based on XOffset and YOffest */
-            axes = new Axes(penThick, XAxisOffset, YAxisOffset, MainCanvas.Width, MainCanvas.Height);
-            MainCanvas.Children.Add(axes);
-                                             
+            //}
+            //else
+            //{
+            //    for (int index = 0; index < pmks.AllJoints.Count; index++)
+            //    {
+            //        var j = pmks.AllJoints[pmks.JointNewIndexFromOriginal[index]];
+            //        var icon = initialPositionIcons[index];
+            //        icon.SetPosition(j.xInitial,j.yInitial, XAxisOffset, YAxisOffset,
+            //            j.InitSlideAngle + j.Link1.AngleInitial);
+            //    }
+            //}
+
             /* remove old ground shapes */
-            MainCanvas.Children.Remove(groundLinkShape);
+            Children.Remove(groundLinkShape);
 
             groundLinkShape = new GroundLinkShape(pmks.groundLink, XAxisOffset, YAxisOffset, penThick, jointSize,
                                                  DisplayConstants.DefaultBufferRadius / ScaleFactor);
-            MainCanvas.Children.Add(groundLinkShape);
+            Children.Add(groundLinkShape);
 
             /* now add the link shapes */
             for (int i = 0; i < pmks.numLinks; i++)
             {
                 if (!pmks.AllLinks[i].isGround)
-                    MainCanvas.Children.Add(new LinkShape(i, pmks.AllLinks[i], XAxisOffset, YAxisOffset, penThick, jointSize, null,
+                    Children.Add(new LinkShape(i, pmks.AllLinks[i], XAxisOffset, YAxisOffset, penThick, jointSize, null,
                                                             DisplayConstants.DefaultBufferRadius / ScaleFactor));
             }
             if (TargetPath != null)
             {
-                MainCanvas.Children.Remove(TargetPath);
+                Children.Remove(TargetPath);
                 TargetPath.RenderTransform
                     = new TranslateTransform { X = XAxisOffset, Y = YAxisOffset };
-                MainCanvas.Children.Add(TargetPath);
+                Children.Add(TargetPath);
             }
         }
 
@@ -317,65 +359,23 @@ namespace PMKS_Silverlight_App
             AccelFactor = Math.Min(_kinematicSpaceWidth / maxAx, _kinematicSpaceHeight / maxAy);
 
         }
-        List<InputJointBaseShape> initialPositionIcons = new List<InputJointBaseShape>();
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            if (multiSelect) return;
-            var jointMoved = false;
-            foreach (var inputJointBaseShape in initialPositionIcons)
-                jointMoved = (inputJointBaseShape.OnMouseMove(e) || jointMoved);
-            if (jointMoved)
-                App.main.ParseData(false, false);
-            base.OnMouseMove(e);
-        }
 
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            foreach (var inputJointBaseShape in initialPositionIcons)
-                if (!e.Handled)
-                    inputJointBaseShape.OnMouseLeftButtonDown(e, multiSelect);
-            base.OnMouseLeftButtonDown(e);
-        }
 
-        public Boolean multiSelect;
-        private double xPanAnchor, yPanAnchor;
-
-        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
-        {
-            foreach (var inputJointBaseShape in initialPositionIcons)
-                //if (!e.Handled)
-                inputJointBaseShape.OnMouseLeftButtonUp(e, multiSelect);
-           // if (e.Handled) App.main.ParseData();
-            base.OnMouseLeftButtonUp(e);
-        }
 
         internal void UpdateScaleAndCenter()
         {
-            var oldXOffset = XAxisOffset;
-            var oldYOffset = YAxisOffset;
-            XAxisOffset = DisplayConstants.DefaultBufferMultipler * _kinematicSpaceWidth - minX;
-            YAxisOffset = DisplayConstants.DefaultBufferMultipler * _kinematicSpaceHeight - minY;
-
-            MainCanvas.Width = _kinematicSpaceWidth + 2 * DisplayConstants.DefaultBufferMultipler * _kinematicSpaceWidth;
-            MainCanvas.Height = _kinematicSpaceHeight + 2 * DisplayConstants.DefaultBufferMultipler * _kinematicSpaceHeight;
-
-            var newScaleFactor = Math.Min(DisplayConstants.DefaultBufferMultipler * ParentWidth / (MainCanvas.Width), 
-                DisplayConstants.DefaultBufferMultipler * ParentHeight / (MainCanvas.Height));
-          //  newScaleFactor = ScaleFactor;
-
-
+            var w = _kinematicSpaceWidth + 2 * DisplayConstants.DefaultBufferMultipler * _kinematicSpaceWidth;
+            var h = _kinematicSpaceHeight + 2 * DisplayConstants.DefaultBufferMultipler * _kinematicSpaceHeight;
+            var newScaleFactor = Math.Min(ParentWidth / w, ParentHeight / h);
             if (newScaleFactor > DisplayConstants.MaxZoomIn) newScaleFactor = DisplayConstants.MaxZoomIn;
             if (newScaleFactor < DisplayConstants.MaxZoomOut) newScaleFactor = DisplayConstants.MaxZoomOut;
             var oldXPanAnchor = xPanAnchor;
             var oldYPanAnchor = yPanAnchor;
             xPanAnchor = (ParentWidth - newScaleFactor * MainCanvas.Width) / 2;
             yPanAnchor = (ParentHeight - newScaleFactor * MainCanvas.Height) / 2;
-            MoveScaleCanvasFromMouse(newScaleFactor, new Point(xPanAnchor, yPanAnchor));
 
             //var duration = new Duration(TimeSpan.FromSeconds(DisplayConstants.ZoomTime));
             //var easing = new QuadraticEase { EasingMode = EasingMode.EaseOut };
-            //var oldCx = newScaleFactor / ScaleFactor * (oldXOffset + oldXPanAnchor - XAxisOffset);
-            //var oldCy = newScaleFactor / ScaleFactor * (oldYOffset + oldYPanAnchor - YAxisOffset);
             //var animateScaleX = new DoubleAnimation
             //{
             //    EasingFunction = easing,
@@ -394,25 +394,24 @@ namespace PMKS_Silverlight_App
             //{
             //    EasingFunction = easing,
             //    Duration = duration,
-            //    To = xPanAnchor,
-            //    From = oldCx
+            //    To = oldXPanAnchor,
+            //    From = xPanAnchor
             //};
             //var animateTranslateY = new DoubleAnimation
             //{
             //    EasingFunction = easing,
             //    Duration = duration,
-            //    To = yPanAnchor,
-            //    From = oldCy
+            //    To = oldYPanAnchor,
+            //    From = yPanAnchor
             //};
             //var transform = new CompositeTransform
             //{
             //    ScaleX = ScaleFactor,
             //    ScaleY = ScaleFactor,
-            //    TranslateX = oldCx,
-            //    TranslateY = oldCy
+            //    TranslateX = oldXPanAnchor,
+            //    TranslateY = oldYPanAnchor
 
             //};
-            //MainCanvas.RenderTransform = transform;
             //Storyboard.SetTarget(animateScaleX, transform);
             //Storyboard.SetTargetProperty(animateScaleX, new PropertyPath(CompositeTransform.ScaleXProperty));
             //Storyboard.SetTarget(animateScaleY, transform);
@@ -430,51 +429,95 @@ namespace PMKS_Silverlight_App
 
             //zoomSb.Begin();
 
-            ScaleFactor = newScaleFactor;
-            penThick = DisplayConstants.PenThicknessRatio / ScaleFactor;
-            jointSize = DisplayConstants.JointSize / ScaleFactor;
-        }
-        internal void MoveScaleCanvasFromMouse(double newScaleFactor, Point newPanAnchor)
-        {
-            MainCanvas.RenderTransform = new CompositeTransform
+            ScaleFactor = newScaleFactor;  
+            var transform = new CompositeTransform
             {
-                ScaleX = newScaleFactor,
-                ScaleY = newScaleFactor,
-                TranslateX = newPanAnchor.X,
-                TranslateY = newPanAnchor.Y
+                ScaleX = ScaleFactor,
+                ScaleY = ScaleFactor,
+                TranslateX = xPanAnchor,
+                TranslateY = yPanAnchor
+
             };
-            ScaleFactor = newScaleFactor;
+            MainCanvas.RenderTransform = transform;
         }
-
-        public Path TargetPath { get; set; }
-
         public void ClearDynamicShapesAndBindings(bool sameTopology)
         {
-            for (int index = MainCanvas.Children.Count - 1; index >= 0; index--)
+            for (int index = Children.Count - 1; index >= 0; index--)
             {
-                var child = MainCanvas.Children[index];
+                var child = Children[index];
                 if (child is DisplayVectorBaseShape)
                 {
                     ((DisplayVectorBaseShape)child).ClearBindings();
-                    MainCanvas.Children.RemoveAt(index);
+                    Children.RemoveAt(index);
                 }
                 else if (child is DynamicJointBaseShape)
                 {
                     ((DynamicJointBaseShape)child).ClearBindings();
-                    MainCanvas.Children.RemoveAt(index);
+                    Children.RemoveAt(index);
                 }
                 else if (child is LinkShape)
                 {
                     ((LinkShape)child).ClearBindings();
-                    MainCanvas.Children.RemoveAt(index);
+                    Children.RemoveAt(index);
                 }
                 else if (child is PositionPath)
                 {
                     child.ClearValue(OpacityProperty);
-                    MainCanvas.Children.RemoveAt(index);
+                    Children.RemoveAt(index);
                 }
             }
-            if (!sameTopology) MainCanvas.Children.Clear();
+            // if (!sameTopology) {Children.Clear();}
         }
+
+        #endregion
+
+        #region Events: Overrides
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {                                                
+            var mousePos = e.GetPosition(App.main.mainViewer.MainCanvas);
+
+            if (!multiSelect && !inTheMidstMoving) startMovingReference = mousePos;
+
+            var jointMoved = false;
+            foreach (var inputJointBaseShape in initialPositionIcons)
+                jointMoved = (inputJointBaseShape.OnMouseMove(mousePos,startMovingReference, multiSelect) || jointMoved);
+            //if (jointMoved)
+            //    App.main.ParseData(false, false);
+            base.OnMouseMove(e);
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            foreach (var inputJointBaseShape in initialPositionIcons)
+                if (!e.Handled)
+                    inputJointBaseShape.OnMouseLeftButtonDown(e, multiSelect);
+            inTheMidstMoving = e.Handled;
+            base.OnMouseLeftButtonDown(e);
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            if (multiSelect) return;
+            inTheMidstMoving = false;
+            foreach (var inputJointBaseShape in initialPositionIcons)
+                //if (!e.Handled)
+                inputJointBaseShape.OnMouseLeftButtonUp(e, multiSelect);
+            if (e.Handled) App.main.ParseData();
+            base.OnMouseLeftButtonUp(e);
+        }
+
+        internal void MoveScaleCanvasFromMouse(double newScaleFactor, Point newPanAnchor)
+        {
+            ScaleFactor = newScaleFactor;
+            MainCanvas.RenderTransform = new CompositeTransform
+              {
+                  ScaleX = ScaleFactor,
+                  ScaleY = ScaleFactor,
+                  TranslateX = newPanAnchor.X,
+                  TranslateY = newPanAnchor.Y
+              };
+        }
+        #endregion
     }
 }

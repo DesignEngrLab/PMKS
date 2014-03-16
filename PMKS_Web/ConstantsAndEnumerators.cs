@@ -44,6 +44,7 @@ namespace PMKS_Silverlight_App
         public const double SliderRectangleWidthIncrease = 1.5;
         public const double MaxZoomIn = 25;
         public const double MaxZoomOut = 0.04;
+        public const double UltimateWindowWidth = 1920;
         public const double MaxUnselectedOpacity = 0.7;
         public const double IconIncreaseRadiusFactor = 1.8;
         public const double ZoomTime = 0.75;

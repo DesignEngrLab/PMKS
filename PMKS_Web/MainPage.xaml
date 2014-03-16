@@ -14,7 +14,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.RowSpan="2" RenderTransformOrigin="0.0,0.5" >
+        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.RowSpan="2" 
+                        RenderTransformOrigin="0.0,0.5" >
             <src:MainViewer.RenderTransform>
                 <CompositeTransform ScaleY="-1"/>
             </src:MainViewer.RenderTransform>

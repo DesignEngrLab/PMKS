@@ -9,9 +9,10 @@ namespace PMKS_Silverlight_App
     public class InputPJointShape : InputJointBaseShape
     {
 
-        public InputPJointShape(double jointSize, double strokeThickness, double xPosition, double yPosition, double angle, bool isGround, JointData jointData)
+        public InputPJointShape(double jointSize, double strokeThickness, double xPosition, double yPosition, double xAxisOffset,
+            double yAxisOffset, double angle, bool isGround, JointData jointData)
             : base(2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease, 2 * jointSize, strokeThickness, xPosition,
-            yPosition, angle, "PMoveArrows", jointData)
+            yPosition, xAxisOffset, yAxisOffset, angle, "PMoveArrows", jointData)
         {
 
             jointShape = new Rectangle

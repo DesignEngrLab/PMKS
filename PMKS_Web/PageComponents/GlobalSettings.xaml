@@ -9,7 +9,7 @@
                     <TextBox FontSize="16" MinHeight="38" MinWidth="60" Name="speedBox" />
                 </StackPanel>
             </Border>
-                <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="40"/>
@@ -65,7 +65,7 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-           <Border Padding="8,0">
+           <Border Padding="8,0" Visibility="Collapsed">
                 <StackPanel  >
                     <TextBlock Text="Units"/>
                     <StackPanel Orientation="Horizontal"  >

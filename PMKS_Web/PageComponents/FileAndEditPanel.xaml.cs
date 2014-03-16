@@ -115,7 +115,7 @@ namespace PMKS_Silverlight_App
 
         public void TargetShapeStream_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            App.main.mainViewer.MainCanvas.Children.Remove(App.main.mainViewer.TargetPath);
+            App.main.mainViewer.Children.Remove(App.main.mainViewer.TargetPath);
             App.main.mainViewer.TargetPath = null;
             if (!string.IsNullOrWhiteSpace(TargetShapeStream.Text) &&
                 !TargetShapeStream.Text.Equals(DisplayConstants.TargetShapeQueryText))
@@ -136,7 +136,7 @@ namespace PMKS_Silverlight_App
                             X = App.main.mainViewer.XAxisOffset,
                             Y = App.main.mainViewer.YAxisOffset
                         };
-                    App.main.mainViewer.MainCanvas.Children.Add(App.main.mainViewer.TargetPath);
+                    App.main.mainViewer.Children.Add(App.main.mainViewer.TargetPath);
                     return;
                     #if trycatch
                 }

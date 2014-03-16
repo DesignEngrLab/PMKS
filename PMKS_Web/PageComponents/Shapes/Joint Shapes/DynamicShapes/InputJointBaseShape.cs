@@ -23,22 +23,16 @@ namespace PMKS_Silverlight_App
         protected Shape rotateIcon;
         protected Boolean isGround;
         private bool mouseMoving;
-        private Point moveReference;
-        protected double yCoord;
-        protected double xCoord;
-        protected double angle;
+        protected double yCoord, xCoord, xAxisOffset, yAxisOffset, angle, oldXCoord, oldYCoord;
         protected static ResourceDictionary shapeResourceDictionary;
         private readonly double iconOpacityRadius;
-
-        private double xPosition;
-        private double yPosition;
         private JointData jointData;
 
 
 
 
         protected InputJointBaseShape(double iconWidth, double iconHeight, double strokeThickness,
-            double xPosition, double yPosition, double angle, string translateIconKey, JointData jointData)
+            double xPosition, double yPosition, double xAxisOffset, double yAxisOffset, double angle, string translateIconKey, JointData jointData)
         {
             /* make the move arrows translate icon that is initialized in base class constructor */
             this.jointData = jointData;
@@ -60,12 +54,13 @@ namespace PMKS_Silverlight_App
                   X = -translateIcon.ActualWidth / 2,
                   Y = -translateIcon.ActualHeight / 2
               };
-            SetPosition(xPosition, yPosition, angle);
-
+            SetPosition(xPosition, yPosition, xAxisOffset, yAxisOffset, angle);
         }
 
-        public void SetPosition(double xPosition, double yPosition, double angle)
+        public void SetPosition(double xPosition, double yPosition, double xAxisOffset, double yAxisOffset, double angle)
         {
+            this.xAxisOffset = xAxisOffset;
+            this.yAxisOffset = yAxisOffset;
             xCoord = xPosition;
             yCoord = yPosition;
 
@@ -73,11 +68,10 @@ namespace PMKS_Silverlight_App
             SetZIndex(this, 32766);
             RenderTransformOrigin = new Point(0.5, 0.5);
 
-            //  RenderTransform =     new TranslateTransform{X = xPosition,Y=yPosition};
             RenderTransform = new CompositeTransform
             {
-                TranslateX = xPosition,
-                TranslateY = yPosition,
+                TranslateX = xCoord + xAxisOffset,
+                TranslateY = yCoord + yAxisOffset,
                 Rotation = DisplayConstants.RadiansToDegrees * angle
             };
         }
@@ -105,33 +99,31 @@ namespace PMKS_Silverlight_App
         }
 
 
-        internal Boolean OnMouseMove(MouseEventArgs e)
+        internal bool OnMouseMove(Point mousePos, Point startMovingReference, bool multiSelect)
         {
-            var delta = e.GetPosition(App.main.mainViewer.MainCanvas);
-            if (mouseMoving)
+            if (mouseMoving && !multiSelect)
             {
+                xCoord = jointData._xPos = oldXCoord + mousePos.X - startMovingReference.X;
+                yCoord = jointData._yPos = oldYCoord + mousePos.Y - startMovingReference.Y;
+                jointData.RefreshTablePositions();
                 this.RenderTransform = new TranslateTransform
                 {
-                    X = delta.X,
-                    Y = delta.Y
+                    X = xCoord + App.main.mainViewer.XAxisOffset,
+                    Y = yCoord + App.main.mainViewer.XAxisOffset
                 };
-                var deltaX = delta.X - moveReference.X;
-                var deltaY = delta.Y - moveReference.Y;
-                jointData._xPos += deltaX;
-                jointData._yPos += deltaY;
-                xCoord += deltaX;
-                yCoord += deltaY;
-                moveReference = delta;
-                jointData.RefreshTablePositions();
                 return true;
             }
-
-            var xDifference = Math.Abs(delta.X - xCoord);
-            var yDifference = Math.Abs(delta.Y - yCoord);
-            var radialDifference = xDifference + yDifference;
-            if (iconOpacityRadius < radialDifference)
-                translateIcon.Opacity = 0.0;
-            else translateIcon.Opacity = DisplayConstants.MaxUnselectedOpacity * (1 - radialDifference / iconOpacityRadius);
+             if (!mouseMoving)
+            {
+                var xDifference = Math.Abs(mousePos.X - App.main.mainViewer.XAxisOffset - xCoord);
+                var yDifference = Math.Abs(mousePos.Y - App.main.mainViewer.YAxisOffset - yCoord);
+                var radialDifference = xDifference + yDifference;
+                if (iconOpacityRadius < radialDifference)
+                    translateIcon.Opacity = 0.0;
+                else
+                    translateIcon.Opacity = DisplayConstants.MaxUnselectedOpacity*
+                                            (1 - radialDifference/iconOpacityRadius);
+            }
             return false;
         }
 
@@ -139,19 +131,18 @@ namespace PMKS_Silverlight_App
         {
             if (!mouseIsContained) return;
             mouseMoving = true;
+            oldXCoord = xCoord;
+            oldYCoord = yCoord;
             translateIcon.Opacity = 1.0;
             //CaptureMouse();
             if (multiSelect) return;
-            moveReference = e.GetPosition(App.main.mainViewer.MainCanvas);
             e.Handled = true;
         }
 
         internal void OnMouseLeftButtonUp(MouseButtonEventArgs e, bool multiSelect)
         {
-            if (!mouseIsContained || multiSelect) return;
-            
-
-
+            if (multiSelect) return;
+                                           
             mouseMoving = false;
             //ReleaseMouseCapture();      
             e.Handled = true;

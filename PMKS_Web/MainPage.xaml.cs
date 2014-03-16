@@ -213,7 +213,7 @@ namespace PMKS_Silverlight_App
 #if trycatch
             try
             {
-#endif               
+#endif
                 mainViewer.ClearDynamicShapesAndBindings(same_topology);
                 PlayButton_Unchecked(null, null);
                 DefineInputDriver();
@@ -233,8 +233,8 @@ namespace PMKS_Silverlight_App
                         pmks.DeltaAngle = AngleIncrement;
                 }
                 else
-                {                           
-                    mainViewer.UpdateRanges(InitPositions);            
+                {
+                    mainViewer.UpdateRanges(InitPositions);
                     mainViewer.UpdateScaleAndCenter();
                     mainViewer.DrawStaticShapes(pmks, JointsInfo.Data, same_topology);
                     return;
@@ -282,7 +282,7 @@ namespace PMKS_Silverlight_App
                 }
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);
-              if (!same_topology)  mainViewer.UpdateScaleAndCenter(); 
+                mainViewer.UpdateScaleAndCenter();
                 mainViewer.DrawStaticShapes(pmks, JointsInfo.Data, same_topology);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds + "ms).");
@@ -443,6 +443,10 @@ namespace PMKS_Silverlight_App
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Ctrl || e.Key == Key.Shift) mainViewer.multiSelect = true;
+            if (e.Key == Key.Escape)
+            {
+                Panning = mainViewer.multiSelect = false;
+            }
             base.OnKeyDown(e);
         }
 
@@ -555,9 +559,9 @@ namespace PMKS_Silverlight_App
 
         private void PlayButton_Checked(object sender, RoutedEventArgs e)
         {
-            if (mainViewer.storyBoard == null) return;
+            if (mainViewer.animateMechanismStoryBoard == null) return;
             SlideShape1.Opacity = SlideShape2.Opacity = 0;
-            mainViewer.storyBoard.Begin();
+            mainViewer.animateMechanismStoryBoard.Begin();
             if (pmks.CycleType == CycleTypes.OneCycle)
             {
                 PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = 0;
@@ -572,8 +576,8 @@ namespace PMKS_Silverlight_App
 
         private void PlayButton_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (mainViewer.storyBoard == null) return;
-            mainViewer.storyBoard.Stop();
+            if (mainViewer.animateMechanismStoryBoard == null) return;
+            mainViewer.animateMechanismStoryBoard.Stop();
             PlayFowardBackShape1.Opacity = PlayFowardBackShape2.Opacity = PlayForwardShape.Opacity = 0;
             SlideShape1.Opacity = SlideShape2.Opacity = 1;
         }
