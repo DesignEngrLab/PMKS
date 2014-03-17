@@ -17,11 +17,11 @@ namespace PMKS_Silverlight_App
     {
         #region Fields
         public Simulator pmks;
-        private readonly List<List<string>> LinkIDs = new List<List<string>>();
-        private readonly List<string> JointTypes = new List<string>();
+        public readonly List<List<string>> LinkIDs = new List<List<string>>();
+        public readonly List<string> JointTypes = new List<string>();
         private readonly List<double[]> InitPositions = new List<double[]>();
         private int numJoints;
-        private int drivingIndex;
+        public int drivingIndex;
         public JointsViewModel JointsInfo;
         public LinksViewModel LinksInfo;
         #endregion
@@ -187,19 +187,32 @@ namespace PMKS_Silverlight_App
         }
 
         #region PMKS Controller Functions
-        internal void ParseData(Boolean SettingChanged = false, Boolean AutoPlay = true)
+
+        internal void SimulateOnMove(List<double[]> InitPositions)
+        {
+            pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
+            pmks.AssignPositions(InitPositions);
+            pmks.MaxSmoothingError = 0.1;
+            mainViewer.ClearDynamicShapesAndBindings();
+            PlayButton_Unchecked(null, null);
+            if (pmks.DegreesOfFreedom != 1)
+                return;
+            pmks.FindFullMovement();
+            mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);   
+        }
+
+
+        internal void ParseData(Boolean ForceRerunOfSimulation = false)
         {
             #region table validation
             if (JointsInfo == null) return;
             numJoints = TrimEmptyJoints();
-            if (pmks != null && !SettingChanged && SameTopology() && SameParameters()) return;
+            if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
 
-            var same_topology = false;
             if (pmks != null && SameTopology() && DataListsSameLength())
             {
                 DefinePositions();
                 pmks.AssignPositions(InitPositions);
-                same_topology = true;
             }
             if (!validLinks()) return;
 
@@ -214,7 +227,7 @@ namespace PMKS_Silverlight_App
             try
             {
 #endif
-                mainViewer.ClearDynamicShapesAndBindings(same_topology);
+                mainViewer.ClearDynamicShapesAndBindings();
                 PlayButton_Unchecked(null, null);
                 DefineInputDriver();
                 pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
@@ -236,7 +249,7 @@ namespace PMKS_Silverlight_App
                 {
                     mainViewer.UpdateRanges(InitPositions);
                     mainViewer.UpdateScaleAndCenter();
-                    mainViewer.DrawStaticShapes(pmks, JointsInfo.Data, same_topology);
+                    mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
                     return;
                 }
 
@@ -283,11 +296,10 @@ namespace PMKS_Silverlight_App
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);
                 mainViewer.UpdateScaleAndCenter();
-                mainViewer.DrawStaticShapes(pmks, JointsInfo.Data, same_topology);
+                mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
                 mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds + "ms).");
-                if (AutoPlay)
-                    PlayButton_Checked(null, null);
+                PlayButton_Checked(null, null);
                 #endregion
 #if trycatch
             }
@@ -445,7 +457,7 @@ namespace PMKS_Silverlight_App
             if (e.Key == Key.Ctrl || e.Key == Key.Shift) mainViewer.multiSelect = true;
             if (e.Key == Key.Escape)
             {
-                Panning = mainViewer.multiSelect = false;
+                Panning = mainViewer.multiSelect = mainViewer.inTheMidstMoving = false;
             }
             base.OnKeyDown(e);
         }
@@ -458,7 +470,7 @@ namespace PMKS_Silverlight_App
 
 
         private List<string> distinctLinkNames;
-        private bool Panning;
+        public bool Panning;
         private Point ScreenStartPoint;
         private Boolean DefineLinkIDS()
         {
@@ -527,8 +539,8 @@ namespace PMKS_Silverlight_App
             var center = e.GetPosition(mainViewer.MainCanvas);
             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
-            mainViewer.MoveScaleCanvasFromMouse(newScaleFactor, new Point(delta * center.X + oldTx,
-                      delta * center.Y + oldTy));
+            mainViewer.MoveScaleCanvas(newScaleFactor, delta * center.X + oldTx,
+                      delta * center.Y + oldTy, 0.0);
         }
 
         internal void MouseUpStopPanning(object sender, MouseEventArgs e)
@@ -552,9 +564,8 @@ namespace PMKS_Silverlight_App
         internal void OnMouseMove(object sender, MouseEventArgs e)
         {
             if (!Panning) return;
-            var newPanAnchor = new Point(e.GetPosition(this).X - ScreenStartPoint.X,
-                                    ScreenStartPoint.Y - e.GetPosition(this).Y);
-            mainViewer.MoveScaleCanvasFromMouse(mainViewer.ScaleFactor, newPanAnchor);
+            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, e.GetPosition(this).X - ScreenStartPoint.X,
+                                    ScreenStartPoint.Y - e.GetPosition(this).Y, DisplayConstants.ZoomTimeOnPan);
         }
 
         private void PlayButton_Checked(object sender, RoutedEventArgs e)
@@ -574,7 +585,7 @@ namespace PMKS_Silverlight_App
             }
         }
 
-        private void PlayButton_Unchecked(object sender, RoutedEventArgs e)
+        internal void PlayButton_Unchecked(object sender, RoutedEventArgs e)
         {
             if (mainViewer.animateMechanismStoryBoard == null) return;
             mainViewer.animateMechanismStoryBoard.Stop();
@@ -602,5 +613,14 @@ namespace PMKS_Silverlight_App
             mainViewer.Height = Application.Current.Host.Content.ActualHeight;
         }
 
+        private void RefreshButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Panning = mainViewer.multiSelect = mainViewer.inTheMidstMoving = false;
+            mainViewer.UpdateRanges(pmks);
+            mainViewer.FindVelocityAndAccelerationScalers(pmks);
+            mainViewer.UpdateScaleAndCenter();
+            mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
+            mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
+        }
     }
 }

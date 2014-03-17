@@ -55,15 +55,6 @@ namespace PMKS_Silverlight_App
                         Children.Add(new Path
                         {
                             Data =
-                                SlideShapeMaker.MakePSlotHole(j, groundLink, xOffset, yOffset, jointSize,
-                                    startingBufferRadius),
-                            Stroke = new SolidColorBrush(Colors.Black),
-                            Fill = new SolidColorBrush(Colors.White),
-                            StrokeThickness = strokeThickness
-                        });
-                        Children.Add(new Path
-                        {
-                            Data =
                                 SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
                                     startingBufferRadius),
                             Fill = new ImageBrush
@@ -77,6 +68,15 @@ namespace PMKS_Silverlight_App
                                 // or 
                             }
                             //Fill = new SolidColorBrush(Colors.DarkGray)
+                        });          
+                        Children.Add(new Path
+                        {
+                            Data =
+                                SlideShapeMaker.MakePSlotHole(j, groundLink, xOffset, yOffset, jointSize,
+                                    startingBufferRadius),
+                            Stroke = new SolidColorBrush(Colors.Black),
+                            Fill = new SolidColorBrush(Colors.White),
+                            StrokeThickness = strokeThickness
                         });
                         break;
                     case JointTypes.RP:

@@ -41,7 +41,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>Bin\Debug</OutputPath>
     <DefineConstants>TRACE;DEBUG;SILVERLIGHT, trycatch</DefineConstants>
     <NoStdLib>true</NoStdLib>
@@ -94,7 +94,6 @@
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\DynamicJointBaseShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\GroundLinkShape.cs" />
     <Compile Include="PageComponents\Shapes\SlideShapeMaker.cs" />
-    <Compile Include="PMKSBackgroundWorker.cs" />
     <Compile Include="URLArgumentHandling.cs" />
     <Compile Include="ExportKinematicData.cs" />
     <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">

@@ -17,7 +17,7 @@ namespace PMKS_Silverlight_App
     public abstract class DynamicJointBaseShape : JointBaseShape
     {
         public abstract void Redraw();
-        internal  void ClearBindings()
+        internal void ClearBindings()
         {
             ClearValue(CoordinatesProperty);
         }

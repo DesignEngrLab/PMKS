@@ -29,10 +29,8 @@ namespace PMKS_Silverlight_App
         public const double LinkStrokeSaturation = 0.7;
         public const double DefaultBufferRadius = 8.0;
         public const double InitialSlidingJointLengthMultiplier = 1.0;
-        public const double SingleJointLinkRadiusMultipler = 1.0;
+        public const double SingleJointLinkRadiusMultipler = 7.0;
         public const double RadiansToDegrees = 180.0 / Math.PI;
-        public const double TotalSize = 2000.0;
-        public const double MostNegativeAllowableCoordinate = -TotalSize / 2;
         public const double DeltaChangeInScaleToStaySame = 0.2;
         public const double DefaultBufferMultipler = 0.5;
         public const string TargetPathStreamFront =
@@ -47,7 +45,8 @@ namespace PMKS_Silverlight_App
         public const double UltimateWindowWidth = 1920;
         public const double MaxUnselectedOpacity = 0.7;
         public const double IconIncreaseRadiusFactor = 1.8;
-        public const double ZoomTime = 0.75;
+        public const double ZoomTimeOnRedraw = 0.75;
+        public const double ZoomTimeOnPan = 0.0;
         public const double ExtraAxesLengthFactor = 0.0;
     }
     public class JointTypeProvider

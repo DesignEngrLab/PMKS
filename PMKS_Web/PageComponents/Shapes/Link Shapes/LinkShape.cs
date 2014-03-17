@@ -16,8 +16,8 @@ namespace PMKS_Silverlight_App
         #region Fields
         public readonly double MinimumBufferRadius;
         private readonly List<Point> cvxCenters;
-        private readonly string name;
-        private link thisLink;
+        public link thisLink { get; private set; }
+        public int linkNum { get; private set; }
         private joint fixedJoint;
         private int updatedStateVars = 0;
         private GeometryGroup slideBorders, slideHoles;
@@ -28,7 +28,9 @@ namespace PMKS_Silverlight_App
         public LinkShape(int linkNum, link thisLink, double xOffset, double yOffset, double strokeThickness, double jointSize, Slider bufferRadiusSlider,
             double startingBufferRadius)
         {
-            name = thisLink.name;
+            this.linkNum = linkNum;
+            this.thisLink = thisLink;
+            Name = thisLink.name;
             Fill = new SolidColorBrush(AHSLtoARGBColor.Convert(DisplayConstants.LinkFillOpacity,
                                                                DisplayConstants.LinkHueMultiplier * linkNum,
                                                                DisplayConstants.LinkFillSaturation,
@@ -193,7 +195,6 @@ namespace PMKS_Silverlight_App
         {
             this.xOffset = xOffset;
             this.yOffset = yOffset;
-            thisLink = pmks.AllLinks.First(l => l.name.Equals(name));
             fixedJoint = thisLink.joints.FirstOrDefault(j => j.isGround && j.FixedWithRespectTo(thisLink));
             if (fixedJoint == null) fixedJoint = thisLink.joints.FirstOrDefault(j => j.FixedWithRespectTo(thisLink));
             if (fixedJoint == null) throw new Exception("Cannot display links that lack a fixed joint.");
@@ -255,6 +256,7 @@ namespace PMKS_Silverlight_App
                 }
             };
         }
+
 
     }
 

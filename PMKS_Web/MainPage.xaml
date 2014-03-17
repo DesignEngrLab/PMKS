@@ -5,9 +5,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:src="clr-namespace:PMKS_Silverlight_App"
     x:Class="PMKS_Silverlight_App.MainPage"
-    mc:Ignorable="d" Loaded="MainPage_Loaded_1" 
+    mc:Ignorable="d" Loaded="MainPage_Loaded_1"      MouseLeftButtonUp="MouseUpStopPanning"
     MouseWheel="OnMouseWheel" MouseMove="OnMouseMove" MouseLeave="MouseUpStopPanning" LostMouseCapture="MouseUpStopPanning"
-    MouseLeftButtonUp="MouseUpStopPanning" MouseLeftButtonDown="MouseDownStartPan"
+    MouseLeftButtonDown="MouseDownStartPan" 
     d:DesignHeight="800" d:DesignWidth="1000" SizeChanged="UserControl_SizeChanged">
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
@@ -81,6 +81,8 @@
         </Border>
 
         <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
-        <src:OutputStatus Grid.Row="1" Visibility="Visible"  x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
-    </Grid>
+        <src:OutputStatus Grid.Row="1" Visibility="Collapsed"  x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+
+        <Button Name="RefreshButton" Content="Redraw" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Click="RefreshButton_OnClick" Height="50" Width="50" Background="DodgerBlue" />
+    </Grid>                           
 </UserControl>

@@ -9,19 +9,21 @@ namespace PMKS_Silverlight_App
 {
     public class PositionPath : Path
     {
-        private readonly bool _isClosed;
+        private readonly bool _isClosed; 
+        public int index { get;private set; }
 
-        public PositionPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY, Boolean isClosed,
+        public PositionPath(int index, int pmksIndex, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY, Boolean isClosed,
             double penThick)
         {
+            this.index = index;
             _isClosed = isClosed;
             Data = new PathGeometry
                 {
                     Figures = new PathFigureCollection
                         {
-                            //LinearPath(index, JointParameters, jData, offsetX, offsetY)
+                            //LinearPath(pmksIndex, JointParameters, jData, offsetX, offsetY)
                             //,
-                            QuadraticPath(index, JointParameters, jData,  offsetX,  offsetY)
+                            QuadraticPath(pmksIndex, JointParameters, jData,  offsetX,  offsetY)
                         }
                 };
             StrokeThickness = penThick;
@@ -37,6 +39,7 @@ namespace PMKS_Silverlight_App
                 };
             SetBinding(OpacityProperty, binding);
         }
+
 
 
         public PathFigure LinearPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)

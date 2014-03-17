@@ -23,7 +23,7 @@ namespace PMKS_Silverlight_App
         protected Shape rotateIcon;
         protected Boolean isGround;
         private bool mouseMoving;
-        protected double yCoord, xCoord, xAxisOffset, yAxisOffset, angle, oldXCoord, oldYCoord;
+        public double yCoord, xCoord, xAxisOffset, yAxisOffset, angle, oldXCoord, oldYCoord;
         protected static ResourceDictionary shapeResourceDictionary;
         private readonly double iconOpacityRadius;
         private JointData jointData;
@@ -113,7 +113,7 @@ namespace PMKS_Silverlight_App
                 };
                 return true;
             }
-             if (!mouseMoving)
+            if (!mouseMoving)
             {
                 var xDifference = Math.Abs(mousePos.X - App.main.mainViewer.XAxisOffset - xCoord);
                 var yDifference = Math.Abs(mousePos.Y - App.main.mainViewer.YAxisOffset - yCoord);
@@ -121,8 +121,8 @@ namespace PMKS_Silverlight_App
                 if (iconOpacityRadius < radialDifference)
                     translateIcon.Opacity = 0.0;
                 else
-                    translateIcon.Opacity = DisplayConstants.MaxUnselectedOpacity*
-                                            (1 - radialDifference/iconOpacityRadius);
+                    translateIcon.Opacity = DisplayConstants.MaxUnselectedOpacity *
+                                            (1 - radialDifference / iconOpacityRadius);
             }
             return false;
         }
@@ -142,7 +142,7 @@ namespace PMKS_Silverlight_App
         internal void OnMouseLeftButtonUp(MouseButtonEventArgs e, bool multiSelect)
         {
             if (multiSelect) return;
-                                           
+
             mouseMoving = false;
             //ReleaseMouseCapture();      
             e.Handled = true;

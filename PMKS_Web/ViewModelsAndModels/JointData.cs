@@ -13,9 +13,9 @@ namespace PMKS_Silverlight_App
     public class JointData : DependencyObject, INotifyPropertyChanged
     {
 
-        public double _xPos;
-        public double _yPos;
-        public double _angle;
+        public double _xPos = double.NaN;
+        public double _yPos = double.NaN;
+        public double _angle = double.NaN;
         private string _jointType;
         private string _linkNames;
 
@@ -59,7 +59,7 @@ namespace PMKS_Silverlight_App
             set
             {
                 if (!double.TryParse(value, out _xPos))
-                    _xPos = double.NaN;           
+                    _xPos = double.NaN;
             }
         }
 
