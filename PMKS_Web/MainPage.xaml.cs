@@ -198,39 +198,36 @@ namespace PMKS_Silverlight_App
             if (pmks.DegreesOfFreedom != 1)
                 return;
             pmks.FindFullMovement();
-            mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);   
+            mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
         }
 
 
         internal void ParseData(Boolean ForceRerunOfSimulation = false)
         {
-            #region table validation
-            if (JointsInfo == null) return;
-            numJoints = TrimEmptyJoints();
-            if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
-
-            if (pmks != null && SameTopology() && DataListsSameLength())
-            {
-                DefinePositions();
-                pmks.AssignPositions(InitPositions);
-            }
-            if (!validLinks()) return;
-
-            if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
-            #endregion
-
-            #region Just Draw Axes and Joints
-            #endregion
-
-            #region Setting Up PMKS
 #if trycatch
             try
             {
 #endif
+                #region table validation
+                if (JointsInfo == null) return;
+                numJoints = TrimEmptyJoints();
+                if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
+                DefineInputDriver();
+
+                if (pmks != null && SameTopology() && DataListsSameLength())
+                {
+                    DefinePositions();
+                    pmks.AssignPositions(InitPositions);
+                }
+                else
+                {
+                    if (!validLinks()) return;
+
+                    if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
+                    pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
+                }
                 mainViewer.ClearDynamicShapesAndBindings();
                 PlayButton_Unchecked(null, null);
-                DefineInputDriver();
-                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
 
                 if (pmks.IsDyadic) status("The mechanism is comprised of only of dyads.");
                 else status("The mechanism has non-dyadic loops.");
@@ -252,7 +249,6 @@ namespace PMKS_Silverlight_App
                     mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
                     return;
                 }
-
 #if trycatch
             }
             catch (Exception e)
@@ -261,7 +257,7 @@ namespace PMKS_Silverlight_App
                 return;
             }
 #endif
-            #endregion
+                #endregion
 #if trycatch
             try
             {

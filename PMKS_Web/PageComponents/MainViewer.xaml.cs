@@ -258,53 +258,62 @@ namespace PMKS_Silverlight_App
 
         private List<UIElement> shapesCreatedDuringMove;
 
-        private void UpdateShapes(List<bool> changedJoints, ObservableCollection<JointData> data)
+        private void UpdateShapesDuringMove(List<bool> changedJoints, ObservableCollection<JointData> data, DoWorkEventArgs doWorkEventArgs)
         {
-            if (shapesCreatedDuringMove == null || !shapesCreatedDuringMove.Any())
+            try
             {
-                var linkNames = new List<string>();
-                shapesCreatedDuringMove = new List<UIElement>(Children.Where(s=>s is PositionPath));
-                for (int i = 0; i < changedJoints.Count; i++)
+                if (shapesCreatedDuringMove == null || !shapesCreatedDuringMove.Any())
+                    if (SimulateOnMove.CancellationPending) { doWorkEventArgs.Cancel = true; return; }
                 {
-                    if (!changedJoints[i]) continue;
-                    foreach (var linkName in data[i].LinkNamesList.Where(ln => !linkNames.Contains(ln)))
+                    var linkNames = new List<string>();
+                    shapesCreatedDuringMove = new List<UIElement>(Children.Where(s => s is PositionPath));
+                    for (int i = 0; i < changedJoints.Count; i++)
                     {
-                        linkNames.Add(linkName);
-                        shapesCreatedDuringMove.Add(linkName.Equals("ground")
-                            ? Children.First(s => s is GroundLinkShape)
-                            : Children.First(s => (s is LinkShape && linkName.Equals(((LinkShape)s).Name))));
+                        if (!changedJoints[i]) continue;
+                        foreach (var linkName in data[i].LinkNamesList.Where(ln => !linkNames.Contains(ln)))
+                        {
+                            linkNames.Add(linkName);
+                            shapesCreatedDuringMove.Add(linkName.Equals("ground")
+                                ? Children.First(s => s is GroundLinkShape)
+                                : Children.First(s => (s is LinkShape && linkName.Equals(((LinkShape)s).Name))));
+                        }
                     }
                 }
+
+                for (int index = shapesCreatedDuringMove.Count - 1; index >= 0; index--)
+                {
+                    if (SimulateOnMove.CancellationPending) { doWorkEventArgs.Cancel = true; return; }
+                    var child = shapesCreatedDuringMove[index];
+
+                    if (child is LinkShape)
+                    {
+                        ((LinkShape)child).ClearBindings();
+                        var thisLink = movingPMKS.AllLinks.Contains(((LinkShape)child).thisLink)
+                            ? ((LinkShape)child).thisLink
+                            : movingPMKS.AllLinks.First(c => c.name == ((LinkShape)child).thisLink.name);
+                        child = new LinkShape(((LinkShape)child).linkNum, thisLink, XAxisOffset, YAxisOffset, penThick,
+                            jointSize, null, DisplayConstants.DefaultBufferRadius / ScaleFactor);
+                    }
+                    else if (child is GroundLinkShape)
+                        child = new GroundLinkShape(movingPMKS.groundLink, XAxisOffset, YAxisOffset, penThick, jointSize,
+                            DisplayConstants.DefaultBufferRadius / ScaleFactor);
+                    else if (child is PositionPath)
+                    {
+                        child.ClearValue(OpacityProperty);
+                        var i = ((PositionPath)child).index;
+                        child = new PositionPath(i, movingPMKS.JointNewIndexFromOriginal[i], movingPMKS.JointParameters, data[i],
+                            XAxisOffset, YAxisOffset, movingPMKS.CycleType == CycleTypes.OneCycle,
+                            penThick);
+                    }                                
+                    shapesCreatedDuringMove.RemoveAt(index);
+                    shapesCreatedDuringMove.Add(child);
+                    Children.Remove(child);
+                    Children.Add(child);
+                }
             }
-
-            for (int index = shapesCreatedDuringMove.Count - 1; index >= 0; index--)
+            catch (Exception exc)
             {
-                var child = shapesCreatedDuringMove[index];
-                shapesCreatedDuringMove.RemoveAt(index);
-                Children.Remove(child);
-
-                if (child is LinkShape)
-                {
-                    ((LinkShape)child).ClearBindings();
-                    var thisLink = movingPMKS.AllLinks.Contains(((LinkShape)child).thisLink)
-                        ?((LinkShape)child).thisLink
-                        : movingPMKS.AllLinks.First(c => c.name == ((LinkShape)child).thisLink.name);
-                    child = new LinkShape(((LinkShape)child).linkNum, thisLink, XAxisOffset, YAxisOffset, penThick,
-                        jointSize, null, DisplayConstants.DefaultBufferRadius / ScaleFactor);
-                }
-                else if (child is GroundLinkShape)
-                    child = new GroundLinkShape(movingPMKS.groundLink, XAxisOffset, YAxisOffset, penThick, jointSize,
-                        DisplayConstants.DefaultBufferRadius / ScaleFactor);
-                else if (child is PositionPath)
-                {
-                    child.ClearValue(OpacityProperty);
-                    var i = ((PositionPath)child).index;
-                    child = new PositionPath(i, movingPMKS.JointNewIndexFromOriginal[i], movingPMKS.JointParameters, data[i],
-                        XAxisOffset, YAxisOffset, movingPMKS.CycleType == CycleTypes.OneCycle,
-                        penThick);
-                }
-                shapesCreatedDuringMove.Add(child);
-                Children.Add(child);
+                App.main.status("Error in UpdateShapesDuringMove: " + exc);
             }
         }
 
@@ -572,13 +581,13 @@ namespace PMKS_Silverlight_App
             if (movingPMKS.DegreesOfFreedom != 1)
                 return;
             movingPMKS.FindFullMovement();
-            App.main.Dispatcher.BeginInvoke(() => UpdateShapes(changedJoints, App.main.JointsInfo.Data));
+            App.main.Dispatcher.BeginInvoke(() => UpdateShapesDuringMove(changedJoints, App.main.JointsInfo.Data, e));
         }
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            App.main.Panning = false;
             SimulateOnMove.CancelAsync();
+            App.main.Panning = false;
             movingPMKS = null;
             shapesCreatedDuringMove = null;
             if (multiSelect) return;
