@@ -45,6 +45,10 @@ namespace PMKS_Silverlight_App
         public const double UltimateWindowWidth = 1920;
         public const double MaxUnselectedOpacity = 0.7;
         public const double IconIncreaseRadiusFactor = 1.8;
+        public const double ZoomStep = 1.05;
+        public const double ZoomTimeOnBtn = 0.15;//25;
+        public const double ZoomTimeOnKey = 0.0;//1;
+        public const double ZoomTimeOnMouseWheel = 0.0;//5;
         public const double ZoomTimeOnRedraw = 0.75;
         public const double ZoomTimeOnPan = 0.0;
         public const double ExtraAxesLengthFactor = 0.0;

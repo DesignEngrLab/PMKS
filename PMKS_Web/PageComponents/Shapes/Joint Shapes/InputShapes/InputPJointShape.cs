@@ -12,7 +12,7 @@ namespace PMKS_Silverlight_App
         public InputPJointShape(double jointSize, double strokeThickness, double xPosition, double yPosition, double xAxisOffset,
             double yAxisOffset, double angle, bool isGround, JointData jointData)
             : base(2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease, 2 * jointSize, strokeThickness, xPosition,
-            yPosition, xAxisOffset, yAxisOffset, angle, "PMoveArrows", jointData)
+            yPosition, xAxisOffset, yAxisOffset, angle, "PMoveArrows", "PRotateArrows", jointData)
         {
 
             jointShape = new Rectangle
@@ -25,10 +25,11 @@ namespace PMKS_Silverlight_App
                RenderTransformOrigin = new Point(0.5, 0.5),
                RenderTransform = new TranslateTransform
                {
-                   X = -Width,
-                   Y = -Height
+                   X = -jointSize * DisplayConstants.SliderRectangleWidthIncrease,
+                   Y = -jointSize
                }
            };
+            Children.Add(jointShape);
         }
 
     }

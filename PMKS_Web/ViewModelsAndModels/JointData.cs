@@ -99,17 +99,26 @@ namespace PMKS_Silverlight_App
         {
             get
             {
-                if (string.Equals(JointType, "P", StringComparison.InvariantCultureIgnoreCase) ||
-                 string.Equals(JointType, "RP", StringComparison.InvariantCultureIgnoreCase))
+                if (double.IsNaN(_angle))
                 {
-                    return (double.IsNaN(_angle)) ? "REQUIRED" : _angle.ToString(CultureInfo.InvariantCulture);
+                    if (string.Equals(JointType, "P", StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(JointType, "RP", StringComparison.InvariantCultureIgnoreCase))
+                        return "REQUIRED";
+                    else return "";
                 }
-                return (double.IsNaN(_angle)) ? "" : _angle.ToString(CultureInfo.InvariantCulture);
+                if (App.main.AngleUnits == AngleType.Radians)
+                    return _angle.ToString(CultureInfo.InvariantCulture);
+                else
+                    return (DisplayConstants.RadiansToDegrees * _angle).ToString(CultureInfo.InvariantCulture);
             }
             set
             {
                 if (!double.TryParse(value, out _angle))
                     _angle = double.NaN;
+                if (App.main.AngleUnits == AngleType.Degrees)
+                    _angle /= DisplayConstants.RadiansToDegrees;
+                while (_angle > Math.PI / 2) _angle -= Math.PI;
+                while (_angle < -Math.PI / 2) _angle += Math.PI;
             }
         }
 
@@ -268,6 +277,7 @@ namespace PMKS_Silverlight_App
             //    App.main.fileAndEditPanel.dataGrid.InvalidateMeasure();      
             onPropertyChanged(this, "XPos");
             onPropertyChanged(this, "YPos");
+            onPropertyChanged(this, "Angle");
         }
     }
 }

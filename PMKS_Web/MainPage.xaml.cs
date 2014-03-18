@@ -451,7 +451,12 @@ namespace PMKS_Silverlight_App
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Ctrl || e.Key == Key.Shift) mainViewer.multiSelect = true;
-            if (e.Key == Key.Escape)
+            else if (e.Key == Key.PageUp || e.Key == Key.Home || e.Key == Key.Add || e.Key == Key.Insert)
+                ZoomIn();
+            else if (e.Key == Key.PageDown || e.Key == Key.End || e.Key == Key.Subtract || e.Key == Key.Delete)
+                ZoomOut();
+
+            else if (e.Key == Key.Escape)
             {
                 Panning = mainViewer.multiSelect = mainViewer.inTheMidstMoving = false;
             }
@@ -467,7 +472,8 @@ namespace PMKS_Silverlight_App
 
         private List<string> distinctLinkNames;
         public bool Panning;
-        private Point ScreenStartPoint;
+        private Point panStartReference, mousePositionWRTPage, mousePositionWRTCanvas;
+
         private Boolean DefineLinkIDS()
         {
             distinctLinkNames = new List<string>();
@@ -527,18 +533,56 @@ namespace PMKS_Silverlight_App
 
         internal void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            double newScaleFactor = e.Delta > 1
-                ? mainViewer.ScaleFactor * 1.05
-                : mainViewer.ScaleFactor / 1.05;
-
+            var newScaleFactor = (e.Delta > 1)
+                ? mainViewer.ScaleFactor * DisplayConstants.ZoomStep
+                : mainViewer.ScaleFactor / DisplayConstants.ZoomStep;
             double delta = mainViewer.ScaleFactor - newScaleFactor;
-            var center = e.GetPosition(mainViewer.MainCanvas);
             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
-            mainViewer.MoveScaleCanvas(newScaleFactor, delta * center.X + oldTx,
-                      delta * center.Y + oldTy, 0.0);
+            mainViewer.MoveScaleCanvas(newScaleFactor, delta * mousePositionWRTCanvas.X + oldTx,
+                      delta * mousePositionWRTCanvas.Y + oldTy, DisplayConstants.ZoomTimeOnMouseWheel);
         }
 
+
+        internal void ZoomIn()
+        {
+            double newScaleFactor = mainViewer.ScaleFactor * DisplayConstants.ZoomStep;
+            double delta = mainViewer.ScaleFactor - newScaleFactor;
+            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+            var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            mainViewer.MoveScaleCanvas(newScaleFactor, delta * mousePositionWRTCanvas.X + oldTx,
+                      delta * mousePositionWRTCanvas.Y + oldTy, DisplayConstants.ZoomTimeOnKey);
+        }
+
+        internal void ZoomOut()
+        {
+            double newScaleFactor = mainViewer.ScaleFactor / DisplayConstants.ZoomStep;
+            double delta = mainViewer.ScaleFactor - newScaleFactor;
+            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+            var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            mainViewer.MoveScaleCanvas(newScaleFactor, delta * mousePositionWRTCanvas.X + oldTx,
+                      delta * mousePositionWRTCanvas.Y + oldTy, DisplayConstants.ZoomTimeOnKey);
+        }
+
+        private void ZoomInButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            double newScaleFactor = mainViewer.ScaleFactor * DisplayConstants.ZoomStep;
+            double delta = mainViewer.ScaleFactor - newScaleFactor;
+            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+            var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            mainViewer.MoveScaleCanvas(newScaleFactor, DisplayConstants.ZoomStep * oldTx + delta * (ActualWidth / 2) / newScaleFactor,
+                DisplayConstants.ZoomStep * oldTy + delta * (ActualHeight / 2) / newScaleFactor, DisplayConstants.ZoomTimeOnBtn);
+        }
+
+        private void ZoomOutButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            double newScaleFactor = mainViewer.ScaleFactor / DisplayConstants.ZoomStep;
+            double delta = mainViewer.ScaleFactor - newScaleFactor;
+            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+            var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            mainViewer.MoveScaleCanvas(newScaleFactor, oldTx / DisplayConstants.ZoomStep + delta * (ActualWidth / 2) / newScaleFactor,
+              oldTy / DisplayConstants.ZoomStep + delta * (ActualHeight / 2) / newScaleFactor, DisplayConstants.ZoomTimeOnBtn);
+        }
         internal void MouseUpStopPanning(object sender, MouseEventArgs e)
         {
             Panning = false;
@@ -549,19 +593,21 @@ namespace PMKS_Silverlight_App
             if (Panning) return;
             Panning = true;
             // Save starting point, used later when determining how much to scroll.
-            ScreenStartPoint = e.GetPosition(this);
+            panStartReference = e.GetPosition(this);
             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
-            ScreenStartPoint.X -= oldTx;
-            ScreenStartPoint.Y += oldTy;
+            panStartReference.X -= oldTx;
+            panStartReference.Y += oldTy;
         }
 
 
         internal void OnMouseMove(object sender, MouseEventArgs e)
         {
+            mousePositionWRTPage = e.GetPosition(this);
+            mousePositionWRTCanvas = e.GetPosition(mainViewer.MainCanvas);
             if (!Panning) return;
-            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, e.GetPosition(this).X - ScreenStartPoint.X,
-                                    ScreenStartPoint.Y - e.GetPosition(this).Y, DisplayConstants.ZoomTimeOnPan);
+            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, mousePositionWRTPage.X - panStartReference.X,
+                                    panStartReference.Y - mousePositionWRTPage.Y, DisplayConstants.ZoomTimeOnPan);
         }
 
         private void PlayButton_Checked(object sender, RoutedEventArgs e)
@@ -618,5 +664,6 @@ namespace PMKS_Silverlight_App
             mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
             mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
         }
+
     }
 }

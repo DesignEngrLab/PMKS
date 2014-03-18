@@ -17,7 +17,7 @@ namespace PMKS_Silverlight_App
 {
     public partial class GlobalSettings : UserControl
     {
-        
+
         public GlobalSettings()
         {
             InitializeComponent();
@@ -42,6 +42,8 @@ namespace PMKS_Silverlight_App
         {
             if (App.main == null) return;
             App.main.ParseData(true);
+            foreach (var jointData in App.main.JointsInfo.Data)
+                jointData.RefreshTablePositions();
         }
 
     }

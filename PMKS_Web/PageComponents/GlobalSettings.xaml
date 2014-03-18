@@ -9,7 +9,7 @@
                     <TextBox FontSize="16" MinHeight="38" MinWidth="60" Name="speedBox" />
                 </StackPanel>
             </Border>
-                <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed">
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Visible">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="40"/>

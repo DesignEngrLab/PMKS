@@ -82,7 +82,12 @@
 
         <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
         <src:OutputStatus Grid.Row="1" Visibility="Collapsed"  x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
-
-        <Button Name="RefreshButton" Content="Redraw" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Click="RefreshButton_OnClick" Height="50" Width="50" Background="DodgerBlue" />
+                         <StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Orientation="Horizontal" >
+        <Button Name="RefreshButton" Content="Redraw" Click="RefreshButton_OnClick" Background="DodgerBlue" FontSize="8" />
+            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch">
+                <Button Name="ZoomInButton" Click="ZoomInButton_OnClick" Content="zoom in" FontSize="8" />
+                <Button Name="ZoomOutButton" Click="ZoomOutButton_OnClick"  Content="zoom out" FontSize="8" />
+            </StackPanel>
+   </StackPanel>
     </Grid>                           
 </UserControl>

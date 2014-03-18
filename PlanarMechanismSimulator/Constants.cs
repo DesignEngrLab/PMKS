@@ -81,13 +81,13 @@ namespace PlanarMechanismSimulator
 
         #region Angle
 
-        internal static double angle(point start, point end)
+        public static double angle(point start, point end)
         {
             return angle(start.x, start.y, end.x, end.y);
         }
 
 
-        internal static double angle(double startX, double startY, double endX, double endY)
+        public static double angle(double startX, double startY, double endX, double endY)
         {
             return Math.Atan2(endY - startY, endX - startX);
         }

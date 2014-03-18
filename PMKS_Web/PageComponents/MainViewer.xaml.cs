@@ -26,7 +26,8 @@ namespace PMKS_Silverlight_App
          * minX, maxX are the bounds (negative or positive in this coord. space)
          * they are based on the amount of movement in the mechanism plus a border set by 
          *  DisplayConstants.AxesBuffer which is set to 1/4 in. or 24 pixels */
-        private double _kinematicSpaceWidth, _kinematicSpaceHeight, minX, maxX, minY, maxY;
+        private double _kinematicSpaceWidth, _kinematicSpaceHeight;
+        public double minX, maxX, minY, maxY;
 
         List<InputJointBaseShape> initialPositionIcons = new List<InputJointBaseShape>();
 
@@ -284,6 +285,8 @@ namespace PMKS_Silverlight_App
                 {
                     if (SimulateOnMove.CancellationPending) { doWorkEventArgs.Cancel = true; return; }
                     var child = shapesCreatedDuringMove[index];
+                    shapesCreatedDuringMove.RemoveAt(index);
+                    Children.Remove(child);
 
                     if (child is LinkShape)
                     {
@@ -304,16 +307,15 @@ namespace PMKS_Silverlight_App
                         child = new PositionPath(i, movingPMKS.JointNewIndexFromOriginal[i], movingPMKS.JointParameters, data[i],
                             XAxisOffset, YAxisOffset, movingPMKS.CycleType == CycleTypes.OneCycle,
                             penThick);
-                    }                                
-                    shapesCreatedDuringMove.RemoveAt(index);
+                    }
                     shapesCreatedDuringMove.Add(child);
-                    Children.Remove(child);
                     Children.Add(child);
                 }
             }
             catch (Exception exc)
             {
                 App.main.status("Error in UpdateShapesDuringMove: " + exc);
+                App.main.ParseData(true);
             }
         }
 
@@ -431,13 +433,13 @@ namespace PMKS_Silverlight_App
 
         internal void MoveScaleCanvas(double newScaleFactor, double xPanAnchor, double yPanAnchor, double zoomTime)
         {
+            if (stillZooming) return;
             var transform = MainCanvas.RenderTransform as CompositeTransform;
             if (transform == null || zoomTime == 0.0)
             {
                 ScaleFactor = newScaleFactor;
                 MainCanvas.RenderTransform = new CompositeTransform
                     {
-
                         ScaleX = ScaleFactor,
                         ScaleY = ScaleFactor,
                         TranslateX = xPanAnchor,
@@ -455,7 +457,6 @@ namespace PMKS_Silverlight_App
                 EasingFunction = easing,
                 Duration = duration,
                 From = ScaleFactor,
-                //To = ScaleFactor*1.05
                 To = newScaleFactor
             };
             var animateScaleY = new DoubleAnimation
@@ -463,7 +464,6 @@ namespace PMKS_Silverlight_App
                 EasingFunction = easing,
                 Duration = duration,
                 From = ScaleFactor,
-                //To = ScaleFactor * 1.05
                 To = newScaleFactor
             };
             var animateTranslateX = new DoubleAnimation
@@ -489,16 +489,26 @@ namespace PMKS_Silverlight_App
             Storyboard.SetTarget(animateTranslateY, transform);
             Storyboard.SetTargetProperty(animateTranslateY, new PropertyPath(CompositeTransform.TranslateYProperty));
 
-            var zoomSb = new Storyboard { Duration = duration };
+            zoomSb = new Storyboard { Duration = duration };
+            zoomSb.Completed += zoomSb_Completed;
             zoomSb.Children.Add(animateScaleX);
             zoomSb.Children.Add(animateScaleY);
             zoomSb.Children.Add(animateTranslateX);
             zoomSb.Children.Add(animateTranslateY);
-
+            stillZooming = true;
             zoomSb.Begin();
+
             ScaleFactor = newScaleFactor;
 
         }
+
+        private Boolean stillZooming;
+
+        void zoomSb_Completed(object sender, EventArgs e)
+        {
+            stillZooming = false;
+        }
+
         public void ClearDynamicShapesAndBindings()
         {
             for (int index = Children.Count - 1; index >= 0; index--)
@@ -556,6 +566,8 @@ namespace PMKS_Silverlight_App
 
         private BackgroundWorker SimulateOnMove;
         private Simulator movingPMKS;
+        private Storyboard zoomSb;
+
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
