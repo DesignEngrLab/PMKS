@@ -521,7 +521,10 @@ namespace PlanarMechanismSimulator.PositionSolving
                                    distthetaIntPosSquared, distthetaIntNegSquared,
                                    distthetaExtPosSquared, distthetaExtNegSquared
                                };
-            var minDist = distance.Where(x=>!double.IsNaN(x)).Min();
+            if (distance.All(double.IsNaN))
+                return new point(double.NaN, double.NaN);
+            var minDist = distance.Where(x => !double.IsNaN(x)).Min();
+            if (minDist > rAC * rAC) return new point(double.NaN, double.NaN);
             point jPoint;
             switch (distance.IndexOf(minDist))
             {
@@ -578,7 +581,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             var ptB = defineParallelLineThroughJoint(j, slideJoint, j.Link2);
 
             var actualSlideAngle = j.SlideAngle;
-            var thetaNeg = actualSlideAngle - Math.PI / 2;   
+            var thetaNeg = actualSlideAngle - Math.PI / 2;
             var rAC = j.Link1.DistanceBetweenSlides(j, circCenterJoint);
             var orthoPt = new point(circCenterJoint.x + rAC * Math.Cos(thetaNeg), circCenterJoint.y + rAC * Math.Sin(thetaNeg));
             var slopeA = Math.Tan(actualSlideAngle);
@@ -592,7 +595,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             var distPosSquared = Constants.distanceSqared(ptPos.x, ptPos.y, j.xNumerical, j.yNumerical);
 
             if (distNegSquared < distPosSquared)
-            return ptNeg;                            
+                return ptNeg;
             return ptPos;
         }
         #endregion
