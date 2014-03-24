@@ -41,7 +41,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty ErrorProperty
             = DependencyProperty.Register("Error", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(0.0001, GlobalSettingChanged));
+                                 new PropertyMetadata(0.001, GlobalSettingChanged));
         public double Error
         {
             get { return (double)GetValue(ErrorProperty); }
@@ -594,8 +594,18 @@ namespace PMKS_Silverlight_App
             Panning = true;
             // Save starting point, used later when determining how much to scroll.
             panStartReference = e.GetPosition(this);
-            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
-            var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            var oldTx = 0.0;
+            var oldTy = 0.0;
+            if (mainViewer.MainCanvas.RenderTransform is CompositeTransform)
+            {
+                oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+                oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            }
+            else if (mainViewer.MainCanvas.RenderTransform is MatrixTransform)
+            {
+                oldTx = ((MatrixTransform)mainViewer.MainCanvas.RenderTransform).Matrix.OffsetX;
+                oldTy = ((MatrixTransform)mainViewer.MainCanvas.RenderTransform).Matrix.OffsetY;
+            }
             panStartReference.X -= oldTx;
             panStartReference.Y += oldTy;
         }

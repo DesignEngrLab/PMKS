@@ -46,8 +46,13 @@ namespace PlanarMechanismSimulator.PositionSolving
             inputLink = links[numLinks - 2];
             groundLink = links[numLinks - 1];
             this.gearsData = gearsData;
-            maximumDeltaX = Constants.XRangeLimitFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial));
-            maximumDeltaY = Constants.XRangeLimitFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial));
+            /* this has been commented out because occasionally a mechanism can be defined in which all joints have the
+             * same x or same y value. Imainge a quick return with all joints starting on the x-axis. */
+            //maximumDeltaX = Constants.XRangeLimitFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial));
+            //maximumDeltaY = Constants.YRangeLimitFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial));
+
+            maximumDeltaX = maximumDeltaY = Math.Max(Constants.XRangeLimitFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial)),
+             Constants.YRangeLimitFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial)));
         }
 
         internal Boolean DefineNewPositions(double positionChange)
@@ -326,7 +331,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                 NDPS = new NonDyadicPositionSolver(this);
                 var NDPSError = 0.0;
                 if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
-                PositionError = NDPSError;
+                PositionError = Math.Sqrt(NDPSError);
 #if trycatch
                 }
                 catch (Exception e)
@@ -762,7 +767,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                     j.positionKnown = KnownState.Fully;
                     xNew -= j.xNumerical;
                     yNew -= j.yNumerical;
-                    PositionError = xNew * xNew + yNew * yNew;
+                    PositionError = Math.Sqrt(xNew * xNew + yNew * yNew);
                 }
             }
         }
@@ -773,7 +778,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             j.positionKnown = KnownState.Fully;
             xNew -= j.xNumerical;
             yNew -= j.yNumerical;
-            PositionError = xNew * xNew + yNew * yNew;
+            PositionError = Math.Sqrt(xNew * xNew + yNew * yNew);
         }
 
         /* ugh, this function is taking the most time.
