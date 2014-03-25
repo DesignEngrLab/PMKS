@@ -48,8 +48,6 @@ namespace PMKS_Silverlight_App
                 {
 
                     var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
-                    //while (slideAngle < -Math.PI / 2) slideAngle += Math.PI;
-                    //while (slideAngle > Math.PI / 2) slideAngle -= Math.PI;
                     var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
                              Math.Cos(slideAngle);
                     var dy = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *

@@ -85,15 +85,6 @@ namespace PMKS_Silverlight_App
                             Children.Add(new Path
                               {
                                   Data =
-                                      SlideShapeMaker.MakeRPSlotHole(j, groundLink, xOffset, yOffset, jointSize,
-                                          startingBufferRadius),
-                                  Stroke = new SolidColorBrush(Colors.Black),
-                                  Fill = new SolidColorBrush(Colors.White),
-                                  StrokeThickness = strokeThickness
-                              });
-                            Children.Add(new Path
-                              {
-                                  Data =
                                       SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
                                           startingBufferRadius),
                                   Fill = new ImageBrush
@@ -106,6 +97,15 @@ namespace PMKS_Silverlight_App
                                       // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
                                       // or 
                                   }
+                              });   
+                            Children.Add(new Path
+                              {
+                                  Data =
+                                      SlideShapeMaker.MakeRPSlotHole(j, groundLink, xOffset, yOffset, jointSize,
+                                          startingBufferRadius),
+                                  Stroke = new SolidColorBrush(Colors.Black),
+                                  Fill = new SolidColorBrush(Colors.White),
+                                  StrokeThickness = strokeThickness
                               });
                         }
                         else

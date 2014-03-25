@@ -550,8 +550,6 @@ namespace PlanarMechanismSimulator.PositionSolving
                     jPoint = new point(xExtNeg, yExtNeg);
                     break;
             }
-            //while (angleChange < -Math.PI / 2) angleChange += Math.PI;
-            //while (angleChange > Math.PI / 2) angleChange -= Math.PI;
             return jPoint;
         }
 
@@ -722,25 +720,37 @@ namespace PlanarMechanismSimulator.PositionSolving
             return ptPos;
         }
 
-        private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink, double angleChange)
+        private double solveRotateSlotToPin(joint fixedJoint, joint slideJoint, link thisLink, double j2j_angle)
         {
-            var distanceBetweenJoints = Constants.distance(fixedJoint, slideJoint);
             var dist2Slide = thisLink.DistanceBetweenSlides(slideJoint, fixedJoint);
-            if (dist2Slide > distanceBetweenJoints)
+            if (Constants.sameCloseZero(dist2Slide)) return j2j_angle;
+            var distanceBetweenJoints = Constants.distance(fixedJoint, slideJoint);
+            if (Math.Abs(dist2Slide) > distanceBetweenJoints)
             {
                 posResult = PositionAnalysisResults.InvalidPosition;
                 return double.NaN;
             }
-            var oldDistance = Constants.distance(fixedJoint.xLast, fixedJoint.yLast,
-                slideJoint.xLast, slideJoint.yLast);
-            var changeInSlideAngle = Math.Asin(dist2Slide / distanceBetweenJoints) - Math.Asin(dist2Slide / oldDistance);
+            var changeInSlideAngle = Math.Asin(dist2Slide / distanceBetweenJoints);
+            return j2j_angle + changeInSlideAngle - slideJoint.InitSlideAngle - thisLink.AngleLast;
 
-            var angleNegative = thisLink.AngleLast + angleChange - changeInSlideAngle;
-            var anglePositive = thisLink.AngleLast + angleChange + changeInSlideAngle;
+            //var slideAngleSmall = j2j_angle + changeInSlideAngle;
+            //var linkAngleSmall = slideAngleSmall - slideJoint.InitSlideAngle;
+            //while (linkAngleSmall > Math.PI) linkAngleSmall -= 2 * Math.PI;
+            //while (linkAngleSmall < -Math.PI) linkAngleSmall += 2 * Math.PI;
 
-            if (Math.Abs(angleNegative - thisLink.AngleNumerical) > Math.Abs(anglePositive - thisLink.AngleNumerical))
-                return anglePositive - thisLink.Angle;
-            else return angleNegative - thisLink.Angle;
+            //var slideAngleBig = j2j_angle + (Math.Sign(changeInSlideAngle) * Math.PI / 2 - changeInSlideAngle);
+            //var linkAngleBig = slideAngleBig - slideJoint.InitSlideAngle;
+            //while (linkAngleBig > Math.PI) linkAngleBig -= 2 * Math.PI;
+            //while (linkAngleBig < -Math.PI) linkAngleBig += 2 * Math.PI;
+
+            //var linkAngleNum = thisLink.AngleNumerical;
+            //while (linkAngleNum > Math.PI) linkAngleNum -= 2 * Math.PI;
+            //while (linkAngleNum < -Math.PI) linkAngleNum += 2 * Math.PI;
+
+            //var errorNeg = Math.Abs(linkAngleSmall - linkAngleNum);
+            //var errorPos = Math.Abs(linkAngleBig - linkAngleNum);
+
+            //return (true || errorNeg < errorPos) ? linkAngleSmall - thisLink.AngleLast : linkAngleBig - thisLink.AngleLast;
         }
         #endregion
 
@@ -792,7 +802,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
                 angleChange = thisLink.Angle - thisLink.AngleLast;
             if (double.IsNaN(angleChange))
-            {     //var j1 = knownJoint;
+            {
                 if (!knownJoint.FixedWithRespectTo(thisLink))
                 {
                     knownJoint = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
@@ -810,10 +820,8 @@ namespace PlanarMechanismSimulator.PositionSolving
                 var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
                 angleChange = new_j2j_Angle - old_j2j_Angle;
                 if (j2.SlidingWithRespectTo(thisLink))
-                    angleChange = solveRotateSlotToPin(knownJoint, j2, thisLink, angleChange);
+                    angleChange = solveRotateSlotToPin(knownJoint, j2, thisLink, new_j2j_Angle);
             }
-            //while (angleChange < -Math.PI / 2) angleChange += Math.PI;
-            //while (angleChange > Math.PI / 2) angleChange -= Math.PI;
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = KnownState.Fully;
 

@@ -100,12 +100,8 @@ namespace PlanarMechanismSimulator
             while (linkAngle > Math.PI / 2) linkAngle -= Math.PI;
             Angle = AngleInitial = AngleNumerical = AngleLast = linkAngle;
             foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
-            {
-                j.InitSlideAngle -= AngleInitial;
-                //while (j.InitSlideAngle < -Math.PI / 2) j.InitSlideAngle += Math.PI;
-                //while (j.InitSlideAngle > Math.PI / 2) j.InitSlideAngle -= Math.PI;
-            }
-
+             j.InitSlideAngle -= AngleInitial;
+              
             lengths = new Dictionary<int, double>();
 
             distanceToSlideLine = new Dictionary<int, double>();

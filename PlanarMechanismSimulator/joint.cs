@@ -37,7 +37,7 @@ namespace PlanarMechanismSimulator
         /// <summary>
         /// The initial slide angle
         /// </summary>
-       public double InitSlideAngle = Double.NaN;
+        public double InitSlideAngle = Double.NaN;
         //public double InitSlideAngle = 0.0;
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
         internal double SlideVelocity { get; set; }
@@ -97,7 +97,9 @@ namespace PlanarMechanismSimulator
             {
                 InitSlideAngle = 0.0;
             }
-                //throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
+            while (InitSlideAngle > Math.PI / 2) InitSlideAngle -= Math.PI;
+            while (InitSlideAngle < -Math.PI / 2) InitSlideAngle += Math.PI;
+            //throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
         private joint() { }
@@ -149,9 +151,9 @@ namespace PlanarMechanismSimulator
                 yLast = yLast,
                 yNumerical = yNumerical,
                 isGround = isGround,
-                jointType = jointType  ,
+                jointType = jointType,
                 ax = ax,
-                ay=ay,
+                ay = ay,
                 SlideAcceleration = SlideAcceleration,
                 positionKnown = positionKnown,
                 SlideLimits = SlideLimits,
@@ -160,7 +162,7 @@ namespace PlanarMechanismSimulator
                 vxLast = vxLast,
                 vyLast = vyLast,
                 SlideVelocity = SlideVelocity
-               
+
             };
         }
     }

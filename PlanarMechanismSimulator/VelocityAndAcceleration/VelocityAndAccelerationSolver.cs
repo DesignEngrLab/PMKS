@@ -275,17 +275,17 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, false, true, true));
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
             /**** Set velocity of any links connected to input by a P joint and remove link from unknowns ****/
-            RecursiveAssignmentOfKnownPAngularVelocities(groundLink);    
+            RecursiveAssignmentOfKnownPAngularVelocities(groundLink);
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
             RecursiveAssignmentOfKnownPAngularVelocities(inputLink);
 
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
             /**** Then there is the matter of the sliding velocities.. ****/
-            for (int i = 0; i < inputJointIndex; i++)
+            for (int i = 0; i < links.Count; i++)
             {
                 var j = joints[i];
-                if (j.jointType == JointTypes.R && i<firstInputJointIndex) unknownObjects.Add(j);
+                if (j.jointType == JointTypes.R && i < firstInputJointIndex) unknownObjects.Add(j);
                 else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
                              j.Link2 != inputLink && j.Link2 != groundLink)
                     unknownObjects.Add(j);
@@ -357,8 +357,8 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                     foreach (
                         var eq in
                             equations.Where(
-                                eq => eq is VelocityJointToJoint && ((VelocityJointToJoint) eq).link == otherLink))
-                        ((VelocityJointToJoint) eq).linkIsKnown = true;
+                                eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
+                        ((VelocityJointToJoint)eq).linkIsKnown = true;
                     RecursiveAssignmentOfKnownPAngularVelocities(otherLink);
                 }
             }
@@ -375,7 +375,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             Task.WaitAll(forwardTask, backwardTask);
 
             if (matrixOrders[0] == null & matrixOrders[1] == null) return;
-                //throw new Exception("No valid matrix formulations found.");
+            //throw new Exception("No valid matrix formulations found.");
             if (matrixOrders[0] == null)
             {
                 matrixOrders[0] = matrixOrders[1];
@@ -437,38 +437,38 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
 
         internal Boolean Solve()
         {
-            if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
-            #if trycatch
+            SetInitialInputAndGroundJointStates();
+            if (true||SkipMatrixInversionUntilSparseSolverIsDefined) return false;
+#if trycatch
             try
             {
 #endif
-                SetInitialInputAndGroundJointStates();
-                var rows = new List<double[]>();
-                var answers = new List<double>();
-                foreach (var eq in equations)
-                    if (eq is JointToJointEquation)
-                    {
-                        rows.Add(((JointToJointEquation)eq).GetRow1Coefficients());
-                        answers.Add(((JointToJointEquation)eq).GetRow1Constant());
-                        rows.Add(((JointToJointEquation)eq).GetRow2Coefficients());
-                        answers.Add(((JointToJointEquation)eq).GetRow2Constant());
-                    }
-                    else
-                    {
-                        rows.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowCoefficients());
-                        answers.Add(0.0);
-                    }
-                var rowOrdering = ChooseBestRowOrder(rows);
-                if (rowOrdering == null) return false;
-                for (int j = 0; j < numUnknowns; j++)
+            var rows = new List<double[]>();
+            var answers = new List<double>();
+            foreach (var eq in equations)
+                if (eq is JointToJointEquation)
                 {
-                    StarMath.SetRow(j, A, rows[rowOrdering[j]]);
-                    b[j] = answers[rowOrdering[j]];
+                    rows.Add(((JointToJointEquation)eq).GetRow1Coefficients());
+                    answers.Add(((JointToJointEquation)eq).GetRow1Constant());
+                    rows.Add(((JointToJointEquation)eq).GetRow2Coefficients());
+                    answers.Add(((JointToJointEquation)eq).GetRow2Constant());
                 }
-                var x = StarMath.solve(A, b);
-                if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
-                return PutStateVarsBackInJointsAndLinks(x);
-            #if trycatch
+                else
+                {
+                    rows.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowCoefficients());
+                    answers.Add(0.0);
+                }
+            var rowOrdering = ChooseBestRowOrder(rows);
+            if (rowOrdering == null) return false;
+            for (int j = 0; j < numUnknowns; j++)
+            {
+                StarMath.SetRow(j, A, rows[rowOrdering[j]]);
+                b[j] = answers[rowOrdering[j]];
+            }
+            var x = StarMath.solve(A, b);
+            if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
+            return PutStateVarsBackInJointsAndLinks(x);
+#if trycatch
             }
             catch { return false; }
 #endif

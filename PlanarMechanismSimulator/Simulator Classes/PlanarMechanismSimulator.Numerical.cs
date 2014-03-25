@@ -14,7 +14,12 @@ namespace PlanarMechanismSimulator
                 joints[i].yNumerical = joints[i].yLast + joints[i].vy * deltaTime + 0.5 * joints[i].ay * deltaTime * deltaTime;
             }
             for (int i = 0; i < inputLinkIndex; i++)
+            {
                 links[i].AngleNumerical = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
+
+                //while (links[i].AngleNumerical > Math.PI) links[i].AngleNumerical -= 2 * Math.PI;
+                //while (links[i].AngleNumerical < -Math.PI) links[i].AngleNumerical += 2 * Math.PI;
+            }
         }
 
         private void NumericalVelocity(double deltaTime, List<joint> joints, List<link> links)
@@ -136,7 +141,7 @@ namespace PlanarMechanismSimulator
             double vNext = LinkParameters.Parameters[nextQueryIndex][LinkIndex, 1];
             double aPrevious = LinkParameters.Parameters[prevQueryIndex][LinkIndex, 2];
             double aNext = LinkParameters.Parameters[nextQueryIndex][LinkIndex, 2];
-            
+
             while (posPrevious < 0) { posPrevious += Constants.FullCircle; }
             while (posNext < 0) { posNext += Constants.FullCircle; }
             while (posPrevious >= Constants.FullCircle) { posPrevious -= Constants.FullCircle; }

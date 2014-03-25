@@ -222,11 +222,10 @@ namespace PlanarMechanismSimulator
             bool forwardSuccess = posFinder.DefineNewPositions(smallTimeStep * InputSpeed);
             if (forwardSuccess)
             {
-                NumericalVelocity(smallTimeStep, joints, links);
                 for (int i = 0; i < numJoints; i++)
                 {
                     ForwardJointParams[i, 0] = joints[i].x;
-                    ForwardJointParams[i, 0] = joints[i].y;
+                    ForwardJointParams[i, 1] = joints[i].y;
                 }
                 for (int i = 0; i < numLinks; i++)
                     ForwardLinkParams[i] = links[i].Angle;
@@ -237,11 +236,10 @@ namespace PlanarMechanismSimulator
             bool backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep * InputSpeed);
             if (backwardSuccess)
             {
-                NumericalVelocity(-smallTimeStep, joints, links);
                 for (int i = 0; i < numJoints; i++)
                 {
                     BackwardJointParams[i, 0] = joints[i].x;
-                    BackwardJointParams[i, 0] = joints[i].y;
+                    BackwardJointParams[i, 1] = joints[i].y;
                 }
                 for (int i = 0; i < numLinks; i++)
                     BackwardLinkParams[i] = links[i].Angle;
