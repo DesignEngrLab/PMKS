@@ -761,7 +761,8 @@ namespace PlanarMechanismSimulator.PositionSolving
 
         private void assignJointPosition(joint j, link thisLink, double xNew, double yNew)
         {
-            if (double.IsInfinity(xNew) || double.IsInfinity(yNew) ||
+            if (posResult == PositionAnalysisResults.InvalidPosition || 
+                double.IsInfinity(xNew) || double.IsInfinity(yNew) ||
                 double.IsNaN(xNew) || double.IsNaN(yNew))
                 posResult = PositionAnalysisResults.InvalidPosition;
             else
@@ -820,6 +821,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                 angleChange = new_j2j_Angle - old_j2j_Angle;
                 if (j2.SlidingWithRespectTo(thisLink))
                     angleChange = solveRotateSlotToPin(knownJoint, j2, thisLink, new_j2j_Angle);
+                if (posResult == PositionAnalysisResults.InvalidPosition) return;
             }
             thisLink.Angle = thisLink.AngleLast + angleChange;
             thisLink.AngleIsKnown = KnownState.Fully;

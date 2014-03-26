@@ -112,8 +112,12 @@ namespace PlanarMechanismSimulator
                     var iJoint = joints[i];
                     var jJoint = joints[j];
                     if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
+                    {
                         lengths.Add(numJoints * i + j,
                                 Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
+                        if (iJoint.jointType == JointTypes.P) addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                        if (jJoint.jointType == JointTypes.P) addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                    }
                     else if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
                         addSlideDictionaryEntry(iJoint, jJoint, i, j);

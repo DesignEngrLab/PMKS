@@ -25,6 +25,7 @@ namespace PlanarMechanismSimulator
 
         public double[] InputRange { get; private set; }
 
+        public int DrivingIndex { get; private set; }
 
         /// <summary>
         /// Gets the new index of a joint (value in the cell) given the original position.
@@ -273,12 +274,13 @@ namespace PlanarMechanismSimulator
 
 
         private void CreateLinkAndPositionDetails(IList<List<string>> LinkIDs, IList<string> JointTypeStrings,
-                                                int DriverIndex, IList<double[]> Positions = null)
+                                                int drivingIndex, IList<double[]> Positions = null)
         {
 #if trycatch
             try
             {
 #endif
+            DrivingIndex = drivingIndex;
             if (JointTypeStrings.Count != LinkIDs.Count)
                 throw new Exception("The number of PivotTypes (which is " + numJoints + ") must be the"
                                     + "same as the number of LinkID pairs (which is " + LinkIDs.Count + ")");
@@ -344,7 +346,7 @@ namespace PlanarMechanismSimulator
                 if (newLinkIDs[i].Count > 1)
                     AllJoints[i].Link2 = AllLinks[linkNames.IndexOf(newLinkIDs[i][1])];
             }
-            inputJoint = AllJoints[DriverIndex];
+            inputJoint = AllJoints[DrivingIndex];
             if (inputJoint.jointType == JointTypes.G) throw new Exception("Input cannot be gear teeth.");
             if (inputJoint.jointType == JointTypes.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
             if (!inputJoint.Link1.isGround)

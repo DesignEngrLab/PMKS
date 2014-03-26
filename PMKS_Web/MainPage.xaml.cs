@@ -188,19 +188,7 @@ namespace PMKS_Silverlight_App
 
         #region PMKS Controller Functions
 
-        internal void SimulateOnMove(List<double[]> InitPositions)
-        {
-            pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
-            pmks.AssignPositions(InitPositions);
-            pmks.MaxSmoothingError = 0.1;
-            mainViewer.ClearDynamicShapesAndBindings();
-            PlayButton_Unchecked(null, null);
-            if (pmks.DegreesOfFreedom != 1)
-                return;
-            pmks.FindFullMovement();
-            mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
-        }
-
+     
 
         internal void ParseData(Boolean ForceRerunOfSimulation = false)
         {
@@ -214,7 +202,7 @@ namespace PMKS_Silverlight_App
                 if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
                 DefineInputDriver();
 
-                if (pmks != null && SameTopology() && DataListsSameLength())
+                if (pmks != null && SameTopology() && DataListsSameLength() && drivingIndex==pmks.DrivingIndex)
                 {
                     DefinePositions();
                     pmks.AssignPositions(InitPositions);
