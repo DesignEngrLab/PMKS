@@ -648,6 +648,8 @@ namespace PMKS_Silverlight_App
         private void timeSlider_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             PlayButton_Unchecked(sender, e);
+            if (e.ClickCount == 2)
+                timeSlider.Value = 0.0;
         }
 
         private void timeSlider_MouseWheel(object sender, MouseWheelEventArgs e)

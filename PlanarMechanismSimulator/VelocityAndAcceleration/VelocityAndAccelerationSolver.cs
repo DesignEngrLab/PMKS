@@ -438,7 +438,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
         internal Boolean Solve()
         {
             SetInitialInputAndGroundJointStates();
-            if (true||SkipMatrixInversionUntilSparseSolverIsDefined) return false;
+            if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
 #if trycatch
             try
             {

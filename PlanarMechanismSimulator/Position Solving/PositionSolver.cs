@@ -731,26 +731,25 @@ namespace PlanarMechanismSimulator.PositionSolving
                 return double.NaN;
             }
             var changeInSlideAngle = Math.Asin(dist2Slide / distanceBetweenJoints);
-            return j2j_angle + changeInSlideAngle - slideJoint.InitSlideAngle - thisLink.AngleLast;
 
-            //var slideAngleSmall = j2j_angle + changeInSlideAngle;
-            //var linkAngleSmall = slideAngleSmall - slideJoint.InitSlideAngle;
-            //while (linkAngleSmall > Math.PI) linkAngleSmall -= 2 * Math.PI;
-            //while (linkAngleSmall < -Math.PI) linkAngleSmall += 2 * Math.PI;
+            var slideAnglePos = j2j_angle + changeInSlideAngle;
+            var slideAngleNeg = j2j_angle - changeInSlideAngle;
+            var lastSlideAngle = slideJoint.InitSlideAngle + thisLink.AngleLast;
+            var deltaAnglePos = slideAnglePos - lastSlideAngle;
+            while (deltaAnglePos > Math.PI/2) deltaAnglePos -=  Math.PI;
+            while (deltaAnglePos < -Math.PI/2) deltaAnglePos += Math.PI;
+            var deltaAngleNeg = slideAngleNeg - lastSlideAngle;
+            while (deltaAngleNeg > Math.PI/2) deltaAngleNeg -=  Math.PI;
+            while (deltaAngleNeg < -Math.PI/2) deltaAngleNeg += Math.PI;
 
-            //var slideAngleBig = j2j_angle + (Math.Sign(changeInSlideAngle) * Math.PI / 2 - changeInSlideAngle);
-            //var linkAngleBig = slideAngleBig - slideJoint.InitSlideAngle;
-            //while (linkAngleBig > Math.PI) linkAngleBig -= 2 * Math.PI;
-            //while (linkAngleBig < -Math.PI) linkAngleBig += 2 * Math.PI;
+            var deltaAngleNum = thisLink.AngleNumerical - thisLink.AngleLast;
+            while (deltaAngleNum > Math.PI) deltaAngleNum -= 2 * Math.PI;
+            while (deltaAngleNum < -Math.PI) deltaAngleNum += 2 * Math.PI;
 
-            //var linkAngleNum = thisLink.AngleNumerical;
-            //while (linkAngleNum > Math.PI) linkAngleNum -= 2 * Math.PI;
-            //while (linkAngleNum < -Math.PI) linkAngleNum += 2 * Math.PI;
+            var errorPos = Math.Abs(deltaAnglePos - deltaAngleNum);
+            var errorNeg = Math.Abs(deltaAngleNeg - deltaAngleNum);
 
-            //var errorNeg = Math.Abs(linkAngleSmall - linkAngleNum);
-            //var errorPos = Math.Abs(linkAngleBig - linkAngleNum);
-
-            //return (true || errorNeg < errorPos) ? linkAngleSmall - thisLink.AngleLast : linkAngleBig - thisLink.AngleLast;
+            return (errorPos < errorNeg) ? deltaAnglePos : deltaAngleNeg;
         }
         #endregion
 

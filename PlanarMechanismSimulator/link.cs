@@ -100,8 +100,8 @@ namespace PlanarMechanismSimulator
             while (linkAngle > Math.PI / 2) linkAngle -= Math.PI;
             Angle = AngleInitial = AngleNumerical = AngleLast = linkAngle;
             foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
-             j.InitSlideAngle -= AngleInitial;
-              
+                j.InitSlideAngle -= AngleInitial;
+
             lengths = new Dictionary<int, double>();
 
             distanceToSlideLine = new Dictionary<int, double>();
@@ -111,25 +111,19 @@ namespace PlanarMechanismSimulator
                 {
                     var iJoint = joints[i];
                     var jJoint = joints[j];
-                    if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
-                        continue;
                     if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                         lengths.Add(numJoints * i + j,
                                 Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                    if (iJoint.jointType == JointTypes.P)
+                    else if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
                         addSlideDictionaryEntry(iJoint, jJoint, i, j);
                         addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
                     }
-                    if (jJoint.jointType == JointTypes.P)
+                    else if (!iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
                     {
                         addSlideDictionaryEntry(jJoint, iJoint, j, i);
                         addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
                     }
-                    if (iJoint.jointType == JointTypes.RP)
-                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
-                    if (jJoint.jointType == JointTypes.RP)
-                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
                 }
         }
 
