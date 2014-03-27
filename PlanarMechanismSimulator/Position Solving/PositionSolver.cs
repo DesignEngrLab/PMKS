@@ -743,8 +743,8 @@ namespace PlanarMechanismSimulator.PositionSolving
             while (deltaAngleNeg < -Math.PI/2) deltaAngleNeg += Math.PI;
 
             var deltaAngleNum = thisLink.AngleNumerical - thisLink.AngleLast;
-            while (deltaAngleNum > Math.PI) deltaAngleNum -= 2 * Math.PI;
-            while (deltaAngleNum < -Math.PI) deltaAngleNum += 2 * Math.PI;
+            while (deltaAngleNum > Math.PI) deltaAngleNum -= Constants.FullCircle;
+            while (deltaAngleNum < -Math.PI) deltaAngleNum += Constants.FullCircle;
 
             var errorPos = Math.Abs(deltaAnglePos - deltaAngleNum);
             var errorNeg = Math.Abs(deltaAngleNeg - deltaAngleNum);

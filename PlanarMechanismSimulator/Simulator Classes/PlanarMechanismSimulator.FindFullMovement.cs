@@ -95,7 +95,7 @@ namespace PlanarMechanismSimulator
                 return;
             }
             // if the simulation did go all the way around then, we should be careful to ensure is connects correctly.
-            var cyclePeriodTime = 2 * Math.PI / Math.Abs(InputSpeed);
+            var cyclePeriodTime = Constants.FullCircle / Math.Abs(InputSpeed);
             if (DoesMechanismRepeatOnCrankCycle(cyclePeriodTime))
             {
                 BeginTime = 0.0;

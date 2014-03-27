@@ -43,6 +43,7 @@ namespace PMKS_Silverlight_App
         }
 
         #region from EditButtons
+
         private void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -94,6 +95,7 @@ namespace PMKS_Silverlight_App
             App.main.JointsInfo.Data.Add(new JointData());
             App.main.ParseData();
         }
+
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
             var jointData = App.main.JointsInfo.Data;
@@ -191,10 +193,20 @@ namespace PMKS_Silverlight_App
             var jointComboBox = (ComboBox)sender;
             var rowJointData = (JointData)JointDataGrid.SelectedItem;
             if (jointComboBox.SelectedValue == null)
+            {
                 if (string.IsNullOrWhiteSpace(rowJointData.JointType))
                     jointComboBox.SelectedValue = "R (pin joint)";
-                else jointComboBox.SelectedValue = rowJointData.JointType;
+                else if (rowJointData.JointType.Equals("r", StringComparison.InvariantCultureIgnoreCase))
+                    jointComboBox.SelectedValue = "R (pin joint)";
+                else if (rowJointData.JointType.Equals("p", StringComparison.InvariantCultureIgnoreCase))
+                    jointComboBox.SelectedValue = "P (sliding block)";
+                else if (rowJointData.JointType.Equals("rp", StringComparison.InvariantCultureIgnoreCase))
+                    jointComboBox.SelectedValue = "RP (pin in slot)";
+                else if (rowJointData.JointType.Equals("rp", StringComparison.InvariantCultureIgnoreCase))
+                    jointComboBox.SelectedValue = "G (gear teeth)";
+            }
         }
+
 
         private void RadioSelectInput_OnChecked(object sender, RoutedEventArgs e)
         {

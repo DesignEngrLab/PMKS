@@ -114,7 +114,7 @@ namespace ExcelPlanarMechSimulator
             if (Globals.Sheet1.Range["n2"].Value2 == null || !double.TryParse(Globals.Sheet1.Range["n2"].Value2.ToString(), out rpm))
                 rpm = 10.0;
             Globals.Sheet1.Range["n2"].Value2 = rpm;
-            pms.InputSpeed = 2 * Math.PI * rpm / 60.0;
+            pms.InputSpeed = Constants.FullCircle * rpm / 60.0;
 
             var deltaAngle = double.NaN;
             if (Globals.Sheet1.Range["r2"].Value2 == null || !double.TryParse(Globals.Sheet1.Range["r2"].Value2.ToString(), out deltaAngle))

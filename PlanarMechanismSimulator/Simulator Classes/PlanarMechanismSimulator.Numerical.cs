@@ -17,8 +17,8 @@ namespace PlanarMechanismSimulator
             {
                 links[i].AngleNumerical = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
 
-                //while (links[i].AngleNumerical > Math.PI) links[i].AngleNumerical -= 2 * Math.PI;
-                //while (links[i].AngleNumerical < -Math.PI) links[i].AngleNumerical += 2 * Math.PI;
+                //while (links[i].AngleNumerical > Math.PI) links[i].AngleNumerical -= Constants.FullCircle;
+                //while (links[i].AngleNumerical < -Math.PI) links[i].AngleNumerical += Constants.FullCircle;
             }
         }
 

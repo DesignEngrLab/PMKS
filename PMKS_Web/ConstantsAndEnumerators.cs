@@ -21,6 +21,7 @@ namespace PMKS_Silverlight_App
         public const double AxesBuffer = 24; // one inch
         public const double UnCroppedDimension = 999999;
         public const double LinkFillOpacity = 0.5;
+        public const double LinkFillOpacityForOneJointLinks = 0.35;
         public const double LinkHueMultiplier = 180.0 / Math.PI;
         public const double LinkFillLuminence = 0.8;
         public const double LinkFillSaturation = 0.5;
@@ -50,8 +51,11 @@ namespace PMKS_Silverlight_App
         public const double ZoomTimeOnKey = 0.0;//1;
         public const double ZoomTimeOnMouseWheel = 0.0;//5;
         public const double ZoomTimeOnRedraw = 0.75;
-        public const double ZoomTimeOnPan = 0.0;
+        public const double PanTimeOnMouseMove = 0.0;
+        public const double PanTimeOnArrowKeys = 0.1;
+        public const double PanFactorForArrowKeys = 70.0;
         public const double ExtraAxesLengthFactor = 0.0;
+
     }
     public class JointTypeProvider
     {

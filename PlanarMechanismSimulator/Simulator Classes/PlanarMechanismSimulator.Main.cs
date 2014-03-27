@@ -737,7 +737,7 @@ namespace PlanarMechanismSimulator
             {
                 range = Math.Abs(InputRange[0] - InputRange[1]);
             }
-            return range < 2 * Math.PI;
+            return range < Constants.FullCircle;
         }
 
 

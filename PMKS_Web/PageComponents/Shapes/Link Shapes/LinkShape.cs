@@ -71,6 +71,7 @@ namespace PMKS_Silverlight_App
             if (centers.Count == 1)
             {
                 MinimumBufferRadius = DisplayConstants.SingleJointLinkRadiusMultipler * startingBufferRadius;
+                Opacity = DisplayConstants.LinkFillOpacityForOneJointLinks;
                 cvxCenters = centers;
             }
             else

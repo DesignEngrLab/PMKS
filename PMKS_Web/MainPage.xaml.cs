@@ -443,13 +443,17 @@ namespace PMKS_Silverlight_App
                 ZoomIn();
             else if (e.Key == Key.PageDown || e.Key == Key.End || e.Key == Key.Subtract || e.Key == Key.Delete)
                 ZoomOut();
-
+            else if (e.Key == Key.Up) KeyboardPan(0, -1);
+            else if (e.Key == Key.Down) KeyboardPan(0, 1);
+            else if (e.Key == Key.Left) KeyboardPan(-1, 0);
+            else if (e.Key == Key.Right) KeyboardPan(1,0);
             else if (e.Key == Key.Escape)
             {
                 Panning = mainViewer.multiSelect = mainViewer.inTheMidstMoving = false;
             }
             base.OnKeyDown(e);
         }
+
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
@@ -542,6 +546,14 @@ namespace PMKS_Silverlight_App
                       delta * mousePositionWRTCanvas.Y + oldTy, DisplayConstants.ZoomTimeOnKey);
         }
 
+        private void KeyboardPan(int x, int y)
+        {
+            var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
+            var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
+            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, oldTx + x*DisplayConstants.PanFactorForArrowKeys / mainViewer.ScaleFactor,
+                oldTy + y * DisplayConstants.PanFactorForArrowKeys / mainViewer.ScaleFactor,  DisplayConstants.PanTimeOnArrowKeys);
+       
+        }
         internal void ZoomOut()
         {
             double newScaleFactor = mainViewer.ScaleFactor / DisplayConstants.ZoomStep;
@@ -605,7 +617,7 @@ namespace PMKS_Silverlight_App
             mousePositionWRTCanvas = e.GetPosition(mainViewer.MainCanvas);
             if (!Panning) return;
             mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, mousePositionWRTPage.X - panStartReference.X,
-                                    panStartReference.Y - mousePositionWRTPage.Y, DisplayConstants.ZoomTimeOnPan);
+                                    panStartReference.Y - mousePositionWRTPage.Y, DisplayConstants.PanTimeOnMouseMove);
         }
 
         private void PlayButton_Checked(object sender, RoutedEventArgs e)
