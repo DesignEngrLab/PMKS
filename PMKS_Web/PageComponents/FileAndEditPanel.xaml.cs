@@ -20,6 +20,7 @@ namespace PMKS_Silverlight_App
 {
     public partial class FileAndEditPanel : UserControl
     {
+        private object jointComboBoxEnteringSelectValue;
 
         public FileAndEditPanel()
         {
@@ -53,7 +54,7 @@ namespace PMKS_Silverlight_App
             App.main.ParseData();
         }
 
-        public void ConvertTextToData(string mechString)
+        public Boolean ConvertTextToData(string mechString)
         {
             List<JointData> jointDataList = null;
             if (JointData.ConvertTextToData(mechString, out jointDataList))
@@ -65,9 +66,11 @@ namespace PMKS_Silverlight_App
                     App.main.JointsInfo.Data.Add(j);
                     App.main.linkInputTable.UpdateLinksTableAfterAdd(j);
                 }
+                return true;
             }
+            return false;
         }
-       
+
 
 
 
@@ -94,7 +97,7 @@ namespace PMKS_Silverlight_App
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
             var jointData = App.main.JointsInfo.Data;
-            var Jointstable = App.main.fileAndEditPanel.dataGrid;
+            var Jointstable = App.main.fileAndEditPanel.JointDataGrid;
             if (jointData.Count > 0)
             {
                 JointData removedJoint;
@@ -120,7 +123,7 @@ namespace PMKS_Silverlight_App
             if (!string.IsNullOrWhiteSpace(TargetShapeStream.Text) &&
                 !TargetShapeStream.Text.Equals(DisplayConstants.TargetShapeQueryText))
             {
-                #if trycatch
+#if trycatch
                 try
                 {
 #endif
@@ -138,7 +141,7 @@ namespace PMKS_Silverlight_App
                         };
                     App.main.mainViewer.Children.Add(App.main.mainViewer.TargetPath);
                     return;
-                    #if trycatch
+#if trycatch
                 }
                 catch (Exception exc)
                 {
@@ -182,6 +185,16 @@ namespace PMKS_Silverlight_App
                 App.main.JointsInfo.Data.Add(new JointData());
         }
 
+
+        private void JointDropDown_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            var jointComboBox = (ComboBox)sender;
+            var rowJointData = (JointData)JointDataGrid.SelectedItem;
+            if (jointComboBox.SelectedValue == null)
+                if (string.IsNullOrWhiteSpace(rowJointData.JointType))
+                    jointComboBox.SelectedValue = "R (pin joint)";
+                else jointComboBox.SelectedValue = rowJointData.JointType;
+        }
 
         private void RadioSelectInput_OnChecked(object sender, RoutedEventArgs e)
         {
@@ -249,15 +262,14 @@ namespace PMKS_Silverlight_App
                 + UrlArgumentHandling.TargetShapeToUrl(TargetShapeStream)
                 + UrlArgumentHandling.MechanismToUrl(App.main);
             UrlTextBox.Text = url;
-            UrlPopUpStackPanel.Visibility= Visibility.Visible; 
+            UrlPopUpStackPanel.Visibility = Visibility.Visible;
             UrlTextBox.Focus();
             UrlTextBox.SelectAll();
         }
         private void ExitUrlPopupButton_OnClick(object sender, RoutedEventArgs e)
         {
-            UrlPopUpStackPanel.Visibility = Visibility.Collapsed; 
+            UrlPopUpStackPanel.Visibility = Visibility.Collapsed;
 
         }
-
     }
 }

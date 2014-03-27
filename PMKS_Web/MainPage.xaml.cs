@@ -101,7 +101,7 @@ namespace PMKS_Silverlight_App
                 Mode = BindingMode.TwoWay,
                 Path = new PropertyPath(JointsViewModel.DataCollectionProperty)
             };
-            fileAndEditPanel.dataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
+            fileAndEditPanel.JointDataGrid.SetBinding(DataGrid.ItemsSourceProperty, binding);
 
             /****** bind link info to link datagrid ******/
             binding = new Binding

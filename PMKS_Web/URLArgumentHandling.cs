@@ -26,16 +26,17 @@ namespace PMKS_Silverlight_App
                 main.fileAndEditPanel.TargetShapeStream_OnTextChanged(null, null);
             }
         }
-        internal static void UrlToMechanism(MainPage main)
+        internal static Boolean UrlToMechanism(MainPage main)
         {
             var initMechString = "";
             //var initMechString =
-            //    "ground input R 0 0 ffff|input output RP 9 14 0 ffff|output ground R 30 -41 4 ffft|output R 40.767578125 -69.259765625 tfff|";
+            //    "ground input R 0 0 tfft|input q P 25 0 1 tfff|q r R 22 11 tfff|r ground R 0 11 tfff|q R 42.013671875 -91.21875 tfff|";
+            
             if (string.IsNullOrWhiteSpace(initMechString) && HtmlPage.Document.QueryString.ContainsKey("mech"))
                 initMechString = HtmlPage.Document.QueryString["mech"];
-            if (string.IsNullOrWhiteSpace(initMechString)) return;
+            if (string.IsNullOrWhiteSpace(initMechString)) return false;
             initMechString = initMechString.Replace("|", "\n");
-            main.fileAndEditPanel.ConvertTextToData(initMechString);
+            return main.fileAndEditPanel.ConvertTextToData(initMechString);
         }
         internal static string MechanismToUrl(MainPage main)
         {

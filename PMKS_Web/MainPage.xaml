@@ -25,7 +25,7 @@
             <HyperlinkButton NavigateUri="http://people.oregonstate.edu/~campmatt/pmksintro.html" >
                 <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch"   >
                     <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" Foreground="#FF3E4E85"  VerticalAlignment="Bottom" FontSize="18" />
-                    <TextBlock Text="introduction and instruction" Foreground="#FF3E4E85" TextAlignment="Right" TextWrapping="Wrap" FontSize="11" Width="83" TextDecorations="Underline"/>     
+                    <TextBlock Text="introduction and instructions" Foreground="#FF3E4E85" TextAlignment="Right" TextWrapping="Wrap" FontSize="11" Width="83" TextDecorations="Underline"/>     
                 </StackPanel>
             </HyperlinkButton>
             <src:FileAndEditPanel  x:Name="fileAndEditPanel" />

@@ -47,10 +47,10 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <s:DataGrid Margin="-20,0,0,0" Background="Transparent" Grid.Row="1" x:Name="dataGrid" AutoGenerateColumns="False"  CanUserResizeColumns="True" 
-                CanUserReorderColumns="True" 
-                CanUserSortColumns="False" HeadersVisibility="All" 
-                CellEditEnded="dataGrid_CellEditEnded" MaxHeight="500" BeginningEdit="dataGrid_AddNewRow"    >
+                    <s:DataGrid Name="JointDataGrid" Margin="-20,0,0,0" Background="Transparent" Grid.Row="1"  
+                                AutoGenerateColumns="False" CanUserResizeColumns="True" CanUserReorderColumns="True" 
+                                CanUserSortColumns="False" HeadersVisibility="All" CellEditEnded="dataGrid_CellEditEnded"
+                                MaxHeight="500" BeginningEdit="dataGrid_AddNewRow" >
                         <s:DataGrid.Columns>
                             <s:DataGridTemplateColumn Header="Input" >
                                 <s:DataGridTemplateColumn.CellTemplate>
@@ -71,8 +71,8 @@
                                 </s:DataGridTemplateColumn.CellTemplate>
                                 <s:DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
-                                        <ComboBox  ItemsSource="{Binding jointTypeList, Source={StaticResource jointTypeProvider}}" 
-                                       SelectedItem="{Binding JointType, Mode=TwoWay}"/>
+                                        <ComboBox LostFocus="JointDropDown_OnLostFocus"  ItemsSource="{Binding jointTypeList, Source={StaticResource jointTypeProvider}}" 
+                                       SelectedItem="{Binding JointType, Mode=TwoWay}" FontFamily="Portable User Interface"/>
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellEditingTemplate>
                             </s:DataGridTemplateColumn>
