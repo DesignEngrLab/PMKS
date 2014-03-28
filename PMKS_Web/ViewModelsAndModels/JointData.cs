@@ -99,28 +99,43 @@ namespace PMKS_Silverlight_App
         {
             get
             {
-                if (double.IsNaN(_angle))
-                {
-                    if (string.Equals(JointType, "P", StringComparison.InvariantCultureIgnoreCase) ||
-                        string.Equals(JointType, "RP", StringComparison.InvariantCultureIgnoreCase))
-                        return "REQUIRED";
-                    else return "";
-                }
-                if (App.main.AngleUnits == AngleType.Radians)
-                    return _angle.ToString(CultureInfo.InvariantCulture);
-                else
-                    return (DisplayConstants.RadiansToDegrees * _angle).ToString(CultureInfo.InvariantCulture);
+                if (double.IsNaN(_angle)
+                    && (string.Equals(JointType, "R", StringComparison.InvariantCultureIgnoreCase)
+                    || string.IsNullOrWhiteSpace(JointType)))
+                    return "";
+                return _angle.ToString();
             }
             set
             {
                 if (!double.TryParse(value, out _angle))
-                    _angle = double.NaN;
-                if (App.main.AngleUnits == AngleType.Degrees)
-                    _angle /= DisplayConstants.RadiansToDegrees;
-                while (_angle > Math.PI / 2) _angle -= Math.PI;
-                while (_angle < -Math.PI / 2) _angle += Math.PI;
+                    _angle = 0.0;
             }
         }
+
+        //get
+        //{
+        //    if (double.IsNaN(_angle))
+        //    {
+        //        if (string.Equals(JointType, "P", StringComparison.InvariantCultureIgnoreCase) ||
+        //            string.Equals(JointType, "RP", StringComparison.InvariantCultureIgnoreCase))
+        //            return "REQUIRED";
+        //        else return "";
+        //    }
+        //    if (App.main.AngleUnits == AngleType.Radians)
+        //        return _angle.ToString(CultureInfo.InvariantCulture);
+        //    else
+        //        return (DisplayConstants.RadiansToDegrees * _angle).ToString(CultureInfo.InvariantCulture);
+        //}
+        //set
+        //{
+        //    if (!double.TryParse(value, out _angle))
+        //        _angle = double.NaN;
+        //    if (App.main.AngleUnits == AngleType.Degrees)
+        //        _angle /= DisplayConstants.RadiansToDegrees;
+        //    while (_angle > Math.PI / 2) _angle -= Math.PI;
+        //    while (_angle < -Math.PI / 2) _angle += Math.PI;
+        //}
+        //}
 
         public Boolean PosVisible
         {

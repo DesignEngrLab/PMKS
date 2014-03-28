@@ -5,7 +5,7 @@
         <StackPanel Orientation="Horizontal" >
             <Border Padding="8,0">
                 <StackPanel  >
-                    <TextBlock Text="Speed"/>
+                    <TextBlock Text="Speed (rpm)"/>
                     <TextBox FontSize="16" MinHeight="38" MinWidth="60" Name="speedBox" />
                 </StackPanel>
             </Border>
@@ -58,7 +58,7 @@
                          VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 <TextBox Grid.Row="1" FontSize="16" MinHeight="38" MinWidth="60"  Grid.Column="2" Background="#226D87B4" Name="AngleBox" 
                          VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Gray"/>
-                    <Border Grid.Row="1" Grid.Column="3"  BorderBrush="Black" BorderThickness="1"  Padding="2"  >
+                    <Border Visibility="Collapsed" Grid.Row="1" Grid.Column="3"  BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                         <StackPanel  >
                         <RadioButton Content="Degrees" Name="DegreesCheckBox" Checked="GlobalSettingChanged" Unchecked="GlobalSettingChanged" />
                             <RadioButton Content="Radians" Name="RadiansCheckBox" />

@@ -271,6 +271,7 @@ namespace PMKS_Silverlight_App
             string url = HtmlPage.Document.DocumentUri.AbsoluteUri;
             url = url.Split(' ', '?', '&')[0];
             url += "?"
+                + UrlArgumentHandling.GlobslSettingsToUrl(App.main)
                 + UrlArgumentHandling.TargetShapeToUrl(TargetShapeStream)
                 + UrlArgumentHandling.MechanismToUrl(App.main);
             UrlTextBox.Text = url;

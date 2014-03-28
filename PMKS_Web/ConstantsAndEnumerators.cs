@@ -55,6 +55,11 @@ namespace PMKS_Silverlight_App
         public const double PanTimeOnArrowKeys = 0.1;
         public const double PanFactorForArrowKeys = 70.0;
         public const double ExtraAxesLengthFactor = 0.0;
+        public const double RadiansPerSecToRPM = Math.PI / 30.0;
+        public const double DefaultSpeed = 10.0;
+        public const double DefaultError = 0.01;
+        public const double DefaultAngleInc = 5.0;
+
 
     }
     public class JointTypeProvider

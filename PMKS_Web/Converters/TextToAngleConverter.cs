@@ -21,18 +21,19 @@ namespace PMKS_Silverlight_App
             double Value;
             if (string.IsNullOrWhiteSpace(val) || !Double.TryParse(val, out Value))
                 return (double)parameter;
-            if (angleType == AngleType.Radians)
-                return Value;
-            else return Value /DisplayConstants.RadiansToDegrees;
+            //if (angleType == AngleType.Radians)
+            return Value;
+            //else
+            //    return Value / DisplayConstants.RadiansToDegrees;
         }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var angleType = main.AngleUnits;
 
-            if (angleType == AngleType.Radians)
+            //if (angleType == AngleType.Radians)
                 return ((double)value).ToString("F");
-            else return (((double)value) * DisplayConstants.RadiansToDegrees).ToString("F");
+           // else return (((double)value) * DisplayConstants.RadiansToDegrees).ToString("F");
 
         }
 

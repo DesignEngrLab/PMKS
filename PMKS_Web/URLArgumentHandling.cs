@@ -1,39 +1,63 @@
-﻿using System.Text;
+﻿using System;
 using System.Windows.Browser;
-using PlanarMechanismSimulator;
-using System;
-using System.IO;
-using System.Net;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
     public static class UrlArgumentHandling
     {
-        internal static void UrlToTargetShape(MainPage main)
+        private static string debugString = "";
+        //"set=s-5|f1&ts=m1 1 v 55&mech=ground input R 0 0 tfft|input coupler R 0 10 0 tfff|coupler block R 20 0 0 tfff|block ground P 20 -2 10 tfff|";
+        internal static Boolean UrlToGlobalSettings(MainPage main)
         {
-            if (HtmlPage.Document.QueryString.ContainsKey("ts"))
+            var globalSettingsString = getString("set");
+            if (string.IsNullOrWhiteSpace(globalSettingsString)) return false;
+            var settingsList = globalSettingsString.Split('|');
+            foreach (var setting in settingsList)
             {
-                main.fileAndEditPanel.TargetShapeStream.Text = HtmlPage.Document.QueryString["ts"];
-                main.fileAndEditPanel.TargetShapeStream_OnTextChanged(null, null);
+                double value;
+                var valString = setting.Substring(1);
+                if (!double.TryParse(valString, out value)) continue;
+                switch (setting[0])
+                {
+                    case 's':
+                        main.Speed = value;
+                        break;
+                    case 'e':
+                        main.Error = value;
+                        main.AnalysisStep = AnalysisType.error;
+                        break;
+                    case 'f':
+                        main.AngleIncrement = value;
+                        main.AnalysisStep = AnalysisType.fixedDelta;
+                        break;
+                }
             }
+            return true;
+        }
+
+        private static string getString(string p)
+        {
+            if (HtmlPage.Document.QueryString.ContainsKey(p))
+                return HtmlPage.Document.QueryString[p];
+            var index = debugString.IndexOf(p);
+            if (index == -1) return "";
+            var endIndex = debugString.IndexOf("&", index + p.Length);
+            if (endIndex <= index) endIndex = debugString.Length;
+            return debugString.Substring(index + p.Length + 1, endIndex - index - p.Length - 1);
+        }
+
+        internal static Boolean UrlToTargetShape(MainPage main)
+        {
+            var targetShapeString = getString("ts");
+            if (string.IsNullOrWhiteSpace(targetShapeString)) return false;
+            main.fileAndEditPanel.TargetShapeStream.Text = targetShapeString;
+            main.fileAndEditPanel.TargetShapeStream_OnTextChanged(null, null);
+            return true;
         }
         internal static Boolean UrlToMechanism(MainPage main)
         {
-            var initMechString = "";
-            //var initMechString =
-            //    "ground input R 0 0 tfft|input q P 25 0 1 tfff|q r R 22 11 tfff|r ground R 0 11 tfff|q R 42.013671875 -91.21875 tfff|";
-            
-            if (string.IsNullOrWhiteSpace(initMechString) && HtmlPage.Document.QueryString.ContainsKey("mech"))
-                initMechString = HtmlPage.Document.QueryString["mech"];
+            var initMechString = getString("mech");
             if (string.IsNullOrWhiteSpace(initMechString)) return false;
             initMechString = initMechString.Replace("|", "\n");
             return main.fileAndEditPanel.ConvertTextToData(initMechString);
@@ -56,6 +80,22 @@ namespace PMKS_Silverlight_App
                 return "";
             result = result.Replace(',', ' ');
             return "ts=" + result + "&";
+        }
+        internal static string GlobslSettingsToUrl(MainPage main)
+        {
+            var result = "";
+            if (main.Speed != DisplayConstants.DefaultSpeed)
+                result += "s" + main.Speed + "|";
+            if (main.AnalysisStep != AnalysisType.error || main.Error != DisplayConstants.DefaultError)
+            {
+                if (main.AnalysisStep == AnalysisType.error)
+                    result += "e" + main.Error + "|";
+                else result += "f" + main.AngleIncrement + "|";
+
+            }
+            result = result.TrimEnd('|');
+            if (string.IsNullOrWhiteSpace(result)) return "";
+            return "set=" + result + "&";
         }
     }
 }

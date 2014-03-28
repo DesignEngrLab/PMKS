@@ -31,6 +31,7 @@ namespace Silverlight_PMKS
         {
             RootVisual = main = new MainPage();
             UrlArgumentHandling.UrlToTargetShape(main);
+            UrlArgumentHandling.UrlToGlobalSettings(main);
             main.fileAndEditPanel.CollapseExpandButton.IsChecked = !(UrlArgumentHandling.UrlToMechanism(main));
         }
 

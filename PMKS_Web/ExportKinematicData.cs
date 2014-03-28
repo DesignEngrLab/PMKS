@@ -22,7 +22,10 @@ namespace PMKS_Silverlight_App
             var saveFileDialog = new SaveFileDialog
                 {
                     DefaultFileName =
-                        "KinematicDatafromPMKS." + DateTime.Now.ToOADate(),
+                        "KinematicDatafromPMKS." 
+                        + DateTime.Now.Second + "." + DateTime.Now.Minute + "."
+                        + DateTime.Now.Hour + "." + DateTime.Now.Day + "."
+                        + DateTime.Now.Month + "." + DateTime.Now.Year,
                     DefaultExt = ".txt",
                     Filter = "Tab-Delimited text file (*.txt)|*.txt|Comma Separated Values file (*.csv)|*.csv|All Files (*.*)|*.*",
                 };
@@ -84,8 +87,8 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < pmks.numJoints; i++) tabtxt +=
                 "\tx_" + i + "\ty_" + i + "\tVx_" + i + "\tVy_" + i + "\tAx_" + i + "\tAy_" + i;
             for (int i = 0; i < pmks.numLinks; i++) tabtxt +=
-                "\tangle_" + pmks.AllLinks[i].name + "\tangVel_" + pmks.AllLinks[i].name + "\tangAccel_" + pmks.AllLinks[i].name;
-            tabtxt += "\n";
+                "\tangle_" + pmks.AllLinks[i].name + " [rad]\tangVel_" + pmks.AllLinks[i].name + " [rad/s]\tangAccel_" + pmks.AllLinks[i].name;
+            tabtxt += " [rad/s^2]\n";
             var timeSteps = pmks.JointParameters.Count;
             var times = pmks.JointParameters.Times;
             var jParams = pmks.JointParameters.Parameters;

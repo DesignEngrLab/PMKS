@@ -213,7 +213,8 @@ namespace PMKS_Silverlight_App
 
                 while (tempAngle > Math.PI / 2) tempAngle -= Math.PI;
                 while (tempAngle < -Math.PI / 2) tempAngle += Math.PI;
-                angle = jointData._angle = tempAngle;
+                angle =  tempAngle;
+                jointData._angle =DisplayConstants.RadiansToDegrees* tempAngle;
                 jointData.RefreshTablePositions();
 
                 RenderTransformOrigin = new Point(0.5, 0.5);

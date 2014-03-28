@@ -32,7 +32,8 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty SpeedProperty
             = DependencyProperty.Register("Speed", typeof(double), typeof(MainPage),
-                                          new PropertyMetadata(1.0, GlobalSettingChanged));
+                                          new PropertyMetadata(DisplayConstants.DefaultSpeed,
+                                              GlobalSettingChanged));
 
         public double Speed
         {
@@ -41,7 +42,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty ErrorProperty
             = DependencyProperty.Register("Error", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(0.001, GlobalSettingChanged));
+                                 new PropertyMetadata(DisplayConstants.DefaultError, GlobalSettingChanged));
         public double Error
         {
             get { return (double)GetValue(ErrorProperty); }
@@ -49,7 +50,7 @@ namespace PMKS_Silverlight_App
         }
         public static readonly DependencyProperty AngleIncrementProperty
             = DependencyProperty.Register("AngleIncrement", typeof(double), typeof(MainPage),
-                                 new PropertyMetadata(0.0087266462599716477, GlobalSettingChanged));
+                                 new PropertyMetadata(DisplayConstants.DefaultAngleInc, GlobalSettingChanged));
         public double AngleIncrement
         {
             get { return (double)GetValue(AngleIncrementProperty); }
@@ -180,7 +181,7 @@ namespace PMKS_Silverlight_App
                 Source = this,
                 Mode = BindingMode.TwoWay,
                 Path = new PropertyPath(AnalysisStepProperty),
-                Converter = new BooleanToLengthTypeConverter()
+                Converter = new BooleanToAnalysisStepConverter()
             };
             globalSettings.ErrorCheckBox.SetBinding(ToggleButton.IsCheckedProperty, binding);
             ParseData();
@@ -188,7 +189,7 @@ namespace PMKS_Silverlight_App
 
         #region PMKS Controller Functions
 
-     
+
 
         internal void ParseData(Boolean ForceRerunOfSimulation = false)
         {
@@ -202,7 +203,7 @@ namespace PMKS_Silverlight_App
                 if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
                 DefineInputDriver();
 
-                if (pmks != null && SameTopology() && DataListsSameLength() && drivingIndex==pmks.DrivingIndex)
+                if (pmks != null && SameTopology() && DataListsSameLength() && drivingIndex == pmks.DrivingIndex)
                 {
                     DefinePositions();
                     pmks.AssignPositions(InitPositions);
@@ -224,11 +225,11 @@ namespace PMKS_Silverlight_App
                 status("Degrees of freedom = " + dof);
                 if (dof == 1)
                 {
-                    pmks.InputSpeed = Speed;
-                    if (globalSettings.ErrorCheckBox.IsChecked != null && (bool)globalSettings.ErrorCheckBox.IsChecked)
+                    pmks.InputSpeed = DisplayConstants.RadiansPerSecToRPM * Speed;
+                    if (AnalysisStep == AnalysisType.error)
                         pmks.MaxSmoothingError = Error;
                     else
-                        pmks.DeltaAngle = AngleIncrement;
+                        pmks.DeltaAngle = AngleIncrement / DisplayConstants.RadiansToDegrees;
                 }
                 else
                 {
@@ -396,7 +397,7 @@ namespace PMKS_Silverlight_App
                 if (Double.TryParse(JointsInfo.Data[i].YPos, out ypos) && !Constants.sameCloseZero(InitPositions[i][1], ypos)) return false;
                 if (InitPositions[i].GetLength(0) == 2 && Double.TryParse(JointsInfo.Data[i].Angle, out angle)) return false;
                 if (InitPositions[i].GetLength(0) == 3 && Double.TryParse(JointsInfo.Data[i].Angle, out angle))
-                    if (!Constants.sameCloseZero(InitPositions[i][2], angle)) return false;
+                    if (!Constants.sameCloseZero(DisplayConstants.RadiansToDegrees * InitPositions[i][2], angle)) return false;
             }
             return true;
         }
@@ -446,7 +447,7 @@ namespace PMKS_Silverlight_App
             else if (e.Key == Key.Up) KeyboardPan(0, -1);
             else if (e.Key == Key.Down) KeyboardPan(0, 1);
             else if (e.Key == Key.Left) KeyboardPan(-1, 0);
-            else if (e.Key == Key.Right) KeyboardPan(1,0);
+            else if (e.Key == Key.Right) KeyboardPan(1, 0);
             else if (e.Key == Key.Escape)
             {
                 Panning = mainViewer.multiSelect = mainViewer.inTheMidstMoving = false;
@@ -500,7 +501,7 @@ namespace PMKS_Silverlight_App
                                           {
                                               Double.Parse(JointsInfo.Data[i].XPos),
                                               Double.Parse(JointsInfo.Data[i].YPos),
-                                              Double.Parse(JointsInfo.Data[i].Angle)
+                                              Double.Parse(JointsInfo.Data[i].Angle)/DisplayConstants.RadiansToDegrees
                                           });
             }
             return true;
@@ -550,9 +551,9 @@ namespace PMKS_Silverlight_App
         {
             var oldTx = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateX;
             var oldTy = ((CompositeTransform)mainViewer.MainCanvas.RenderTransform).TranslateY;
-            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, oldTx + x*DisplayConstants.PanFactorForArrowKeys / mainViewer.ScaleFactor,
-                oldTy + y * DisplayConstants.PanFactorForArrowKeys / mainViewer.ScaleFactor,  DisplayConstants.PanTimeOnArrowKeys);
-       
+            mainViewer.MoveScaleCanvas(mainViewer.ScaleFactor, oldTx + x * DisplayConstants.PanFactorForArrowKeys / mainViewer.ScaleFactor,
+                oldTy + y * DisplayConstants.PanFactorForArrowKeys / mainViewer.ScaleFactor, DisplayConstants.PanTimeOnArrowKeys);
+
         }
         internal void ZoomOut()
         {
