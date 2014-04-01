@@ -5,7 +5,7 @@
         <StackPanel Orientation="Horizontal" >
             <Border Padding="8,0">
                 <StackPanel  >
-                    <TextBlock Text="Speed (rpm)"/>
+                    <TextBlock Name="SpeedHeaderTextBlock" Text="Speed (rpm)"/>
                     <TextBox FontSize="16" MinHeight="38" MinWidth="60" Name="speedBox" />
                 </StackPanel>
             </Border>

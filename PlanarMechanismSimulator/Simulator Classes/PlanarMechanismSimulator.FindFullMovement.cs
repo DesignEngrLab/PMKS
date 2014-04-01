@@ -20,7 +20,7 @@ namespace PlanarMechanismSimulator
                 throw new Exception(
                     "Either the smoothing error angle delta or the time step must be specified.");
             bool useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
-
+           
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
             double[,] initJointParams, initLinkParams;
@@ -166,17 +166,17 @@ namespace PlanarMechanismSimulator
             {
                 for (int i = 0; i <= inputJointIndex; i++)
                 {
-                    initJointParams[i, 2] = joints[i].vx;
-                    initJointParams[i, 3] = joints[i].vy;
+                    initJointParams[i, 2] = joints[i].vxLast = joints[i].vx;
+                    initJointParams[i, 3] = joints[i].vyLast = joints[i].vy;
                 }
                 for (int i = 0; i <= inputLinkIndex; i++)
-                    initLinkParams[i, 1] = links[i].Velocity;
+                    initLinkParams[i, 1] = links[i].VelocityLast = links[i].Velocity;
                 if (accelSolver.Solve())
                 {
                     for (int i = 0; i <= inputJointIndex; i++)
                     {
-                        initJointParams[i, 4] = joints[i].ax;
-                        initJointParams[i, 5] = joints[i].ay;
+                        initJointParams[i, 4] = joints[i].ax = joints[i].ax;
+                        initJointParams[i, 5] = joints[i].ay = joints[i].ay;
                     }
                     for (int i = 0; i <= inputLinkIndex; i++)
                         initLinkParams[i, 2] = links[i].Acceleration;

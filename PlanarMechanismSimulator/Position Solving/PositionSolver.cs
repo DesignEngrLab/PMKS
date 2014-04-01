@@ -476,7 +476,9 @@ namespace PlanarMechanismSimulator.PositionSolving
         }
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
         {
-            var length = thisLink.DistanceBetweenSlides(slopeJoint, positionJoint);
+            var length = (positionJoint.FixedWithRespectTo(thisLink))
+                ? thisLink.DistanceBetweenSlides(slopeJoint, positionJoint)
+                : -thisLink.DistanceBetweenSlides(positionJoint, slopeJoint);
             var angle = slopeJoint.SlideAngle + Math.PI / 2;
             return new point(slopeJoint.x + length * Math.Cos(angle),
                 slopeJoint.y + length * Math.Sin(angle));
@@ -798,7 +800,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
             if (thisLink == null) return;
-            //if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
+            if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
             if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
                 angleChange = thisLink.Angle - thisLink.AngleLast;
             if (double.IsNaN(angleChange))
@@ -864,7 +866,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         {
             if (thisLink == null) return;
             // if (thisLink.AngleIsKnown == KnownState.Fully) return;
-            foreach (var j in thisLink.joints.Where(j => j != knownJoint && j.positionKnown != KnownState.Fully))
+            foreach (var j in thisLink.joints.Where(j =>  j.positionKnown != KnownState.Fully))
             {
                 if (knownJoint.FixedWithRespectTo(thisLink))
                 {

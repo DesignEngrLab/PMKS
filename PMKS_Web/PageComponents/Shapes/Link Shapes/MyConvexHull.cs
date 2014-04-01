@@ -137,7 +137,7 @@ namespace PMKS_Silverlight_App
                 {
                     var bX = oldNodes[i].X - newOrder[j].X;
                     var bY = oldNodes[i].Y - newOrder[j].Y;
-                    if (signedDistance(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]) <= 0)
+                    if (signedDistance(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY, convexVectInfo[j, 2]) < 0)
                     {
                         var newSideCand = Tuple.Create(oldNodes[i],
                                                        positionAlong(convexVectInfo[j, 0], convexVectInfo[j, 1], bX, bY,

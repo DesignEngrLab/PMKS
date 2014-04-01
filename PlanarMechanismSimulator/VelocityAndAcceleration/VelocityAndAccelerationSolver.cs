@@ -467,6 +467,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             }
             var x = StarMath.solve(A, b);
             if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
+            if (x.All(value => Constants.sameCloseZero(value))) return false;
             return PutStateVarsBackInJointsAndLinks(x);
 #if trycatch
             }

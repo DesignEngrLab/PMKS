@@ -357,33 +357,21 @@ namespace PlanarMechanismSimulator
                 inputJoint.Link2 = tempLinkRef;
             }
             inputLink = inputJoint.Link2;
+            var groundLinks = AllLinks.Where(c => c.isGround).ToList();//move inputLink to back of list
+            if (groundLinks.Count != 1) throw new Exception("There can only be one ground link. In this case, there are "
+                  + groundLinks.Count);
+            groundLink = groundLinks[0];
             inferAdditionalGearLinks();
             var additionalRefjoints = addReferencePivotsToSlideOnlyLinks();
             numLinks = AllLinks.Count; //count the number of links in the system
             numJoints = AllJoints.Count; //count the number of pivots in the system
             /* reorder links, move input link and ground link to back of list */
             AllLinks.Remove(inputLink); AllLinks.Add(inputLink); //move inputLink to back of list
-            var groundLinks = AllLinks.Where(c => c.isGround).ToList();//move inputLink to back of list
-            if (groundLinks.Count != 1) throw new Exception("There can only be one ground link. In this case, there are "
-                  + groundLinks.Count);
-            groundLink = groundLinks[0];
             AllLinks.Remove(groundLink); AllLinks.Add(groundLink); //move ground to back of list
             inputLinkIndex = numLinks - 2;
             /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
             var origOrder = new List<joint>(AllJoints);
             var groundPivots = groundLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(groundLink)).ToList();
-            for (int i = groundPivots.Count - 1; i >= 0; i--)
-            {
-                /* this doesn't real change anything, but allows one to see the movement of P joints along ground. It only 
-                 * applies to P-joints as RP-joints will behave differently. */
-                if (groundPivots[i].jointType == JointTypes.P)
-                {
-                    var tempLinkRef = groundPivots[i].Link1;
-                    groundPivots[i].Link1 = groundPivots[i].Link2;
-                    groundPivots[i].Link2 = tempLinkRef;
-                    groundPivots.RemoveAt(i);
-                }
-            }
             AllJoints.Remove(inputJoint);
             AllJoints.RemoveAll(groundPivots.Contains);
 
@@ -413,12 +401,19 @@ namespace PlanarMechanismSimulator
         }
 
         private List<joint> addReferencePivotsToSlideOnlyLinks()
-        {
-            if (AllLinks.All(c => c.joints.Any(j => j.FixedWithRespectTo(c)))) return null;
+        {                                               
+            foreach (var j in groundLink.joints.Where(j => j.jointType == JointTypes.P && j.FixedWithRespectTo(groundLink)))
+            {
+                /* this doesn't real change anything, but allows one to see the movement of P joints along ground. It only 
+                 * applies to P-joints as RP-joints will behave differently. */
+                j.Link2 = j.Link1;
+                j.Link1 = groundLink;
+            }                                    
+            //if (AllLinks.All(c => c.joints.Any(j => j.FixedWithRespectTo(c)))) return null;
             var additionalRefjoints = new List<joint>();
             foreach (var c in AllLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
             {
-                var newJoint = new joint(false, "r") { Link1 = c };
+                var newJoint = new joint(c.isGround, "r") { Link1 = c };
                 c.joints.Add(newJoint);
                 AllJoints.Add(newJoint);
                 additionalRefjoints.Add(newJoint);
@@ -444,8 +439,10 @@ namespace PlanarMechanismSimulator
                         xSum += otherJoint.xInitial;
                         ySum += otherJoint.yInitial;
                     }
-                    thisAdditionalJoint.xInitial = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
-                    thisAdditionalJoint.yInitial = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                    thisAdditionalJoint.x = thisAdditionalJoint.xNumerical = thisAdditionalJoint.xLast = thisAdditionalJoint.xInitial 
+                        = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                    thisAdditionalJoint.y = thisAdditionalJoint.yNumerical = thisAdditionalJoint.yLast = thisAdditionalJoint.yInitial 
+                        = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
                 }
             }
             setGearData();
@@ -762,11 +759,14 @@ namespace PlanarMechanismSimulator
         {
             get
             {
-                var oneDOFJoints =
-                    AllJoints.Count(j => j.Link2 != null && (j.jointType == JointTypes.P || j.jointType == JointTypes.R));
-                var twoDOFJoints =
-                    AllJoints.Count(j => j.Link2 != null && (j.jointType == JointTypes.G || j.jointType == JointTypes.RP));
-                return 3 * (AllLinks.Count - 1) - 2 * oneDOFJoints - twoDOFJoints;
+                var numRJoints = AllJoints.Count(j => j.Link2 != null && (j.jointType == JointTypes.R));
+                var numPJoints = AllJoints.Count(j => j.jointType == JointTypes.P);
+                var numRPJoints = AllJoints.Count(j => j.jointType == JointTypes.RP);
+                var numGJoints = AllJoints.Count(j => j.jointType == JointTypes.G);
+                if (numLinks == 3 && numPJoints == 3 && numRJoints == 0 && numRPJoints == 0 && numGJoints == 0) return 1;
+                if (numLinks == 4 && numPJoints == 4 && numRJoints == 0 && numRPJoints == 0 && numGJoints == 0) return 2;
+                if (numLinks == 4 && numPJoints == 3 && numRJoints == 1 && numRPJoints == 0 && numGJoints == 0) return 0;
+                return 3 * (AllLinks.Count - 1) - 2 * (numRJoints + numPJoints) - (numRPJoints + numGJoints);
             }
         }
     }

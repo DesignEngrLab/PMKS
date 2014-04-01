@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>PMKS</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: x-large;
+}
+.auto-style2 {
+	font-size: xx-small;
+}
+</style>
+</head>
+
+<body>
+
+<h1>PMKS: Planar Mechanism Kinematic Simulator</h1>
+<table style="width: 750px">
+<tr><td>
+<p>PMKS returns quick and accurate results for the position, velocity, and 
+acceleration of rigid bodies connected as planar mechanisms. The PMKS term 
+refers to a <em>calculator</em> - a compiled dynamic library (e.g. .dll) 
+which performs the necessary math operations to create values for the state 
+variables of a mechanism's movement. This calculator can be accessed: 1) through 
+an Excel macro, 2) through .NET programs, or 3) from an online graphical 
+user-interface written in Silverlight (which is deemed PMKS_Web, but for 
+simplicity we refer to if by the same name, PMKS). This can always be found at 
+the Persistent URL...</p>
+	<p class="auto-style1"><a href="http://purl.org/pmks/">http://purl.org/pmks/</a></p>
+	<p>The usefulness in PMKS_Web comes in the abilitiy to quickly draft and analyze 
+mechanisms. Unlike commercial tools, PMKS is pure kinematics, which is a good 
+thing in that you do not need to specify masses, or stiffnesses. We have shown 
+in technical papers that the approach is quicker and more accurate than other 
+approaches. Furthermore, a novel approach to analyzing non-dyadic mechanisms has 
+been developed which gives unprecedented results (see examples in rightmost 
+column of examples table).</p>
+	<p>The implementation is lightweight and runs completely within the browser 
+	as a Silverlight application. You can download two small files and run it 
+	locally: the webpage (pmks.html), and the binary file (PMKS.xap).</p>
+
+	<h2>Examples</h2>
+	<p>Here are some of the mechanisms created to date.</p>
+	<table style="width: 100%">
+		<tr>
+			<td style="width: 296px">
+			<a href="pmks.html?mech=ground input R 0 0 ffft|input coupler R -2 0 0 ffff|coupler output R 5 5 ffff|output ground R 6 0 ffff|coupler R 7 -7 tfff|">
+			four bar 1</a></td>
+			<td style="width: 246px">
+			<a href="pmks.html?mech=ground input R 0 0 ffft|input coupler rp 2 0 0 ffff|coupler ground R 5 0 ffff|coupler R 4 4 ffff|input R 2 0 ffff|">quick-return mech.</a>
+			<span class="auto-style2">(graphics under construction)</span></td>
+			<td>
+			<a href="pmks.html?mech=input ground R -2.5 2.5 ffft|leg1 ground R -5 0 ffff|leg2 ground R 0 0 ffff|wing1 leg1 r -9.24 4.24 ffff|wing1 wing2 r -5.9 9.3 ffff|up1 wing1 r -4.5 6.5 ffff|input up1 r -5 4 ffff|input up2 r 0 4 ffff|up2 wing2 r -0.134 8.72 ffff|wing2 leg2 r 5.268 10.78 ffff|">double butterfly 1</a></td>
+		</tr>
+		<tr>
+			<td style="width: 296px">
+			<a href="pmks.html?mech=ground input R 0 0 ffff|input coupler R -2.3 3.98 ffff|coupler output R -15.2 0 ffff|ground output R -13.2 8.98 tttt|">four bar 2</a></td>
+			<td style="width: 246px">
+			<a href="pmks.html?mech=input ground r 30 0 ffft|input coupler r 30 8 0 ffff|coupler intermed r 20 10 0 ffff|intermed ground r 20 0 ffff|intermed coupler2 r 20 18 ffff|coupler2 output r 0 20 ffff|output ground R 0 0 ffff|">otto-II six bar</a></td>
+			<td style="width: 245px">
+			<a href="pmks.html?mech=input ground r 0.18 -6.65 ffft|ground output r 10.139 -5.94 ffff|input tern1 r 0 -2.75 ffff|tern1 top r 1.397 0.24 ffff|tern1 bottom r 2.796 -2.63 ffff|top output r 8.104 1.36 ffff|bottom output r 5.581 0 ffff|">stevenson-II six bar</a></td>
+		</tr>
+		<tr>
+			<td style="width: 296px">
+			<a href="pmks.html?mech=ground input R 0 0 ffft|input coupler R -2 0 0 ffff|coupler rocker R 9 6 ffff|rocker ground R 14 0 ffff|coupler R -2 -10 tttf|">four bar 3</a></td>
+			<td style="width: 246px">sun driven planetary</td>
+			<td>
+			<a href="pmks.html?mech=DER ground r 7.4 4.2 ffft|OA ground r 0 0 ffff|GS ground r 13 0 ffff|OA ABC r 4.1276 11.27 ffff|ABC BFG r 10.4289 14.25 ffff|ABC CD r 6.4193 9.7727 ffff|CD DER r 5.9286 2.85 ffff|DER EF r 4.4152 3.9 ffff|EF BFG r 6.8309 12.57 ffff|BFG GS r 8.1434 9.87 ffff|">double butterfly 2</a></td>
+		</tr>
+		<tr>
+			<td style="width: 296px">
+			<a href="pmks.html?mech=ground input R 0 0 ffft|input coupler R 0 10 tfff|coupler output R 12 2 tttf|ground output P 12 0 0 tttf|">crank-&amp;-slider</a></td>
+			<td style="width: 246px">
+			<a href="pmks.html?mech=ground input R 0 0 ffft|input coupler R 0 2 ffff|coupler triangle R 2.73 6.189 ffff|ground triangle R 6 0 ffff|triangle c2 R 5.736 7.778 ffff|c2 output r 14.1268 8.17 ffff|output ground r 12.4 1.8 ffff|">watt-II six bar</a></td>
+			<td>
+			<a href="pmks.html?mech=HAO ground r -1.5 -8 ffft|HAO AB r -3.655 -6.35 ffff|AB BEC r -4.495 -3.47 ffff|BEC CD r -2.735 -3.98 ffff|CD DFH r -0.468 -3.6 ffff|BEC EG r 0.303 -1.7 ffff|DFH FIG r 0.259 -5.12 ffff|EG FIG r 2.74 -5 ffff|HAO DFH r -2.079 -6.12 ffff|ground FIG r 3.001 -8.9 ffff|">single flier</a></td>
+		</tr>
+		<tr>
+			<td style="width: 296px">
+			<a href="pmks.html?mech=ground input R 0 0 ffff|input output G 4 0 ftff|output ground R 10 0 ffft|input R 4 0 ffff|output R 4 0 ffff|">simple gear train</a>
+			<span class="auto-style2">(graphics under construction)</span></td>
+			<td style="width: 246px">&nbsp;</td>
+			<td>
+			<a href="pmks.html?mech=AO ground r -1.25 -6.4 ffft|IS ground r 12.302 -3.796 ffff|AO ABC r -1.186 -4.6 ffff|ABC BD r 0.733 1.356 ffff|ABC CFQ r 2.628 -1.72 ffff|BD DEG r 0.701 -4.443 ffff|DEG EF r 3.887 -3.808 ffff|EF CFQ r 8.529 -1.695 ffff|DEG GHI r 5.71 -0.803 ffff|GHI HR r 10.12 -2.593 ffff|IS GHI r 12.238 1.104 ffff|HR ground r 8.95 -4.09 ffff|CFQ ground r 6.175 -4.729 ffff|">double flier</a></td>
+		</tr>
+	</table>
+	
+<h2>How to Use PMKS_Web</h2>
+<p>In the upper-left of the website</p>
+</td></tr></table>
+</body>
+
+</html>

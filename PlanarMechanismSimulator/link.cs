@@ -111,7 +111,26 @@ namespace PlanarMechanismSimulator
                 {
                     var iJoint = joints[i];
                     var jJoint = joints[j];
-                    if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
+                    if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
+                    {
+                        var key = numJoints * i + j;
+                        angleFromBlockToJoint.Add(key, 0.0);
+                        distanceToSlideLine.Add(key, 0.0);
+                         key = numJoints * j + i;
+                        angleFromBlockToJoint.Add(key, 0.0);
+                        distanceToSlideLine.Add(key, 0.0);         
+                    }
+                    else if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
+                    {
+                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
+                        addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                    }
+                    else if (!iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
+                    {
+                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
+                        addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                    }
+                    else //    if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
                         lengths.Add(numJoints * i + j,
                                 Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
@@ -125,16 +144,6 @@ namespace PlanarMechanismSimulator
                             addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
                             addSlideDictionaryEntry(jJoint, iJoint, j, i);
                         }
-                    }
-                    else if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
-                    {
-                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
-                        addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
-                    }
-                    else if (!iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
-                    {
-                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
-                        addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
                     }
                 }
         }

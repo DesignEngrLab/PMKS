@@ -7,7 +7,7 @@ namespace PMKS_Silverlight_App
     public static class UrlArgumentHandling
     {
         private static string debugString = "";
-        //"set=s-5|f1&ts=m1 1 v 55&mech=ground input R 0 0 tfft|input coupler R 0 10 0 tfff|coupler block R 20 0 0 tfff|block ground P 20 -2 10 tfff|";
+        //"mech=input ground P 0 0 0 ffft|input coupler P 0 25 -45 ffff|coupler ground P 25 25 90 ffff|";
         internal static Boolean UrlToGlobalSettings(MainPage main)
         {
             var globalSettingsString = getString("set");

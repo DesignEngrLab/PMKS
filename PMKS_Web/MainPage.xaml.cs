@@ -202,19 +202,21 @@ namespace PMKS_Silverlight_App
                 numJoints = TrimEmptyJoints();
                 if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
                 DefineInputDriver();
-
-                if (pmks != null && SameTopology() && DataListsSameLength() && drivingIndex == pmks.DrivingIndex)
-                {
-                    DefinePositions();
-                    pmks.AssignPositions(InitPositions);
-                }
-                else
-                {
+                /*** Note: on 4/1/14, I decided to comment the code below. It doesn't seem to save any time
+                 *         and there are potential problems using the same Simulator. Now we just make it 
+                 *         new every time. ***/
+                //if (pmks != null && SameTopology() && DataListsSameLength() && drivingIndex == pmks.DrivingIndex)
+                //{
+                //    DefinePositions();
+                //    pmks.AssignPositions(InitPositions);
+                //}
+                //else
+                //{
                     if (!validLinks()) return;
 
                     if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
                     pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
-                }
+                //}
                 mainViewer.ClearDynamicShapesAndBindings();
                 PlayButton_Unchecked(null, null);
 
@@ -225,7 +227,16 @@ namespace PMKS_Silverlight_App
                 status("Degrees of freedom = " + dof);
                 if (dof == 1)
                 {
-                    pmks.InputSpeed = DisplayConstants.RadiansPerSecToRPM * Speed;
+                    if (JointsInfo.Data[drivingIndex].JointType.Equals("P", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        pmks.InputSpeed = Speed;
+                        globalSettings.SpeedHeaderTextBlock.Text = "Speed (unit/sec)";
+                    }
+                    else
+                    {
+                        pmks.InputSpeed = DisplayConstants.RadiansPerSecToRPM * Speed;
+                        globalSettings.SpeedHeaderTextBlock.Text = "Speed (rpm)";
+                    }
                     if (AnalysisStep == AnalysisType.error)
                         pmks.MaxSmoothingError = Error;
                     else
