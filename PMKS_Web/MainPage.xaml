@@ -22,7 +22,7 @@
         </src:MainViewer>
 
         <StackPanel HorizontalAlignment="Left" Grid.RowSpan="2">
-            <HyperlinkButton NavigateUri="http://people.oregonstate.edu/~campmatt/pmksintro.html" >
+            <HyperlinkButton NavigateUri="http://people.oregonstate.edu/~campmatt/pmks/" >
                 <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch"   >
                     <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" Foreground="#FF3E4E85"  VerticalAlignment="Bottom" FontSize="18" />
                     <TextBlock Text="introduction + instructions" Foreground="#FF3E4E85" TextAlignment="Right" TextWrapping="Wrap" FontSize="11" Width="83" TextDecorations="Underline"/>     

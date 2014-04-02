@@ -6,8 +6,8 @@ namespace PMKS_Silverlight_App
 {
     public static class UrlArgumentHandling
     {
-        private static string debugString = "";
-        //"mech=input ground P 0 0 0 ffft|input coupler P 0 25 -45 ffff|coupler ground P 25 25 90 ffff|";
+        private static string debugString = //"";
+        "mech=ground input R -29.9751570727451 39.6305466723673 0 ffft|input output R -41.4332984863479 48.5516072917578 0 ffff|output ground RP -13.2095 8.9821 1 ffff|output R -4.55078125 37.451171875 0 tfff|";
         internal static Boolean UrlToGlobalSettings(MainPage main)
         {
             var globalSettingsString = getString("set");
