@@ -1,0 +1,199 @@
+﻿<html>
+
+<head>
+<title>PMKS: Planar Mechanism Kinematic Simulation (Introduction and
+Instructions)</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<h1>PMKS: Planar
+Mechanism Kinematic Simulator<o:p></o:p></h1>
+<table width=750>
+	<tr>
+		<td style='padding:.75pt .75pt .75pt .75pt' >
+		<p>PMKS returns quick and accurate results for the position, velocity, and
+  acceleration of rigid bodies connected as planar mechanisms. The PMKS term
+  refers to a <em>calculator</em> - a compiled dynamic library (e.g. .<span
+  >dll</span>) which performs the necessary math operations to
+  create values for the state variables of a mechanism's movement. This
+  calculator can be accessed: 1) through an Excel macro, 2) through .NET
+  programs, or 3) <a href="pmks.html">from an online graphical user-interface written in
+  Silverlight (which is deemed PMKS_Web, but for
+  simplicity we refer to if by the same name, PMKS).</a>
+  This can always be found at the Persistent URL...</p>
+		<p ><a href="http://purl.org/pmks/sim">http://purl.org/pmks/sim</a></p>
+		<p>The usefulness in <span >PMKS_Web</span> comes in the 
+		<span
+  >abilitiy</span> to quickly draft and analyze mechanisms. Unlike
+  commercial tools, PMKS is pure kinematics, which is a good thing in that you
+  do not need to specify masses, or <span >stiffnesses</span>. We
+  have shown in technical papers that the approach is quicker and more accurate
+  than other approaches. Furthermore, a novel approach to analyzing non-dyadic
+  mechanisms has been developed which gives unprecedented results (see examples
+  in rightmost column of examples table).</p>
+		<p>The implementation is lightweight and runs completely within the browser
+  as a Silverlight application. You can download two small files and run it
+  locally: the webpage (pmks.html), and the binary file (<span >PMKS.xap</span>).</p>
+		<h2>Examples<o:p></o:p></h2>
+		<p>Here are some of the mechanisms created to date.</p>
+		<table Table border=0 cellpadding=0 width="100%"
+   style='width:100.0%;'>
+			<tr>
+				<td width=296 style='width:222.0pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a href="pmks.html?mech=ground input R 0 0 tfft|input coupler R 25 0 tfff|coupler output R 30 38 0 tfff|output ground R 50 0 0 tfff|">four
+    bar 1</a><o:p></o:p></p>
+				</td>
+				<td width=246 style='width:184.5pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=ground%20input%20R%200%200%20ffft|input%20coupler%20rp%202%200%200%20ffff|coupler%20ground%20R%205%200%20ffff|coupler%20R%204%204%20ffff|input%20R%202%200%20ffff|">quick-return
+    mech.</a> <span class=auto-style21><span style='font-size:7.5pt;
+    '>(graphics under construction)</span></span><o:p></o:p></p>
+				</td>
+				<td style='padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=input%20ground%20R%20-2.5%202.5%20ffft|leg1%20ground%20R%20-5%200%20ffff|leg2%20ground%20R%200%200%20ffff|wing1%20leg1%20r%20-9.24%204.24%20ffff|wing1%20wing2%20r%20-5.9%209.3%20ffff|up1%20wing1%20r%20-4.5%206.5%20ffff|input%20up1%20r%20-5%204%20ffff|input%20up2%20r%200%204%20ffff|up2%20wing2%20r%20-0.134%208.72%20ffff|wing2%20leg2%20r%205.268%2010.78%20ffff|">double
+    butterfly 1</a><o:p></o:p></p>
+				</td>
+			</tr>
+			<tr>
+				<td width=296 style='width:222.0pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a href="pmks.html?mech=ground input R 0 0 ffft|input coupler R 35 0 0 ffff|coupler output R 30 35 0 ffff|output ground R 0 -13 0 ffff|coupler R -26 -25 0 tfff|">four
+    bar 2</a><o:p></o:p></p>
+				</td>
+				<td width=246 style='width:184.5pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=input%20ground%20r%2030%200%20ffft|input%20coupler%20r%2030%208%200%20ffff|coupler%20intermed%20r%2020%2010%200%20ffff|intermed%20ground%20r%2020%200%20ffff|intermed%20coupler2%20r%2020%2018%20ffff|coupler2%20output%20r%200%2020%20ffff|output%20ground%20R%200%200%20ffff|">
+				<span
+    >otto</span>-II six bar</a><o:p></o:p></p>
+				</td>
+				<td width=245 style='width:183.75pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=input%20ground%20r%200.18%20-6.65%20ffft|ground%20output%20r%2010.139%20-5.94%20ffff|input%20tern1%20r%200%20-2.75%20ffff|tern1%20top%20r%201.397%200.24%20ffff|tern1%20bottom%20r%202.796%20-2.63%20ffff|top%20output%20r%208.104%201.36%20ffff|bottom%20output%20r%205.581%200%20ffff|">
+				<span
+    >stevenson</span>-II six bar</a><o:p></o:p></p>
+				</td>
+			</tr>
+			<tr>
+				<td width=296 style='width:222.0pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a href="pmks.html?mech=ground input R -56 -41 0 ffft|input coupler R -45 81 0 ffff|coupler output R 118 88.5 0 ffff|output ground R 94 -47 0 ffff|coupler R -94 41 0 tfff|">four bar 3</a><o:p></o:p></p>
+				</td>
+				<td width=246 style='width:184.5pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >sun
+    driven planetary<o:p></o:p></p>
+				</td>
+				<td style='padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=DER%20ground%20r%207.4%204.2%20ffft|OA%20ground%20r%200%200%20ffff|GS%20ground%20r%2013%200%20ffff|OA%20ABC%20r%204.1276%2011.27%20ffff|ABC%20BFG%20r%2010.4289%2014.25%20ffff|ABC%20CD%20r%206.4193%209.7727%20ffff|CD%20DER%20r%205.9286%202.85%20ffff|DER%20EF%20r%204.4152%203.9%20ffff|EF%20BFG%20r%206.8309%2012.57%20ffff|BFG%20GS%20r%208.1434%209.87%20ffff|">double
+    butterfly 2</a><o:p></o:p></p>
+				</td>
+			</tr>
+			<tr>
+				<td width=296 style='width:222.0pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=ground%20input%20R%200%200%20ffft|input%20coupler%20R%200%2010%20tfff|coupler%20output%20R%2012%202%20tttf|ground%20output%20P%2012%200%200%20tttf|">crank-&amp;-slider</a><o:p></o:p></p>
+				</td>
+				<td width=246 style='width:184.5pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=ground%20input%20R%200%200%20ffft|input%20coupler%20R%200%202%20ffff|coupler%20triangle%20R%202.73%206.189%20ffff|ground%20triangle%20R%206%200%20ffff|triangle%20c2%20R%205.736%207.778%20ffff|c2%20output%20r%2014.1268%208.17%20ffff|output%20ground%20r%2012.4%201.8%20ffff|">watt-II
+    six bar</a><o:p></o:p></p>
+				</td>
+				<td style='padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=HAO%20ground%20r%20-1.5%20-8%20ffft|HAO%20AB%20r%20-3.655%20-6.35%20ffff|AB%20BEC%20r%20-4.495%20-3.47%20ffff|BEC%20CD%20r%20-2.735%20-3.98%20ffff|CD%20DFH%20r%20-0.468%20-3.6%20ffff|BEC%20EG%20r%200.303%20-1.7%20ffff|DFH%20FIG%20r%200.259%20-5.12%20ffff|EG%20FIG%20r%202.74%20-5%20ffff|HAO%20DFH%20r%20-2.079%20-6.12%20ffff|ground%20FIG%20r%203.001%20-8.9%20ffff|">single
+    flier</a><o:p></o:p></p>
+				</td>
+			</tr>
+			<tr>
+				<td width=296 style='width:222.0pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=ground%20input%20R%200%200%20ffff|input%20output%20G%204%200%20ftff|output%20ground%20R%2010%200%20ffft|input%20R%204%200%20ffff|output%20R%204%200%20ffff|">simple
+    gear train</a> <span class=auto-style21>
+				<span style='font-size:7.5pt;
+    '>(graphics under construction)</span></span><o:p></o:p></p>
+				</td>
+				<td width=246 style='width:184.5pt;padding:.75pt .75pt .75pt .75pt'>
+				<p >&nbsp;<o:p></o:p></p>
+				</td>
+				<td style='padding:.75pt .75pt .75pt .75pt'>
+				<p >
+				<a
+    href="pmks.html?mech=AO%20ground%20r%20-1.25%20-6.4%20ffft|IS%20ground%20r%2012.302%20-3.796%20ffff|AO%20ABC%20r%20-1.186%20-4.6%20ffff|ABC%20BD%20r%200.733%201.356%20ffff|ABC%20CFQ%20r%202.628%20-1.72%20ffff|BD%20DEG%20r%200.701%20-4.443%20ffff|DEG%20EF%20r%203.887%20-3.808%20ffff|EF%20CFQ%20r%208.529%20-1.695%20ffff|DEG%20GHI%20r%205.71%20-0.803%20ffff|GHI%20HR%20r%2010.12%20-2.593%20ffff|IS%20GHI%20r%2012.238%201.104%20ffff|HR%20ground%20r%208.95%20-4.09%20ffff|CFQ%20ground%20r%206.175%20-4.729%20ffff|">double
+    flier</a><o:p></o:p></p>
+				</td>
+			</tr>
+		</table>
+		<h2>How to Use <span
+  >PMKS_Web</span><o:p></o:p></h2>
+		<p><span >PMKS_Web</span> has been designed to allow for one to
+  quickly simulate and visualize planar mechanism. As such it makes certain
+  simplifications or predictions to quicken the drafting process. When the main
+  page is opened, you will see a single pendulum moving counter-clockwise at
+  the center of the screen, like in the following screenshot.</p>
+		<p align=center style='text-align:center'><img src="images/mainpage-screenshot.png" ><br>
+		<i>Figure
+  1: A description of the main elements of the PMKS page.<o:p></o:p></i></p>
+		<p>Let us consider the various components of this page. Under the title and
+  link back to this page (listed as “introduction and instructions”), you will
+  find the joint-editing table surrounded by a series of buttons. In 
+		<span
+  >PMKS_Web</span>, mechanisms are explicitly and completely
+  defined by joints – the <b>definition of
+  links is done implicitly</b>. Once a joint is fully specified as a new row in
+  the table, it will appear in the main window. From the main window, the
+  coordinates can be manipulated by clicking and dragging on the purple (for
+  translation) or pink (for rotation) arrows (see below). Note: you do not have
+  to catch the moving link! You manipulate the unfilled icon that appears at
+  the initial location. </p>
+		<div class="auto-style1" >
+			<img  
+  src="images/moveIcon.png"><![endif]><i><br>Figure
+  2: A close-up of the icons that can be clicked and dragged with the mouse.
+  Don’t try to catch the moving filled-in joints – you move the hollow icons
+  that indicate the joints position at t = 0.</i></div>
+		</p>
+		<p >This last point is quite crucial: Mechanisms are defined by the starting
+  locations of the joints (at t = 0). This means that you could make the same
+  mechanism many different ways.</p>
+		<p >Ready to learn more? Check out these tutorials: </p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial1.htm">Tutorial
+  1: Creating a Four-Bar</a> </p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial2.htm">Tutorial
+  2: Creating a Crank-and-Slider</a></p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial3.htm">Tutorial
+  3: Additional Capabilities (n-Bar, Target Shapes, &amp; Outputting Data)</a></p>
+		</td>
+	</tr>
+</table>
+<p >
+<o:p>&nbsp;</o:p></p>
+
+</body>
+
+</html>
