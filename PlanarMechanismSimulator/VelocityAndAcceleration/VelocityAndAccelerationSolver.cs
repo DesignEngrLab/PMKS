@@ -282,7 +282,7 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
             /**** Then there is the matter of the sliding velocities.. ****/
-            for (int i = 0; i < links.Count; i++)
+            for (int i = 0; i < joints.Count; i++)
             {
                 var j = joints[i];
                 if (j.jointType == JointTypes.R && i < firstInputJointIndex) unknownObjects.Add(j);
