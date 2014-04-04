@@ -57,7 +57,7 @@ namespace PMKS_Silverlight_App
         public const double ExtraAxesLengthFactor = 0.0;
         public const double RadiansPerSecToRPM = Math.PI / 30.0;
         public const double DefaultSpeed = 10.0;
-        public const double DefaultError = 0.01;
+        public const double DefaultError = 0.001;
         public const double DefaultAngleInc = 5.0;
 
 

@@ -139,7 +139,7 @@ namespace PMKS_Silverlight_App
                 IOStringFunctions.StringToTargetShape(settingString, App.main);
             }
             startIndex = fileText.IndexOf(IOStringFunctions.MechanismString);
-            if (startIndex > 0) return ConvertTextToData(fileText.Substring(startIndex
+            if (startIndex >= 0) return ConvertTextToData(fileText.Substring(startIndex
                 + IOStringFunctions.MechanismString.Length + 1));
             else return ConvertTextToData(fileText);
         }
