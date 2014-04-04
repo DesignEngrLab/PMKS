@@ -1,20 +1,12 @@
-﻿using System;
+﻿using Silverlight_PMKS;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Browser;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using PlanarMechanismSimulator;
-using PMKS_Silverlight_App;
-using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
@@ -50,28 +42,18 @@ namespace PMKS_Silverlight_App
             {
                 Filter = "Text Files (*.txt)|*.txt|Comma-Separated Values (.csv)|*.csv"
             };
-            if (dialog.ShowDialog() == true) ConvertTextToData(dialog.File.OpenText().ReadToEnd());
-            else App.main.JointsInfo.Data.Add(new JointData());
+            if (dialog.ShowDialog() == true)
+            {
+                var fileText = dialog.File.OpenText().ReadToEnd();
+                if (IOStringFunctions.OpenConfigFromTextFile(fileText))
+                {
+                    App.main.ParseData(true);
+                    return;
+                }
+            }
+            App.main.JointsInfo.Data.Add(new JointData());
             App.main.ParseData();
         }
-
-        public Boolean ConvertTextToData(string mechString)
-        {
-            List<JointData> jointDataList = null;
-            if (JointData.ConvertTextToData(mechString, out jointDataList))
-            {
-                App.main.JointsInfo.Data.Clear();
-                App.main.LinksInfo.Data.Clear();
-                foreach (var j in jointDataList)
-                {
-                    App.main.JointsInfo.Data.Add(j);
-                    App.main.linkInputTable.UpdateLinksTableAfterAdd(j);
-                }
-                return true;
-            }
-            return false;
-        }
-
 
 
 
@@ -84,8 +66,17 @@ namespace PMKS_Silverlight_App
             };
             if (dialog.ShowDialog() == true)
                 using (var stream = dialog.OpenFile())
-                using (var writer = new StreamWriter(stream))
-                    writer.Write(JointData.ConvertDataToText(App.main.JointsInfo.Data));
+                {
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        var str = IOStringFunctions.GlobslSettingsToUrl(App.main);
+                        if (!string.IsNullOrWhiteSpace(str)) writer.WriteLine(str);
+                        str = IOStringFunctions.TargetShapeToUrl(TargetShapeStream);
+                        if (!string.IsNullOrWhiteSpace(str)) writer.WriteLine(str);
+                        writer.WriteLine(IOStringFunctions.MechanismString);
+                        writer.Write(JointData.ConvertDataToText(App.main.JointsInfo.Data));
+                    }
+                }
         }
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
@@ -270,10 +261,13 @@ namespace PMKS_Silverlight_App
 
             string url = HtmlPage.Document.DocumentUri.AbsoluteUri;
             url = url.Split(' ', '?', '&')[0];
-            url += "?"
-                + UrlArgumentHandling.GlobslSettingsToUrl(App.main)
-                + UrlArgumentHandling.TargetShapeToUrl(TargetShapeStream)
-                + UrlArgumentHandling.MechanismToUrl(App.main);
+            url += "?";
+
+            var str = IOStringFunctions.GlobslSettingsToUrl(App.main);
+            if (!string.IsNullOrWhiteSpace(str)) url += str + "&";
+            str = IOStringFunctions.TargetShapeToUrl(TargetShapeStream);
+            if (!string.IsNullOrWhiteSpace(str)) url += str + "&";
+            url += IOStringFunctions.MechanismToUrl(App.main);
             UrlTextBox.Text = url;
             UrlPopUpStackPanel.Visibility = Visibility.Visible;
             UrlTextBox.Focus();

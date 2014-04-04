@@ -46,6 +46,17 @@ namespace PMKS_Silverlight_App
                 jointData.RefreshTablePositions();
         }
 
+
+        internal void ResetToDefault()
+        {
+            App.main.Speed = DisplayConstants.DefaultSpeed;
+            App.main.Error = DisplayConstants.DefaultError;
+            App.main.AngleIncrement = DisplayConstants.DefaultAngleInc;
+            App.main.AngleUnits = AngleType.Degrees;
+            App.main.LengthUnits = LengthType.mm;
+            App.main.AnalysisStep = AnalysisType.error;
+            ErrorCheckBox.IsChecked = MetricCheckBox.IsChecked = DegreesCheckBox.IsChecked = true;
+        }
     }
 
 }

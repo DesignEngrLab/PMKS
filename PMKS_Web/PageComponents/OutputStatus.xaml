@@ -3,11 +3,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk"
     xmlns:now="clr-namespace:PMKS_Silverlight_App" >
-    <StackPanel Orientation="Horizontal" MaxHeight="80">
-        <TextBox Name="StatusBox" Width="400" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" Background="#19FFFFFF" />
+    <StackPanel Orientation="Horizontal" MaxHeight="40">
+        <TextBox Name="StatusBox" Width="400" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
+                 Background="#19FFFFFF" />
         <StackPanel >
-        <Button Name="clearButton"  Content="Clear" Width="80"  Click="clearButton_Click" HorizontalAlignment="Left"/>
-        <Button Name="saveAsFileButton" Content="Save as File" Width="80"  Click="saveAsFileButton_Click"/>
+        <Button Name="clearButton" FontSize="9"  Content="Clear" Width="80"  Click="clearButton_Click" HorizontalAlignment="Left"/>
+            <Button Name="saveAsFileButton" FontSize="9"  Content="Save as File" Width="80"  Click="saveAsFileButton_Click"/>
         </StackPanel>
     </StackPanel>
 </UserControl>
