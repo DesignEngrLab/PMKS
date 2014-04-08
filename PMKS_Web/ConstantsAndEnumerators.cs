@@ -69,7 +69,7 @@ namespace PMKS_Silverlight_App
             get
             {
                 return new List<string> { "R (pin joint)"
-                , "P (sliding block)", "RP (pin in slot)" //, "G (gear teeth)" 
+                , "P (sliding block)", "RP (pin in slot)" , "G (gear teeth)" 
             };
             }
         }

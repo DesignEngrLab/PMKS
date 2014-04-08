@@ -509,50 +509,60 @@ namespace PlanarMechanismSimulator.PositionSolving
             var xIntNeg = knownJoint2.x + rAC * Math.Cos(thetaIntNeg);
             var yIntNeg = knownJoint2.y + rAC * Math.Sin(thetaIntNeg);
             var distthetaIntNegSquared = Constants.distanceSqared(xIntNeg, yIntNeg, numPt.x, numPt.y);
-
-            /* first, the External positive case */
-            beta = Math.Asin((rBC - rAC * Math.Sin(alpha)) / lAB);
-            var thetaExtPos = Math.PI - alpha + beta + phi;
-            var xExtPos = knownJoint2.x + rAC * Math.Cos(thetaExtPos);
-            var yExtPos = knownJoint2.y + rAC * Math.Sin(thetaExtPos);
-            var distthetaExtPosSquared = Constants.distanceSqared(xExtPos, yExtPos, numPt.x, numPt.y);
-
-            /* second, the External negative case */
-            var thetaExtNeg = phi - beta - alpha;
-            var xExtNeg = knownJoint2.x + rAC * Math.Cos(thetaExtNeg);
-            var yExtNeg = knownJoint2.y + rAC * Math.Sin(thetaExtNeg);
-            var distthetaExtNegSquared = Constants.distanceSqared(xExtNeg, yExtNeg, numPt.x, numPt.y);
-
-            var distance = new List<double>
-                               {
-                                   distthetaIntPosSquared, distthetaIntNegSquared,
-                                   distthetaExtPosSquared, distthetaExtNegSquared
-                               };
-            if (distance.All(double.IsNaN))
-                return new point(double.NaN, double.NaN);
-            var minDist = distance.Where(x => !double.IsNaN(x)).Min();
-            if (minDist > rAC * rAC) return new point(double.NaN, double.NaN);
-            point jPoint;
-            switch (distance.IndexOf(minDist))
+            if (distthetaIntNegSquared < distthetaIntPosSquared)
             {
-                case 0:
-                    angleChange = thetaIntPos - oldTheta;
-                    jPoint = new point(xIntPos, yIntPos);
-                    break;
-                case 1:
-                    angleChange = thetaIntNeg - oldTheta;
-                    jPoint = new point(xIntNeg, yIntNeg);
-                    break;
-                case 2:
-                    angleChange = thetaExtPos - oldTheta;
-                    jPoint = new point(xExtPos, yExtPos);
-                    break;
-                default:
-                    angleChange = thetaExtNeg - oldTheta;
-                    jPoint = new point(xExtNeg, yExtNeg);
-                    break;
-            }
-            return jPoint;
+                angleChange = thetaIntNeg - oldTheta;
+                return new point(xIntNeg, yIntNeg);
+            }       
+            angleChange = thetaIntPos - oldTheta;
+            return new point(xIntPos, yIntPos);
+            /**** for the longest time, I thought there were 4 cases for this one. This led to some uncontrollable
+             * cases. Now I konw (like all the rest) that it is two. I am leaving the code only because I am unsure
+             * of a case where these might work out as true. **/
+            /* first, the External positive case */
+            //beta = Math.Asin((rBC - rAC * Math.Sin(alpha)) / lAB);
+            //var thetaExtPos = Math.PI - alpha + beta + phi;
+            //var xExtPos = knownJoint2.x + rAC * Math.Cos(thetaExtPos);
+            //var yExtPos = knownJoint2.y + rAC * Math.Sin(thetaExtPos);
+            //var distthetaExtPosSquared = Constants.distanceSqared(xExtPos, yExtPos, numPt.x, numPt.y);
+
+            ///* second, the External negative case */
+            //var thetaExtNeg = phi - beta - alpha;
+            //var xExtNeg = knownJoint2.x + rAC * Math.Cos(thetaExtNeg);
+            //var yExtNeg = knownJoint2.y + rAC * Math.Sin(thetaExtNeg);
+            //var distthetaExtNegSquared = Constants.distanceSqared(xExtNeg, yExtNeg, numPt.x, numPt.y);
+
+            //var distance = new List<double>
+            //                   {
+            //                       distthetaIntPosSquared, distthetaIntNegSquared,
+            //                      // distthetaExtPosSquared, distthetaExtNegSquared
+            //                   };
+            //if (distance.All(double.IsNaN))
+            //    return new point(double.NaN, double.NaN);
+            //var minDist = distance.Where(x => !double.IsNaN(x)).Min();
+            //
+           // if (minDist > rAC *rAC) return new point(double.NaN, double.NaN);
+            //point jPoint;
+            //switch (distance.IndexOf(minDist))
+            //{
+            //    case 0:
+            //        angleChange = thetaIntPos - oldTheta;
+            //        jPoint = new point(xIntPos, yIntPos);
+            //        break;
+            //    case 1:
+            //        angleChange = thetaIntNeg - oldTheta;
+            //        jPoint = new point(xIntNeg, yIntNeg);
+            //        break;
+            //    case 2:
+            //        angleChange = thetaExtPos - oldTheta;
+            //        jPoint = new point(xExtPos, yExtPos);
+            //        break;
+            //    default:
+            //        angleChange = thetaExtNeg - oldTheta;
+            //        jPoint = new point(xExtNeg, yExtNeg);
+            //        break;
+            //}
+            //return jPoint;
         }
 
 
@@ -800,7 +810,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
             if (thisLink == null) return;
-            if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
+            //if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
             if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
                 angleChange = thisLink.Angle - thisLink.AngleLast;
             if (double.IsNaN(angleChange))

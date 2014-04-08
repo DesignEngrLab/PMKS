@@ -275,9 +275,9 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
                 equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, false, true, true));
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
             /**** Set velocity of any links connected to input by a P joint and remove link from unknowns ****/
-            RecursiveAssignmentOfKnownPAngularVelocities(groundLink);
+            RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(groundLink, (this is VelocitySolver));
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
-            RecursiveAssignmentOfKnownPAngularVelocities(inputLink);
+            RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(inputLink, (this is VelocitySolver));
 
             #endregion
             #region go through the joints to identify equations from slip velocities and link-to-link relationships
@@ -345,21 +345,33 @@ namespace PlanarMechanismSimulator.VelocityAndAcceleration
             DefineTwoMatrixOrders(rowNonZeroes);
         }
 
-        private void RecursiveAssignmentOfKnownPAngularVelocities(link refLink)
+        private void RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(link refLink, Boolean thisIsVelocitySolver)
         {
             foreach (var pJoint in refLink.joints.Where(j => j.jointType == JointTypes.P))
             {
                 var otherLink = pJoint.OtherLink(refLink);
                 if (unknownObjects.Contains(otherLink))
-                {
-                    otherLink.Velocity = refLink.Velocity;
+                {                                         
                     unknownObjects.Remove(otherLink);
-                    foreach (
+                    if (thisIsVelocitySolver)
+                    {
+                        otherLink.Velocity = refLink.Velocity;
+                        foreach (
                         var eq in
                             equations.Where(
                                 eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
                         ((VelocityJointToJoint)eq).linkIsKnown = true;
-                    RecursiveAssignmentOfKnownPAngularVelocities(otherLink);
+                    }
+                    else
+                    {
+                        otherLink.Acceleration = 0.0;
+                        //foreach (
+                        //var eq in
+                        //    equations.Where(
+                        //        eq => eq is AccelerationJointToJoint && ((AccelerationJointToJoint)eq).link == otherLink))
+                        //    ((AccelerationJointToJoint)eq).linkIsKnown = true;
+                    }
+                    RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(otherLink, thisIsVelocitySolver);
                 }
             }
         }

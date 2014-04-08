@@ -38,32 +38,30 @@ namespace PlanarMechanismSimulator
             get { return parameterValues; }
         }
 
-       //rkprad: possibly there is a better and simpler way to write the series of add /addnearend /addnearbegin functions
+        //rkprad: possibly there is a better and simpler way to write the series of add /addnearend /addnearbegin functions
 
         internal void Add(double time, double[,] parameters)
         {
             if (Count == 0 || time > Times[LastIndex])
-                //if count =0; then time is added to the first spot
-                //if count =/0 then time is added to the next spot based on lastspot value
-               
+            //if count =0; then time is added to the first spot
+            //if count =/0 then time is added to the next spot based on lastspot value
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
             }
             else //inserting time at some intermediate value
-                
             {
                 int ub = LastIndex; //ub = upperbound say 5
                 int lb = 0; //lb = lower bound 
                 int i; //counter
                 do
                 {
-                    i = (ub - lb)/2; //2.5 -> 3
+                    i = (ub - lb) / 2; //2.5 -> 3
                     if (Times[i] > time) //Times[3]>
                         ub = i;
                     else lb = i;
 
-                } while (ub - lb > 1); 
+                } while (ub - lb > 1);
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }
@@ -77,10 +75,15 @@ namespace PlanarMechanismSimulator
                 Times.Add(time);
                 Parameters.Add(parameters);
             }
+            else if (time < Times[0])
+            {                           
+                Times.Insert(0, time);
+                Parameters.Insert(0, parameters); 
+            }
             else
             {
                 int i = LastIndex;
-                while (Times[i] > time) i--;
+                while (i > 0 && Times[i] > time) i--;
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }
@@ -93,6 +96,11 @@ namespace PlanarMechanismSimulator
             {
                 Times.Add(time);
                 Parameters.Add(parameters);
+            }
+            else if (time < Times[0])
+            {
+                Times.Insert(0, time);
+                Parameters.Insert(0, parameters);
             }
             else
             {
@@ -136,7 +144,7 @@ namespace PlanarMechanismSimulator
 
         public IEnumerator<KeyValuePair<double, double[,]>> GetEnumerator()
         {
-            return new TimeKeyValueEnumerator(Times.ToArray(),Parameters.ToArray());
+            return new TimeKeyValueEnumerator(Times.ToArray(), Parameters.ToArray());
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -148,7 +156,7 @@ namespace PlanarMechanismSimulator
         {
             get { return Parameters[Times.IndexOf(t)]; }
         }
-        
+
         public int IndexOf(KeyValuePair<double, double[,]> item)
         {
             var index = Times.IndexOf(item.Key);
@@ -160,8 +168,8 @@ namespace PlanarMechanismSimulator
 
         public void Insert(int index, KeyValuePair<double, double[,]> item)
         {
-            Times.Insert(index,item.Key);
-        Parameters.Insert(index,item.Value);
+            Times.Insert(index, item.Key);
+            Parameters.Insert(index, item.Value);
         }
 
         public void RemoveAt(int index)
@@ -220,12 +228,12 @@ namespace PlanarMechanismSimulator
         {
             get
             {
-                #if trycatch
+#if trycatch
                 try
                 {
 #endif
-                    return new KeyValuePair<double, double[,]>(timeKeys[position],parameterValues[position]);
-                #if trycatch
+                return new KeyValuePair<double, double[,]>(timeKeys[position], parameterValues[position]);
+#if trycatch
                 }
                 catch (IndexOutOfRangeException)
                 {

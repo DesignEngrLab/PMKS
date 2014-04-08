@@ -11,8 +11,7 @@ namespace PMKS_Silverlight_App
     public static class IOStringFunctions
     {
         private static string debugString = "";
-        //"mech=ground input R -29.9751570727451 39.6305466723673 0 ffft|input output R -41.4332984863479 48.5516072917578 0 ffff|output ground RP -13.2095 8.9821 1 ffff|output R -4.55078125 37.451171875 0 tfff|";
-
+       // "set=s-10&mech=ground input R 0 0 1 ffft|input coupler R 0 73 0 ffff|output coupler P 84 13 0 tfff|output ground R 49 0.515 0 ffff|coupler R 37 39 0 ffff|";
         public const string GlobalSettingString = "set=";
         public const string TargetShapeString = "ts=";
         public const string MechanismString = "mech=";

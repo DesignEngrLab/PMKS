@@ -20,7 +20,7 @@ namespace PlanarMechanismSimulator
                 throw new Exception(
                     "Either the smoothing error angle delta or the time step must be specified.");
             bool useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
-           
+
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
             double[,] initJointParams, initLinkParams;
@@ -61,14 +61,14 @@ namespace PlanarMechanismSimulator
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
             Task.WaitAll(forwardTask, backwardTask);
 
-          //  var forwardThread = (useErrorMethod) ? new Thread(() => SimulateWithinError(AllJoints, AllLinks, true)) :
-          //         new Thread(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
-          //  var backwardThread = (useErrorMethod) ? new Thread(() => SimulateWithinError(backwardJoints, backwardLinks, false)) :
-          //new Thread(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
-          //  forwardThread.Start();
-          //  backwardThread.Start();
-          //  forwardThread.Join();
-          //  backwardThread.Join();
+            //  var forwardThread = (useErrorMethod) ? new Thread(() => SimulateWithinError(AllJoints, AllLinks, true)) :
+            //         new Thread(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
+            //  var backwardThread = (useErrorMethod) ? new Thread(() => SimulateWithinError(backwardJoints, backwardLinks, false)) :
+            //new Thread(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
+            //  forwardThread.Start();
+            //  backwardThread.Start();
+            //  forwardThread.Join();
+            //  backwardThread.Join();
             for (int i = 0; i < numJoints; i++)
             {
                 var newJ = backwardJoints[i];
@@ -390,7 +390,7 @@ namespace PlanarMechanismSimulator
 
         private void SimulateWithinError(List<joint> joints, List<link> links, Boolean Forward)
         {
-            double startingPosChange = Forward ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
+            double startingPosChange = (Forward == (InputSpeed > 0)) ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
             if (inputJoint.jointType == JointTypes.P) startingPosChange *= AverageLength;
             double maxLengthError = MaxSmoothingError * AverageLength;
             double currentTime = 0.0;
