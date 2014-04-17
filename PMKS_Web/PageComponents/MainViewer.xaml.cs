@@ -109,6 +109,7 @@ namespace PMKS_Silverlight_App
             get { return _scaleFactor; }
             set
             {
+                if (Constants.sameCloseZero(_scaleFactor, value)) return;
                 _scaleFactor = value;
                 penThick = DisplayConstants.PenThicknessRatio / _scaleFactor;
                 jointSize = DisplayConstants.JointSize / _scaleFactor;
@@ -430,9 +431,9 @@ namespace PMKS_Silverlight_App
             var newScaleFactor = Math.Min(ParentWidth / w, ParentHeight / h);
             if (newScaleFactor > DisplayConstants.MaxZoomIn) newScaleFactor = DisplayConstants.MaxZoomIn;
             if (newScaleFactor < DisplayConstants.MaxZoomOut) newScaleFactor = DisplayConstants.MaxZoomOut;
-
-            xPanAnchor = (ParentWidth - (maxX + minX) - newScaleFactor * MainCanvas.Width) / 2;
-            yPanAnchor = (ParentHeight - (maxY + minY) - newScaleFactor * MainCanvas.Height) / 2;
+            // todo: something is still wrong with this equation - you will notice when you create a really big mechanism
+            xPanAnchor = (ParentWidth - (maxX + minX)/2 - newScaleFactor * MainCanvas.Width) / 2;
+            yPanAnchor = (ParentHeight - (maxY + minY)/2 - newScaleFactor * MainCanvas.Height) / 2;
             MoveScaleCanvas(newScaleFactor, xPanAnchor, yPanAnchor, DisplayConstants.ZoomTimeOnRedraw);
         }
 

@@ -116,19 +116,29 @@ namespace PlanarMechanismSimulator
                         var key = numJoints * i + j;
                         angleFromBlockToJoint.Add(key, 0.0);
                         distanceToSlideLine.Add(key, 0.0);
-                         key = numJoints * j + i;
+                        key = numJoints * j + i;
                         angleFromBlockToJoint.Add(key, 0.0);
-                        distanceToSlideLine.Add(key, 0.0);         
+                        distanceToSlideLine.Add(key, 0.0);
                     }
                     else if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
                         addSlideDictionaryEntry(iJoint, jJoint, i, j);
                         addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                        if (jJoint.jointType == JointTypes.P)
+                        {
+                            addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                            addSlideDictionaryEntry(jJoint, iJoint, j, i);
+                        }
                     }
                     else if (!iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
                     {
                         addSlideDictionaryEntry(jJoint, iJoint, j, i);
                         addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                        if (iJoint.jointType == JointTypes.P)
+                        {
+                            addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                            addSlideDictionaryEntry(iJoint, jJoint, i, j);
+                        }
                     }
                     else //    if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
@@ -202,8 +212,10 @@ namespace PlanarMechanismSimulator
             if (slidingJoint == referenceJoint) return 0.0;
             var slideIndex = joints.IndexOf(slidingJoint);
             var fixedIndex = joints.IndexOf(referenceJoint);
-
-            return distanceToSlideLine[numJoints * slideIndex + fixedIndex];
+            var index = numJoints*slideIndex + fixedIndex;
+            if (distanceToSlideLine.ContainsKey(index))
+                return distanceToSlideLine[index];
+            else return -distanceToSlideLine[numJoints*fixedIndex+slideIndex];
         }
         /// <summary>
         /// returns the angle between the slide and the reference joint.

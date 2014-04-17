@@ -476,9 +476,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         }
         private point defineParallelLineThroughJoint(joint positionJoint, joint slopeJoint, link thisLink)
         {
-            var length = (positionJoint.FixedWithRespectTo(thisLink))
-                ? thisLink.DistanceBetweenSlides(slopeJoint, positionJoint)
-                : -thisLink.DistanceBetweenSlides(positionJoint, slopeJoint);
+            var length = thisLink.DistanceBetweenSlides(slopeJoint, positionJoint);
             var angle = slopeJoint.SlideAngle + Math.PI / 2;
             return new point(slopeJoint.x + length * Math.Cos(angle),
                 slopeJoint.y + length * Math.Sin(angle));

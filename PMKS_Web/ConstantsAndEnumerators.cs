@@ -18,7 +18,7 @@ namespace PMKS_Silverlight_App
         public const double AccelLengthRatio = 0.5;
         public const double TickDistance = 24.0; // one-quarter of an inch
         public const double JointSize = 4.0; // one-sixteenth of an inch
-        public const double AxesBuffer = 24; // one inch
+        public const double AxesBuffer = 6;//24; // one inch
         public const double UnCroppedDimension = 999999;
         public const double LinkFillOpacity = 0.5;
         public const double LinkFillOpacityForOneJointLinks = 0.35;
@@ -41,9 +41,9 @@ namespace PMKS_Silverlight_App
         public const string TargetShapeQueryText = "Enter Target Shape Stream Here.";
         public const string TargetPathStreamEnd = "\"/>";
         public const double SliderRectangleWidthIncrease = 1.5;
-        public const double MaxZoomIn = 25;
-        public const double MaxZoomOut = 0.04;
-        public const double UltimateWindowWidth = 1920;
+        public const double MaxZoomIn = 50;
+        public const double MaxZoomOut = 0.02;
+        public const double UltimateWindowWidth = 960;
         public const double MaxUnselectedOpacity = 0.7;
         public const double IconIncreaseRadiusFactor = 1.8;
         public const double ZoomStep = 1.05;
@@ -59,6 +59,7 @@ namespace PMKS_Silverlight_App
         public const double DefaultSpeed = 10.0;
         public const double DefaultError = 0.001;
         public const double DefaultAngleInc = 5.0;
+        public const double MinAxisPenThickness = 0.012;
 
 
     }
