@@ -27,7 +27,7 @@ namespace Silverlight_PMKS.Shapes.Static_Shapes
             };
             Stroke = new SolidColorBrush(Color.FromArgb(255, 80, 80, 80));
 
-            StrokeThickness = (strokeThickness > 0.01) ? strokeThickness : 100;
+            StrokeThickness = strokeThickness ;
         }
 
 
