@@ -40,6 +40,8 @@ namespace PlanarMechanismSimulator
         public const double JointVelocityLimitFactor = 75.0;
         public const double LinkVelocityLimitFactor = 75.0;
         public const double FullCircle = 2 * Math.PI;
+        public const double MaxSlope = 10e9;
+
         public static Boolean sameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilonSame;
@@ -100,14 +102,20 @@ namespace PlanarMechanismSimulator
             if (sameCloseZero(slopeA, slopeB)) return new point(Double.NaN, Double.NaN);
             var offsetA = ptA.y - slopeA * ptA.x;
             var offsetB = ptB.y - slopeB * ptB.x;
-            if (Double.IsNaN(slopeA) || Double.IsInfinity(slopeA))
+            if (verticalSlope(slopeA))
                 return new point(ptA.x, slopeB * ptA.x + offsetB);
-            if (Double.IsNaN(slopeB) || Double.IsInfinity(slopeB))
+            if (verticalSlope(slopeB))
                 return new point(ptB.x, slopeA * ptB.x + offsetA);
 
             var x = (offsetB - offsetA) / (slopeA - slopeB);
             var y = slopeA * x + offsetA;
             return new point(x, y);
+        }
+
+        private static Boolean verticalSlope(double slope)
+        {
+            return (Double.IsNaN(slope) || Double.IsInfinity(slope)
+                    || Math.Abs(slope) > Constants.MaxSlope);
         }
     }
 }

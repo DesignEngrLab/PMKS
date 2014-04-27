@@ -204,7 +204,8 @@ namespace PlanarMechanismSimulator
                     return; /* you are at a same time step - no need to change static vars. */
                 /* you are at a new time step */
                 // if (queryTime > JointParameters.Times[0] + Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
-                if (queryTime >= prevQueryTime && queryTime <= nextQueryTime)
+                if (queryTime >= prevQueryTime && (queryTime <= nextQueryTime ||
+                    prevQueryIndex == LinkParameters.LastIndex))
                 {
                     /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */
                 }
@@ -242,6 +243,7 @@ namespace PlanarMechanismSimulator
                 }
                 tau = queryTime - prevQueryTime;
                 nextToPrevTime = nextQueryTime - prevQueryTime;
+                if (nextToPrevTime < 0) nextToPrevTime += Time_Span;
                 lastQueryTime = queryTime;
             }
             catch (Exception exception)

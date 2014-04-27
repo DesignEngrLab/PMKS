@@ -87,7 +87,7 @@ namespace PlanarMechanismSimulator
                 {
                     if (Times[i] == time) return;  //if it already exists, just don't add it at all!
                     i--;
-                } while (i > 0 && Times[i] > time);
+                } while (i > 0 && Times[i] >= time);
                 Times.Insert(i + 1, time);
                 Parameters.Insert(i+1, parameters);
             }
@@ -113,7 +113,7 @@ namespace PlanarMechanismSimulator
                 {
                     if (Times[i] == time) return;  //if it already exists, just don't add it at all!
                     i++;
-                } while (Times[i] < time);
+                } while (Times[i] <= time);
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
          
