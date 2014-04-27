@@ -76,16 +76,20 @@ namespace PlanarMechanismSimulator
                 Parameters.Add(parameters);
             }
             else if (time < Times[0])
-            {                           
+            {
                 Times.Insert(0, time);
-                Parameters.Insert(0, parameters); 
+                Parameters.Insert(0, parameters);
             }
             else
             {
-                int i = LastIndex;
-                while (i > 0 && Times[i] > time) i--;
-                Times.Insert(i, time);
-                Parameters.Insert(i, parameters);
+                var i = LastIndex;
+                do
+                {
+                    if (Times[i] == time) return;  //if it already exists, just don't add it at all!
+                    i--;
+                } while (i > 0 && Times[i] > time);
+                Times.Insert(i + 1, time);
+                Parameters.Insert(i+1, parameters);
             }
             LastIndex++;
         }
@@ -105,7 +109,15 @@ namespace PlanarMechanismSimulator
             else
             {
                 int i = 0;
-                while (Times[i] < time) i++;
+                do
+                {
+                    if (Times[i] == time) return;  //if it already exists, just don't add it at all!
+                    i++;
+                } while (Times[i] < time);
+                Times.Insert(i, time);
+                Parameters.Insert(i, parameters);
+         
+
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
             }

@@ -128,6 +128,7 @@ namespace PlanarMechanismSimulator
             {
                 CycleType = CycleTypes.MoreThanOneCycle;
             }
+            InitializeQueryVars();
         }
 
         private bool DoesMechanismRepeatOnCrankCycle(double cyclePeriodTime)

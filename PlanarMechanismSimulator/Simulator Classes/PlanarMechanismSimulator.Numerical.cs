@@ -195,51 +195,59 @@ namespace PlanarMechanismSimulator
 
         private void setTimeIndices(double queryTime)
         {
-            while (queryTime < BeginTime) queryTime += Time_Span;
-            while (queryTime > EndTime) queryTime -= Time_Span;
+            try
+            {
+                while (queryTime < BeginTime) queryTime += Time_Span;
+                while (queryTime > EndTime) queryTime -= Time_Span;
 
-            if (queryTime == lastQueryTime) return; /* you are at a same time step - no need to change static vars. */
-            /* you are at a new time step */
-            // if (queryTime > JointParameters.Times[0] + Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
-            if (queryTime >= prevQueryTime && queryTime <= nextQueryTime)
-            {
-                /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */
-            }
-            else
-            {
-                while (queryTime < prevQueryTime)
+                if (queryTime == lastQueryTime)
+                    return; /* you are at a same time step - no need to change static vars. */
+                /* you are at a new time step */
+                // if (queryTime > JointParameters.Times[0] + Time_Span) setTimeIndices(queryTime - Time_Span);         // if the time is more than the span, recurse with lower time
+                if (queryTime >= prevQueryTime && queryTime <= nextQueryTime)
                 {
-                    nextQueryIndex = prevQueryIndex;
-                    prevQueryIndex--;
-                    if (prevQueryIndex < 0)
+                    /* cool. You're still in the same time step. This means we just need to change prevDeltaTime and nextDeltaTime. */
+                }
+                else
+                {
+                    while (queryTime < prevQueryTime)
                     {
-                        prevQueryIndex = LinkParameters.LastIndex;
+                        nextQueryIndex = prevQueryIndex;
+                        prevQueryIndex--;
+                        if (prevQueryIndex < 0)
+                        {
+                            prevQueryIndex = LinkParameters.LastIndex;
+                            prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                            nextQueryTime = LinkParameters.Times[nextQueryIndex];
+                            break;
+                        }
                         prevQueryTime = LinkParameters.Times[prevQueryIndex];
                         nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                        break;
                     }
-                    prevQueryTime = LinkParameters.Times[prevQueryIndex];
-                    nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                }
-                while (queryTime > nextQueryTime)
-                {
-                    prevQueryIndex = nextQueryIndex;
-                    nextQueryIndex++;
-                    if (nextQueryIndex > LinkParameters.LastIndex)
+                    while (queryTime >= nextQueryTime)
                     {
-                        nextQueryIndex = 0;
+                        prevQueryIndex = nextQueryIndex;
+                        nextQueryIndex++;
+                        if (nextQueryIndex > LinkParameters.LastIndex)
+                        {
+                            nextQueryIndex = 0;
+                            prevQueryTime = LinkParameters.Times[prevQueryIndex];
+                            nextQueryTime = LinkParameters.Times[nextQueryIndex];
+                            break;
+                        }
+
                         prevQueryTime = LinkParameters.Times[prevQueryIndex];
                         nextQueryTime = LinkParameters.Times[nextQueryIndex];
-                        break;
                     }
-
-                    prevQueryTime = LinkParameters.Times[prevQueryIndex];
-                    nextQueryTime = LinkParameters.Times[nextQueryIndex];
                 }
+                tau = queryTime - prevQueryTime;
+                nextToPrevTime = nextQueryTime - prevQueryTime;
+                lastQueryTime = queryTime;
             }
-            tau = queryTime - prevQueryTime;
-            nextToPrevTime = nextQueryTime - prevQueryTime;
-            lastQueryTime = queryTime;
+            catch (Exception exception)
+            {
+                Console.Write(exception);
+            }
         }
 
         static double FindPositionatTime(double tau, double deltaTime, double posPrevious, double posNext, double vPrevious,

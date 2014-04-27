@@ -10,7 +10,9 @@ namespace PMKS_Silverlight_App
 {
     public static class IOStringFunctions
     {
-        private static string debugString = "";
+        private static string debugString = //"";
+      // "set=s20&ts=m5 5v50h5v-5h-5zm-20 -10v50h5v-5h-5zm50 11h50v-5h-5v5&mech=ground input R -75 194.5 0 ffff|input coupler R 5 -4.3 0 ffff|coupler output R 4.6 55 0 tfff|output ground R 25.5 -3 0 ffff|coupler driver R 17.3 68.6 0 ffff|driver crank R -61.3 17.8 0 ffff|crank ground R -31.6 67.3 0 ffft|";
+        "set=f60&mech=ground input R 8 0 tfft|input c R 25 0 tfff|c out R 0 30 0 tfff|out ground R -50 -10 0 tfff|";
         // "mech=ground input R -0.1 -0.1 0 tfff|input output RP 19 0 0 tfff|output ground R 10 0 0 tfft|";
          //"mech=ground input P 0 0 0 tfff|s input RP 0 10 15 tfff|s ground P 13 1 45 tfft|  ";
         //"mech=ground 1 R 7.18359375 -2.53515625 0 tfff|1 2 R 7.66015625 -3.935546875 0 tfff|2 3 R 7.638671875 -1.287109375 0 tfff|3 ground R 9.25390625 -2.447265625 0 tfff|";
