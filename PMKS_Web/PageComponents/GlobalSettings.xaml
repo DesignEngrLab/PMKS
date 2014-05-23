@@ -6,7 +6,7 @@
             <Border Padding="8,0">
                 <StackPanel  >
                     <TextBlock Name="SpeedHeaderTextBlock" Text="Speed (rpm)"/>
-                    <TextBox FontSize="16" MinHeight="38" MinWidth="60" Name="speedBox" />
+                    <TextBox FontSize="16" MinHeight="38" MinWidth="60" Name="speedBox" KeyUp="TexBox_KeyUp" />
                 </StackPanel>
             </Border>
                 <Grid HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Visible">
@@ -55,9 +55,9 @@
                         </StackPanel>
                     </Border>
                 <TextBox Grid.Row="1" FontSize="16" MinHeight="38" MinWidth="60" Background="#229CB46E" Name="ErrorBox" 
-                         VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                         VerticalAlignment="Center" HorizontalAlignment="Center" KeyUp="TexBox_KeyUp"/>
                 <TextBox Grid.Row="1" FontSize="16" MinHeight="38" MinWidth="60"  Grid.Column="2" Background="#226D87B4" Name="AngleBox" 
-                         VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Gray"/>
+                         VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Gray" KeyUp="TexBox_KeyUp"/>
                     <Border Visibility="Collapsed" Grid.Row="1" Grid.Column="3"  BorderBrush="Black" BorderThickness="1"  Padding="2"  >
                         <StackPanel  >
                         <RadioButton Content="Degrees" Name="DegreesCheckBox" Checked="GlobalSettingChanged" Unchecked="GlobalSettingChanged" />

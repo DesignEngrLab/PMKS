@@ -57,6 +57,21 @@ namespace PMKS_Silverlight_App
             App.main.AnalysisStep = AnalysisType.error;
             ErrorCheckBox.IsChecked = MetricCheckBox.IsChecked = DegreesCheckBox.IsChecked = true;
         }
+
+        private void TexBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            var textBox = (TextBox)sender;
+            if (e.Key == Key.Escape)
+            {
+                textBox.Text = "";
+            }
+            if (e.Key == Key.Down || e.Key == Key.End || e.Key == Key.Enter || e.Key == Key.PageDown || e.Key == Key.PageUp || e.Key == Key.Right || e.Key == Key.Space || e.Key == Key.Tab || e.Key == Key.Up)
+            {
+                BindingExpression be = textBox.GetBindingExpression(TextBox.TextProperty);
+                if (be != null) be.UpdateSource();
+            }
+
+        }
     }
 
 }
