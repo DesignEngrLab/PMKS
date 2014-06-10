@@ -5,10 +5,11 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using PMKS;
 using StarMathLib;
 #endregion
 
-namespace PlanarMechanismSimulator.VelocityAndAcceleration
+namespace PMKS.VelocityAndAcceleration
 //at time t=0; all acceleration and velocity are zero
 {
     /// <summary>

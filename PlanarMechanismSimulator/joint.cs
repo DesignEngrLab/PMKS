@@ -1,6 +1,7 @@
 ﻿using System;
+using PMKS;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
 
     public class point
@@ -139,9 +140,9 @@ namespace PlanarMechanismSimulator
         {
             return new joint
             {
+                                       Link1 = Link1,
+                                       Link2 =Link2,
                 InitSlideAngle = InitSlideAngle,
-                Link1 = Link1,
-                Link2 = Link2,
                 x = x,
                 xInitial = xInitial,
                 xLast = xLast,
@@ -156,7 +157,7 @@ namespace PlanarMechanismSimulator
                 ay = ay,
                 SlideAcceleration = SlideAcceleration,
                 positionKnown = positionKnown,
-                SlideLimits = SlideLimits,
+                SlideLimits = (SlideLimits == null) ? null : (double[])SlideLimits.Clone(),
                 vx = vx,
                 vy = vy,
                 vxLast = vxLast,

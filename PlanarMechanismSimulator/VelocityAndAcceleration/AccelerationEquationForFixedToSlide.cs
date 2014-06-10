@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PMKS;
 
-namespace PlanarMechanismSimulator.VelocityAndAcceleration
+namespace PMKS.VelocityAndAcceleration
 {
     internal class AccelerationEquationForFixedToSlide : AccelerationJointToJoint
     {

@@ -198,12 +198,6 @@
       <DependentUpon>Sheet3.cs</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismSimulator.csproj">
-      <Project>{6FCC60C6-E639-4DD8-B8A1-F096CED5BA8F}</Project>
-      <Name>PlanarMechanismSimulator</Name>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

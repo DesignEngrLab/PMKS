@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PMKS;
 
-namespace PlanarMechanismSimulator.VelocityAndAcceleration
+namespace PMKS.VelocityAndAcceleration
 {
     /// <summary>
     /// This is for when two links are connected by a P joint. In such a case, 

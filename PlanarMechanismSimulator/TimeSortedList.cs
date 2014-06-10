@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     public class TimeSortedList : IList<KeyValuePair<double, double[,]>>
     {

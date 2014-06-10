@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OptimizationToolbox;
-using PlanarMechanismSimulator.PositionSolving;
-using PlanarMechanismSimulator.VelocityAndAcceleration;
+using PMKS.PositionSolving;
+using PMKS;
+using PMKS.VelocityAndAcceleration;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     public partial class Simulator : IDependentAnalysis
     {
@@ -46,37 +47,36 @@ namespace PlanarMechanismSimulator
             DefineMovementCharacteristics();
 #else
             var backwardJoints = AllJoints.Select(j => j.copy()).ToList();
-            var backwardLinks = AllLinks.Select(c => c.copy(AllJoints, backwardJoints)).ToList();
+            var backwardLinks = AllLinks.Select(c => c.copy()).ToList();
             foreach (var j in backwardJoints)
             {
-                j.Link1 = backwardLinks[AllLinks.IndexOf(j.Link1)];
+                var link1 = backwardLinks[AllLinks.IndexOf(j.Link1)];
+                j.Link1 = link1;
+                link1.joints.Add(j);
                 if (j.Link2 != null)
-                    j.Link2 = backwardLinks[AllLinks.IndexOf(j.Link2)];
+                {
+                    var link2 = backwardLinks[AllLinks.IndexOf(j.Link2)];
+                    j.Link2 = link2;
+                    link2.joints.Add(j);
+                }
             }
             /*** Stepping Forward in Time ***/
-            var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
-                : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
+            //var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
+            //    : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
             /*** Stepping Backward in Time ***/
             var backwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(backwardJoints, backwardLinks, false))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
-            Task.WaitAll(forwardTask, backwardTask);
-
-            //  var forwardThread = (useErrorMethod) ? new Thread(() => SimulateWithinError(AllJoints, AllLinks, true)) :
-            //         new Thread(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
-            //  var backwardThread = (useErrorMethod) ? new Thread(() => SimulateWithinError(backwardJoints, backwardLinks, false)) :
-            //new Thread(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
-            //  forwardThread.Start();
-            //  backwardThread.Start();
-            //  forwardThread.Join();
-            //  backwardThread.Join();
+          //  Task.WaitAll(forwardTask, backwardTask);
+            Task.WaitAll( backwardTask);
+                                  
             for (int i = 0; i < numJoints; i++)
             {
-                var newJ = backwardJoints[i];
-                if (newJ.SlideLimits != null)
-                {
-                    var origJ = AllJoints[i];
-                    if (origJ.SlideLimits[0] > newJ.SlideLimits[0]) origJ.SlideLimits[0] = newJ.SlideLimits[0];
-                    if (origJ.SlideLimits[2] < newJ.SlideLimits[2]) origJ.SlideLimits[2] = newJ.SlideLimits[2];
+                var backSlideLimits = backwardJoints[i].SlideLimits;
+                var forwSlideLimits = AllJoints[i].SlideLimits; 
+                if (forwSlideLimits != null)
+                {  
+                    if (forwSlideLimits[1] > backSlideLimits[1]) forwSlideLimits[1] = backSlideLimits[1];
+                    if (forwSlideLimits[3] < backSlideLimits[3]) forwSlideLimits[3] = backSlideLimits[3];
                 }
             }
             DefineMovementCharacteristics();

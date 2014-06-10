@@ -1,6 +1,7 @@
 ﻿using System;
+using PMKS;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     internal class gearData
     {

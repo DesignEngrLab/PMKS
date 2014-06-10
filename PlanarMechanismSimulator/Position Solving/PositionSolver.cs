@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PMKS;
 using StarMathLib;
 
-namespace PlanarMechanismSimulator.PositionSolving
+namespace PMKS.PositionSolving
 {
     /// <summary>
     /// 
@@ -18,7 +19,7 @@ namespace PlanarMechanismSimulator.PositionSolving
                 if (_posError < value) _posError = value;
             }
         }
-        double _posError = 0.0;
+        double _posError;
         private NonDyadicPositionSolver NDPS;
 
         private PositionAnalysisResults posResult;
@@ -26,9 +27,7 @@ namespace PlanarMechanismSimulator.PositionSolving
         internal readonly List<joint> joints;
         internal readonly List<link> links;
         private readonly Dictionary<int, gearData> gearsData;
-        private readonly int numJoints;
         private readonly int numLinks;
-        private readonly int inputJointIndex;
         private readonly link inputLink;
         private readonly link groundLink;
         private readonly joint inputJoint;
@@ -38,8 +37,6 @@ namespace PlanarMechanismSimulator.PositionSolving
         public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData, int inputJointIndex)
         {
             this.joints = joints;
-            numJoints = joints.Count;
-            this.inputJointIndex = inputJointIndex;
             inputJoint = joints[inputJointIndex];
             this.links = links;
             numLinks = links.Count;
@@ -344,7 +341,7 @@ namespace PlanarMechanismSimulator.PositionSolving
             foreach (var j in joints.Where(jt => jt.SlideLimits != null))
             {
                 var refJoint = j.Link1.joints[(int)j.SlideLimits[0]];
-                var orthoPt = link.findOrthoPoint(refJoint, j, j.SlideAngle);
+                var orthoPt = link.findOrthoPoint(refJoint, j);
 
                 var refVector = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };
                 var slideVector = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
@@ -749,7 +746,13 @@ namespace PlanarMechanismSimulator.PositionSolving
             var errorPos = Math.Abs(deltaAnglePos - deltaAngleNum);
             var errorNeg = Math.Abs(deltaAngleNeg - deltaAngleNum);
 
-            return (errorPos < errorNeg) ? deltaAnglePos : deltaAngleNeg;
+            if (errorPos < errorNeg)
+            {
+                PositionError = distanceBetweenJoints*errorPos;
+                return deltaAnglePos;
+            }    
+            PositionError = distanceBetweenJoints * errorNeg;
+            return deltaAngleNeg;
         }
         #endregion
 

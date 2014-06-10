@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using PlanarMechanismSimulator;
+using PMKS;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;

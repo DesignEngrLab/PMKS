@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using PlanarMechanismSimulator;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using PMKS;
 
 namespace PMKS_Silverlight_App
 {

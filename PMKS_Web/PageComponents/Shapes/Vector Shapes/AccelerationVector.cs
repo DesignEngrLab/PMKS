@@ -2,11 +2,11 @@
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Ink;
-using PlanarMechanismSimulator;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using PMKS;
 
 namespace PMKS_Silverlight_App
 {

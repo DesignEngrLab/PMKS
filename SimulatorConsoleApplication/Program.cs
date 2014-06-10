@@ -29,7 +29,7 @@ namespace SimulatorConsoleApplication
             // http://people.oregonstate.edu/~campmatt/pmks.html?mech=ground input R 0 350 ---+|input coupler R 0 450 ----|coupler follower R 120 370 ----|follower ground P 120 300 0 ----|
 
 
-            var pms = new PlanarMechanismSimulator.Simulator(data);
+            var pms = new PMKS.Simulator(data);
             pms.InputSpeed = 123.0;
             pms.MaxSmoothingError = 0.01;
             Console.WriteLine("start");

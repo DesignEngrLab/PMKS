@@ -20,6 +20,7 @@
  *     at http://ooot.codeplex.com/.
  *************************************************************************/
 using System;
+using System.Diagnostics;
 
 namespace OptimizationToolbox
 {
@@ -60,7 +61,7 @@ namespace OptimizationToolbox
             if ((verbosityLimit > verbosity)
                 || (string.IsNullOrEmpty(message.ToString())))
                 return false;
-            Console.WriteLine(message);
+            Debug.WriteLine(message);
             return true;
         }
         /// <summary>
@@ -73,7 +74,7 @@ namespace OptimizationToolbox
             if ((verbosity >= list.Length)
                 || (string.IsNullOrEmpty(list[verbosity].ToString())))
                 return false;
-            Console.WriteLine(list[verbosity]);
+            Debug.WriteLine(list[verbosity]);
             return true;
         }
 

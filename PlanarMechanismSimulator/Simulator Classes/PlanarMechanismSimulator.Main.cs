@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using OptimizationToolbox;
-using PlanarMechanismSimulator.PositionSolving;
-using PlanarMechanismSimulator.VelocityAndAcceleration;
+using PMKS.PositionSolving;
+using PMKS.VelocityAndAcceleration;
+using PMKS;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     public partial class Simulator : IDependentAnalysis
     {
@@ -244,13 +245,13 @@ namespace PlanarMechanismSimulator
             {
                 var words = pivotSentence.Split(new[] { ' ', ',', '\t', '|' }).ToList();
                 words.RemoveAll(string.IsNullOrWhiteSpace);
-                var lastJointType = words.LastOrDefault(s => s.Equals("R", StringComparison.InvariantCultureIgnoreCase)
+                var lastJointType = words.LastOrDefault(s => s.Equals("R", StringComparison.CurrentCultureIgnoreCase)
                                                               ||
-                                                              s.Equals("P", StringComparison.InvariantCultureIgnoreCase)
+                                                              s.Equals("P", StringComparison.CurrentCultureIgnoreCase)
                                                               ||
-                                                              s.Equals("RP", StringComparison.InvariantCultureIgnoreCase)
+                                                              s.Equals("RP", StringComparison.CurrentCultureIgnoreCase)
                                                               ||
-                                                              s.Equals("G", StringComparison.InvariantCultureIgnoreCase));
+                                                              s.Equals("G", StringComparison.CurrentCultureIgnoreCase));
                 var jointTypeIndex = words.LastIndexOf(lastJointType);
                 if (jointTypeIndex == -1) throw new Exception("No joint type found in: " + pivotSentence);
                 jointTypes.Add(words[jointTypeIndex]);
@@ -288,13 +289,13 @@ namespace PlanarMechanismSimulator
             foreach (var linkID in LinkIDs)
                 for (int i = linkID.Count - 1; i >= 0; i--)
                     if (string.IsNullOrWhiteSpace(linkID[i])) linkID.RemoveAt(i);
-                    else if (linkID[i].Equals("0", StringComparison.InvariantCultureIgnoreCase)
-                             || linkID[i].Equals("gnd", StringComparison.InvariantCultureIgnoreCase)
-                             || linkID[i].Equals("grnd", StringComparison.InvariantCultureIgnoreCase)
-                             || linkID[i].Equals("grond", StringComparison.InvariantCultureIgnoreCase)
-                             || linkID[i].Equals("gound", StringComparison.InvariantCultureIgnoreCase)
-                             || linkID[i].Equals("groud", StringComparison.InvariantCultureIgnoreCase)
-                             || linkID[i].StartsWith("ground", StringComparison.InvariantCultureIgnoreCase))
+                    else if (linkID[i].Equals("0", StringComparison.CurrentCultureIgnoreCase)
+                             || linkID[i].Equals("gnd", StringComparison.CurrentCultureIgnoreCase)
+                             || linkID[i].Equals("grnd", StringComparison.CurrentCultureIgnoreCase)
+                             || linkID[i].Equals("grond", StringComparison.CurrentCultureIgnoreCase)
+                             || linkID[i].Equals("gound", StringComparison.CurrentCultureIgnoreCase)
+                             || linkID[i].Equals("groud", StringComparison.CurrentCultureIgnoreCase)
+                             || linkID[i].StartsWith("ground", StringComparison.CurrentCultureIgnoreCase))
                         linkID[i] = "ground";
             var linkNames = LinkIDs.SelectMany(a => a).Distinct().ToList();
 
@@ -317,12 +318,12 @@ namespace PlanarMechanismSimulator
                           * joint then between 0 and 1 there is an RP and between 1 and 2, 2 and 3 and so on, it is an R joint. */
                     for (int j = 0; j < LinkIDs[i].Count - 1; j++)
                     {
-                        if (j > 0 && JointTypeStrings[i].Equals("rp", StringComparison.InvariantCultureIgnoreCase))
+                        if (j > 0 && JointTypeStrings[i].Equals("rp", StringComparison.CurrentCultureIgnoreCase))
                             AllJoints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),
                                                  "r", currentJointPosition));
                         /* if there are more than 2 links and the joint is typed G or P then we throw an error. */
-                        else if (j > 0 && (JointTypeStrings[i].Equals("g", StringComparison.InvariantCultureIgnoreCase)
-                             || JointTypeStrings[i].Equals("p", StringComparison.InvariantCultureIgnoreCase)))
+                        else if (j > 0 && (JointTypeStrings[i].Equals("g", StringComparison.CurrentCultureIgnoreCase)
+                             || JointTypeStrings[i].Equals("p", StringComparison.CurrentCultureIgnoreCase)))
                             throw new Exception("More than two links is not allowed for " + JointTypeStrings[i] + " joints.");
                         /* else...this is the normal case of a joint between two links. */
                         else AllJoints.Add(new joint((LinkIDs[i][j] == "ground" || LinkIDs[i][j + 1] == "ground"),

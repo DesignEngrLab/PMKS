@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PlanarMechanismSimulator.VelocityAndAcceleration;
+using PMKS.VelocityAndAcceleration;
+using PMKS;
 using StarMathLib;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     public static class Constants
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     /// <summary>
     /// The mechanism will have a characteristic repeat cycle.

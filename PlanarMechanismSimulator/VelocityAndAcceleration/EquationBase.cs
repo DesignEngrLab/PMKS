@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PlanarMechanismSimulator.VelocityAndAcceleration
+namespace PMKS.VelocityAndAcceleration
 {
     internal abstract class EquationBase
     {

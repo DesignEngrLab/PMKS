@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 using System.Windows.Shapes;
-using PlanarMechanismSimulator;
+using PMKS;
 using System;
 using System.Collections.Generic;
 using System.Linq;

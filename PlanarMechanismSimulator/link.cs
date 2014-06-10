@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using PMKS;
 using StarMathLib;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     public class link
     {
@@ -80,7 +81,10 @@ namespace PlanarMechanismSimulator
             isGround = IsGround;
         }
 
-        private link() { }
+        private link()
+        {
+            joints = new List<joint>();
+        }
 
         internal void DetermineLengthsAndReferences()
         {
@@ -161,7 +165,7 @@ namespace PlanarMechanismSimulator
         private void addSlideDictionaryEntry(joint slideJoint, joint fixedJoint, int slideIndex, int fixedIndex)
         {
             var key = numJoints * slideIndex + fixedIndex;
-            var orthoPt = findOrthoPoint(fixedJoint, slideJoint, slideJoint.SlideAngle);
+            var orthoPt = findOrthoPoint(fixedJoint, slideJoint);
             var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
             var fixedVector = new[] { fixedJoint.xInitial - orthoPt.x, fixedJoint.yInitial - orthoPt.y };
             distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, fixedVector));
@@ -212,10 +216,10 @@ namespace PlanarMechanismSimulator
             if (slidingJoint == referenceJoint) return 0.0;
             var slideIndex = joints.IndexOf(slidingJoint);
             var fixedIndex = joints.IndexOf(referenceJoint);
-            var index = numJoints*slideIndex + fixedIndex;
+            var index = numJoints * slideIndex + fixedIndex;
             if (distanceToSlideLine.ContainsKey(index))
                 return distanceToSlideLine[index];
-            else return -distanceToSlideLine[numJoints*fixedIndex+slideIndex];
+            else return -distanceToSlideLine[numJoints * fixedIndex + slideIndex];
         }
         /// <summary>
         /// returns the angle between the slide and the reference joint.
@@ -255,13 +259,14 @@ namespace PlanarMechanismSimulator
         /// <param name="lineAngle">The line angle.</param>
         /// <param name="belowLinePositiveSlope">if set to <c>true</c> [below line positive slope].</param>
         /// <returns></returns>
-        public static point findOrthoPoint(joint refJoint, joint slideJoint, double lineAngle)
+        public static point findOrthoPoint(joint refJoint, joint slideJoint)
         {
-            if (Constants.sameCloseZero(lineAngle))
+            var slideAngle = slideJoint.SlideAngle;
+            if (Constants.sameCloseZero(slideAngle))
                 return new point(refJoint.x, slideJoint.y);
-            else if (Constants.sameCloseZero(Math.Abs(lineAngle), Math.PI / 2))
+            else if (Constants.sameCloseZero(Math.Abs(slideAngle), Math.PI / 2))
                 return new point(slideJoint.x, refJoint.y);
-            var slope = Math.Tan(lineAngle);
+            var slope = Math.Tan(slideAngle);
             var offset = (slideJoint.y - slope * slideJoint.x);
             var x = (refJoint.x + slope * (refJoint.y - offset)) / (slope * slope + 1);
             var y = slope * x + offset;
@@ -269,7 +274,7 @@ namespace PlanarMechanismSimulator
         }
 
 
-        internal link copy(List<joint> oldJoints, List<joint> newJoints)
+        internal link copy()
         {
             return new link
                 {
@@ -278,7 +283,6 @@ namespace PlanarMechanismSimulator
                     AngleLast = AngleLast,
                     AngleIsKnown = AngleIsKnown,
                     AngleNumerical = AngleNumerical,
-                    joints = joints.Select(j => newJoints[oldJoints.IndexOf(j)]).ToList(),
                     numJoints = numJoints,
                     lengths = new Dictionary<int, double>(lengths),
                     distanceToSlideLine = new Dictionary<int, double>(distanceToSlideLine),

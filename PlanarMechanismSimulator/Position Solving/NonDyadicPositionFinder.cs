@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using OptimizationToolbox;
+using PMKS;
 
-namespace PlanarMechanismSimulator.PositionSolving
+namespace PMKS.PositionSolving
 {
     internal class NonDyadicPositionSolver : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {

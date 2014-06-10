@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
-using PlanarMechanismSimulator;
+using PMKS;
 
 namespace PMKS_Silverlight_App
 {

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using OptimizationToolbox;
 using System;
+using PMKS;
 
-namespace PlanarMechanismSimulator
+namespace PMKS
 {
     public partial class Simulator : IDependentAnalysis
     {
@@ -195,8 +196,6 @@ namespace PlanarMechanismSimulator
 
         private void setTimeIndices(double queryTime)
         {
-            try
-            {
                 while (queryTime < BeginTime) queryTime += Time_Span;
                 while (queryTime > EndTime) queryTime -= Time_Span;
 
@@ -246,12 +245,7 @@ namespace PlanarMechanismSimulator
                 if (nextToPrevTime < 0) nextToPrevTime += Time_Span;
                 lastQueryTime = queryTime;
             }
-            catch (Exception exception)
-            {
-                Console.Write(exception);
-            }
-        }
-
+        
         static double FindPositionatTime(double tau, double deltaTime, double posPrevious, double posNext, double vPrevious,
                double vNext, double aPrevious, double aNext)
         {

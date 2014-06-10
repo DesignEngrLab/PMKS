@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using PlanarMechanismSimulator;
+using PMKS;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
