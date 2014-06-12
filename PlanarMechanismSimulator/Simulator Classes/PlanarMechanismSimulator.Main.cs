@@ -36,7 +36,7 @@ namespace PMKS
         /// </value>
         public int[] JointNewIndexFromOriginal { get; private set; }
         private double _deltaAngle = Constants.DefaultStepSize;
-
+        private int maxJointParamLengths;
         private double _maxSmoothingError = double.NaN;
         private Dictionary<int, gearData> gearsData;
 
@@ -386,7 +386,10 @@ namespace PMKS
 
             JointNewIndexFromOriginal = new int[numJoints];
             for (int i = 0; i < numJoints; i++)
+            {
                 JointNewIndexFromOriginal[i] = AllJoints.IndexOf(origOrder[i]);
+                maxJointParamLengths = Math.Max(maxJointParamLengths, (AllJoints[i].jointType == JointTypes.R ? 6 : 9));
+            }
 
             setAdditionalReferencePositions(additionalRefjoints);
 
@@ -425,7 +428,7 @@ namespace PMKS
         {
             foreach (var j in AllJoints)
             {
-                j.SlideLimits = null;
+                j.ReferenceJointIndex = -1;
                 if (j.jointType == JointTypes.R) j.InitSlideAngle = Double.NaN;
             }
             if (additionalRefjoints != null)

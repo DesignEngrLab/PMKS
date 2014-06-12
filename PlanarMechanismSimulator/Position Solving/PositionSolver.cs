@@ -330,32 +330,29 @@ namespace PMKS.PositionSolving
             if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))
                 return false;
 
-            UpdateSliderLengthLimits();
+            UpdateSliderPosition();
             return true;
         }
 
 
 
-        private void UpdateSliderLengthLimits()
+        internal void UpdateSliderPosition()
         {
-            foreach (var j in joints.Where(jt => jt.SlideLimits != null))
+            foreach (var j in joints.Where(jt => jt.ReferenceJointIndex >= 0))
             {
-                var refJoint = j.Link1.joints[(int)j.SlideLimits[0]];
+                var refJoint = j.Link1.joints[j.ReferenceJointIndex];
                 var orthoPt = link.findOrthoPoint(refJoint, j);
 
                 var refVector = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };
                 var slideVector = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
 
-                var cross = 0.0;
                 if (Constants.sameCloseZero(refVector[0]) && Constants.sameCloseZero(refVector[1]))
-                    cross = StarMath.dotProduct(new[] { Math.Cos(j.SlideAngle), Math.Sin(j.SlideAngle) }, slideVector);
+                    j.SlidePosition = StarMath.dotProduct(new[] { Math.Cos(j.SlideAngle), Math.Sin(j.SlideAngle) }, slideVector);
                 else
                 {
                     refVector = StarMath.normalize(refVector);
-                    cross = StarMath.crossProduct2(slideVector, refVector);
+                    j.SlidePosition = StarMath.crossProduct2(slideVector, refVector);
                 }
-                if (j.SlideLimits[3] < cross) j.SlideLimits[3] = cross;
-                else if (j.SlideLimits[1] > cross) j.SlideLimits[1] = cross;
             }
         }
 
@@ -748,9 +745,9 @@ namespace PMKS.PositionSolving
 
             if (errorPos < errorNeg)
             {
-                PositionError = distanceBetweenJoints*errorPos;
+                PositionError = distanceBetweenJoints * errorPos;
                 return deltaAnglePos;
-            }    
+            }
             PositionError = distanceBetweenJoints * errorNeg;
             return deltaAngleNeg;
         }

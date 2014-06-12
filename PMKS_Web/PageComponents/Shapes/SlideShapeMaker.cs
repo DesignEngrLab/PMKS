@@ -18,19 +18,14 @@ namespace PMKS_Silverlight_App
 
         internal static RectangleGeometry MakeRPSlotHole(joint j, link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
         {
-            var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
-
-
-            var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
+            var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;     
+            var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;  
+            var beforeSimulation = (j.MaxSlidePosition - j.MinSlidePosition <blockWidth);
             var blockHeight = 2 * jointSize;
-            var slideWidth = (j.SlideLimits != null)
-                ? j.SlideLimits[3] - j.SlideLimits[1] + blockWidth
-                : 3 * blockWidth;
-            var origX = (j.SlideLimits != null)
-                ? j.SlideLimits[2] - j.SlideLimits[1] + blockWidth / 2
-                : slideWidth / 2;
-            if (j.SlideLimits != null && thisLink.DistanceBetweenSlides(j, thisLink.joints[(int)j.SlideLimits[0]]) < 0)
-                slideAngle += Math.PI;
+            var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
+            var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
+            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.joints[j.ReferenceJointIndex]) < 0)
+               slideAngle += Math.PI;
             var holeShape = new RectangleGeometry
             {
                 Rect = new Rect(new Point(-origX, -blockHeight / 2), new Size(slideWidth, blockHeight)),
@@ -50,17 +45,12 @@ namespace PMKS_Silverlight_App
         internal static RectangleGeometry MakePSlotHole(joint j, link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
         {
             var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
-
-
             var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
+            var beforeSimulation = (j.MaxSlidePosition - j.MinSlidePosition < blockWidth);
             var blockHeight = 2 * jointSize;
-            var slideWidth = (j.SlideLimits != null)
-                ? j.SlideLimits[3] - j.SlideLimits[1] + blockWidth
-                : 3 * blockWidth;
-            var origX = (j.SlideLimits != null)
-                ? j.SlideLimits[2] - j.SlideLimits[1] + blockWidth / 2
-                : slideWidth / 2;
-            if (j.SlideLimits != null && thisLink.DistanceBetweenSlides(j, thisLink.joints[(int)j.SlideLimits[0]]) < 0)
+            var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
+            var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
+            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.joints[j.ReferenceJointIndex]) < 0)
                 slideAngle += Math.PI;
             var holeShape = new RectangleGeometry
             {
@@ -80,14 +70,11 @@ namespace PMKS_Silverlight_App
         {
             var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
             var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
+            var beforeSimulation = (j.MaxSlidePosition - j.MinSlidePosition < blockWidth);
             var blockHeight = 2 * jointSize;
-            var slideWidth = (j.SlideLimits != null)
-                ? j.SlideLimits[3] - j.SlideLimits[1] + blockWidth
-                : 3 * blockWidth;
-            var origX = (j.SlideLimits != null)
-                ? j.SlideLimits[2] - j.SlideLimits[1] + blockWidth / 2
-                : slideWidth / 2;
-            if (thisLink.DistanceBetweenSlides(j, thisLink.joints[(int)j.SlideLimits[0]]) < 0)
+            var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
+            var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
+            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.joints[j.ReferenceJointIndex]) < 0)
                 slideAngle += Math.PI;
 
             var borderShape = new RectangleGeometry

@@ -41,9 +41,10 @@ namespace PMKS
         public double InitSlideAngle = Double.NaN;
         //public double InitSlideAngle = 0.0;
         internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
+        internal double SlidePosition { get; set; }
         internal double SlideVelocity { get; set; }
         internal double SlideAcceleration { get; set; }
-        public double[] SlideLimits { get; internal set; }
+        //public double[] SlideLimits { get; internal set; }
         internal double x { get; set; }
         internal double y { get; set; }
         internal double xNumerical { get; set; }
@@ -75,6 +76,11 @@ namespace PMKS
         /// The link2.
         /// </value>
         public link Link2 { get; internal set; }
+
+        public int ReferenceJointIndex { get; set; }
+        public double MinSlidePosition { get; set; }
+        public double MaxSlidePosition { get; set; }
+        public double OrigSlidePosition { get; set; }
 
 
         internal KnownState positionKnown;
@@ -140,8 +146,8 @@ namespace PMKS
         {
             return new joint
             {
-                                       Link1 = Link1,
-                                       Link2 =Link2,
+                Link1 = Link1,
+                Link2 = Link2,
                 InitSlideAngle = InitSlideAngle,
                 x = x,
                 xInitial = xInitial,
@@ -157,7 +163,6 @@ namespace PMKS
                 ay = ay,
                 SlideAcceleration = SlideAcceleration,
                 positionKnown = positionKnown,
-                SlideLimits = (SlideLimits == null) ? null : (double[])SlideLimits.Clone(),
                 vx = vx,
                 vy = vy,
                 vxLast = vxLast,

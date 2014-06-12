@@ -167,20 +167,8 @@ namespace PMKS
             var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
             var fixedVector = new[] { fixedJoint.xInitial - orthoPt.x, fixedJoint.yInitial - orthoPt.y };
             distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, fixedVector));
-
-            if (slideJoint.SlideLimits == null && slideJoint.SlidingWithRespectTo(this))
-            {
-                var cross = 0.0;
-                var slideVector = new[] { slideJoint.xInitial - orthoPt.x, slideJoint.yInitial - orthoPt.y };
-                if (Constants.sameCloseZero(fixedVector[0]) && Constants.sameCloseZero(fixedVector[1]))
-                    cross = StarMath.dotProduct(slideUnitVector, slideVector);
-                else
-                {
-                    var fixedUnitVector = StarMath.normalize(fixedVector);
-                    cross = StarMath.crossProduct2(slideVector, fixedUnitVector);
-                }
-                slideJoint.SlideLimits = new[] { fixedIndex, cross, cross, cross };
-            }
+            if (slideJoint.ReferenceJointIndex == -1 && slideJoint.SlidingWithRespectTo(this))
+                slideJoint.ReferenceJointIndex = fixedIndex;
         }
 
         private void addBlockAngleDictionaryEntry(joint pJoint, joint refJoint, int pIndex, int refIndex)

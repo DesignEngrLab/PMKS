@@ -25,6 +25,7 @@ namespace PMKS
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
             double[,] initJointParams, initLinkParams;
+            
             SetInitialVelocityAndAcceleration(AllJoints, AllLinks, out initJointParams, out initLinkParams);
 
             JointParameters = new TimeSortedList { { 0.0, initJointParams } };
@@ -67,18 +68,7 @@ namespace PMKS
             var backwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(backwardJoints, backwardLinks, false))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
             Task.WaitAll(forwardTask, backwardTask);
-          
-                        
-            for (int i = 0; i < numJoints; i++)
-            {
-                var backSlideLimits = backwardJoints[i].SlideLimits;
-                var forwSlideLimits = AllJoints[i].SlideLimits; 
-                if (forwSlideLimits != null)
-                {  
-                    if (forwSlideLimits[1] > backSlideLimits[1]) forwSlideLimits[1] = backSlideLimits[1];
-                    if (forwSlideLimits[3] < backSlideLimits[3]) forwSlideLimits[3] = backSlideLimits[3];
-                }
-            }
+
             DefineMovementCharacteristics();
 #endif
         }
@@ -89,6 +79,14 @@ namespace PMKS
             BeginTime = JointParameters.Times[0];
             EndTime = JointParameters.Times.Last();
             InitializeQueryVars();
+            for (int i = 0; i < numJoints; i++)
+            {
+                var j = AllJoints[i];
+                if (j.jointType == JointTypes.R) continue;
+                j.OrigSlidePosition = JointParameters[0.0][i, 6];
+                j.MinSlidePosition = JointParameters.Parameters.Min(jp => jp[i, 6]);
+                j.MaxSlidePosition = JointParameters.Parameters.Max(jp => jp[i, 6]);
+            }
             if (lessThanFullRotation())
             {  //if the crank input couldn't rotate all the way around,then this is easy... 
                 CycleType = CycleTypes.LessThanFullCycle;
@@ -153,14 +151,14 @@ namespace PMKS
 
 
         private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
-        {
-            initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
-            initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
-
+        {                                      
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+            posFinder.UpdateSliderPosition();
             var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
             var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
-
+                                                                           
+            initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
+            initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
             double smallTimeStep = (double.IsNaN(FixedTimeStep)) ? Constants.SmallPerturbationFraction :
                 Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
@@ -486,16 +484,22 @@ namespace PMKS
 
         private double[,] WriteJointStatesVariablesToMatrixAndToLast(List<joint> joints)
         {
-            var jointParams = new double[numJoints, 6];
+            var jointParams = new double[numJoints, maxJointParamLengths];
             for (int i = 0; i < numJoints; i++)
             {
-                joint j = joints[i];
+                var j = joints[i];
                 jointParams[i, 0] = j.x;
                 jointParams[i, 1] = j.y;
                 jointParams[i, 2] = j.vx;
                 jointParams[i, 3] = j.vy;
                 jointParams[i, 4] = j.ax;
                 jointParams[i, 5] = j.ay;
+                if (j.jointType != JointTypes.R)
+                {
+                    jointParams[i, 6] = j.SlidePosition;
+                    jointParams[i, 7] = j.SlideVelocity;
+                    jointParams[i, 8] = j.SlideAcceleration;
+                }
                 j.xLast = j.x;
                 j.yLast = j.y;
                 j.vxLast = j.vx;
