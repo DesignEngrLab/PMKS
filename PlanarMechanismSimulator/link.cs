@@ -82,9 +82,7 @@ namespace PMKS
         }
 
         private link()
-        {
-            joints = new List<joint>();
-        }
+        { joints = new List<joint>(); }
 
         internal void DetermineLengthsAndReferences()
         {
@@ -266,10 +264,12 @@ namespace PMKS
                 return new point(refJoint.x, slideJoint.y);
             else if (Constants.sameCloseZero(Math.Abs(slideAngle), Math.PI / 2))
                 return new point(slideJoint.x, refJoint.y);
-            var slope = Math.Tan(slideAngle);
-            var offset = (slideJoint.y - slope * slideJoint.x);
-            var x = (refJoint.x + slope * (refJoint.y - offset)) / (slope * slope + 1);
-            var y = slope * x + offset;
+            var slope1 = Math.Tan(slideAngle);
+            var slope2 = -1 / slope1;
+            var offset1 = slideJoint.y - slope1 * slideJoint.x;
+            var offset2 = refJoint.y - slope2 * refJoint.x;
+            var x = (offset2 - offset1) / (slope1 - slope2);
+            var y = slope1 * x + offset1;
             return new point(x, y);
         }
 

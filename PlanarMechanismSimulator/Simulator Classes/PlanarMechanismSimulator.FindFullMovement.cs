@@ -61,14 +61,14 @@ namespace PMKS
                 }
             }
             /*** Stepping Forward in Time ***/
-            //var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
-            //    : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
+            var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
+                : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
             /*** Stepping Backward in Time ***/
             var backwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(backwardJoints, backwardLinks, false))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
-          //  Task.WaitAll(forwardTask, backwardTask);
-            Task.WaitAll( backwardTask);
-                                  
+            Task.WaitAll(forwardTask, backwardTask);
+          
+                        
             for (int i = 0; i < numJoints; i++)
             {
                 var backSlideLimits = backwardJoints[i].SlideLimits;
