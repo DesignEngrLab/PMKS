@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using PMKS;
 using StarMathLib;
@@ -322,7 +323,7 @@ namespace PMKS.PositionSolving
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error in setting up and running NonDyadicPositionSolver.");
+                    Debug.WriteLine("Error in setting up and running NonDyadicPositionSolver.");
                 }
 #endif
                 }

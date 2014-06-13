@@ -25,7 +25,7 @@ namespace PMKS
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
             double[,] initJointParams, initLinkParams;
-            
+
             SetInitialVelocityAndAcceleration(AllJoints, AllLinks, out initJointParams, out initLinkParams);
 
             JointParameters = new TimeSortedList { { 0.0, initJointParams } };
@@ -47,20 +47,10 @@ namespace PMKS
             }                                               
             DefineMovementCharacteristics();
 #else
-            var backwardJoints = AllJoints.Select(j => j.copy()).ToList();
-            var backwardLinks = AllLinks.Select(c => c.copy()).ToList();
-            foreach (var j in backwardJoints)
-            {
-                var link1 = backwardLinks[AllLinks.IndexOf(j.Link1)];
-                j.Link1 = link1;
-                link1.joints.Add(j);
-                if (j.Link2 != null)
-                {
-                    var link2 = backwardLinks[AllLinks.IndexOf(j.Link2)];
-                    j.Link2 = link2;
-                    link2.joints.Add(j);
-                }
-            }
+            List<joint> backwardJoints;
+            List<link> backwardLinks;
+            CopyJointsAndLinksForBackwards(AllJoints, AllLinks, out backwardJoints, out backwardLinks);
+
             /*** Stepping Forward in Time ***/
             var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
@@ -73,6 +63,28 @@ namespace PMKS
 #endif
         }
 
+        private static void CopyJointsAndLinksForBackwards(List<joint> AllJoints, List<link> AllLinks,
+            out List<joint> backwardJoints, out List<link> backwardLinks)
+        {
+            backwardJoints = AllJoints.Select(j => j.copy()).ToList();
+            backwardLinks = AllLinks.Select(c => c.copy()).ToList();
+            foreach (var j in backwardJoints)
+            {
+                j.Link1 = backwardLinks[AllLinks.IndexOf(j.Link1)];
+                if (j.Link2 != null)
+                    j.Link2 = backwardLinks[AllLinks.IndexOf(j.Link2)];
+            }
+            for (int i = 0; i < AllLinks.Count; i++)
+            {
+                var backwardLink = backwardLinks[i];
+                var forwardLink = AllLinks[i];
+                foreach (var j in forwardLink.joints)
+                {
+                    var jointIndex = AllJoints.IndexOf(j);
+                    backwardLink.joints.Add(backwardJoints[jointIndex]);
+                }
+            }
+        }
 
         private void DefineMovementCharacteristics()
         {
@@ -151,12 +163,12 @@ namespace PMKS
 
 
         private void SetInitialVelocityAndAcceleration(List<joint> joints, List<link> links, out double[,] initJointParams, out double[,] initLinkParams)
-        {                                      
+        {
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
             posFinder.UpdateSliderPosition();
             var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
             var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
-                                                                           
+
             initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
             initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
             double smallTimeStep = (double.IsNaN(FixedTimeStep)) ? Constants.SmallPerturbationFraction :
