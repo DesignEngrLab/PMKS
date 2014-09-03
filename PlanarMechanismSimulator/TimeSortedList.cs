@@ -89,7 +89,7 @@ namespace PMKS
                     i--;
                 } while (i > 0 && Times[i] >= time);
                 Times.Insert(i + 1, time);
-                Parameters.Insert(i+1, parameters);
+                Parameters.Insert(i + 1, parameters);
             }
             LastIndex++;
         }
@@ -116,7 +116,7 @@ namespace PMKS
                 } while (Times[i] <= time);
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
-         
+
 
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
@@ -238,21 +238,7 @@ namespace PMKS
 
         public KeyValuePair<double, double[,]> Current
         {
-            get
-            {
-#if trycatch
-                try
-                {
-#endif
-                return new KeyValuePair<double, double[,]>(timeKeys[position], parameterValues[position]);
-#if trycatch
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    throw new InvalidOperationException();
-                }
-#endif
-            }
+            get { return new KeyValuePair<double, double[,]>(timeKeys[position], parameterValues[position]); }
         }
 
         #region Implementation of IDisposable

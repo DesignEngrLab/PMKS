@@ -84,30 +84,31 @@ namespace PMKS
         private link()
         { joints = new List<joint>(); }
 
+
+        #region Determine Lengths And References and Initializing Functions
         internal void DetermineLengthsAndReferences()
         {
             numJoints = joints.Count;
-            var linkAngle = double.NaN;
-            var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).OrderBy(j => j.yInitial).ToList();
-            if (fixedJoints.Count < 2 || fixedJoints.Count(j => j.isGround) > 1)
-                linkAngle = 0.0;
-            else if (fixedJoints.Count(j => j.isGround) == 1)
-            {
-                var ground = fixedJoints.FirstOrDefault(j => j.isGround);
-                var notGround = fixedJoints.FirstOrDefault(j => !j.isGround);
-                linkAngle = Constants.angle(ground, notGround);
-            }
-            else linkAngle = Constants.angle(fixedJoints[0], fixedJoints[1]);
-            while (linkAngle < -Math.PI / 2) linkAngle += Math.PI;
-            while (linkAngle > Math.PI / 2) linkAngle -= Math.PI;
-            Angle = AngleInitial = AngleNumerical = AngleLast = linkAngle;
+            #region Define Initial Link Angle   
+            var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
+                OrderBy(j => j.xInitial).ToList();
+            /* the linkAngle is defined from "the joint with the lowest initial x value
+             * that is fixed to this link" to "the joint with the highest initial x value
+             * that is fixed to this link. If the link has only one fixed joint (and
+             * it will necessarily have one due to the addition of a joint added in
+             * Simulator.addReferencePivotsToSlideOnlyLinks()) or is ground, then the 
+             * initial angle is zero. */
+            if (fixedJoints.Count < 2 || this.isGround) AngleInitial = 0.0;
+            else AngleInitial = Constants.angle(fixedJoints[0], fixedJoints.Last());
+            Angle = AngleNumerical = AngleLast = AngleInitial;
             foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
                 j.InitSlideAngle -= AngleInitial;
-
+            #endregion
+            #region Joint-to-Joint Dictionaries
             lengths = new Dictionary<int, double>();
-
             distanceToSlideLine = new Dictionary<int, double>();
             angleFromBlockToJoint = new Dictionary<int, double>();
+
             for (int i = 0; i < joints.Count - 1; i++)
                 for (int j = i + 1; j < joints.Count; j++)
                 {
@@ -158,6 +159,7 @@ namespace PMKS
                         }
                     }
                 }
+            #endregion
         }
 
         private void addSlideDictionaryEntry(joint slideJoint, joint fixedJoint, int slideIndex, int fixedIndex)
@@ -178,7 +180,16 @@ namespace PMKS
                          Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
             angleFromBlockToJoint.Add(key, result);
         }
+        #endregion
 
+        #region Retrieve Joint-to-Joint data
+
+        /// <summary>
+        /// Returns the Lengths the between two joints that are fixed with respect to this link.
+        /// </summary>
+        /// <param name="joint1">joint1.</param>
+        /// <param name="joint2">joint2.</param>
+        /// <returns></returns>
         internal double lengthBetween(joint joint1, joint joint2)
         {
             if (joint1 == joint2) return 0.0;
@@ -221,16 +232,6 @@ namespace PMKS
             return angleFromBlockToJoint[numJoints * i + j];
         }
 
-        internal void setLength(joint joint1, joint joint2, double length)
-        {
-            if (joint1 == joint2)
-                throw new Exception("link.setLength: cannot set the distance between joints because same joint provided as both joint1 and joint2.");
-            var i = joints.IndexOf(joint1);
-            var j = joints.IndexOf(joint2);
-            if (i > j) lengths[numJoints * j + i] = length;
-            else lengths[numJoints * i + j] = length;
-        }
-
         /// <summary>
         /// Finds the orthogonal point on the line - the point closest to the reference Joint - the 
         /// point that makes a right angle (orthogonal angle) with the line. The boolean "belowLinePositiveeSlope"
@@ -260,9 +261,32 @@ namespace PMKS
             var y = slope1 * x + offset1;
             return new point(x, y);
         }
+        #endregion
 
 
-        internal link copy()
+        /// <summary>
+        /// Sets the length between the two joints. This function is only called from Simulator.AssignLengths
+        /// and is to be used only when the solving a problem of construct-ability (or whatever they call it in
+        /// the literature).
+        /// </summary>
+        /// <param name="joint1">The joint1.</param>
+        /// <param name="joint2">The joint2.</param>
+        /// <param name="length">The length.</param>
+        /// <exception cref="System.Exception">link.setLength: cannot set the distance between joints because same joint provided as both joint1 and joint2.</exception>
+        internal void SetLength(joint joint1, joint joint2, double length)
+        {
+            if (joint1 == joint2)
+                throw new Exception("link.setLength: cannot set the distance between joints because same joint provided as both joint1 and joint2.");
+            var i = joints.IndexOf(joint1);
+            var j = joints.IndexOf(joint2);
+            if (i > j) lengths[numJoints * j + i] = length;
+            else lengths[numJoints * i + j] = length;
+        }
+        /// <summary>
+        /// Copies this instance.
+        /// </summary>
+        /// <returns></returns>
+        internal link Copy()
         {
             return new link
                 {

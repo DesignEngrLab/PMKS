@@ -277,10 +277,9 @@ namespace PMKS
         private void CreateLinkAndPositionDetails(IList<List<string>> LinkIDs, IList<string> JointTypeStrings,
                                                 int drivingIndex, IList<double[]> Positions = null)
         {
-#if trycatch
+
             try
             {
-#endif
             DrivingIndex = drivingIndex;
             if (JointTypeStrings.Count != LinkIDs.Count)
                 throw new Exception("The number of PivotTypes (which is " + numJoints + ") must be the"
@@ -393,7 +392,7 @@ namespace PMKS
 
             setAdditionalReferencePositions(additionalRefjoints);
 
-#if trycatch
+
             }
             catch (Exception e)
             {
@@ -401,18 +400,17 @@ namespace PMKS
                     "Failed to construct Planar Mechanism Simulator from topology data (InputIndex, Connections, PivotTypes).",
                     e);
             }
-#endif
         }
 
         private List<joint> addReferencePivotsToSlideOnlyLinks()
-        {                                               
+        {
             foreach (var j in groundLink.joints.Where(j => j.jointType == JointTypes.P && j.FixedWithRespectTo(groundLink)))
             {
                 /* this doesn't real change anything, but allows one to see the movement of P joints along ground. It only 
                  * applies to P-joints as RP-joints will behave differently. */
                 j.Link2 = j.Link1;
                 j.Link1 = groundLink;
-            }                                    
+            }
             //if (AllLinks.All(c => c.joints.Any(j => j.FixedWithRespectTo(c)))) return null;
             var additionalRefjoints = new List<joint>();
             foreach (var c in AllLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
@@ -443,9 +441,9 @@ namespace PMKS
                         xSum += otherJoint.xInitial;
                         ySum += otherJoint.yInitial;
                     }
-                    thisAdditionalJoint.x = thisAdditionalJoint.xNumerical = thisAdditionalJoint.xLast = thisAdditionalJoint.xInitial 
+                    thisAdditionalJoint.x = thisAdditionalJoint.xNumerical = thisAdditionalJoint.xLast = thisAdditionalJoint.xInitial
                         = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
-                    thisAdditionalJoint.y = thisAdditionalJoint.yNumerical = thisAdditionalJoint.yLast = thisAdditionalJoint.yInitial 
+                    thisAdditionalJoint.y = thisAdditionalJoint.yNumerical = thisAdditionalJoint.yLast = thisAdditionalJoint.yInitial
                         = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
                 }
             }
@@ -557,31 +555,12 @@ namespace PMKS
         /// <param name="InitPositions">The init positions.</param>
         public void AssignPositions(IList<double[]> InitPositions)
         {
-#if trycatch
-            try
+            var initPosList = new List<double>();
+            foreach (var position in InitPositions)
             {
-#endif
-            for (int i = 0; i < numJoints; i++)
-            {
-                if (InitPositions[i] != null)
-                {
-                    var newIndex = JointNewIndexFromOriginal[i];
-                    if (FixedJointIndices.Contains(newIndex)) continue;
-                    var j = AllJoints[newIndex];
-                    j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[i][0];
-                    j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[i][1];
-                    if (InitPositions[i].GetLength(0) > 2 && j.jointType != JointTypes.R)
-                        j.InitSlideAngle = InitPositions[i][2];
-                }
+                initPosList.AddRange(position);
             }
-            setAdditionalReferencePositions();
-#if trycatch
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Failed to assign positions to topology (see inner exeception).", e);
-            }
-#endif
+            AssignPositions(initPosList.ToArray());
         }
         /// <summary>
         /// Assigns the initial positions of all the pivots.
@@ -589,10 +568,8 @@ namespace PMKS
         /// <param name="InitPositions">The init positions.</param>
         private void AssignPositions(double[] InitPositions)
         {
-#if trycatch
             try
             {
-#endif
             var k = 0;
             for (int i = 0; i < numJoints; i++)
             {
@@ -605,13 +582,11 @@ namespace PMKS
                     j.InitSlideAngle = InitPositions[k++];
             }
             setAdditionalReferencePositions();
-#if trycatch
             }
             catch (Exception e)
             {
                 throw new Exception("Failed to assign positions to topology (see inner exeception).", e);
             }
-#endif
         }
 
 
@@ -622,26 +597,22 @@ namespace PMKS
         /// todo: unclear the format of these lengths - how to relate to the link rigid body constraint 
         public void AssignLengths(IList<double[]> Lengths)
         {
-#if trycatch
             try
             {
-#endif
-            for (int i = 0; i < Lengths.Count(); i++)
-            {
-                var p1 = AllJoints[(int)Lengths[i][0]];
-                var p2 = AllJoints[(int)Lengths[i][1]];
-                var link0 = AllLinks.First(l => l.joints.Contains(p1) && l.joints.Contains(p2));
-                var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
-                pivotIndices.Sort();
-                link0.setLength(p1, p2, Lengths[i][2]);
-            }
-#if trycatch
+                for (int i = 0; i < Lengths.Count(); i++)
+                {
+                    var p1 = AllJoints[(int)Lengths[i][0]];
+                    var p2 = AllJoints[(int)Lengths[i][1]];
+                    var link0 = AllLinks.First(l => l.joints.Contains(p1) && l.joints.Contains(p2));
+                    var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
+                    pivotIndices.Sort();
+                    link0.SetLength(p1, p2, Lengths[i][2]);
+                }
             }
             catch (Exception e)
             {
                 throw new Exception("Failed to assign lengths to topology (see inner exeception).", e);
             }
-#endif
         }
 
         /// <summary>
@@ -654,10 +625,9 @@ namespace PMKS
         /// <returns></returns>
         public Boolean FindInitialPositionsFromLengths(double inputX, double inputY, double gnd1X, double gnd1Y)
         {
-#if trycatch
+
             try
             {
-#endif
             //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
             //    throw new Exception("Link lengths for all links need to be set first.");
             if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]),
@@ -671,13 +641,12 @@ namespace PMKS
             // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
             double[,] JointPositions, LinkAngles;
             return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
-#if trycatch
+
             }
             catch (Exception e)
             {
                 throw new Exception("Failed to assign positions from lengths (see inner exeception).", e);
             }
-#endif
         }
 
         /// <summary>
@@ -689,10 +658,9 @@ namespace PMKS
         /// <returns></returns>
         public Boolean FindInitialPositionsFromLengths(double inputX, double inputY, double AngleToGnd1)
         {
-#if trycatch
+
             try
             {
-#endif
             //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
             //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
             inputJoint.xInitial = inputX;
@@ -702,13 +670,12 @@ namespace PMKS
             // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
             double[,] JointPositions, LinkAngles;
             return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
-#if trycatch
+
             }
             catch (Exception e)
             {
                 throw new Exception("Failed to assign positions from lengths (see inner exeception).", e);
             }
-#endif
         }
 
         private double FindInitialPositionMain(out double[,] JointPositions, out double[,] LinkAngles)

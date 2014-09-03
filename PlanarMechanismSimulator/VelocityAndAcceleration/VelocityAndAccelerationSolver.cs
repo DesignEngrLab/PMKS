@@ -352,7 +352,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 var otherLink = pJoint.OtherLink(refLink);
                 if (unknownObjects.Contains(otherLink))
-                {                                         
+                {
                     unknownObjects.Remove(otherLink);
                     if (thisIsVelocitySolver)
                     {
@@ -361,7 +361,7 @@ namespace PMKS.VelocityAndAcceleration
                         var eq in
                             equations.Where(
                                 eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
-                        ((VelocityJointToJoint)eq).linkIsKnown = true;
+                            ((VelocityJointToJoint)eq).linkIsKnown = true;
                     }
                     else
                     {
@@ -452,40 +452,38 @@ namespace PMKS.VelocityAndAcceleration
         {
             SetInitialInputAndGroundJointStates();
             if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
-#if trycatch
+
             try
             {
-#endif
-            var rows = new List<double[]>();
-            var answers = new List<double>();
-            foreach (var eq in equations)
-                if (eq is JointToJointEquation)
+                var rows = new List<double[]>();
+                var answers = new List<double>();
+                foreach (var eq in equations)
+                    if (eq is JointToJointEquation)
+                    {
+                        rows.Add(((JointToJointEquation)eq).GetRow1Coefficients());
+                        answers.Add(((JointToJointEquation)eq).GetRow1Constant());
+                        rows.Add(((JointToJointEquation)eq).GetRow2Coefficients());
+                        answers.Add(((JointToJointEquation)eq).GetRow2Constant());
+                    }
+                    else
+                    {
+                        rows.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowCoefficients());
+                        answers.Add(0.0);
+                    }
+                var rowOrdering = ChooseBestRowOrder(rows);
+                if (rowOrdering == null) return false;
+                for (int j = 0; j < numUnknowns; j++)
                 {
-                    rows.Add(((JointToJointEquation)eq).GetRow1Coefficients());
-                    answers.Add(((JointToJointEquation)eq).GetRow1Constant());
-                    rows.Add(((JointToJointEquation)eq).GetRow2Coefficients());
-                    answers.Add(((JointToJointEquation)eq).GetRow2Constant());
+                    StarMath.SetRow(j, A, rows[rowOrdering[j]]);
+                    b[j] = answers[rowOrdering[j]];
                 }
-                else
-                {
-                    rows.Add(((EqualLinkToLinkStateVarEquation)eq).GetRowCoefficients());
-                    answers.Add(0.0);
-                }
-            var rowOrdering = ChooseBestRowOrder(rows);
-            if (rowOrdering == null) return false;
-            for (int j = 0; j < numUnknowns; j++)
-            {
-                StarMath.SetRow(j, A, rows[rowOrdering[j]]);
-                b[j] = answers[rowOrdering[j]];
-            }
-            var x = StarMath.solve(A, b);
-            if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
-            if (x.All(value => Constants.sameCloseZero(value))) return false;
-            return PutStateVarsBackInJointsAndLinks(x);
-#if trycatch
+                var x = StarMath.solve(A, b);
+                if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
+                if (x.All(value => Constants.sameCloseZero(value))) return false;
+                return PutStateVarsBackInJointsAndLinks(x);
+
             }
             catch { return false; }
-#endif
         }
 
         private int[] ChooseBestRowOrder(List<double[]> rows)

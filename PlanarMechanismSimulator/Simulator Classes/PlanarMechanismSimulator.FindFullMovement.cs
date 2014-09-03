@@ -67,7 +67,7 @@ namespace PMKS
             out List<joint> backwardJoints, out List<link> backwardLinks)
         {
             backwardJoints = AllJoints.Select(j => j.copy()).ToList();
-            backwardLinks = AllLinks.Select(c => c.copy()).ToList();
+            backwardLinks = AllLinks.Select(c => c.Copy()).ToList();
             foreach (var j in backwardJoints)
             {
                 j.Link1 = backwardLinks[AllLinks.IndexOf(j.Link1)];

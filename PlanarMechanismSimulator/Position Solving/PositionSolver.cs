@@ -310,22 +310,20 @@ namespace PMKS.PositionSolving
                          numUnknownJoints > 0);
                 if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
                 {
-#if trycatch
-                try
-                {
-#endif
-                    //if (NDPS == null)
-                    NDPS = new NonDyadicPositionSolver(this);
-                    var NDPSError = 0.0;
-                    if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
-                    PositionError = Math.Sqrt(NDPSError);
-#if trycatch
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Error in setting up and running NonDyadicPositionSolver.");
-                }
-#endif
+
+                    try
+                    {
+                        //if (NDPS == null)
+                        NDPS = new NonDyadicPositionSolver(this);
+                        var NDPSError = 0.0;
+                        if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
+                        PositionError = Math.Sqrt(NDPSError);
+
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine("Error in setting up and running NonDyadicPositionSolver.");
+                    }
                 }
             }
             if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))

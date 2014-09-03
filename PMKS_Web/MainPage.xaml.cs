@@ -193,10 +193,9 @@ namespace PMKS_Silverlight_App
 
         internal void ParseData(Boolean ForceRerunOfSimulation = false)
         {
-#if trycatch
+
             try
             {
-#endif
                 #region table validation
                 if (JointsInfo == null) return;
                 numJoints = TrimEmptyJoints();
@@ -249,19 +248,17 @@ namespace PMKS_Silverlight_App
                     mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
                     return;
                 }
-#if trycatch
+
             }
             catch (Exception e)
             {
                 status("Incomplete or incorrect data: \n" + e.InnerException);
                 return;
             }
-#endif
                 #endregion
-#if trycatch
+
             try
             {
-#endif
                 #region Simulation of mechanism
                 status("Analyzing...");
                 var now = DateTime.Now;
@@ -297,13 +294,12 @@ namespace PMKS_Silverlight_App
                 status("...done (" + (DateTime.Now - now).TotalMilliseconds + "ms).");
                 PlayButton_Checked(null, null);
                 #endregion
-#if trycatch
+
             }
             catch (Exception e)
             {
                 status(e.Message);
             }
-#endif
         }
 
         private void DefineInputDriver()

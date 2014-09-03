@@ -116,10 +116,9 @@ namespace PMKS_Silverlight_App
             if (!string.IsNullOrWhiteSpace(TargetShapeStream.Text) &&
                 !TargetShapeStream.Text.Equals(DisplayConstants.TargetShapeQueryText))
             {
-#if trycatch
+
                 try
                 {
-#endif
                     App.main.mainViewer.TargetPath = (System.Windows.Shapes.Path)XamlReader.Load(
                         DisplayConstants.TargetPathStreamFront
                         + TargetShapeStream.Text
@@ -134,13 +133,12 @@ namespace PMKS_Silverlight_App
                         };
                     App.main.mainViewer.Children.Add(App.main.mainViewer.TargetPath);
                     return;
-#if trycatch
+
                 }
                 catch (Exception exc)
                 {
                     App.main.status(exc.ToString());
                 }
-#endif
             }
             if (string.IsNullOrWhiteSpace(TargetShapeStream.Text))
             {
