@@ -3,7 +3,7 @@ using OptimizationToolbox;
 
 namespace PMKS.PositionSolving
 {
-    internal class LinkLengthFunction : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
+    internal class LinkLengthFunction : ILinkFunction
     {
         private readonly int jointListIndex1;
         private readonly int jointListIndex2;
@@ -133,7 +133,7 @@ namespace PMKS.PositionSolving
             }
         }
 
-        internal void SetJointPosition(int index, double x, double y)
+        public void SetInitialJointPosition(int index, double x, double y)
         {
             if (index == jointListIndex1)
             {

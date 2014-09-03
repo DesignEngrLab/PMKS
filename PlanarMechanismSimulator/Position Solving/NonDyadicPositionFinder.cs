@@ -8,7 +8,7 @@ namespace PMKS.PositionSolving
 {
     internal class NonDyadicPositionSolver : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {
-        private readonly List<LinkLengthFunction> linkFunctions;
+        private readonly List<ILinkFunction> linkFunctions;
         private readonly abstractConvergence ConvergedWithinLimit;
         private readonly abstractOptMethod optMethod;
 
@@ -27,15 +27,10 @@ namespace PMKS.PositionSolving
             this.posFinder = posFinder;
             this.links = posFinder.links;
             this.joints = posFinder.joints;
-            linkFunctions = new List<LinkLengthFunction>();
+            linkFunctions = new List<ILinkFunction>();
             unkJoints = new List<joint>();
-            foreach (var j in joints)
-                if (j.positionKnown != KnownState.Fully)
-                {
-                    if (j.jointType != JointTypes.R)
-                        throw new Exception("Cannot currently handle non R-joints in Non-Dyadic Analysis.");
-                    unkJoints.Add(j);
-                }
+            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))
+                unkJoints.Add(j);
 
             numUnknownPivots = unkJoints.Count;
             foreach (var c in links)
@@ -47,9 +42,25 @@ namespace PMKS.PositionSolving
                         var p1 = c.joints[j];
                         var p0Index = unkJoints.IndexOf(p0);
                         var p1Index = unkJoints.IndexOf(p1);
-                        if (p0Index == -1 && p1Index == -1) continue;
-                        linkFunctions.Add(new LinkLengthFunction(p0Index, joints.IndexOf(p0), p0.xInitial, p0.yInitial,
-                          p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial));
+                        if (p0Index == -1 && p1Index == -1) continue; //if both joints are known, then no need to add an objective function term   
+                        if (p0.SlidingWithRespectTo(c) && p1.SlidingWithRespectTo(c)) continue;  //if both joints are sliding on link c, then no useful constraint info is extracted   
+                        if (p0.FixedWithRespectTo(c) && p1.FixedWithRespectTo(c))
+                            linkFunctions.Add(new LinkLengthFunction(p0Index, joints.IndexOf(p0), p0.xInitial,
+                                p0.yInitial, p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial));
+                        else
+                        {
+                            if (p0.SlidingWithRespectTo(c))
+                            {  // the LinkSliderFunction assumes the first joint is the fixed one. Since this is not the case, reverse here.
+                                var tempJoint = p0; var tempIndex = p0Index;
+                                p0 = p1; p0Index = p1Index;
+                                p1 = tempJoint; p1Index = tempIndex;
+                            }
+                            linkFunctions.Add(new LinkSliderFunction(p0Index, joints.IndexOf(p0), p0.xInitial,p0.yInitial, 
+                                p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial,p1.InitSlideAngle,c.AngleInitial));
+                            if (p1.jointType == JointTypes.P)
+                                linkFunctions.Add(new LinkSameAngleFunction(p0Index, joints.IndexOf(p0), p0.xInitial, p0.yInitial,
+                                    p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial, p1.InitSlideAngle, c.AngleInitial));
+                        }
                     }
             }
             optMethod = new NewtonMethod();
@@ -76,13 +87,13 @@ namespace PMKS.PositionSolving
                 var j = joints[i];
                 if (j.positionKnown == KnownState.Fully)
                     foreach (var llf in linkFunctions)
-                        llf.SetJointPosition(i, j.x, j.y);
+                        llf.SetInitialJointPosition(i, j.x, j.y);
                 else
                 {
                     var xPosStart = j.xNumerical;
                     var yPosStart = j.yNumerical;
                     foreach (var llf in linkFunctions)
-                        llf.SetJointPosition(i, xPosStart, yPosStart);
+                        llf.SetInitialJointPosition(i, xPosStart, yPosStart);
                     var index = unkJoints.IndexOf(j);
                     xInit[2 * index] = xPosStart;
                     xInit[2 * index + 1] = yPosStart;

@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DEBUGSERIALoff</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEBUGSERIAL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -57,7 +57,10 @@
     <Compile Include="OOOT_Functions\OptMethods\NewtonMethod.cs" />
     <Compile Include="OOOT_Functions\SearchDirection\abstractSearchDirection.cs" />
     <Compile Include="OOOT_Functions\SearchIO.cs" />
+    <Compile Include="Position Solving\LinkFunction.cs" />
     <Compile Include="Position Solving\LinkLengthFunction.cs" />
+    <Compile Include="Position Solving\LinkSameAngleFunction.cs" />
+    <Compile Include="Position Solving\LinkSliderFunction.cs" />
     <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
     <Compile Include="Position Solving\PositionSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

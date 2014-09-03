@@ -219,24 +219,24 @@ namespace PMKS_Silverlight_App
             for (int index = 0; index < pmks.AllJoints.Count; index++)
             {
                 var j = pmks.AllJoints[pmks.JointNewIndexFromOriginal[index]];
-
+                JointData jointRowData = (index < jointData.Count) ? jointData[index] : null;
                 InputJointBaseShape inputJointBaseShape = null;
                 switch (j.jointType)
                 {
                     case JointTypes.R:
                         inputJointBaseShape =
                             new InputRJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.isGround, jointData[index]);
+                                YAxisOffset, j.isGround, jointRowData);
                         break;
                     case JointTypes.P:
                         inputJointBaseShape =
                             new InputPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointData[index]);
+                                YAxisOffset, j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointRowData);
                         break;
                     case JointTypes.RP:
                         inputJointBaseShape =
                             new InputRPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointData[index]);
+                                YAxisOffset, j.InitSlideAngle + j.Link1.AngleInitial, j.isGround, jointRowData);
                         break;
                 }
                 Children.Add(inputJointBaseShape);

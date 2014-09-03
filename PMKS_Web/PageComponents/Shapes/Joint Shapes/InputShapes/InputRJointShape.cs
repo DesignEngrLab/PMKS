@@ -12,7 +12,7 @@ namespace PMKS_Silverlight_App
             : base(2 * radius, 2 * radius, strokeThickness, xPosition, yPosition, xAxisOffset, yAxisOffset, 0, "MoveArrows","", jointData)
         {
             /* now draw the actual joint */
-            var fillBrush = isGround ? new SolidColorBrush(Colors.Black) : new SolidColorBrush(Colors.Transparent);
+            var fillBrush = /*isGround ? new SolidColorBrush(Colors.Black) :*/ new SolidColorBrush(Colors.Transparent);
             jointShape = new Ellipse
             {
                 Width = 2 * radius,
