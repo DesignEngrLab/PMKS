@@ -30,9 +30,39 @@ namespace PMKS.PositionSolving
             linkFunctions = new List<NonDyadicObjFunctionTerm>();
             unkJoints = new List<joint>();
             foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))
-                unkJoints.Add(j);
-
-            numUnknownPivots = unkJoints.Count;
+               unkJoints.Add(j);       
+            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully && j.jointType!=JointTypes.R))
+            {
+               if (j.jointType == JointTypes.RP)
+                {
+                    if (j.Link1.ReferenceJoint2==null) continue;
+                    var r1 = j.Link1.ReferenceJoint1;
+                    var r2 = j.Link1.ReferenceJoint2;
+                    linkFunctions.Add(new SameSlideAcrossRPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),j.xInitial,j.yInitial,
+                        unkJoints.IndexOf(r1), joints.IndexOf(r1),r1.xInitial,r1.yInitial,
+                        unkJoints.IndexOf(r2), joints.IndexOf(r2),r2.xInitial,r2.yInitial,j.Link1.AngleInitial,j.Link1.DistanceBetweenSlides(j,r1)));
+                }
+                else if (j.jointType == JointTypes.P) 
+                {                            
+                    if (j.Link2.ReferenceJoint2==null && j.Link2.ReferenceJoint1==j) continue;
+                    var b2 = (j.Link2.ReferenceJoint1 != j) ? j.Link2.ReferenceJoint1 : j.Link2.ReferenceJoint2;
+                    var s1 = j.Link1.ReferenceJoint1;
+                    linkFunctions.Add(new SameSlideAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),j.xInitial,j.yInitial,
+                        unkJoints.IndexOf(b2), joints.IndexOf(b2),b2.xInitial,b2.yInitial,
+                        unkJoints.IndexOf(s1), joints.IndexOf(s1),s1.xInitial,s1.yInitial,
+                        j.Link1.DistanceBetweenSlides(j,s1),j.Link2.angleOfBlockToJoint(j,b2)));
+                    if (j.Link1.ReferenceJoint2!=null)
+                    {
+                        var s2 = j.Link1.ReferenceJoint2;
+                        linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
+                            j.xInitial, j.yInitial,
+                            unkJoints.IndexOf(b2), joints.IndexOf(b2), b2.xInitial, b2.yInitial,
+                            unkJoints.IndexOf(s1), joints.IndexOf(s1), s1.xInitial, s1.yInitial,
+                            unkJoints.IndexOf(s2), joints.IndexOf(s2), s2.xInitial, s2.yInitial, j.InitSlideAngle,
+                            j.Link2.angleOfBlockToJoint(j, b2)));
+                    }                
+                }
+            }
             foreach (var c in links)
             {
                 for (int i = 0; i < c.joints.Count - 1; i++)
@@ -42,27 +72,14 @@ namespace PMKS.PositionSolving
                         var p1 = c.joints[j];
                         var p0Index = unkJoints.IndexOf(p0);
                         var p1Index = unkJoints.IndexOf(p1);
-                        if (p0Index == -1 && p1Index == -1) continue; //if both joints are known, then no need to add an objective function term   
-                        if (p0.SlidingWithRespectTo(c) && p1.SlidingWithRespectTo(c)) continue;  //if both joints are sliding on link c, then no useful constraint info is extracted   
+                        if (p0Index == -1 && p1Index == -1)
+                            continue; //if both joints are known, then no need to add an objective function term   
                         if (p0.FixedWithRespectTo(c) && p1.FixedWithRespectTo(c))
                             linkFunctions.Add(new LinkLengthFunction(p0Index, joints.IndexOf(p0), p0.xInitial,
                                 p0.yInitial, p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial));
-                        else
-                        {
-                            if (p0.SlidingWithRespectTo(c))
-                            {  // the LinkSliderFunction assumes the first joint is the fixed one. Since this is not the case, reverse here.
-                                var tempJoint = p0; var tempIndex = p0Index;
-                                p0 = p1; p0Index = p1Index;
-                                p1 = tempJoint; p1Index = tempIndex;
-                            }
-                            linkFunctions.Add(new LinkSliderFunction(p0Index, joints.IndexOf(p0), p0.xInitial,p0.yInitial, 
-                                p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial,p1.InitSlideAngle,c.AngleInitial));
-                            if (p1.jointType == JointTypes.P)
-                                linkFunctions.Add(new SameAngleAcrossPJointLinks(p0Index, joints.IndexOf(p0), p0.xInitial, p0.yInitial,
-                                    p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial, p1.InitSlideAngle, c.AngleInitial));
-                        }
                     }
-            }
+            }                     
+            numUnknownPivots = unkJoints.Count;
             optMethod = new NewtonMethod();
             optMethod.Add(this);
             ConvergedWithinLimit = new ToKnownBestFConvergence(0, Constants.epsilon);
@@ -85,7 +102,7 @@ namespace PMKS.PositionSolving
             for (int i = 0; i < joints.Count; i++)
             {
                 var j = joints[i];
-                if (j.positionKnown == KnownState.Fully)
+                if (j.positionKnown == KnownState.Fully)       
                     foreach (var llf in linkFunctions)
                         llf.SetInitialJointPosition(i, j.x, j.y);
                 else

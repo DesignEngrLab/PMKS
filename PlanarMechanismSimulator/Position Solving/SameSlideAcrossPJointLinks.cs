@@ -26,7 +26,6 @@ namespace PMKS.PositionSolving
         public SameSlideAcrossPJointLinks(int varListIndexBlock1, int jointListIndexBlock1, double xBlock1, double yBlock1,
             int varListIndexBlock2, int jointListIndexBlock2, double xBlock2, double yBlock2,
             int varListIndexSlide1, int jointListIndexSlide1, double xSlide1, double ySlide1,
-            int varListIndexSlide2, int jointListIndexSlide2, double xSlide2, double ySlide2,
             double distToSlide, double blockAngle)
         {
             this.varListIndexBlock1 = varListIndexBlock1;
@@ -50,6 +49,7 @@ namespace PMKS.PositionSolving
         {
             get { return Math.Atan2(yBlock2 - yBlock1, xBlock2 - xBlock1); }
         }
+
 
         public override double calculate(double[] x)
         {
