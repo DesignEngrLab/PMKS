@@ -337,9 +337,10 @@ namespace PMKS.PositionSolving
 
         internal void UpdateSliderPosition()
         {
-            foreach (var j in joints.Where(jt => jt.ReferenceJointIndex >= 0))
+            foreach (var j in joints.Where(jt => jt.jointType== JointTypes.P||jt.jointType== JointTypes.RP
+             ||   (jt.jointType== JointTypes.G && !double.IsNaN(jt.InitSlideAngle))))
             {
-                var refJoint = j.Link1.joints[j.ReferenceJointIndex];
+                var refJoint = j.Link1.ReferenceJoint1;
                 var orthoPt = link.findOrthoPoint(refJoint, j);
 
                 var refVector = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };

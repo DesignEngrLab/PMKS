@@ -21,6 +21,8 @@ namespace PMKS
 
         internal KnownState AngleIsKnown;
 
+        public joint ReferenceJoint1 { get; private set; }
+        internal joint ReferenceJoint2 { get; private set; }
         /// <summary>
         /// The lengths between joints that are fixed with respect to this link
         /// </summary>
@@ -92,6 +94,7 @@ namespace PMKS
             #region Define Initial Link Angle   
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
                 OrderBy(j => j.xInitial).ToList();
+            ReferenceJoint1 = fixedJoints[0];
             /* the linkAngle is defined from "the joint with the lowest initial x value
              * that is fixed to this link" to "the joint with the highest initial x value
              * that is fixed to this link. If the link has only one fixed joint (and
@@ -99,7 +102,11 @@ namespace PMKS
              * Simulator.addReferencePivotsToSlideOnlyLinks()) or is ground, then the 
              * initial angle is zero. */
             if (fixedJoints.Count < 2 || this.isGround) AngleInitial = 0.0;
-            else AngleInitial = Constants.angle(fixedJoints[0], fixedJoints.Last());
+            else
+            {
+                ReferenceJoint2 = fixedJoints[1];
+                AngleInitial = Constants.angle(ReferenceJoint1,ReferenceJoint2);
+            }
             Angle = AngleNumerical = AngleLast = AngleInitial;
             foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
                 j.InitSlideAngle -= AngleInitial;
@@ -162,6 +169,7 @@ namespace PMKS
             #endregion
         }
 
+
         private void addSlideDictionaryEntry(joint slideJoint, joint fixedJoint, int slideIndex, int fixedIndex)
         {
             var key = numJoints * slideIndex + fixedIndex;
@@ -169,8 +177,6 @@ namespace PMKS
             var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
             var fixedVector = new[] { fixedJoint.xInitial - orthoPt.x, fixedJoint.yInitial - orthoPt.y };
             distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, fixedVector));
-            if (slideJoint.ReferenceJointIndex == -1 && slideJoint.SlidingWithRespectTo(this))
-                slideJoint.ReferenceJointIndex = fixedIndex;
         }
 
         private void addBlockAngleDictionaryEntry(joint pJoint, joint refJoint, int pIndex, int refIndex)

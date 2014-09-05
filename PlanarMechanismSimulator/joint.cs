@@ -77,7 +77,6 @@ namespace PMKS
         /// </value>
         public link Link2 { get; internal set; }
 
-        public int ReferenceJointIndex { get; set; }
         public double MinSlidePosition { get; set; }
         public double MaxSlidePosition { get; set; }
         public double OrigSlidePosition { get; set; }

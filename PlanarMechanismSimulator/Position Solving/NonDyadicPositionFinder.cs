@@ -8,7 +8,7 @@ namespace PMKS.PositionSolving
 {
     internal class NonDyadicPositionSolver : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
     {
-        private readonly List<ILinkFunction> linkFunctions;
+        private readonly List<NonDyadicObjFunctionTerm> linkFunctions;
         private readonly abstractConvergence ConvergedWithinLimit;
         private readonly abstractOptMethod optMethod;
 
@@ -27,7 +27,7 @@ namespace PMKS.PositionSolving
             this.posFinder = posFinder;
             this.links = posFinder.links;
             this.joints = posFinder.joints;
-            linkFunctions = new List<ILinkFunction>();
+            linkFunctions = new List<NonDyadicObjFunctionTerm>();
             unkJoints = new List<joint>();
             foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))
                 unkJoints.Add(j);
@@ -58,7 +58,7 @@ namespace PMKS.PositionSolving
                             linkFunctions.Add(new LinkSliderFunction(p0Index, joints.IndexOf(p0), p0.xInitial,p0.yInitial, 
                                 p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial,p1.InitSlideAngle,c.AngleInitial));
                             if (p1.jointType == JointTypes.P)
-                                linkFunctions.Add(new LinkSameAngleFunction(p0Index, joints.IndexOf(p0), p0.xInitial, p0.yInitial,
+                                linkFunctions.Add(new SameAngleAcrossPJointLinks(p0Index, joints.IndexOf(p0), p0.xInitial, p0.yInitial,
                                     p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial, p1.InitSlideAngle, c.AngleInitial));
                         }
                     }

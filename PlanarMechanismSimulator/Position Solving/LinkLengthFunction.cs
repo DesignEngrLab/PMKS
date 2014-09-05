@@ -3,7 +3,7 @@ using OptimizationToolbox;
 
 namespace PMKS.PositionSolving
 {
-    internal class LinkLengthFunction : ILinkFunction
+    internal class LinkLengthFunction : NonDyadicObjFunctionTerm
     {
         private readonly int jointListIndex1;
         private readonly int jointListIndex2;
@@ -36,13 +36,11 @@ namespace PMKS.PositionSolving
         {
             get
             {
-                //if (newLengthSqared == 0)
-                //    return Constants.epsilonSame;
                 return Math.Sqrt(newLengthSqared);
             }
         }
 
-        public LinkLengthFunction(int varListIndex1, int jointListIndex1,double X1, double Y1, int varListIndex2, int jointListIndex2, double X2, double Y2)
+        public LinkLengthFunction(int varListIndex1, int jointListIndex1, double X1, double Y1, int varListIndex2, int jointListIndex2, double X2, double Y2)
         {
             this.jointListIndex1 = jointListIndex1;
             this.jointListIndex2 = jointListIndex2;
@@ -57,15 +55,13 @@ namespace PMKS.PositionSolving
             origLength = Math.Sqrt(origLengthSquared);
         }
 
-        public double calculate(double[] x)
+        public override double calculate(double[] x)
         {
             assignPositions(x);
-            //return newLengthSqared - 2 * origLength * newLength + origLengthSquared;
-            var f= newLengthSqared - 2 * origLength * newLength + origLengthSquared;
-            return f;
+            return newLengthSqared - 2 * origLength * newLength + origLengthSquared;
         }
 
-        public double deriv_wrt_xi(double[] x, int i)
+        public override double deriv_wrt_xi(double[] x, int i)
         {
             if (!(i == 2 * varListIndex1 || i == 2 * varListIndex1 + 1 || i == 2 * varListIndex2 || i == 2 * varListIndex2 + 1)) return 0;
             assignPositions(x);
@@ -84,7 +80,7 @@ namespace PMKS.PositionSolving
             throw new Exception("Gradient:you shouldn't be seeing this! how did you get by the initial if-statement?");
         }
 
-        public double second_deriv_wrt_ij(double[] x, int i, int j)
+        public override double second_deriv_wrt_ij(double[] x, int i, int j)
         {
             if ((!(i == 2 * varListIndex1 || i == 2 * varListIndex1 + 1 || i == 2 * varListIndex2 || i == 2 * varListIndex2 + 1))
                 || (!(j == 2 * varListIndex1 || j == 2 * varListIndex1 + 1 || j == 2 * varListIndex2 || j == 2 * varListIndex2 + 1))) return 0;
@@ -121,19 +117,20 @@ namespace PMKS.PositionSolving
 
         private void assignPositions(double[] x)
         {
-            if (varListIndex1 >= 0)// && x.GetLength(0) > 2 * varListIndex1 + 1)
+            if (varListIndex1 >= 0) // && x.GetLength(0) > 2 * varListIndex1 + 1)  
+                /** the commented condition seems like good form, but if it crashes (index out of range), we want to know about it! **/
             {
                 x1 = x[2 * varListIndex1];
                 y1 = x[2 * varListIndex1 + 1];
             }
-            if (varListIndex2 >= 0)// && x.GetLength(0) > 2 * varListIndex2 + 1)
+            if (varListIndex2 >= 0) // && x.GetLength(0) > 2 * varListIndex2 + 1)
             {
                 x2 = x[2 * varListIndex2];
                 y2 = x[2 * varListIndex2 + 1];
             }
         }
 
-        public void SetInitialJointPosition(int index, double x, double y)
+        internal override void SetInitialJointPosition(int index, double x, double y)
         {
             if (index == jointListIndex1)
             {

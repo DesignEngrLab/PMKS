@@ -24,7 +24,7 @@ namespace PMKS_Silverlight_App
             var blockHeight = 2 * jointSize;
             var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
             var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
-            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.joints[j.ReferenceJointIndex]) < 0)
+            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.ReferenceJoint1) < 0)
                slideAngle += Math.PI;
             var holeShape = new RectangleGeometry
             {
@@ -50,7 +50,7 @@ namespace PMKS_Silverlight_App
             var blockHeight = 2 * jointSize;
             var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
             var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
-            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.joints[j.ReferenceJointIndex]) < 0)
+            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.ReferenceJoint1) < 0)
                 slideAngle += Math.PI;
             var holeShape = new RectangleGeometry
             {
@@ -74,7 +74,7 @@ namespace PMKS_Silverlight_App
             var blockHeight = 2 * jointSize;
             var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
             var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
-            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.joints[j.ReferenceJointIndex]) < 0)
+            if (!beforeSimulation && thisLink.DistanceBetweenSlides(j, thisLink.ReferenceJoint1) < 0)
                 slideAngle += Math.PI;
 
             var borderShape = new RectangleGeometry

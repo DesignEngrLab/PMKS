@@ -29,9 +29,8 @@ namespace PMKS_Silverlight_App
                     DefaultExt = ".txt",
                     Filter = "Tab-Delimited text file (*.txt)|*.txt|Comma Separated Values file (*.csv)|*.csv|All Files (*.*)|*.*",
                 };
-            bool? result = saveFileDialog.ShowDialog();
-            FileInfo fileInfo;
-            
+            var result = saveFileDialog.ShowDialog();
+   
             try
             {
                 if (result == true)
