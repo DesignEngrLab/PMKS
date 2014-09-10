@@ -16,41 +16,38 @@ namespace PMKS.PositionSolving
         private double y1;
         private double x2;
         private double y2;
+        private double deltaX;
+        private double deltaY;
+        private double newLengthSqared;
+        private double newLength;
 
-        private double deltaX
-        {
-            get { return x1 - x2; }
-        }
 
-        private double deltaY
+        public LinkLengthFunction(int varListIndex1, int jointListIndex1, double X1, double Y1, int varListIndex2,
+            int jointListIndex2, double X2, double Y2)
         {
-            get { return y1 - y2; }
-        }
-
-        private double newLengthSqared
-        {
-            get { return deltaX * deltaX + deltaY * deltaY; }
-        }
-
-        private double newLength
-        {
-            get
+            if (varListIndex1 < varListIndex2)
             {
-                return Math.Sqrt(newLengthSqared);
+                this.jointListIndex1 = jointListIndex1;
+                this.jointListIndex2 = jointListIndex2;
+                this.varListIndex1 = varListIndex1;
+                this.varListIndex2 = varListIndex2;
+                x1 = X1;
+                y1 = Y1;
+                x2 = X2;
+                y2 = Y2;
             }
-        }
+            else
+            {
+                this.jointListIndex1 = jointListIndex2;
+                this.jointListIndex2 = jointListIndex1;
+                this.varListIndex1 = varListIndex2;
+                this.varListIndex2 = varListIndex1;
+                x1 = X2;
+                y1 = Y2;
+                x2 = X1;
+                y2 = Y1;
+            }
 
-        public LinkLengthFunction(int varListIndex1, int jointListIndex1, double X1, double Y1, int varListIndex2, int jointListIndex2, double X2, double Y2)
-        {
-            this.jointListIndex1 = jointListIndex1;
-            this.jointListIndex2 = jointListIndex2;
-            this.varListIndex1 = varListIndex1;
-            this.varListIndex2 = varListIndex2;
-
-            x1 = X1;
-            y1 = Y1;
-            x2 = X2;
-            y2 = Y2;
             origLengthSquared = deltaX * deltaX + deltaY * deltaY;
             origLength = Math.Sqrt(origLengthSquared);
         }
@@ -118,7 +115,7 @@ namespace PMKS.PositionSolving
         private void assignPositions(double[] x)
         {
             if (varListIndex1 >= 0) // && x.GetLength(0) > 2 * varListIndex1 + 1)  
-                /** the commented condition seems like good form, but if it crashes (index out of range), we want to know about it! **/
+            /** the commented condition seems like good form, but if it crashes (index out of range), we want to know about it! **/
             {
                 x1 = x[2 * varListIndex1];
                 y1 = x[2 * varListIndex1 + 1];
@@ -128,6 +125,10 @@ namespace PMKS.PositionSolving
                 x2 = x[2 * varListIndex2];
                 y2 = x[2 * varListIndex2 + 1];
             }
+            deltaX= x1 - x2;
+            deltaY = y1 - y2;
+            newLengthSqared = deltaX * deltaX + deltaY * deltaY;
+            newLength = Math.Sqrt(newLengthSqared);          
         }
 
         internal override void SetInitialJointPosition(int index, double x, double y)

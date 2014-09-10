@@ -20,7 +20,8 @@ namespace PMKS.PositionSolving
         /* the following 8 variables are NOT readonly since these are part of what is being optimized */
         private double xBlock1, yBlock1, xBlock2, yBlock2;
         private double xSlide1, ySlide1;
-
+                                              
+        private readonly double innerFunction;
 
 
         public SameSlideAcrossPJointLinks(int varListIndexBlock1, int jointListIndexBlock1, double xBlock1, double yBlock1,
@@ -64,25 +65,7 @@ namespace PMKS.PositionSolving
                 i == 2 * varListIndexSlide1 || i == 2 * varListIndexSlide1 + 1))
                 return 0;
             assignPositions(x);
-            if (i == 2 * varListIndexBlock1)
-                // w.r.t. xBlock1
-                return (-2 * (yBlock2 - yBlock1) * innerFunction) / ((xBlock2 - xBlock1 + yBlock2 - yBlock1) * (xBlock2 - xBlock1));
-            if (i == 2 * varListIndexBlock1 + 1)
-                // w.r.t. yBlock1
-                return -2 * innerFunction / (xBlock2 - xBlock1 + yBlock2 - yBlock1);
-            if (i == 2 * varListIndexBlock2)
-                // w.r.t. xBlock2
-                return (2 * (yBlock2 - yBlock1) * innerFunction) / ((xBlock2 - xBlock1 + yBlock2 - yBlock1) * (xBlock2 - xBlock1));
-            if (i == 2 * varListIndexBlock2 + 1)
-                // w.r.t. yBlock2
-                return 2 * innerFunction / (xBlock2 - xBlock1 + yBlock2 - yBlock1);
 
-            if (i == 2 * varListIndexSlide1)
-                // w.r.t. xSlide1
-                return (2 * (ySlide2 - ySlide1) * innerFunction) / ((xSlide2 - xSlide1 + ySlide2 - ySlide1) * (xSlide2 - xSlide1));
-            if (i == 2 * varListIndexSlide1 + 1)
-                // w.r.t. ySlide1
-                return 2 * innerFunction / (xSlide2 - xSlide1 + ySlide2 - ySlide1);
 
             throw new Exception("Gradient:you shouldn't be seeing this! how did you get by the initial if-statement?");
 
@@ -90,45 +73,42 @@ namespace PMKS.PositionSolving
 
         public override double second_deriv_wrt_ij(double[] x, int i, int j)
         {
-            if (!(i == 2 * varListIndexBlock1 || i == 2 * varListIndexBlock1 + 1 ||
-                i == 2 * varListIndexBlock2 || i == 2 * varListIndexBlock2 + 1 ||
-                i == 2 * varListIndexSlide1 || i == 2 * varListIndexSlide1 + 1))
+            if (!(i == 2*varListIndexBlock1 || i == 2*varListIndexBlock1 + 1 ||
+                  i == 2*varListIndexBlock2 || i == 2*varListIndexBlock2 + 1 ||
+                  i == 2*varListIndexSlide1 || i == 2*varListIndexSlide1 + 1))
                 return 0;
-            if (!(j == 2 * varListIndexBlock1 || j == 2 * varListIndexBlock1 + 1 ||
-                j == 2 * varListIndexBlock2 || j == 2 * varListIndexBlock2 + 1 ||
-                j == 2 * varListIndexSlide1 || j == 2 * varListIndexSlide1 + 1))
+            if (!(j == 2*varListIndexBlock1 || j == 2*varListIndexBlock1 + 1 ||
+                  j == 2*varListIndexBlock2 || j == 2*varListIndexBlock2 + 1 ||
+                  j == 2*varListIndexSlide1 || j == 2*varListIndexSlide1 + 1))
                 return 0;
             if (i == j)
             {
-                if (i == 2 * varListIndexBlock1)
+                if (i == 2*varListIndexBlock1)
                     // w.r.t. xBlock1
-                    return (-2 * (yBlock2 - yBlock1) * innerFunction) / ((xBlock2 - xBlock1 + yBlock2 - yBlock1) * (xBlock2 - xBlock1));
-                if (i == 2 * varListIndexBlock1 + 1)
+                    return (-2*(yBlock2 - yBlock1)*innerFunction)/
+                           ((xBlock2 - xBlock1 + yBlock2 - yBlock1)*(xBlock2 - xBlock1));
+                if (i == 2*varListIndexBlock1 + 1)
                     // w.r.t. yBlock1
-                    return -2 * innerFunction / (xBlock2 - xBlock1 + yBlock2 - yBlock1);
-                if (i == 2 * varListIndexBlock2)
+                    return -2*innerFunction/(xBlock2 - xBlock1 + yBlock2 - yBlock1);
+                if (i == 2*varListIndexBlock2)
                     // w.r.t. xBlock2
-                    return (2 * (yBlock2 - yBlock1) * innerFunction) / ((xBlock2 - xBlock1 + yBlock2 - yBlock1) * (xBlock2 - xBlock1));
-                if (i == 2 * varListIndexBlock2 + 1)
+                    return (2*(yBlock2 - yBlock1)*innerFunction)/
+                           ((xBlock2 - xBlock1 + yBlock2 - yBlock1)*(xBlock2 - xBlock1));
+                if (i == 2*varListIndexBlock2 + 1)
                     // w.r.t. yBlock2
-                    return 2 * innerFunction / (xBlock2 - xBlock1 + yBlock2 - yBlock1);
+                    return 2*innerFunction/(xBlock2 - xBlock1 + yBlock2 - yBlock1);
 
-                if (i == 2 * varListIndexSlide1)
-                    // w.r.t. xSlide1
-                    return (2 * (ySlide2 - ySlide1) * innerFunction) / ((xSlide2 - xSlide1 + ySlide2 - ySlide1) * (xSlide2 - xSlide1));
-                if (i == 2 * varListIndexSlide1 + 1)
-                    // w.r.t. ySlide1
-                    return 2 * innerFunction / (xSlide2 - xSlide1 + ySlide2 - ySlide1);
-            }
-            if (i > j)
-            {
-                //switch so that i is always less than j. double derivative can be calculated either way (don't you remember that?!)
-                var temp = i;
-                i = j;
-                j = temp;
-            }
-            return double.NaN;
+                if (i > j)
+                {
+                    //switch so that i is always less than j. double derivative can be calculated either way (don't you remember that?!)
+                    var temp = i;
+                    i = j;
+                    j = temp;
+                }
+                return double.NaN;
 
+            }
+            throw new Exception("2nd Derivative in SameAngleAcrossPJoint :you shouldn't be seeing this! how did you get by the initial if-statement?");
         }
 
         private void assignPositions(double[] x)
