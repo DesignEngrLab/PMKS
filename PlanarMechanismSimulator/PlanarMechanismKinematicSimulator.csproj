@@ -60,7 +60,6 @@
     <Compile Include="Position Solving\NonDyadicObjFunctionTerm.cs" />
     <Compile Include="Position Solving\LinkLengthFunction.cs" />
     <Compile Include="Position Solving\SameSlideAcrossRPJointLinks.cs" />
-    <Compile Include="Position Solving\SameSlideAcrossPJointLinks.cs" />
     <Compile Include="Position Solving\SameAngleAcrossPJointLinks.cs" />
     <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
     <Compile Include="Position Solving\PositionSolver.cs" />
