@@ -21,8 +21,8 @@ namespace PMKS
 
         internal KnownState AngleIsKnown;
 
-        public joint ReferenceJoint1 { get; private set; }
-        internal joint ReferenceJoint2 { get; private set; }
+        public joint ReferenceJoint1 { get; internal set; }
+        internal joint ReferenceJoint2 { get; set; }
         /// <summary>
         /// The lengths between joints that are fixed with respect to this link
         /// </summary>
@@ -91,7 +91,7 @@ namespace PMKS
         internal void DetermineLengthsAndReferences()
         {
             numJoints = joints.Count;
-            #region Define Initial Link Angle   
+            #region Define Initial Link Angle
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
                 OrderBy(j => j.xInitial).ToList();
             ReferenceJoint1 = fixedJoints[0];
@@ -105,11 +105,11 @@ namespace PMKS
             else
             {
                 ReferenceJoint2 = fixedJoints[1];
-                AngleInitial = Constants.angle(ReferenceJoint1,ReferenceJoint2);
+                AngleInitial = Constants.angle(ReferenceJoint1, ReferenceJoint2);
             }
             Angle = AngleNumerical = AngleLast = AngleInitial;
             foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
-                j.InitSlideAngle -= AngleInitial;
+                j.OffsetSlideAngle -=  AngleInitial;
             #endregion
             #region Joint-to-Joint Dictionaries
             lengths = new Dictionary<int, double>();
@@ -170,19 +170,29 @@ namespace PMKS
         }
 
 
-        private void addSlideDictionaryEntry(joint slideJoint, joint fixedJoint, int slideIndex, int fixedIndex)
+        /// <summary>
+        /// Adds a slide dictionary entry.
+        /// the shortest distance between the sliding joint and the reference point.
+        /// This is a signed distance! Given the unit vector created from the slide angle, 
+        /// the positive distance is "on the left" or counter-clockwise, while a negative
+        /// distance is "on the right" or clockwise.
+        /// </summary>
+        /// <param name="slideJoint">The slide joint.</param>
+        /// <param name="refJoint">The fixed joint.</param>
+        /// <param name="slideIndex">Index of the slide.</param>
+        /// <param name="fixedIndex">Index of the fixed.</param>
+        private void addSlideDictionaryEntry(joint slideJoint, joint refJoint, int slideIndex, int fixedIndex)
         {
             var key = numJoints * slideIndex + fixedIndex;
-            var orthoPt = findOrthoPoint(fixedJoint, slideJoint);
             var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
-            var fixedVector = new[] { fixedJoint.xInitial - orthoPt.x, fixedJoint.yInitial - orthoPt.y };
-            distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, fixedVector));
+            var refVector = new[] { refJoint.xInitial - slideJoint.xInitial, refJoint.yInitial - slideJoint.yInitial };
+            distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, refVector));
         }
 
         private void addBlockAngleDictionaryEntry(joint pJoint, joint refJoint, int pIndex, int refIndex)
         {
             var key = numJoints * pIndex + refIndex;
-            var result = pJoint.SlideAngle -
+            var result = pJoint.SlideAngleInitial -
                          Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
             angleFromBlockToJoint.Add(key, result);
         }
@@ -222,7 +232,8 @@ namespace PMKS
             var index = numJoints * slideIndex + fixedIndex;
             if (distanceToSlideLine.ContainsKey(index))
                 return distanceToSlideLine[index];
-            else return -distanceToSlideLine[numJoints * fixedIndex + slideIndex];
+            else throw new Exception("link.DistanceBetweenSlides ->args wrong");
+                //return -distanceToSlideLine[numJoints * fixedIndex + slideIndex];
         }
         /// <summary>
         /// returns the angle between the slide and the reference joint.
@@ -238,35 +249,7 @@ namespace PMKS
             return angleFromBlockToJoint[numJoints * i + j];
         }
 
-        /// <summary>
-        /// Finds the orthogonal point on the line - the point closest to the reference Joint - the 
-        /// point that makes a right angle (orthogonal angle) with the line. The boolean "belowLinePositiveeSlope"
-        /// is true when:
-        /// a. the slope is positive and the reference point is below the line (lower-y value) or
-        /// b. when the slope is negative and the reference point is above the line or
-        /// c. the slope is vertical (infinity or positive) and the reference point is to the right (higher x-value)
-        /// d. the slope is horizontal (zero) and the reference point is BELOW.
-        /// </summary>
-        /// <param name="refJoint">The reference joint.</param>
-        /// <param name="slideJoint">The slide joint.</param>
-        /// <param name="lineAngle">The line angle.</param>
-        /// <param name="belowLinePositiveSlope">if set to <c>true</c> [below line positive slope].</param>
-        /// <returns></returns>
-        public static point findOrthoPoint(joint refJoint, joint slideJoint)
-        {
-            var slideAngle = slideJoint.SlideAngle;
-            if (Constants.sameCloseZero(slideAngle))
-                return new point(refJoint.x, slideJoint.y);
-            else if (Constants.sameCloseZero(Math.Abs(slideAngle), Math.PI / 2))
-                return new point(slideJoint.x, refJoint.y);
-            var slope1 = Math.Tan(slideAngle);
-            var slope2 = -1 / slope1;
-            var offset1 = slideJoint.y - slope1 * slideJoint.x;
-            var offset2 = refJoint.y - slope2 * refJoint.x;
-            var x = (offset2 - offset1) / (slope1 - slope2);
-            var y = slope1 * x + offset1;
-            return new point(x, y);
-        }
+
         #endregion
 
 

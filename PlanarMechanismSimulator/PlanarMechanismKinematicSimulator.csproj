@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DEBUGSERIAL</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEBUGSERIALoff</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -59,7 +59,9 @@
     <Compile Include="OOOT_Functions\SearchIO.cs" />
     <Compile Include="Position Solving\NonDyadicObjFunctionTerm.cs" />
     <Compile Include="Position Solving\LinkLengthFunction.cs" />
-    <Compile Include="Position Solving\SameSlideAcrossRPJointLinks.cs" />
+    <Compile Include="Position Solving\SameSlideAcrossJointAbstract.cs" />
+    <Compile Include="Position Solving\SameSlideAcrossPJointLinks.cs" />
+    <Compile Include="Position Solving\SameSlideAcrossRPJointLinks - Copy.cs" />
     <Compile Include="Position Solving\SameAngleAcrossPJointLinks.cs" />
     <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
     <Compile Include="Position Solving\PositionSolver.cs" />

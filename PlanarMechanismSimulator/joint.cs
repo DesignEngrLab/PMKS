@@ -38,9 +38,10 @@ namespace PMKS
         /// <summary>
         /// The initial slide angle
         /// </summary>
-        public double InitSlideAngle = Double.NaN;
-        //public double InitSlideAngle = 0.0;
-        internal double SlideAngle { get { return Link1.Angle + InitSlideAngle; } }
+        public double OffsetSlideAngle = Double.NaN;
+        //public double OffsetSlideAngle = 0.0;
+        public double SlideAngleInitial   { get { return Link1.AngleInitial + OffsetSlideAngle; } }
+        internal double SlideAngle { get { return Link1.Angle + OffsetSlideAngle; } }
         internal double SlidePosition { get; set; }
         internal double SlideVelocity { get; set; }
         internal double SlideAcceleration { get; set; }
@@ -98,13 +99,13 @@ namespace PMKS
             x = xInitial = xLast = xNumerical = currentJointPosition[0];
             y = yInitial = yLast = yNumerical = currentJointPosition[1];
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
-                InitSlideAngle = currentJointPosition[2];
+                OffsetSlideAngle = currentJointPosition[2];
             else if (jointType == JointTypes.P || jointType == JointTypes.RP)
             {
-                InitSlideAngle = 0.0;
+                OffsetSlideAngle = 0.0;
             }
-            while (InitSlideAngle > Math.PI / 2) InitSlideAngle -= Math.PI;
-            while (InitSlideAngle < -Math.PI / 2) InitSlideAngle += Math.PI;
+            while (OffsetSlideAngle > Math.PI / 2) OffsetSlideAngle -= Math.PI;
+            while (OffsetSlideAngle < -Math.PI / 2) OffsetSlideAngle += Math.PI;
             //throw new Exception("No slide angle provided for " + pTypeStr + " joint.");
         }
 
@@ -114,7 +115,7 @@ namespace PMKS
         {
             return (Link1 == link0
                     && (jointType == JointTypes.P || jointType == JointTypes.RP
-                        || (jointType == JointTypes.G && !Double.IsNaN(InitSlideAngle))));
+                        || (jointType == JointTypes.G && !Double.IsNaN(OffsetSlideAngle))));
         }
 
         public Boolean FixedWithRespectTo(link link0)
@@ -147,7 +148,7 @@ namespace PMKS
             {
                 Link1 = Link1,
                 Link2 = Link2,
-                InitSlideAngle = InitSlideAngle,
+                OffsetSlideAngle = OffsetSlideAngle,
                 x = x,
                 xInitial = xInitial,
                 xLast = xLast,

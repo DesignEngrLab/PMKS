@@ -59,8 +59,10 @@ namespace PMKS.PositionSolving
             InitializeJointsAndLinks(positionChange);
             if (posResult == PositionAnalysisResults.InvalidPosition) return false;
             var numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
+
             if (numUnknownJoints > 0)
             {
+                    goto SkipToNonDyadic;
                 do
                 {
                     posResult = PositionAnalysisResults.NoSolvableDyadFound;
@@ -308,7 +310,8 @@ namespace PMKS.PositionSolving
                     numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
                 } while (posResult != PositionAnalysisResults.NoSolvableDyadFound &&
                          numUnknownJoints > 0);
-                if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
+                 SkipToNonDyadic:
+               //if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
                 {
 
                     try
@@ -337,22 +340,14 @@ namespace PMKS.PositionSolving
 
         internal void UpdateSliderPosition()
         {
-            foreach (var j in joints.Where(jt => jt.jointType== JointTypes.P||jt.jointType== JointTypes.RP
-             ||   (jt.jointType== JointTypes.G && !double.IsNaN(jt.InitSlideAngle))))
+            foreach (var j in joints.Where(jt => jt.jointType == JointTypes.P || jt.jointType == JointTypes.RP
+             || (jt.jointType == JointTypes.G && !double.IsNaN(jt.OffsetSlideAngle))))
             {
                 var refJoint = j.Link1.ReferenceJoint1;
-                var orthoPt = link.findOrthoPoint(refJoint, j);
 
-                var refVector = new[] { refJoint.x - orthoPt.x, refJoint.y - orthoPt.y };
-                var slideVector = new[] { j.x - orthoPt.x, j.y - orthoPt.y };
-
-                if (Constants.sameCloseZero(refVector[0]) && Constants.sameCloseZero(refVector[1]))
-                    j.SlidePosition = StarMath.dotProduct(new[] { Math.Cos(j.SlideAngle), Math.Sin(j.SlideAngle) }, slideVector);
-                else
-                {
-                    refVector = StarMath.normalize(refVector);
-                    j.SlidePosition = StarMath.crossProduct2(slideVector, refVector);
-                }
+                var refVector = new[] { refJoint.x - j.x, refJoint.y - j.y };
+                var slideVector = new[] { Math.Cos(j.SlideAngle), Math.Sin(j.SlideAngle) };
+                j.SlidePosition = StarMath.dotProduct(slideVector, refVector);
             }
         }
 
@@ -728,7 +723,7 @@ namespace PMKS.PositionSolving
 
             var slideAnglePos = j2j_angle + changeInSlideAngle;
             var slideAngleNeg = j2j_angle - changeInSlideAngle;
-            var lastSlideAngle = slideJoint.InitSlideAngle + thisLink.AngleLast;
+            var lastSlideAngle = slideJoint.OffsetSlideAngle + thisLink.AngleLast;
             var deltaAnglePos = slideAnglePos - lastSlideAngle;
             while (deltaAnglePos > Math.PI / 2) deltaAnglePos -= Math.PI;
             while (deltaAnglePos < -Math.PI / 2) deltaAnglePos += Math.PI;

@@ -425,7 +425,7 @@ namespace PMKS
         private void setAdditionalReferencePositions(IEnumerable<joint> additionalRefjoints = null)
         {
             foreach (var j in AllJoints.Where(j => j.jointType == JointTypes.R))
-                j.InitSlideAngle = Double.NaN;
+                j.OffsetSlideAngle = Double.NaN;
 
             if (additionalRefjoints != null)
             {
@@ -467,9 +467,9 @@ namespace PMKS
                 var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
                 if (j.Link2.joints.Any(
                            jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)))) continue;
-                if (double.IsNaN(j.InitSlideAngle))
+                if (double.IsNaN(j.OffsetSlideAngle))
                     throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
-                var newJoint1 = new joint(false, "p", new[] { j.xInitial, j.yInitial, j.InitSlideAngle });
+                var newJoint1 = new joint(false, "p", new[] { j.xInitial, j.yInitial, j.OffsetSlideAngle });
                 var gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointTypes.R);
                 if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
                 var newJoint2 = new joint(false, "r", new[] { gearCenter2.xInitial, gearCenter2.yInitial });
@@ -577,7 +577,7 @@ namespace PMKS
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
                     if (j.jointType != JointTypes.R)
-                        j.InitSlideAngle = InitPositions[k++];
+                        j.OffsetSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
             }

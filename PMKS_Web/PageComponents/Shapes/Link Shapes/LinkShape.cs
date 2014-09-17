@@ -45,9 +45,8 @@ namespace PMKS_Silverlight_App
             foreach (var j in thisLink.joints)
             {
                 if (j.SlidingWithRespectTo(thisLink))
-                {
-
-                    var slideAngle = j.InitSlideAngle + thisLink.AngleInitial;
+                {                      
+                    var slideAngle = j.SlideAngleInitial;
                     var dx = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *
                              Math.Cos(slideAngle);
                     var dy = DisplayConstants.InitialSlidingJointLengthMultiplier * startingBufferRadius *

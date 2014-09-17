@@ -82,6 +82,10 @@ namespace PMKS
                 {
                     var jointIndex = AllJoints.IndexOf(j);
                     backwardLink.joints.Add(backwardJoints[jointIndex]);
+                    if (j == forwardLink.ReferenceJoint1)
+                        backwardLink.ReferenceJoint1 = backwardJoints[jointIndex];
+                    if (j == forwardLink.ReferenceJoint2)
+                        backwardLink.ReferenceJoint2 = backwardJoints[jointIndex];
                 }
             }
         }

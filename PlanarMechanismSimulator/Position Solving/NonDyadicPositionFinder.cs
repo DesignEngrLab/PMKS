@@ -12,9 +12,7 @@ namespace PMKS.PositionSolving
         private readonly abstractConvergence ConvergedWithinLimit;
         private readonly abstractOptMethod optMethod;
 
-        private readonly int numUnknownPivots;
-        private readonly int beginGndJointsIndex;
-        private readonly int numUnknownLinks;
+        private readonly int numUnknownJoints;
         private readonly IList<link> links;
         private readonly IList<joint> joints;
         private readonly IList<joint> unkJoints;
@@ -58,7 +56,7 @@ namespace PMKS.PositionSolving
                             j.xInitial, j.yInitial,
                             unkJoints.IndexOf(b2), joints.IndexOf(b2), b2.xInitial, b2.yInitial,
                             unkJoints.IndexOf(s1), joints.IndexOf(s1), s1.xInitial, s1.yInitial,
-                            unkJoints.IndexOf(s2), joints.IndexOf(s2), s2.xInitial, s2.yInitial, j.InitSlideAngle,
+                            unkJoints.IndexOf(s2), joints.IndexOf(s2), s2.xInitial, s2.yInitial, j.OffsetSlideAngle,
                             j.Link2.angleOfBlockToJoint(j, b2)));
                     }                
                 }
@@ -79,7 +77,7 @@ namespace PMKS.PositionSolving
                                 p0.yInitial, p1Index, joints.IndexOf(p1), p1.xInitial, p1.yInitial));
                     }
             }                     
-            numUnknownPivots = unkJoints.Count;
+            numUnknownJoints = unkJoints.Count;
             optMethod = new NewtonMethod();
             optMethod.Add(this);
             ConvergedWithinLimit = new ToKnownBestFConvergence(0, Constants.epsilon);
@@ -98,7 +96,7 @@ namespace PMKS.PositionSolving
         internal bool Run_PositionsAreClose(out double posError)
         {
             posError = 0.0;
-            var xInit = new double[2 * numUnknownPivots];
+            var xInit = new double[2 * numUnknownJoints];
             for (int i = 0; i < joints.Count; i++)
             {
                 var j = joints[i];
@@ -121,7 +119,7 @@ namespace PMKS.PositionSolving
             optMethod.Run(out xStar, xInit);
             if (!SolutionFound()) return false;
 
-            for (int i = 0; i < numUnknownPivots; i++)
+            for (int i = 0; i < numUnknownJoints; i++)
             {
                 var j = unkJoints[i];
                 j.x = xStar[2 * i];
@@ -155,9 +153,9 @@ namespace PMKS.PositionSolving
             do
             {
                 NumEvals += optMethod.numEvals;
-                var xInit = new double[2 * numUnknownPivots]; //need to check if this is always true. If input is a ternary link it could be less.
+                var xInit = new double[2 * numUnknownJoints]; //need to check if this is always true. If input is a ternary link it could be less.
 
-                for (int i = 0; i < numUnknownPivots; i++)
+                for (int i = 0; i < numUnknownJoints; i++)
                     xInit[i] = range * r.NextDouble() + offset;
                 double[] xStarTemp;
                 var fStarTemp = optMethod.Run(out xStarTemp, xInit);
@@ -169,18 +167,15 @@ namespace PMKS.PositionSolving
                 //SearchIO.output("fStar = " + fStar);
             } while (!optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit) && k++ < Constants.numberOfTries);
 
-            for (int i = 0; i < numUnknownPivots; i++)
+            for (int i = 0; i < numUnknownJoints; i++)
             {
                 newJointParams[i, 0] = xStar[2 * i];
                 newJointParams[i, 1] = xStar[2 * i + 1];
             }
-            for (int i = 0; i < numUnknownLinks; i++)
-            {
-                var joint0Index = joints.IndexOf(links[i].joints[0]);
-                var joint1Index = joints.IndexOf(links[i].joints[1]);
-                newLinkParams[i, 0] = Constants.angle(newJointParams[joint0Index, 0], newJointParams[joint0Index, 1],
-                    newJointParams[joint1Index, 0], newJointParams[joint1Index, 1]);
-            }
+            foreach (var c in links)
+                if (c.AngleIsKnown == KnownState.Unknown)
+                    posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
+
             return fStar;
         }
 

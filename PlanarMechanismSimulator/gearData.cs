@@ -27,11 +27,11 @@ namespace PMKS
             {
                 radius1 = Constants.distance(gearTeethJoint, gearCenter1);
                 radius2 = Constants.distance(gearTeethJoint, gearCenter2);
-                gearCenter1.InitSlideAngle = gearTeethJoint.InitSlideAngle = Math.Atan2(-dx2, dy2);
+                gearCenter1.OffsetSlideAngle = gearTeethJoint.OffsetSlideAngle = Math.Atan2(-dx2, dy2);
             }
             else
             {
-                gearCenter1.InitSlideAngle = gearTeethJoint.InitSlideAngle = double.NaN;
+                gearCenter1.OffsetSlideAngle = gearTeethJoint.OffsetSlideAngle = double.NaN;
                 if (dx1 != 0 && dx2 != 0)
                 {
                     if (!Constants.sameCloseZero(dy1 / dx1, dy2 / dx2))

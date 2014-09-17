@@ -6,12 +6,12 @@ using OptimizationToolbox;
 
 namespace PMKS.PositionSolving
 {
-    internal class SameSlideAcrossPJointLinks : SameSlideAcrossJointAbstract
+    internal class SameSlideAcrossRPJointLinks : SameSlideAcrossJointAbstract
     {
-        public SameSlideAcrossPJointLinks(int varIndexBlock1, int jointIndexBlock1, double xBlock1, double yBlock1,
+        public SameSlideAcrossRPJointLinks(int varIndexBlock1, int jointIndexBlock1, double xBlock1, double yBlock1,
             int varIndexSlide1, int jointIndexSlide1, double xSlide1, double ySlide1,
             int varIndexSlide2, int jointIndexSlide2, double xSlide2, double ySlide2,
-            double distToSlide, double initSlideAngle)
+            double initSlideAngle, double distToSlide)
         {
             this.varIndex_Xb = 2 * varIndexBlock1;
             this.jointIndex_Block = jointIndexBlock1;
@@ -42,24 +42,22 @@ namespace PMKS.PositionSolving
         {
             if (varIndex_Xb >= 0)
             {
-                xBlock = x[ varIndex_Xb];
-                yBlock = x[ varIndex_Yb];
+                xBlock = x[2 * varIndex_Xb];
+                yBlock = x[2 * varIndex_Xb + 1];
             }
             if (varIndex_Xs >= 0)
             {
-                xSlide = x[ varIndex_Xs];
-                ySlide = x[ varIndex_Ys];
+                xSlide = x[2 * varIndex_Xs];
+                ySlide = x[2 * varIndex_Xs + 1];
             }
             if (varIndex_Xr >= 0)
             {
-                xSlopeRef = x[ varIndex_Xr];
-                ySlopeRef = x[ varIndex_Yr];
+                xSlopeRef = x[2 * varIndex_Xr];
+                ySlopeRef = x[2 * varIndex_Xr + 1];
             }
             slideBaseAngle = Math.Atan2(ySlopeRef - ySlide, xSlopeRef - xSlide);
             sineAngle = Math.Sin(initSlideAngle + slideBaseAngle);
             cosineAngle = Math.Cos(initSlideAngle + slideBaseAngle);
-            vectorX = xSlide - xBlock;
-            vectorY = ySlide - yBlock;
             innerFunction = distToSlide + vectorX * sineAngle
                             + vectorY * cosineAngle;
             newPointReCalcDerivConstant = true;
