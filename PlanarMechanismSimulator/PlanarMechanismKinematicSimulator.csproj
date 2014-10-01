@@ -59,9 +59,7 @@
     <Compile Include="OOOT_Functions\SearchIO.cs" />
     <Compile Include="Position Solving\NonDyadicObjFunctionTerm.cs" />
     <Compile Include="Position Solving\LinkLengthFunction.cs" />
-    <Compile Include="Position Solving\SameSlideAcrossJointAbstract.cs" />
-    <Compile Include="Position Solving\SameSlideAcrossPJointLinks.cs" />
-    <Compile Include="Position Solving\SameSlideAcrossRPJointLinks - Copy.cs" />
+    <Compile Include="Position Solving\SameSlideAcrossJoint.cs" />
     <Compile Include="Position Solving\SameAngleAcrossPJointLinks.cs" />
     <Compile Include="Position Solving\NonDyadicPositionFinder.cs" />
     <Compile Include="Position Solving\PositionSolver.cs" />

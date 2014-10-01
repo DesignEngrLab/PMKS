@@ -62,7 +62,7 @@ namespace PMKS.PositionSolving
 
             if (numUnknownJoints > 0)
             {
-                    goto SkipToNonDyadic;
+                   goto SkipToNonDyadic;
                 do
                 {
                     posResult = PositionAnalysisResults.NoSolvableDyadFound;
@@ -310,8 +310,8 @@ namespace PMKS.PositionSolving
                     numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
                 } while (posResult != PositionAnalysisResults.NoSolvableDyadFound &&
                          numUnknownJoints > 0);
-                 SkipToNonDyadic:
-               //if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
+                SkipToNonDyadic:
+              // if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
                 {
 
                     try

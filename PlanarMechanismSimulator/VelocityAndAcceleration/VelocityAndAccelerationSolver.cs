@@ -451,6 +451,7 @@ namespace PMKS.VelocityAndAcceleration
         internal Boolean Solve()
         {
             SetInitialInputAndGroundJointStates();
+            //todo: remove true after position solver works
             if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
 
             try

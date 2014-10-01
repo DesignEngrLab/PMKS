@@ -22,8 +22,7 @@ namespace PMKS.PositionSolving
         private double newLength;
 
 
-        public LinkLengthFunction(int varListIndex1, int jointListIndex1, double X1, double Y1, int varListIndex2,
-            int jointListIndex2, double X2, double Y2)
+        public LinkLengthFunction(int varListIndex1, int jointListIndex1, int varListIndex2, int jointListIndex2, double origLengthSquared)
         {
             if (varListIndex1 < varListIndex2)
             {
@@ -31,10 +30,6 @@ namespace PMKS.PositionSolving
                 this.jointListIndex2 = jointListIndex2;
                 this.varListIndex1 = varListIndex1;
                 this.varListIndex2 = varListIndex2;
-                x1 = X1;
-                y1 = Y1;
-                x2 = X2;
-                y2 = Y2;
             }
             else
             {
@@ -42,13 +37,8 @@ namespace PMKS.PositionSolving
                 this.jointListIndex2 = jointListIndex1;
                 this.varListIndex1 = varListIndex2;
                 this.varListIndex2 = varListIndex1;
-                x1 = X2;
-                y1 = Y2;
-                x2 = X1;
-                y2 = Y1;
             }
-
-            origLengthSquared = deltaX * deltaX + deltaY * deltaY;
+            this.origLengthSquared = origLengthSquared;
             origLength = Math.Sqrt(origLengthSquared);
         }
 
@@ -125,10 +115,10 @@ namespace PMKS.PositionSolving
                 x2 = x[2 * varListIndex2];
                 y2 = x[2 * varListIndex2 + 1];
             }
-            deltaX= x1 - x2;
+            deltaX = x1 - x2;
             deltaY = y1 - y2;
             newLengthSqared = deltaX * deltaX + deltaY * deltaY;
-            newLength = Math.Sqrt(newLengthSqared);          
+            newLength = Math.Sqrt(newLengthSqared);
         }
 
         internal override void SetInitialJointPosition(int index, double x, double y)
