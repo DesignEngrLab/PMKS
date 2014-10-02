@@ -9,14 +9,14 @@ namespace PMKS.PositionSolving
 
     internal class SameSlideAcrossPJointLinks : SameSlideAcrossJointAbstract
     {
-        internal SameSlideAcrossPJointLinks(int varIndexBlock, int jointIndexBlock, 
+        internal SameSlideAcrossPJointLinks(int varIndexBlock, int jointIndexBlock,
             int varIndexSlide, int jointIndexSlide,
-            int varIndexRef, int jointIndexRef, 
+            int varIndexRef, int jointIndexRef,
             double angleOffset, double distToSlide)
             /** Note that the block and slide are switched s.t. the angle works out correctly. **/
-            : base(varIndexSlide, jointIndexSlide, 
-            varIndexBlock, jointIndexBlock, 
-            varIndexRef, jointIndexRef, 
+            : base(varIndexSlide, jointIndexSlide,
+            varIndexBlock, jointIndexBlock,
+            varIndexRef, jointIndexRef,
              angleOffset, -distToSlide)
         {
         }
@@ -25,10 +25,10 @@ namespace PMKS.PositionSolving
     internal class SameSlideAcrossRPJointLinks : SameSlideAcrossJointAbstract
     {
         internal SameSlideAcrossRPJointLinks(int varIndexBlock, int jointIndexBlock,
-            int varIndexSlide, int jointIndexSlide, 
+            int varIndexSlide, int jointIndexSlide,
             int varIndexRef, int jointIndexRef,
             double angleOffset, double distToSlide)
-            : base(varIndexBlock, jointIndexBlock, 
+            : base(varIndexBlock, jointIndexBlock,
              varIndexSlide, jointIndexSlide,
              varIndexRef, jointIndexRef,
              angleOffset, distToSlide)
@@ -68,18 +68,15 @@ namespace PMKS.PositionSolving
         protected double slopeDeltaX, slopeDeltaY;
         protected double vectorX, vectorY;
         protected double sumSquaredDeltas, squaredDeltaX, squaredDeltaY;
-        protected double denomSlopeX, denomSlopeY;
-        protected double deriv_innerFunction_wrt_xBlock;
-        protected double deriv_innerFunction_wrt_yBlock;
-        protected double deriv_innerFunction_wrt_xSlide;
-        protected double deriv_innerFunction_wrt_xSlopeRef;
-        protected double deriv_innerFunction_wrt_ySlide;
-        protected double deriv_innerFunction_wrt_ySlopeRef;
+        protected double derivAngle_xR, derivAngle_yR;
+        protected double derivAngle_xS, derivAngle_yS;
         protected double sineAngle, cosineAngle;
+        protected Dictionary<int, double> InnerDerivatives;
+
         #endregion
 
-        protected SameSlideAcrossJointAbstract(int varIndexBlock, int jointIndexBlock, 
-            int varIndexSlide, int jointIndexSlide, 
+        protected SameSlideAcrossJointAbstract(int varIndexBlock, int jointIndexBlock,
+            int varIndexSlide, int jointIndexSlide,
             int varIndexRef, int jointIndexRef,
             double angleOffset, double distToSlide)
         {
@@ -97,6 +94,8 @@ namespace PMKS.PositionSolving
 
             this.angleOffset = angleOffset;
             this.distToSlide = distToSlide;
+
+            this.InnerDerivatives = new Dictionary<int, double>();
         }
 
 
@@ -104,7 +103,7 @@ namespace PMKS.PositionSolving
         public override double calculate(double[] x)
         {
             assignPositions(x);
-            return  innerFunction * innerFunction;
+            return innerFunction * innerFunction;
         }
 
         private void assignPositions(double[] x)
@@ -126,7 +125,7 @@ namespace PMKS.PositionSolving
             }
             slopeDeltaX = xR - xS;
             slopeDeltaY = yR - yS;
-            slideBaseAngle = Math.Atan2(slopeDeltaY,slopeDeltaX);
+            slideBaseAngle = Math.Atan2(slopeDeltaY, slopeDeltaX);
             sineAngle = Math.Sin(angleOffset + slideBaseAngle);
             cosineAngle = Math.Cos(angleOffset + slideBaseAngle);
             vectorX = xS - xB;
@@ -162,7 +161,7 @@ namespace PMKS.PositionSolving
                i == varIndex_Xs || i == varIndex_Ys ||
                i == varIndex_Xr || i == varIndex_Yr))
                 return 0;
-                           
+
             if (newPointReCalcDerivConstant)
             {
                 slopeDeltaX = xR - xS;
@@ -171,27 +170,27 @@ namespace PMKS.PositionSolving
                 squaredDeltaY = slopeDeltaY * slopeDeltaY;
                 sumSquaredDeltas = squaredDeltaX + squaredDeltaY;
 
-                denomSlopeY = (1 + (squaredDeltaY / squaredDeltaX))*slopeDeltaX;
-                denomSlopeX =  sumSquaredDeltas / slopeDeltaY;
-                deriv_innerFunction_wrt_xBlock = -sineAngle;
-                deriv_innerFunction_wrt_yBlock = cosineAngle;
-                deriv_innerFunction_wrt_ySlopeRef = ((vectorX * cosineAngle) + (vectorY * sineAngle)) / denomSlopeY;
-                deriv_innerFunction_wrt_xSlopeRef = (-(vectorX * cosineAngle) - (vectorY * sineAngle)) / denomSlopeX;
-                deriv_innerFunction_wrt_ySlide = ((-(vectorX * cosineAngle) - (vectorY * sineAngle)) / denomSlopeY)
-                    - cosineAngle;/* note that slide1 has an extra term because it is part of the vector, d. Slide 2 is not. */
-                deriv_innerFunction_wrt_xSlide = ((vectorX * cosineAngle) + (vectorY * sineAngle)) / denomSlopeX
-                    + sineAngle;/* note that slide1 has an extra term because it is part of the vector, d. Slide 2 is not. */
+                derivAngle_yR = 1 / ((squaredDeltaY / slopeDeltaX) + slopeDeltaX);
+                derivAngle_yS = -derivAngle_yR;
+                derivAngle_xS = slopeDeltaY / sumSquaredDeltas;  // really this is a negative of a negative
+                derivAngle_xR = -derivAngle_xS;                  // for simplicity, I defined them backwards.
+                var derivOfMainTerms = (vectorX * cosineAngle) + (vectorY * sineAngle);
+                InnerDerivatives.Clear();
+                if (varIndex_Xb >= 0) InnerDerivatives.Add(varIndex_Xb, -sineAngle);
+                if (varIndex_Yb >= 0) InnerDerivatives.Add(varIndex_Yb, -cosineAngle);
+                if (varIndex_Yr >= 0)
+                    InnerDerivatives.Add(varIndex_Yr, derivOfMainTerms * derivAngle_yR);
+                if (varIndex_Xr >= 0)
+                    InnerDerivatives.Add(varIndex_Xr, derivOfMainTerms * derivAngle_xR);
+                if (varIndex_Ys >= 0)
+                    InnerDerivatives.Add(varIndex_Ys, derivOfMainTerms * derivAngle_yS - cosineAngle);
+                /* note that slide has an extra term because it is part of the vectorY. Reference is not. */
+                if (varIndex_Xs >= 0)
+                    InnerDerivatives.Add(varIndex_Xs, derivOfMainTerms * derivAngle_xS + sineAngle);
 
                 newPointReCalcDerivConstant = false;
             }
-            var innerDeriv = 0.0;
-            if (i == varIndex_Xb) innerDeriv = deriv_innerFunction_wrt_xBlock;
-            if (i == varIndex_Yb) innerDeriv = deriv_innerFunction_wrt_yBlock;
-            if (i == varIndex_Xs) innerDeriv = deriv_innerFunction_wrt_xSlide;
-            if (i == varIndex_Ys) innerDeriv = deriv_innerFunction_wrt_ySlide;
-            if (i == varIndex_Xr) innerDeriv = deriv_innerFunction_wrt_xSlopeRef;
-            if (i == varIndex_Yr) innerDeriv = deriv_innerFunction_wrt_ySlopeRef;
-            return  2 * innerFunction * innerDeriv;
+            return 2 * innerFunction * InnerDerivatives[i];
         }
 
         public override double second_deriv_wrt_ij(double[] x, int i, int j)
@@ -204,6 +203,7 @@ namespace PMKS.PositionSolving
                 j == varIndex_Xs || j == varIndex_Ys ||
                 j == varIndex_Xr || j == varIndex_Yr))
                 return 0;
+            var doubleDerivIJ = 0.0;
             #region derivaties with xBlock1 (6)
             if (j == varIndex_Xb)
             {
@@ -213,21 +213,13 @@ namespace PMKS.PositionSolving
                 j = temp;
             }
             if (i == varIndex_Xb)
-            {
-                if (j == varIndex_Xb) return 2 * sineAngle * deriv_innerFunction_wrt_xBlock;
-                if (j == varIndex_Yb) return 2 * sineAngle * deriv_innerFunction_wrt_yBlock;
-                if (j == varIndex_Yr)
-                    return (2 * innerFunction * cosineAngle / denomSlopeY)
-                           + 2 * deriv_innerFunction_wrt_ySlopeRef * sineAngle;
-                if (j == varIndex_Ys)
-                    return (-2 * innerFunction * cosineAngle / denomSlopeY)
-                           + 2 * deriv_innerFunction_wrt_ySlide * sineAngle;
-                if (j == varIndex_Xr)
-                    return (2 * innerFunction * cosineAngle / denomSlopeX)
-                           + 2 * deriv_innerFunction_wrt_xSlopeRef * sineAngle;
-                if (j == varIndex_Xs)
-                    return (-2 * innerFunction * cosineAngle / denomSlopeX)
-                           + 2 * deriv_innerFunction_wrt_xSlide * sineAngle;
+            {   /* dg/dxb = -sineAngle */
+                if (j == varIndex_Xb || j == varIndex_Yb) doubleDerivIJ = 0;
+                if (j == varIndex_Yr) doubleDerivIJ = derivAngle_yR;
+                if (j == varIndex_Xr) doubleDerivIJ = derivAngle_xR;
+                if (j == varIndex_Ys) doubleDerivIJ = derivAngle_yS;
+                if (j == varIndex_Xs) doubleDerivIJ = derivAngle_xS;
+                doubleDerivIJ *= -cosineAngle;
             }
             #endregion
             #region derivaties with yBlock1 (5)
@@ -239,23 +231,17 @@ namespace PMKS.PositionSolving
                 j = temp;
             }
             if (i == varIndex_Yb)
-            {
-                if (j == varIndex_Yb) return 2 * cosineAngle * deriv_innerFunction_wrt_yBlock;
-                if (j == varIndex_Yr)
-                    return (-2 * innerFunction * sineAngle / denomSlopeY)
-                           + 2 * deriv_innerFunction_wrt_ySlopeRef * cosineAngle;
-                if (j == varIndex_Ys)
-                    return (2 * innerFunction * sineAngle / denomSlopeY)
-                           + 2 * deriv_innerFunction_wrt_ySlide * cosineAngle;
-                if (j == varIndex_Xr)
-                    return (-2 * innerFunction * sineAngle / denomSlopeX)
-                           + 2 * deriv_innerFunction_wrt_xSlopeRef * cosineAngle;
-                if (j == varIndex_Xs)
-                    return (2 * innerFunction * sineAngle / denomSlopeX)
-                           + 2 * deriv_innerFunction_wrt_xSlide * cosineAngle;
+            {   /* dg/dxb = -cosineAngle */
+                if (j == varIndex_Yb) doubleDerivIJ = 0;
+                if (j == varIndex_Yr) doubleDerivIJ = derivAngle_yR;
+                if (j == varIndex_Xr) doubleDerivIJ = derivAngle_xR;
+                if (j == varIndex_Ys) doubleDerivIJ = derivAngle_yS;
+                if (j == varIndex_Xs) doubleDerivIJ = derivAngle_xS;
+                doubleDerivIJ *= sineAngle;
             }
             #endregion
-            #region derivatives with ySlide2   (4)
+            var derivOfMainTerms = (vectorX * cosineAngle) + (vectorY * sineAngle);
+            #region derivatives with yRef   (4)
             if (j == varIndex_Yr)
             {
                 //switch so that i is always varIndex_Yb1 and go into next condition
@@ -264,34 +250,35 @@ namespace PMKS.PositionSolving
                 j = temp;
             }
             if (i == varIndex_Yr)
-            {
+            {   /* dg/dyR =  ((vectorX * cosineAngle) + (vectorY * sineAngle)) * derivAngle_yR      */
+                var derivOfderivOfMainTerms = 0.0;
+                var derivOfderivAngle_yR = 0.0;
                 if (j == varIndex_Yr)
-                    return ((-vectorX * sineAngle - vectorY * cosineAngle) / denomSlopeY)
-                        * (2 * innerFunction / denomSlopeY) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           (2 * deriv_innerFunction_wrt_ySlopeRef * denomSlopeY
-                            - 4 * innerFunction * (slopeDeltaY / slopeDeltaX)) / (denomSlopeY * denomSlopeY);
-                if (j == varIndex_Ys)
-                    return (((-vectorX * sineAngle - vectorY * cosineAngle) / -denomSlopeY) - sineAngle)
-                          * (2 * innerFunction / denomSlopeY) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           (2 * deriv_innerFunction_wrt_ySlide * denomSlopeY
-                            + 4 * innerFunction * (slopeDeltaY / slopeDeltaX)) / (denomSlopeY * denomSlopeY);
+                {
+                    derivOfderivOfMainTerms = vectorY * cosineAngle * derivAngle_yR;
+                    derivOfderivAngle_yR = -2 * slopeDeltaX * slopeDeltaY / (sumSquaredDeltas * sumSquaredDeltas);
+                }
                 if (j == varIndex_Xr)
-                    return ((-vectorX * sineAngle - vectorY * cosineAngle) / denomSlopeX)
-                          * (2 * innerFunction / denomSlopeY) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           (2 * deriv_innerFunction_wrt_xSlopeRef * denomSlopeY
-                            + 4 * innerFunction * squaredDeltaY / Math.Pow(slopeDeltaX, 3)) / (denomSlopeY * denomSlopeY);
+                {
+                    derivOfderivOfMainTerms = -vectorX * sineAngle * derivAngle_xR;
+                    derivOfderivAngle_yR = -(xR + yR - xS - yS) * (xR - yR - xS + yS)
+                        / (sumSquaredDeltas * sumSquaredDeltas);
+                }
+                if (j == varIndex_Ys)
+                {
+                    derivOfderivOfMainTerms = vectorY * cosineAngle * derivAngle_yS + sineAngle;
+                    derivOfderivAngle_yR = 2 * slopeDeltaX * slopeDeltaY / (sumSquaredDeltas * sumSquaredDeltas);
+                }
                 if (j == varIndex_Xs)
-                    return (((-vectorX * sineAngle - vectorY * cosineAngle) / -denomSlopeX) - cosineAngle)
-                         * (2 * innerFunction / denomSlopeY) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           (2 * deriv_innerFunction_wrt_xSlide * denomSlopeY
-                            - 4 * innerFunction * squaredDeltaY / Math.Pow(slopeDeltaX, 3)) / (denomSlopeY * denomSlopeY);
+                {
+                    derivOfderivOfMainTerms = -vectorX * sineAngle * derivAngle_xS + cosineAngle;
+                    derivOfderivAngle_yR = (xR + yR - xS - yS) * (xR - yR - xS + yS)
+                    / (sumSquaredDeltas * sumSquaredDeltas);
+                }
+                doubleDerivIJ = derivOfMainTerms * derivOfderivAngle_yR + derivOfderivOfMainTerms * derivAngle_yR;
             }
             #endregion
-            #region derivatives with xSlide2 (3)
+            #region derivatives with xRef   (3)
             if (j == varIndex_Xr)
             {
                 //switch so that i is always varIndex_Yb1 and go into next condition
@@ -300,25 +287,25 @@ namespace PMKS.PositionSolving
                 j = temp;
             }
             if (i == varIndex_Xr)
-            {
-                if (j == varIndex_Ys)
-                    return (((-vectorX * sineAngle - vectorY * cosineAngle) / -denomSlopeY) - sineAngle)
-                         * (2 * innerFunction / denomSlopeX) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           ((2 * innerFunction + 2 * slopeDeltaY * deriv_innerFunction_wrt_ySlide) * sumSquaredDeltas - 4 * innerFunction * squaredDeltaY) /
-                           (sumSquaredDeltas * sumSquaredDeltas);
+            {   /* dg/dxR =  ((vectorX * cosineAngle) + (vectorY * sineAngle)) * derivAngle_xR      */
+                var derivOfderivOfMainTerms = 0.0;
+                var derivOfderivAngle_xR = 0.0;
                 if (j == varIndex_Xr)
-                    return ((-vectorX * sineAngle - vectorY * cosineAngle) / denomSlopeX)
-                      * (2 * innerFunction / denomSlopeX) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           (-2 * slopeDeltaY * deriv_innerFunction_wrt_xSlopeRef * sumSquaredDeltas + (4 * innerFunction * slopeDeltaY * slopeDeltaX)) /
-                           (sumSquaredDeltas * sumSquaredDeltas);
+                {
+                    derivOfderivOfMainTerms = -vectorX * sineAngle * derivAngle_xR;
+                    derivOfderivAngle_xR = 2 * slopeDeltaX * slopeDeltaY / (sumSquaredDeltas * sumSquaredDeltas);
+                }
+                if (j == varIndex_Ys)
+                {
+                    derivOfderivOfMainTerms = vectorY * cosineAngle * derivAngle_yS + sineAngle;
+                    derivOfderivAngle_xR = (squaredDeltaY - squaredDeltaX) / (sumSquaredDeltas * sumSquaredDeltas);
+                }
                 if (j == varIndex_Xs)
-                    return (((-vectorX * sineAngle - vectorY * cosineAngle) / -denomSlopeX) - cosineAngle)
-                        * (2 * innerFunction / denomSlopeX) +
-                           (vectorX * cosineAngle - vectorY * sineAngle) *
-                           (-2 * slopeDeltaY * deriv_innerFunction_wrt_xSlide * sumSquaredDeltas - (4 * innerFunction * slopeDeltaY * slopeDeltaX)) /
-                           (sumSquaredDeltas * sumSquaredDeltas);
+                {
+                    derivOfderivOfMainTerms = -vectorX * sineAngle * derivAngle_xS + cosineAngle;
+                    derivOfderivAngle_xR = -2 * slopeDeltaX * slopeDeltaY / (sumSquaredDeltas * sumSquaredDeltas);
+                }
+                doubleDerivIJ = derivOfMainTerms * derivOfderivAngle_xR + derivOfderivOfMainTerms * derivAngle_xR;
             }
             #endregion
             #region derivatives with ySlide1 (2)
@@ -330,33 +317,39 @@ namespace PMKS.PositionSolving
                 j = temp;
             }
             if (i == varIndex_Ys)
-            {
+            {   /* dg/dyS =  ((vectorX * cosineAngle) + (vectorY * sineAngle)) * derivAngle_yS - cosineAngle*/
+                var derivOfderivOfMainTerms = 0.0;
+                var derivOfderivAngle_yS = 0.0;
+                var derivThirdTerm = 0.0;
                 if (j == varIndex_Ys)
-                    return (((vectorX * sineAngle + vectorY * cosineAngle) / -denomSlopeY) + sineAngle)
-                          * (2 * innerFunction / denomSlopeY) +
-                           (-vectorX * cosineAngle + vectorY * sineAngle) *
-                           (2 * deriv_innerFunction_wrt_ySlide * denomSlopeY
-                            + 4 * innerFunction * (slopeDeltaY / slopeDeltaX)) / (denomSlopeY * denomSlopeY)
-                            + 2 * deriv_innerFunction_wrt_ySlide * cosineAngle + 2 * innerFunction * sineAngle / denomSlopeY;
+                {
+                    derivOfderivOfMainTerms = vectorY * cosineAngle * derivAngle_yS + sineAngle;
+                    derivOfderivAngle_yS = -2 * slopeDeltaX * slopeDeltaY / (sumSquaredDeltas * sumSquaredDeltas);
+                    derivThirdTerm = sineAngle * derivAngle_yS;
+                }
                 if (j == varIndex_Xs)
-                    return (((vectorX * sineAngle - vectorY * cosineAngle) / -denomSlopeX) - cosineAngle)
-                         * (2 * innerFunction / denomSlopeY) +
-                           (-vectorX * cosineAngle + vectorY * sineAngle) *
-                           (2 * deriv_innerFunction_wrt_xSlide * denomSlopeY
-                            - 4 * innerFunction * squaredDeltaY / Math.Pow(slopeDeltaX, 3)) / (denomSlopeY * denomSlopeY)
-                            + 2 * deriv_innerFunction_wrt_xSlide * cosineAngle - 2 * innerFunction * sineAngle / denomSlopeX;
+                {
+                    derivOfderivOfMainTerms = -vectorX * sineAngle * derivAngle_xS + cosineAngle;
+                    derivOfderivAngle_yS = -(xR + yR - xS - yS) * (xR - yR - xS + yS)
+                    / (sumSquaredDeltas * sumSquaredDeltas);
+                    derivThirdTerm = sineAngle * derivAngle_xS;
+                }
+                doubleDerivIJ = derivOfMainTerms * derivOfderivAngle_yS + derivOfderivOfMainTerms * derivAngle_yS
+                    + derivThirdTerm;
             }
             #endregion
             #region derivatives with xSlide1 (just double-deriv of xs1)
             if (i == varIndex_Xs && j == varIndex_Xs)
-                return (((vectorX * sineAngle - vectorY * cosineAngle) / -denomSlopeX) - cosineAngle)
-                     * (2 * innerFunction / denomSlopeX) +
-                       (-vectorX * cosineAngle + vectorY * sineAngle) *
-                       (2 * deriv_innerFunction_wrt_xSlide * denomSlopeY
-                        - 4 * innerFunction * squaredDeltaY / Math.Pow(slopeDeltaX, 3)) / (denomSlopeY * denomSlopeY)
-                        + 2 * deriv_innerFunction_wrt_xSlide * sineAngle + 2 * innerFunction * cosineAngle / denomSlopeX;
+            {   /* dg/dxS =  ((vectorX * cosineAngle) + (vectorY * sineAngle))  * derivAngle_xS + sineAngle*/
+                var derivOfderivOfMainTerms = -vectorX * sineAngle * derivAngle_xS + cosineAngle;
+                var derivOfderivAngle_xS = 2 * slopeDeltaX * slopeDeltaY / (sumSquaredDeltas * sumSquaredDeltas);
+                var derivThirdTerm = cosineAngle * derivAngle_xR;
+                doubleDerivIJ = derivOfMainTerms * derivOfderivAngle_xS + derivOfderivOfMainTerms * derivAngle_yS
+                    + derivThirdTerm;
+            }
             #endregion
-            throw new Exception("2nd Derivative in SameAngleAcrossPJoint: you shouldn't be seeing this! how did you get by the initial if-statement?");
+
+            return 2 * (InnerDerivatives[i] * InnerDerivatives[j] + innerFunction * doubleDerivIJ);
         }
 
     }
