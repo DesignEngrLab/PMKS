@@ -29,7 +29,7 @@ namespace PMKS.PositionSolving
             unkJoints = new List<joint>();
             foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))
                 unkJoints.Add(j);
-            foreach (var j in unkJoints)
+            foreach (var j in joints)
             {
                 if (j.jointType == JointTypes.R) continue;
                 else if (j.jointType == JointTypes.RP)
@@ -37,29 +37,33 @@ namespace PMKS.PositionSolving
                     var refJoint = j.Link1.ReferenceJoint2;
                     if (refJoint == null) continue;
                     var slideJoint = j.Link1.ReferenceJoint1;
-                    linkFunctions.Add(new SameSlideAcrossRPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
-                        unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
-                        unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
-                        j.OffsetSlideAngle, j.Link1.DistanceBetweenSlides(j, slideJoint)));
+                    if (unkJoints.Contains(j) || unkJoints.Contains(refJoint) || unkJoints.Contains(slideJoint))
+                        linkFunctions.Add(new SameSlideAcrossRPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
+                            unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
+                            unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
+                            j.OffsetSlideAngle, j.Link1.DistanceBetweenSlides(j, slideJoint)));
                 }
                 else if (j.jointType == JointTypes.P)
                 {
                     var refJoint = (j.Link2.ReferenceJoint1 != j) ? j.Link2.ReferenceJoint1 : j.Link2.ReferenceJoint2;
                     if (refJoint == null) continue;
                     var slideJoint = j.Link1.ReferenceJoint1;
-                    linkFunctions.Add(new SameSlideAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
-                        unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
-                        unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
-                        j.Link2.angleOfBlockToJoint(j, refJoint), j.Link1.DistanceBetweenSlides(j, slideJoint)));
+                    if (unkJoints.Contains(j) || unkJoints.Contains(slideJoint))
+                        linkFunctions.Add(new SameSlideAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
+                            unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
+                            unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
+                            j.Link2.angleOfBlockToJoint(j, refJoint), j.Link1.DistanceBetweenSlides(j, slideJoint)));
                     if (j.Link1.ReferenceJoint2 != null)
                     {
                         var s2 = j.Link1.ReferenceJoint2;
-                        linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
-                            j.xInitial, j.yInitial,
-                            unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint), refJoint.xInitial, refJoint.yInitial,
-                            unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint), slideJoint.xInitial, slideJoint.yInitial,
-                            unkJoints.IndexOf(s2), joints.IndexOf(s2), s2.xInitial, s2.yInitial, j.OffsetSlideAngle,
-                            j.Link2.angleOfBlockToJoint(j, refJoint)));
+                        if ((unkJoints.Contains(j) && unkJoints.Contains(refJoint)) ||
+                            (unkJoints.Contains(slideJoint) && unkJoints.Contains(s2)))
+                            linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
+                                j.xInitial, j.yInitial,
+                                unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint), refJoint.xInitial, refJoint.yInitial,
+                                unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint), slideJoint.xInitial, slideJoint.yInitial,
+                                unkJoints.IndexOf(s2), joints.IndexOf(s2), s2.xInitial, s2.yInitial, j.OffsetSlideAngle,
+                                j.Link2.angleOfBlockToJoint(j, refJoint)));
                     }
                 }
             }
@@ -125,7 +129,7 @@ namespace PMKS.PositionSolving
             optMethod.Run(out xStar, xInit);
             if (!SolutionFound())
             {
-                posFinder.posResult= PositionAnalysisResults.InvalidPosition;
+                posFinder.posResult = PositionAnalysisResults.InvalidPosition;
                 return;
             }
 
