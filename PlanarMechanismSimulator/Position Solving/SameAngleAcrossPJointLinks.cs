@@ -44,24 +44,24 @@ namespace PMKS.PositionSolving
             double initSlideAngle, double blockAngle)
         {
             this.varIndex_Xb1 = 2 * varIndexBlock1;
+            this.varIndex_Yb1 = 2 * varIndexBlock1 + 1;
             this.jointIndex_Block1 = jointIndexBlock1;
             this.xBlock1 = xBlock1;
-            this.varIndex_Yb1 = 2 * varIndexBlock1 + 1;
             this.yBlock1 = yBlock1;
             this.varIndex_Xb2 = 2 * varIndexBlock2;
+            this.varIndex_Yb2 = 2 * varIndexBlock2 + 1;
             this.jointIndex_Block2 = jointIndexBlock2;
             this.xBlock2 = xBlock2;
-            this.varIndex_Yb2 = 2 * varIndexBlock2 + 1;
             this.yBlock2 = yBlock2;
             this.varIndex_Xs1 = 2 * varIndexSlide1;
+            this.varIndex_Ys1 = 2 * varIndexSlide1 + 1;
             this.jointIndex_Slide1 = jointIndexSlide1;
             this.xSlide1 = xSlide1;
-            this.varIndex_Ys1 = 2 * varIndexSlide1 + 1;
             this.ySlide1 = ySlide1;
             this.varIndex_Xs2 = 2 * varIndexSlide2;
+            this.varIndex_Ys2 = 2 * varIndexSlide2 + 1;
             this.jointIndex_Slide2 = jointIndexSlide2;
             this.xSlide2 = xSlide2;
-            this.varIndex_Ys2 = 2 * varIndexSlide2 + 1;
             this.ySlide2 = ySlide2;
             this.initSlideAngle = initSlideAngle;
             this.blockAngle = blockAngle;
@@ -75,10 +75,10 @@ namespace PMKS.PositionSolving
 
         public override double deriv_wrt_xi(double[] x, int i)
         {
-            if (!(i == 2 * varIndex_Xb1 || i == 2 * varIndex_Xb1 + 1 ||
-                i == 2 * varIndex_Xb2 || i == 2 * varIndex_Xb2 + 1 ||
-                i == 2 * varIndex_Xs1 || i == 2 * varIndex_Xs1 + 1 ||
-                i == 2 * varIndex_Xs2 || i == 2 * varIndex_Xs2 + 1))
+            if (!(i == varIndex_Xb1 || i == varIndex_Yb1 ||
+                i == varIndex_Xb2 || i == varIndex_Yb2 ||
+                i == varIndex_Xs1 || i == varIndex_Ys1 ||
+                i == varIndex_Xs2 || i == varIndex_Ys2))
                 return 0;
             if (newPointReCalcDerivConstant)
             {
@@ -130,7 +130,7 @@ namespace PMKS.PositionSolving
                 j == varIndex_Xs1 || j == varIndex_Ys1 ||
                 j == varIndex_Xs2 || j == varIndex_Ys2))
                 return 0;
-#region derivatives in which one is a slide-Y variable
+            #region derivatives in which one is a slide-Y variable
             if (i == varIndex_Ys2 || i == varIndex_Ys1 || j == varIndex_Ys2 || j == varIndex_Ys1)
             {
                 if (j == varIndex_Ys2 || j == varIndex_Ys1)
@@ -142,33 +142,33 @@ namespace PMKS.PositionSolving
                 }
                 var outerSign = (i == varIndex_Ys2) ? 1 : -1;
                 if (j == varIndex_Xb1 || j == varIndex_Xb2 || j == varIndex_Yb1 || j == varIndex_Yb2)
-                {
-                    var coeff = 2*(xSlide2 - xSlide1)/denomSlide;
-                    if (j == varIndex_Xb1) return outerSign*coeff*deriv_innerFunction_wrt_xBlock1;
-                    if (j == varIndex_Xb2) return outerSign*coeff*deriv_innerFunction_wrt_xBlock2;
-                    if (j == varIndex_Yb1) return outerSign*coeff*deriv_innerFunction_wrt_yBlock1;
-                    if (j == varIndex_Yb2) return outerSign*coeff*deriv_innerFunction_wrt_yBlock2;
+                {    /* for i = Ys1 or Ys2 */
+                    var coeff = 2 * (xSlide2 - xSlide1) / denomSlide;
+                    if (j == varIndex_Xb1) return outerSign * coeff * deriv_innerFunction_wrt_xBlock1;
+                    if (j == varIndex_Xb2) return outerSign * coeff * deriv_innerFunction_wrt_xBlock2;
+                    if (j == varIndex_Yb1) return outerSign * coeff * deriv_innerFunction_wrt_yBlock1;
+                    if (j == varIndex_Yb2) return outerSign * coeff * deriv_innerFunction_wrt_yBlock2;
                     /* that's 8 down, 28 to go */
                 }
                 if (j == varIndex_Xs1)
-                    return ((2*outerSign*innerFunction*((xSlide2 - xSlide1)*deriv_innerFunction_wrt_xSlide1 - 1))*
-                            denomSlide + 4*innerFunction*(xSlide2 - xSlide1)*(xSlide2 - xSlide1))/
-                           (denomSlide*denomSlide);
+                    return ((2 * outerSign * innerFunction * ((xSlide2 - xSlide1) * deriv_innerFunction_wrt_xSlide1 - 1)) *
+                            denomSlide + 4 * innerFunction * (xSlide2 - xSlide1) * (xSlide2 - xSlide1)) /
+                           (denomSlide * denomSlide);
                 if (j == varIndex_Xs2)
-                    return ((2*outerSign*innerFunction*((xSlide2 - xSlide1)*deriv_innerFunction_wrt_xSlide2 + 1))*
-                            denomSlide - 4*innerFunction*(xSlide2 - xSlide1)*(xSlide2 - xSlide1))/
-                           (denomSlide*denomSlide);
+                    return ((2 * outerSign * innerFunction * ((xSlide2 - xSlide1) * deriv_innerFunction_wrt_xSlide2 + 1)) *
+                            denomSlide - 4 * innerFunction * (xSlide2 - xSlide1) * (xSlide2 - xSlide1)) /
+                           (denomSlide * denomSlide);
                 if (j == varIndex_Ys1)
-                    return (2*outerSign*(xSlide2 - xSlide1)*deriv_innerFunction_wrt_ySlide1*denomSlide +
-                            4*innerFunction*(xSlide2 - xSlide1)*(ySlide2 - ySlide1))/
-                           (denomSlide*denomSlide);
+                    return (2 * outerSign * (xSlide2 - xSlide1) * deriv_innerFunction_wrt_ySlide1 * denomSlide +
+                            4 * innerFunction * (xSlide2 - xSlide1) * (ySlide2 - ySlide1)) /
+                           (denomSlide * denomSlide);
                 if (j == varIndex_Ys2)
-                    return (2*outerSign*(xSlide2 - xSlide1)*deriv_innerFunction_wrt_ySlide2*denomSlide -
-                            4*innerFunction*(xSlide2 - xSlide1)*(ySlide2 - ySlide1))/
-                           (denomSlide*denomSlide);
+                    return (2 * outerSign * (xSlide2 - xSlide1) * deriv_innerFunction_wrt_ySlide2 * denomSlide -
+                            4 * innerFunction * (xSlide2 - xSlide1) * (ySlide2 - ySlide1)) /
+                           (denomSlide * denomSlide);
             }
-#endregion       
-#region derivatives in which one is a block-Y variable  
+            #endregion
+            #region derivatives in which one is a block-Y variable
             if (i == varIndex_Yb2 || i == varIndex_Yb1 || j == varIndex_Yb2 || j == varIndex_Yb1)
             {
                 if (j == varIndex_Yb2 || j == varIndex_Yb1)
@@ -182,25 +182,33 @@ namespace PMKS.PositionSolving
                 if (j == varIndex_Xs1 || j == varIndex_Xs2 || j == varIndex_Ys1 || j == varIndex_Ys2)
                 {
                     var coeff = 2 * (xBlock2 - xBlock1) / denomBlock;
-                    if (j == varIndex_Xs1) return outerSign*coeff*deriv_innerFunction_wrt_xSlide1;
+                    if (j == varIndex_Xs1) return outerSign * coeff * deriv_innerFunction_wrt_xSlide1;
                     if (j == varIndex_Xs2) return outerSign * coeff * deriv_innerFunction_wrt_xSlide2;
                 }
-                if (j == varIndex_Xs1)
+                if (j == varIndex_Xb1)
                     return ((2 * outerSign * innerFunction * ((xBlock2 - xBlock1) * deriv_innerFunction_wrt_xBlock1 - 1)) *
                             denomBlock + 4 * innerFunction * (xBlock2 - xBlock1) * (xBlock2 - xBlock1)) /
                            (denomBlock * denomBlock);
-                if (j == varIndex_Xs2)
+                if (j == varIndex_Xb2)
                     return ((2 * outerSign * innerFunction * ((xBlock2 - xBlock1) * deriv_innerFunction_wrt_xBlock2 + 1)) *
                             denomBlock - 4 * innerFunction * (xBlock2 - xBlock1) * (xBlock2 - xBlock1)) /
                            (denomBlock * denomBlock);
-            } 
-#endregion
+                if (j == varIndex_Yb1)
+                    return (2 * outerSign * (xBlock2 - xBlock1) * deriv_innerFunction_wrt_yBlock1 * denomBlock +
+                            4 * innerFunction * (xBlock2 - xBlock1) * (yBlock2 - yBlock1)) /
+                           (denomBlock * denomBlock);
+                if (j == varIndex_Yb2)
+                    return (2 * outerSign * (xBlock2 - xBlock1) * deriv_innerFunction_wrt_yBlock2 * denomBlock -
+                            4 * innerFunction * (xBlock2 - xBlock1) * (yBlock2 - yBlock1)) /
+                           (denomBlock * denomBlock);
+            }
+            #endregion
             #region derivates in which both are X coordinates
             else
             {   /* the last 10 are del-X and del-X   */
-                if ((i==varIndex_Xb1 || i==varIndex_Xb2) && (j==varIndex_Xs1 || j==varIndex_Xs2))
+                if ((i == varIndex_Xb1 || i == varIndex_Xb2) && (j == varIndex_Xs1 || j == varIndex_Xs2))
                 {
-                   /* this switches i and j and then goes into the next condition */
+                    /* this switches i and j and then goes into the next condition */
                     var temp = i;
                     i = j;
                     j = temp;
@@ -211,8 +219,8 @@ namespace PMKS.PositionSolving
                     var innerDeriv = (j == varIndex_Xb1)
                         ? deriv_innerFunction_wrt_xBlock1
                         : deriv_innerFunction_wrt_xBlock2;
-                    return outerSign*2*innerFunction*(ySlide2 - ySlide1)*innerDeriv/denomSlide;
-                }  
+                    return outerSign * 2 * innerFunction * (ySlide2 - ySlide1) * innerDeriv / denomSlide;
+                }
 
                 /* both are on the slide side */
                 if ((i == varIndex_Xs1 || i == varIndex_Xs2) && (j == varIndex_Xs1 || j == varIndex_Xs2))
@@ -222,9 +230,9 @@ namespace PMKS.PositionSolving
                     var innerDeriv = (j == varIndex_Xs2)
                         ? deriv_innerFunction_wrt_xSlide2
                         : deriv_innerFunction_wrt_xSlide1;
-                    return (2.0*jSign*(ySlide2 - ySlide1)*innerDeriv*denomSlide
-                            + jSign*iSign*4*innerFunction*(ySlide2 - ySlide1)*(xSlide2 - xSlide1))/
-                           (denomSlide*denomSlide);
+                    return (2.0 * jSign * (ySlide2 - ySlide1) * innerDeriv * denomSlide
+                            + jSign * iSign * 4 * innerFunction * (ySlide2 - ySlide1) * (xSlide2 - xSlide1)) /
+                           (denomSlide * denomSlide);
                 }
 
                 /* both are on the block side */
@@ -235,37 +243,37 @@ namespace PMKS.PositionSolving
                     var innerDeriv = (j == varIndex_Xb2)
                         ? deriv_innerFunction_wrt_xBlock2
                         : deriv_innerFunction_wrt_xBlock1;
-                    return (2.0*jSign*(yBlock2 - yBlock1)*innerDeriv*denomBlock
-                           - jSign*iSign*4*innerFunction*(yBlock2 - yBlock1)*(xBlock2 - xBlock1))/
-                           (denomBlock*denomBlock);
+                    return (2.0 * jSign * (yBlock2 - yBlock1) * innerDeriv * denomBlock
+                           - jSign * iSign * 4 * innerFunction * (yBlock2 - yBlock1) * (xBlock2 - xBlock1)) /
+                           (denomBlock * denomBlock);
                 }
             }
             #endregion
 
-                throw new Exception("2nd Derivative in SameAngleAcrossPJoint :you shouldn't be seeing this! how did you get by the initial if-statement?");
+            throw new Exception("2nd Derivative in SameAngleAcrossPJoint :you shouldn't be seeing this! how did you get by the initial if-statement?");
         }
 
         private void assignPositions(double[] x)
         {
             if (varIndex_Xb1 >= 0)
             {
-                xBlock1 = x[2 * varIndex_Xb1];
-                yBlock1 = x[2 * varIndex_Xb1 + 1];
+                xBlock1 = x[ varIndex_Xb1];
+                yBlock1 = x[ varIndex_Xb1 + 1];
             }
             if (varIndex_Xb2 >= 0)
             {
-                xBlock2 = x[2 * varIndex_Xb2];
-                yBlock2 = x[2 * varIndex_Xb2 + 1];
+                xBlock2 = x[ varIndex_Xb2];
+                yBlock2 = x[ varIndex_Xb2 + 1];
             }
             if (varIndex_Xs1 >= 0)
             {
-                xSlide1 = x[2 * varIndex_Xs1];
-                ySlide1 = x[2 * varIndex_Xs1 + 1];
+                xSlide1 = x[ varIndex_Xs1];
+                ySlide1 = x[ varIndex_Xs1 + 1];
             }
             if (varIndex_Xs2 >= 0)
             {
-                xSlide2 = x[2 * varIndex_Xs2];
-                ySlide2 = x[2 * varIndex_Xs2 + 1];
+                xSlide2 = x[ varIndex_Xs2];
+                ySlide2 = x[ varIndex_Xs2 + 1];
             }
             slideBaseAngle = Math.Atan2(ySlide2 - ySlide1, xSlide2 - xSlide1);
             blockBaseAngle = Math.Atan2(yBlock2 - yBlock1, xBlock2 - xBlock1);

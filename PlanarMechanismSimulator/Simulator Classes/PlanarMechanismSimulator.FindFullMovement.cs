@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -344,7 +345,6 @@ namespace PMKS
                 double delta = InputSpeed * timeStep;
                 // this next function puts the x and y values in the joints
                 validPosition = posFinder.DefineNewPositions(delta);
-
                 #endregion
 
                 if (validPosition)

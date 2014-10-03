@@ -325,7 +325,6 @@ namespace PMKS_Silverlight_App
             }
         }
 
-
         internal void UpdateRanges(List<double[]> initPositions)
         {
             minX = -DisplayConstants.AxesBuffer;
@@ -422,8 +421,6 @@ namespace PMKS_Silverlight_App
 
         }
 
-
-
         internal void UpdateScaleAndCenter()
         {
             var w = _kinematicSpaceWidth + 2 * DisplayConstants.DefaultBufferMultipler * _kinematicSpaceWidth;
@@ -432,8 +429,8 @@ namespace PMKS_Silverlight_App
             if (newScaleFactor > DisplayConstants.MaxZoomIn) newScaleFactor = DisplayConstants.MaxZoomIn;
             if (newScaleFactor < DisplayConstants.MaxZoomOut) newScaleFactor = DisplayConstants.MaxZoomOut;
             // todo: something is still wrong with this equation - you will notice when you create a really big mechanism
-            xPanAnchor = (ParentWidth - (maxX + minX)/2 - newScaleFactor * MainCanvas.Width) / 2;
-            yPanAnchor = (ParentHeight - (maxY + minY)/2 - newScaleFactor * MainCanvas.Height) / 2;
+            xPanAnchor = (ParentWidth - (maxX + minX) / 2 - newScaleFactor * MainCanvas.Width) / 2;
+            yPanAnchor = (ParentHeight - (maxY + minY) / 2 - newScaleFactor * MainCanvas.Height) / 2;
             MoveScaleCanvas(newScaleFactor, xPanAnchor, yPanAnchor, DisplayConstants.ZoomTimeOnRedraw);
         }
 
@@ -558,9 +555,10 @@ namespace PMKS_Silverlight_App
                 var changed = inputJointBaseShape.OnMouseMove(mousePos, startMovingReference, multiSelect);
                 aJointHasChanged = (aJointHasChanged || changed);
                 changedJoints.Add(changed);
-                coordinates.Add(double.IsNaN(inputJointBaseShape.angle)
-                    ? new[] { inputJointBaseShape.xCoord, inputJointBaseShape.yCoord }
-                    : new[] { inputJointBaseShape.xCoord, inputJointBaseShape.yCoord, inputJointBaseShape.angle });
+                coordinates.Add(
+                    //double.IsNaN(inputJointBaseShape.angle)
+                    //? new[] { inputJointBaseShape.xCoord, inputJointBaseShape.yCoord }         :
+                    new[] { inputJointBaseShape.xCoord, inputJointBaseShape.yCoord, inputJointBaseShape.angle });
             }
             if (aJointHasChanged && !SimulateOnMove.IsBusy)
             {

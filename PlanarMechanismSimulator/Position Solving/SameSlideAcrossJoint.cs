@@ -164,9 +164,7 @@ namespace PMKS.PositionSolving
 
             if (newPointReCalcDerivConstant)
             {
-                slopeDeltaX = xR - xS;
                 squaredDeltaX = slopeDeltaX * slopeDeltaX;
-                slopeDeltaY = yR - yS;
                 squaredDeltaY = slopeDeltaY * slopeDeltaY;
                 sumSquaredDeltas = squaredDeltaX + squaredDeltaY;
 

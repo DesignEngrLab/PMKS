@@ -23,7 +23,7 @@ namespace PMKS.PositionSolving
         double _posError;
         private NonDyadicPositionSolver NDPS;
 
-        private PositionAnalysisResults posResult;
+        public PositionAnalysisResults posResult { get; internal set; }
         private const double BranchRatio = 0.5;
         internal readonly List<joint> joints;
         internal readonly List<link> links;
@@ -34,6 +34,8 @@ namespace PMKS.PositionSolving
         private readonly joint inputJoint;
         private readonly double maximumDeltaX;
         private readonly double maximumDeltaY;
+        private readonly double minimumDeltaX;
+        private readonly double minimumDeltaY;
 
         public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData, int inputJointIndex)
         {
@@ -51,6 +53,8 @@ namespace PMKS.PositionSolving
 
             maximumDeltaX = maximumDeltaY = Math.Max(Constants.XRangeLimitFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial)),
              Constants.YRangeLimitFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial)));
+            minimumDeltaX = minimumDeltaY = Math.Min(Constants.XMinimumFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial)),
+             Constants.YMinimumFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial)));
         }
 
         internal Boolean DefineNewPositions(double positionChange)
@@ -62,7 +66,7 @@ namespace PMKS.PositionSolving
 
             if (numUnknownJoints > 0)
             {
-                   goto SkipToNonDyadic;
+                //  goto SkipToNonDyadic;
                 do
                 {
                     posResult = PositionAnalysisResults.NoSolvableDyadFound;
@@ -310,8 +314,8 @@ namespace PMKS.PositionSolving
                     numUnknownJoints = joints.Count(j => j.positionKnown != KnownState.Fully);
                 } while (posResult != PositionAnalysisResults.NoSolvableDyadFound &&
                          numUnknownJoints > 0);
-                SkipToNonDyadic:
-              // if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
+                //SkipToNonDyadic:
+                if (posResult == PositionAnalysisResults.NoSolvableDyadFound && numUnknownJoints > 0)
                 {
 
                     try
@@ -319,9 +323,8 @@ namespace PMKS.PositionSolving
                         //if (NDPS == null)
                         NDPS = new NonDyadicPositionSolver(this);
                         var NDPSError = 0.0;
-                        if (!NDPS.Run_PositionsAreClose(out NDPSError)) return false;
+                        NDPS.Run_PositionsAreClose(out NDPSError);
                         PositionError = Math.Sqrt(NDPSError);
-
                     }
                     catch (Exception e)
                     {
@@ -329,7 +332,10 @@ namespace PMKS.PositionSolving
                     }
                 }
             }
+            if (posResult == PositionAnalysisResults.InvalidPosition) return false;
             if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))
+                return false;
+            if (joints.All(j => Math.Abs(j.x - j.xInitial) < minimumDeltaX || Math.Abs(j.y - j.yInitial) < minimumDeltaY))
                 return false;
 
             UpdateSliderPosition();
@@ -793,8 +799,9 @@ namespace PMKS.PositionSolving
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
             if (thisLink == null) return;
-            //if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints
-            if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
+            //if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints   
+            // if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
+            if (thisLink.AngleIsKnown == KnownState.Fully)
                 angleChange = thisLink.Angle - thisLink.AngleLast;
             if (double.IsNaN(angleChange))
             {

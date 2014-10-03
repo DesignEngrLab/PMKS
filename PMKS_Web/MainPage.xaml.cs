@@ -283,8 +283,8 @@ namespace PMKS_Silverlight_App
                 now = DateTime.Now;
                 if (pmks.LinkParameters == null || pmks.JointParameters == null || pmks.JointParameters.Count < 2)
                 {
-                    status("...nothing to draw. Error in simulation.");
-                    return;
+                    status("The mechanism does not move.");
+                   // return;
                 }
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);

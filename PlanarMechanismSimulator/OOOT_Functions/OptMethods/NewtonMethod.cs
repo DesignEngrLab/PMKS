@@ -21,6 +21,7 @@
  *************************************************************************/
 
 using System;
+using System.Diagnostics;
 using StarMathLib;
 
 namespace OptimizationToolbox
@@ -79,6 +80,7 @@ namespace OptimizationToolbox
                 if (double.IsNaN(StarMath.sum(dk)))
                     dk = StarMath.multiply(-1, gradF);
                 var step = StarMath.norm2(dk);
+                if (step == 0) continue;
                 dk = StarMath.divide(dk, step);
                 // use line search (arithmetic mean) to find alphaStar
                 alphaStar = lineSearchMethod.findAlphaStar(x, dk, step);

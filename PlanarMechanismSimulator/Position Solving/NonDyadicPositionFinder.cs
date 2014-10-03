@@ -99,7 +99,7 @@ namespace PMKS.PositionSolving
         {
             return optMethod.ConvergenceDeclaredBy.Contains(ConvergedWithinLimit);
         }
-        internal bool Run_PositionsAreClose(out double posError)
+        internal void Run_PositionsAreClose(out double posError)
         {
             posError = 0.0;
             var xInit = new double[2 * numUnknownJoints];
@@ -123,7 +123,11 @@ namespace PMKS.PositionSolving
 
             double[] xStar;
             optMethod.Run(out xStar, xInit);
-            if (!SolutionFound()) return false;
+            if (!SolutionFound())
+            {
+                posFinder.posResult= PositionAnalysisResults.InvalidPosition;
+                return;
+            }
 
             for (int i = 0; i < numUnknownJoints; i++)
             {
@@ -139,7 +143,6 @@ namespace PMKS.PositionSolving
             foreach (var c in links)
                 if (c.AngleIsKnown == KnownState.Unknown)
                     posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
-            return true;
         }
 
         internal double Run_PositionsAreUnknown(double[,] newJointParams, double[,] newLinkParams)

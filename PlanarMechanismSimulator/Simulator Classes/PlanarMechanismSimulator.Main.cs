@@ -576,7 +576,7 @@ namespace PMKS
                     var j = AllJoints[newIndex];
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
-                    if (j.jointType != JointTypes.R)
+                    //if (j.jointType != JointTypes.R)
                         j.OffsetSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
