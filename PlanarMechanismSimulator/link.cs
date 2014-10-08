@@ -22,7 +22,6 @@ namespace PMKS
         internal KnownState AngleIsKnown;
 
         public joint ReferenceJoint1 { get; internal set; }
-        internal joint ReferenceJoint2 { get; set; }
         /// <summary>
         /// The lengths between joints that are fixed with respect to this link
         /// </summary>
@@ -93,7 +92,7 @@ namespace PMKS
             numJoints = joints.Count;
             #region Define Initial Link Angle
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
-                OrderBy(j => j.xInitial).ToList();
+                OrderBy(j => (j.Link2!=null)?0:1).ThenBy(j => j.xInitial).ToList();
             ReferenceJoint1 = fixedJoints[0];
             /* the linkAngle is defined from "the joint with the lowest initial x value
              * that is fixed to this link" to "the joint with the highest initial x value
@@ -101,15 +100,12 @@ namespace PMKS
              * it will necessarily have one due to the addition of a joint added in
              * Simulator.addReferencePivotsToSlideOnlyLinks()) or is ground, then the 
              * initial angle is zero. */
-            if (fixedJoints.Count < 2 || this.isGround) AngleInitial = 0.0;
-            else
-            {
-                ReferenceJoint2 = fixedJoints[1];
-                AngleInitial = Constants.angle(ReferenceJoint1, ReferenceJoint2);
-            }
+            if (fixedJoints.Count == 2 && !this.isGround)
+                AngleInitial = Constants.angle(ReferenceJoint1, fixedJoints[1]);
+            else AngleInitial = 0.0;
             Angle = AngleNumerical = AngleLast = AngleInitial;
             foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
-                j.OffsetSlideAngle -=  AngleInitial;
+                j.OffsetSlideAngle -= AngleInitial;
             #endregion
             #region Joint-to-Joint Dictionaries
             lengths = new Dictionary<int, double>();
@@ -233,7 +229,7 @@ namespace PMKS
             if (distanceToSlideLine.ContainsKey(index))
                 return distanceToSlideLine[index];
             else throw new Exception("link.DistanceBetweenSlides ->args wrong");
-                //return -distanceToSlideLine[numJoints * fixedIndex + slideIndex];
+            //return -distanceToSlideLine[numJoints * fixedIndex + slideIndex];
         }
         /// <summary>
         /// returns the angle between the slide and the reference joint.

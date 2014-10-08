@@ -95,7 +95,6 @@ namespace OptimizationToolbox
                 }
                 SearchIO.output("f = " + fk, 3);
             } while (notConverged(k, numEvals, fk, x, null, gradF));
-
             return fStar;
         }
 

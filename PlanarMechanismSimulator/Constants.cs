@@ -17,15 +17,15 @@ namespace PMKS
         ///   position of points (mostly in checking for a valid transformation (see
         ///   ValidTransformation) and if other nodes comply (see otherNodesComply).
         /// </summary>
-        public const double epsilonSame = 10e-12;
+        public const double epsilonSame = 1e-12;
 
-        public const double epsilon = 10e-9;
-        internal const double ErrorInDeterminingCompleteCycle = 0.01;
+        public const double epsilon = 1e-9 ;
+        internal const double ErrorInDeterminingCompleteCycle = 0.03;
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
         public const double SmallPerturbationFraction = 0.003;
         public const double DefaultStepSize = 0.5;
-        public const double MinimumStepSize = 0.001;
+        public const double MinimumStepSize = 0.0005;
         public const int MaxItersInPositionError = 10;
         public const double ConservativeErrorEstimation = 0.9;
         public const double ErrorEstimateInertia = 2.0;

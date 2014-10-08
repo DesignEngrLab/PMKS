@@ -45,7 +45,7 @@ namespace PMKS
             else
             {
                 SimulateWithFixedDelta(AllJoints, AllLinks, true);
-            }                                               
+            }
             DefineMovementCharacteristics();
 #else
             List<joint> backwardJoints;
@@ -55,11 +55,11 @@ namespace PMKS
             /*** Stepping Forward in Time ***/
             var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
+
             /*** Stepping Backward in Time ***/
             var backwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(backwardJoints, backwardLinks, false))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
             Task.WaitAll(forwardTask, backwardTask);
-
             DefineMovementCharacteristics();
 #endif
         }
@@ -85,8 +85,6 @@ namespace PMKS
                     backwardLink.joints.Add(backwardJoints[jointIndex]);
                     if (j == forwardLink.ReferenceJoint1)
                         backwardLink.ReferenceJoint1 = backwardJoints[jointIndex];
-                    if (j == forwardLink.ReferenceJoint2)
-                        backwardLink.ReferenceJoint2 = backwardJoints[jointIndex];
                 }
             }
         }
@@ -121,22 +119,24 @@ namespace PMKS
                     var time = JointParameters.Times.Last();
                     var parameters = JointParameters.Parameters.Last();
                     JointParameters.RemoveAt(JointParameters.LastIndex);
-                    JointParameters.AddNearBegin(time - cyclePeriodTime, parameters);
+                    time -= cyclePeriodTime;
+                    JointParameters.AddNearBegin(time, parameters);
 
                     parameters = LinkParameters.Parameters.Last();
                     LinkParameters.RemoveAt(LinkParameters.LastIndex);
-                    LinkParameters.AddNearEnd(time - cyclePeriodTime, parameters);
+                    LinkParameters.AddNearEnd(time, parameters);
                 }
                 while (JointParameters.Times[0] < 0.0)
                 {
                     var time = JointParameters.Times[0];
                     var parameters = JointParameters.Parameters[0];
                     JointParameters.RemoveAt(0);
-                    JointParameters.AddNearEnd(time + cyclePeriodTime, parameters);
+                    time += cyclePeriodTime;
+                    JointParameters.AddNearEnd(time, parameters);
 
                     parameters = LinkParameters.Parameters[0];
                     LinkParameters.RemoveAt(0);
-                    LinkParameters.AddNearEnd(time + cyclePeriodTime, parameters);
+                    LinkParameters.AddNearEnd(time, parameters);
                 }
             }
             else
@@ -431,10 +431,13 @@ namespace PMKS
                     }
                     else
                     {
-                        startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
-                        startingPosChange = Math.Sign(startingPosChange) * Math.Max(Math.Abs(startingPosChange), Constants.MinimumStepSize);
+                        if (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) <
+                            Constants.MinimumStepSize)
+                            validPosition = false;
+                        else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
                     }
-                } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError);
+                } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError
+                    && (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) >= Constants.MinimumStepSize));
                 //var tempStep = startingPosChange;
                 //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
                 //prevStep = tempStep;

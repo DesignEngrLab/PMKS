@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using OptimizationToolbox;
 using PMKS;
@@ -27,44 +28,51 @@ namespace PMKS.PositionSolving
             this.joints = posFinder.joints;
             linkFunctions = new List<NonDyadicObjFunctionTerm>();
             unkJoints = new List<joint>();
-            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))
+            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))// && j.Link2 != null))
+                /* we'll solve these tracer points later, hence the j.Link2 !=null. */
                 unkJoints.Add(j);
             foreach (var j in joints)
             {
                 if (j.jointType == JointTypes.R) continue;
-                else if (j.jointType == JointTypes.RP)
+                var slideLink = j.Link1;
+                var blockLink = j.Link2;
+                if (j.jointType == JointTypes.RP)
                 {
-                    var refJoint = j.Link1.ReferenceJoint2;
+                    var slideJoint = slideLink.ReferenceJoint1;
+                    var refJoint = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
+                                                                       && jt.Link2 != null &&
+                                                                       jt.FixedWithRespectTo(slideLink));
                     if (refJoint == null) continue;
-                    var slideJoint = j.Link1.ReferenceJoint1;
-                    if (unkJoints.Contains(j) || unkJoints.Contains(refJoint) || unkJoints.Contains(slideJoint))
+                    if (unkJoints.Contains(j) || unkJoints.Contains(slideJoint))
                         linkFunctions.Add(new SameSlideAcrossRPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
                             unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
                             unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
-                            j.OffsetSlideAngle, j.Link1.DistanceBetweenSlides(j, slideJoint)));
+                            j.OffsetSlideAngle, slideLink.DistanceBetweenSlides(j, slideJoint)));
                 }
                 else if (j.jointType == JointTypes.P)
                 {
-                    var refJoint = (j.Link2.ReferenceJoint1 != j) ? j.Link2.ReferenceJoint1 : j.Link2.ReferenceJoint2;
+                    var refJoint = (blockLink.ReferenceJoint1 != j) ? blockLink.ReferenceJoint1 :
+                        blockLink.joints.FirstOrDefault(jt => jt != j && jt.Link2 != null && jt.FixedWithRespectTo(blockLink));
                     if (refJoint == null) continue;
-                    var slideJoint = j.Link1.ReferenceJoint1;
+                    var slideJoint = slideLink.ReferenceJoint1;
                     if (unkJoints.Contains(j) || unkJoints.Contains(slideJoint))
                         linkFunctions.Add(new SameSlideAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
                             unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
                             unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
-                            j.Link2.angleOfBlockToJoint(j, refJoint), j.Link1.DistanceBetweenSlides(j, slideJoint)));
-                    if (j.Link1.ReferenceJoint2 != null)
-                    {
-                        var s2 = j.Link1.ReferenceJoint2;
-                        if ((unkJoints.Contains(j) && unkJoints.Contains(refJoint)) ||
-                            (unkJoints.Contains(slideJoint) && unkJoints.Contains(s2)))
-                            linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
-                                j.xInitial, j.yInitial,
-                                unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint), refJoint.xInitial, refJoint.yInitial,
-                                unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint), slideJoint.xInitial, slideJoint.yInitial,
-                                unkJoints.IndexOf(s2), joints.IndexOf(s2), s2.xInitial, s2.yInitial, j.OffsetSlideAngle,
-                                j.Link2.angleOfBlockToJoint(j, refJoint)));
-                    }
+                            blockLink.angleOfBlockToJoint(j, refJoint), slideLink.DistanceBetweenSlides(j, slideJoint)));
+
+                    var sJ2 = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
+                                                                   && jt.Link2 != null &&
+                                                                   jt.FixedWithRespectTo(slideLink));
+                    if ((sJ2 != null)
+                        && ((unkJoints.Contains(j) && unkJoints.Contains(refJoint)) ||
+                        (unkJoints.Contains(slideJoint) && unkJoints.Contains(sJ2))))
+                        linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
+                            j.xInitial, j.yInitial,
+                            unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint), refJoint.xInitial, refJoint.yInitial,
+                            unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint), slideJoint.xInitial, slideJoint.yInitial,
+                            unkJoints.IndexOf(sJ2), joints.IndexOf(sJ2), sJ2.xInitial, sJ2.yInitial, j.OffsetSlideAngle,
+                            blockLink.angleOfBlockToJoint(j, refJoint)));
                 }
             }
             foreach (var c in links)
@@ -74,6 +82,7 @@ namespace PMKS.PositionSolving
                     {
                         var p0 = c.joints[i];
                         var p1 = c.joints[j];
+                        if (p0.Link2 == null || p1.Link2 == null) continue;
                         var p0Index = unkJoints.IndexOf(p0);
                         var p1Index = unkJoints.IndexOf(p1);
                         if (p0Index == -1 && p1Index == -1)
@@ -144,6 +153,7 @@ namespace PMKS.PositionSolving
                     (xStar[2 * i + 1] - xInit[2 * i + 1]) * (xStar[2 * i + 1] - xInit[2 * i + 1]);
                 if (posError < tempError) posError = tempError;
             }
+            /* this recurses through to fix all the tracer points    */
             foreach (var c in links)
                 if (c.AngleIsKnown == KnownState.Unknown)
                     posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);

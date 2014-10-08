@@ -116,10 +116,6 @@ namespace PMKS
                 } while (Times[i] <= time);
                 Times.Insert(i, time);
                 Parameters.Insert(i, parameters);
-
-
-                Times.Insert(i, time);
-                Parameters.Insert(i, parameters);
             }
             LastIndex++;
         }
