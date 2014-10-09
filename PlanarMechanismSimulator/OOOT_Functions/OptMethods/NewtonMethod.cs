@@ -75,6 +75,7 @@ namespace OptimizationToolbox
                 var Hessian = new double[n, n];
                 for (int i = 0; i < n; i++)
                     for (int j = i; j < n; j++)
+                       // if (i == j) Hessian[i, j] = Hessian[j, i] = 1.0;
                         Hessian[i, j] = Hessian[j, i] = ((ITwiceDifferentiable)f[0]).second_deriv_wrt_ij(x, i, j);
                 dk = StarMath.multiply(-1, StarMath.multiply(StarMath.inverse(Hessian), gradF));
                 if (double.IsNaN(StarMath.sum(dk)))

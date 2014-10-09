@@ -28,7 +28,7 @@ namespace PMKS.PositionSolving
             this.joints = posFinder.joints;
             linkFunctions = new List<NonDyadicObjFunctionTerm>();
             unkJoints = new List<joint>();
-            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully))// && j.Link2 != null))
+            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully && j.Link2 != null))
                 /* we'll solve these tracer points later, hence the j.Link2 !=null. */
                 unkJoints.Add(j);
             foreach (var j in joints)
@@ -61,18 +61,18 @@ namespace PMKS.PositionSolving
                             unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
                             blockLink.angleOfBlockToJoint(j, refJoint), slideLink.DistanceBetweenSlides(j, slideJoint)));
 
-                    var sJ2 = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
-                                                                   && jt.Link2 != null &&
-                                                                   jt.FixedWithRespectTo(slideLink));
-                    if ((sJ2 != null)
-                        && ((unkJoints.Contains(j) && unkJoints.Contains(refJoint)) ||
-                        (unkJoints.Contains(slideJoint) && unkJoints.Contains(sJ2))))
-                        linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
-                            j.xInitial, j.yInitial,
-                            unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint), refJoint.xInitial, refJoint.yInitial,
-                            unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint), slideJoint.xInitial, slideJoint.yInitial,
-                            unkJoints.IndexOf(sJ2), joints.IndexOf(sJ2), sJ2.xInitial, sJ2.yInitial, j.OffsetSlideAngle,
-                            blockLink.angleOfBlockToJoint(j, refJoint)));
+                    //var sJ2 = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
+                    //                                               && jt.Link2 != null &&
+                    //                                               jt.FixedWithRespectTo(slideLink));
+                    //if ((sJ2 != null)
+                    //    && ((unkJoints.Contains(j) && unkJoints.Contains(refJoint)) ||
+                    //    (unkJoints.Contains(slideJoint) && unkJoints.Contains(sJ2))))
+                    //    linkFunctions.Add(new SameAngleAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
+                    //        j.xInitial, j.yInitial,
+                    //        unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint), refJoint.xInitial, refJoint.yInitial,
+                    //        unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint), slideJoint.xInitial, slideJoint.yInitial,
+                    //        unkJoints.IndexOf(sJ2), joints.IndexOf(sJ2), sJ2.xInitial, sJ2.yInitial, j.OffsetSlideAngle,
+                    //        blockLink.angleOfBlockToJoint(j, refJoint)));
                 }
             }
             foreach (var c in links)
@@ -122,7 +122,7 @@ namespace PMKS.PositionSolving
                 if (j.positionKnown == KnownState.Fully)
                     foreach (var llf in linkFunctions)
                         llf.SetInitialJointPosition(i, j.x, j.y);
-                else
+                else if (j.Link2 != null) //once, again tracer points are done at the end
                 {
                     var xPosStart = j.xNumerical;
                     var yPosStart = j.yNumerical;
@@ -155,8 +155,8 @@ namespace PMKS.PositionSolving
             }
             /* this recurses through to fix all the tracer points    */
             foreach (var c in links)
-                if (c.AngleIsKnown == KnownState.Unknown)
-                    posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
+                //   if (c.AngleIsKnown == KnownState.Unknown)
+                posFinder.setLinkPositionFromRotate(c.joints.First(j => j.FixedWithRespectTo(c)), c);
         }
 
         internal double Run_PositionsAreUnknown(double[,] newJointParams, double[,] newLinkParams)
