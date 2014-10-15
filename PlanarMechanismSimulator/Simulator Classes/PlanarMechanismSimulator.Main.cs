@@ -361,7 +361,7 @@ namespace PMKS
                 if (groundLinks.Count != 1) throw new Exception("There can only be one ground link. In this case, there are "
                       + groundLinks.Count);
                 groundLink = groundLinks[0];
-                inferAdditionalGearLinks();
+                //inferAdditionalGearLinks();
                 var additionalRefjoints = addReferencePivotsToSlideOnlyLinks();
                 numLinks = AllLinks.Count; //count the number of links in the system
                 numJoints = AllJoints.Count; //count the number of pivots in the system
@@ -383,16 +383,12 @@ namespace PMKS
                 AllJoints.Add(inputJoint);
                 AllJoints.AddRange(groundPivots);
 
+                maxJointParamLengths = AllJoints.All(j => j.jointType == JointTypes.R) ? 6 : 9;
                 JointNewIndexFromOriginal = new int[numJoints];
                 for (int i = 0; i < numJoints; i++)
-                {
                     JointNewIndexFromOriginal[i] = AllJoints.IndexOf(origOrder[i]);
-                    maxJointParamLengths = Math.Max(maxJointParamLengths, (AllJoints[i].jointType == JointTypes.R ? 6 : 9));
-                }
 
                 setAdditionalReferencePositions(additionalRefjoints);
-
-
             }
             catch (Exception e)
             {
@@ -484,67 +480,60 @@ namespace PMKS
 
         private void setGearData()
         {
+            var index = 0;
             if (AllJoints.All(j => j.jointType != JointTypes.G)) return;
             gearsData = new Dictionary<int, gearData>();
-            int index = 0;
             foreach (var gearTeethJoint in AllJoints)
             {
                 if (gearTeethJoint.jointType == JointTypes.G)
                 {
                     var gear1 = gearTeethJoint.Link1;
                     var gear2 = gearTeethJoint.Link2;
-                    var otherGear1Joints = gear1.joints.Where(j => j != gearTeethJoint && j.jointType != JointTypes.G
-                        && j.Link2 != null).ToList();
-                    var neighboringGear1Links = otherGear1Joints.Select(j => new List<link> { j.OtherLink(gear1) }).ToList();
-                    for (int i = 0; i < otherGear1Joints.Count; i++)
-                        neighboringGear1Links[i].AddRange(LinksFromSharedJoints(otherGear1Joints[i], neighboringGear1Links[i][0]));
-                    var otherGear2Joints = gear2.joints.Where(j => j != gearTeethJoint && j.jointType != JointTypes.G
-                        && j.Link2 != null).ToList();
-                    var neighboringGear2Links = otherGear2Joints.Select(j => new List<link> { j.OtherLink(gear2) }).ToList();
-                    for (int i = 0; i < otherGear2Joints.Count; i++)
-                        neighboringGear2Links[i].AddRange(LinksFromSharedJoints(otherGear2Joints[i], neighboringGear2Links[i][0]));
-
-
-                    var connectingRod =
-                        neighboringGear1Links.SelectMany(c => c).Intersect(neighboringGear2Links.SelectMany(c => c)).
-                            First();
-                    int k = 0;
-                    while (!neighboringGear1Links[k].Contains(connectingRod)) k++;
-                    var gearCenter1 = otherGear1Joints[k];
-                    k = 0;
-                    while (!neighboringGear2Links[k].Contains(connectingRod)) k++;
-                    var gearCenter2 = otherGear2Joints[k];
-                    if (connectingRod.name.StartsWith(nameBaseForGearConnector))
-                    {
-                        gearCenter1.xInitial = gearTeethJoint.xInitial;
-                        gearCenter1.yInitial = gearTeethJoint.yInitial;
-                        var trueGearCenter2 = gearTeethJoint.Link2.joints.First(jj => jj != gearTeethJoint && jj.jointType == JointTypes.R);
-                        gearCenter2.xInitial = trueGearCenter2.xInitial;
-                        gearCenter2.yInitial = trueGearCenter2.yInitial;
-                    }
+                    var possibleGear1Centers = gear1.joints.Where(j => j.jointType != JointTypes.G && j.Link2 != null);
+                    var possibleGear2Centers =
+                        gear2.joints.Where(j => j.jointType != JointTypes.G && j.Link2 != null).ToList();
+                    var bestCenterOption = new Tuple<joint, joint, link, double>(null, null, null, double.NaN);
+                    var bestError = double.PositiveInfinity;
+                    foreach (var g1 in possibleGear1Centers)
+                        foreach (var g2 in possibleGear2Centers)
+                        {
+                            if (g1.jointType == JointTypes.P && g2.jointType == JointTypes.P) continue;
+                            if (g1.jointType == JointTypes.RP && g1.Link1 == gear1) continue;
+                            if (g2.jointType == JointTypes.RP && g2.Link1 == gear2) continue;
+                            var connectLink =
+                                AllLinks.FirstOrDefault(c => c.joints.Contains(g1) && c.joints.Contains(g2));
+                            if (connectLink == null) continue;
+                            var angle1 = FindInitialGearAngle(g1, gearTeethJoint);
+                            var angle2 = FindInitialGearAngle(g2, gearTeethJoint);
+                            var error = Math.Abs(angle1 - angle2);
+                            if (bestError > error)
+                            {
+                                bestError = error;
+                                bestCenterOption = new Tuple<joint, joint, link, double>(g1, g2, connectLink, (angle1 + angle2) / 2);
+                            }
+                        }
+                    var gearCenter1 = bestCenterOption.Item1;
+                    var gearCenter2 = bestCenterOption.Item2;
+                    var connectingRod = bestCenterOption.Item3;
+                    var gearAngle = bestCenterOption.Item4;
                     gearsData.Add(index,
-                                  new gearData(gearTeethJoint, AllJoints.IndexOf(gearTeethJoint), gearCenter1,
-                                      AllJoints.IndexOf(gearCenter1), gearCenter2, AllJoints.IndexOf(gearCenter2),
-                                      AllLinks.IndexOf(connectingRod)));
+                        new gearData(gearTeethJoint, index, gearCenter1,               AllJoints.IndexOf(gearCenter1), AllLinks.IndexOf(gear1),
+                            gearCenter2, AllJoints.IndexOf(gearCenter2), AllLinks.IndexOf(gear2),
+                                          AllLinks.IndexOf(connectingRod), gearAngle));
                 }
                 index++;
             }
         }
 
-        private IEnumerable<link> LinksFromSharedJoints(joint joint, link link)
+        private double FindInitialGearAngle(joint g1, joint gearTeeth)
         {
-            var samePositionJoints =
-                link.joints.Where(j => j != joint && j.jointType == JointTypes.R &&
-                    Constants.sameCloseZero(j.xInitial, joint.xInitial) &&
-                    Constants.sameCloseZero(j.yInitial, joint.yInitial)).ToList();
-            if (samePositionJoints.Count == 0) return new link[0];
-            var newLinks = samePositionJoints.Select(j => j.OtherLink(link)).ToList();
-            for (int i = samePositionJoints.Count - 1; i >= 0; i--)
-                newLinks.AddRange(LinksFromSharedJoints(samePositionJoints[i], samePositionJoints[i].OtherLink(link)));
-            return newLinks;
+            if (g1.jointType != JointTypes.R) return g1.SlideAngleInitial;
+            var angle = Math.Atan2((gearTeeth.yInitial - g1.yInitial), (gearTeeth.xInitial - g1.xInitial))
+                + Math.PI / 2;
+            while (angle > Math.PI / 2) angle -= Math.PI;
+            while (angle < -Math.PI / 2) angle += Math.PI;
+            return angle;
         }
-
-
         #endregion
 
         /// <summary>
@@ -577,7 +566,7 @@ namespace PMKS
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
                     //if (j.jointType != JointTypes.R)
-                        j.OffsetSlideAngle = InitPositions[k++];
+                    j.OffsetSlideAngle = InitPositions[k++];
                 }
                 setAdditionalReferencePositions();
             }

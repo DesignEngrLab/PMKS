@@ -90,6 +90,7 @@
     <Compile Include="Converters\TextToDoubleConverter.cs" />
     <Compile Include="Converters\JointDataToLinkListConverter.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\DynamicShapes\InputJointBaseShape.cs" />
+    <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\InputGJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\InputRPJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\InputPJointShape.cs" />
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\DynamicJointBaseShape.cs" />

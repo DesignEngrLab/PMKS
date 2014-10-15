@@ -92,7 +92,7 @@ namespace PMKS
             numJoints = joints.Count;
             #region Define Initial Link Angle
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
-                OrderBy(j => (j.Link2!=null)?0:1).ThenBy(j => j.xInitial).ToList();
+                OrderBy(j => (j.Link2 != null) ? 0 : 1).ThenBy(j => j.xInitial).ToList();
             ReferenceJoint1 = fixedJoints[0];
             /* the linkAngle is defined from "the joint with the lowest initial x value
              * that is fixed to this link" to "the joint with the highest initial x value
@@ -182,13 +182,16 @@ namespace PMKS
             var key = numJoints * slideIndex + fixedIndex;
             var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
             var refVector = new[] { refJoint.xInitial - slideJoint.xInitial, refJoint.yInitial - slideJoint.yInitial };
-            distanceToSlideLine.Add(key, StarMath.crossProduct2(slideUnitVector, refVector));
+            var distance = (double.IsNaN(slideJoint.SlideAngle))
+                ? StarMath.norm2(refVector)
+                : StarMath.crossProduct2(slideUnitVector, refVector);
+            distanceToSlideLine.Add(key, distance);
         }
 
         private void addBlockAngleDictionaryEntry(joint pJoint, joint refJoint, int pIndex, int refIndex)
         {
             var key = numJoints * pIndex + refIndex;
-            var result = pJoint.SlideAngleInitial -
+            var result = (pJoint.jointType == JointTypes.G) ? Math.PI / 2 : pJoint.SlideAngleInitial -
                          Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
             angleFromBlockToJoint.Add(key, result);
         }

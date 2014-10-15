@@ -113,19 +113,18 @@ namespace PMKS
 
         public Boolean SlidingWithRespectTo(link link0)
         {
-            return (Link1 == link0
-                    && (jointType == JointTypes.P || jointType == JointTypes.RP
-                        || (jointType == JointTypes.G && !Double.IsNaN(OffsetSlideAngle))));
+            return !FixedWithRespectTo(link0);
+            //return (Link1 == link0
+            //        && (jointType == JointTypes.P || jointType == JointTypes.RP
+            //            || (jointType == JointTypes.G && !Double.IsNaN(OffsetSlideAngle))));
         }
 
         public Boolean FixedWithRespectTo(link link0)
         {
             if (link0 != Link1 && link0 != Link2) return false;
+                //throw new Exception("link0 is not connected to joint (in joint.FixedWithRespectTo).");
             if (jointType == JointTypes.R) return true;
             if (jointType == JointTypes.G) return false;
-            /* this business with Gear Connection is what prevents SlidingWithRespectTo and
-             * FixedWithRespectTo being truly opposite. */
-
             /* then joint is either P or RP, so... */
             return (Link2 == link0);
         }

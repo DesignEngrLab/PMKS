@@ -36,17 +36,8 @@ namespace PMKS
             if (double.IsNaN(InputSpeed) || InputSpeed == 0.0) InputSpeed = Constants.DefaultInputSpeed;
             #endregion
 #if DEBUGSERIAL
-            if (useErrorMethod)
-            {
-                if (MaxSmoothingError == 0) throw new Exception("The MaxSmoothingError must not be zero.");
-
-                SimulateWithinError(AllJoints, AllLinks, true);
-            }
-            else
-            {
-                SimulateWithFixedDelta(AllJoints, AllLinks, true);
-            }
-            DefineMovementCharacteristics();
+            if (useErrorMethod) SimulateWithinError(AllJoints, AllLinks, true);
+            else SimulateWithFixedDelta(AllJoints, AllLinks, true);
 #else
             List<joint> backwardJoints;
             List<link> backwardLinks;
@@ -60,8 +51,8 @@ namespace PMKS
             var backwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(backwardJoints, backwardLinks, false))
                 : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
             Task.WaitAll(forwardTask, backwardTask);
-            DefineMovementCharacteristics();
 #endif
+            DefineMovementCharacteristics();
         }
 
         private static void CopyJointsAndLinksForBackwards(List<joint> AllJoints, List<link> AllLinks,
@@ -152,7 +143,8 @@ namespace PMKS
             // even though the crank goes all the way around, other joints of the mechanism may be in different places.
             var initState = JointParameters.Parameters[0];
             var topTime = JointParameters.Times[0] + cyclePeriodTime;
-
+            var maxError = Constants.ErrorInDeterminingCompleteCycle;
+            if (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0) maxError *= Math.Sqrt(MaxSmoothingError)*100;
             for (int i = 0; i < numJoints; i++)
             {
                 var topJointLocation = FindJointPositionAtTime(topTime, i);

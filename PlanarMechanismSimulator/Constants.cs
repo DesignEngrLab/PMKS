@@ -34,10 +34,14 @@ namespace PMKS
         public const double DefaultInputSpeed = 1.0;
 
         public static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan((long)2000000);
+
         public const double XRangeLimitFactor = 5.0;
-        public const double YRangeLimitFactor = 5.0;
+        public const double YRangeLimitFactor = 5.0;      
+        public const double BoundingBoxAspectRatio = 2.0;
         public const double XMinimumFactor = 1e-8;
         public const double YMinimumFactor = 1e-8;
+        public const double AngleMinimumFactor = 1e-6;
+
         public const double JointAccelerationLimitFactor = 75.0;
         public const double LinkAccelerationLimitFactor = 75.0;
         public const double JointVelocityLimitFactor = 75.0;

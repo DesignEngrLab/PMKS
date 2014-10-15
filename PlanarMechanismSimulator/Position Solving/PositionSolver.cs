@@ -37,7 +37,8 @@ namespace PMKS.PositionSolving
         private readonly double minimumDeltaX;
         private readonly double minimumDeltaY;
 
-        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData, int inputJointIndex)
+        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData,
+            int inputJointIndex)
         {
             this.joints = joints;
             inputJoint = joints[inputJointIndex];
@@ -48,13 +49,17 @@ namespace PMKS.PositionSolving
             this.gearsData = gearsData;
             /* this has been commented out because occasionally a mechanism can be defined in which all joints have the
              * same x or same y value. Imainge a quick return with all joints starting on the x-axis. */
-            //maximumDeltaX = Constants.XRangeLimitFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial));
-            //maximumDeltaY = Constants.YRangeLimitFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial));
-
-            maximumDeltaX = maximumDeltaY = Math.Max(Constants.XRangeLimitFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial)),
-             Constants.YRangeLimitFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial)));
-            minimumDeltaX = minimumDeltaY = Math.Min(Constants.XMinimumFactor * (joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial)),
-             Constants.YMinimumFactor * (joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial)));
+            var xBounding = joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial);
+            var yBounding = joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial);
+            /* the maximum leads to some problems - even for our fair little pendulum "starting block"
+             * if all the joints lie along a line, then it's no surprise that things will run afowl.
+             * Even with the following adjustment may be overly conservative. */
+            if (xBounding < yBounding / Constants.BoundingBoxAspectRatio) xBounding = yBounding / Constants.BoundingBoxAspectRatio;
+            if (yBounding < xBounding / Constants.BoundingBoxAspectRatio) yBounding = xBounding / Constants.BoundingBoxAspectRatio;
+            maximumDeltaX = Constants.XRangeLimitFactor * xBounding;
+            maximumDeltaY = Constants.YRangeLimitFactor * yBounding;
+            minimumDeltaX = Constants.XMinimumFactor * xBounding;
+            minimumDeltaY = Constants.YMinimumFactor * yBounding;
         }
 
         internal Boolean DefineNewPositions(double positionChange)
@@ -77,51 +82,46 @@ namespace PMKS.PositionSolving
                     switch (j.jointType)
                     {
                         case JointTypes.R:
-
                             #region R-R-R
-
                             if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
                                 FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaCircleIntersection(j, knownJoint1, knownJoint2);
-                                assignJointPosition(j, j.Link1, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
                             }
                             #endregion
                             #region R-R-P
-
                             else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
                                      FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaCircleAndLineIntersection(j, knownJoint1, knownJoint2,
                                     out angleChange);
-                                assignJointPosition(j, j.Link1, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1, angleChange);
                                 setLinkPositionFromRotate(j, j.Link2);
                                 // setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-R-R
-
                             else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
                                      && FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaCircleAndLineIntersection(j, knownJoint2, knownJoint1,
                                     out angleChange);
-                                assignJointPosition(j, j.Link2, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link2);
                                 setLinkPositionFromRotate(j, j.Link2, angleChange);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 // setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-R-P
-
                             else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
                                      && FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
-                                assignJointPosition(j, j.Link1, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
                                 //setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
@@ -129,54 +129,38 @@ namespace PMKS.PositionSolving
                             }
                             #endregion
                             #region R-R-G/G
-
                             else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
-                                     FindPartiallyKnownGearOnLink(j, j.Link2, out knownJoint2) &&
-                                     FindPartiallyKnownGearOnLink(j, j.Link2, out knownJoint3, knownJoint2))
+                                     FindPartiallyKnownGearOnLink(j.Link2, out knownJoint2) &&
+                                     FindPartiallyKnownGearOnLink(j.Link2, out knownJoint3, knownJoint2))
                                 solveGearCenterFromTwoGears(j.Link1, j, knownJoint1, j.Link2, knownJoint2,
                                     knownJoint3);
                             #endregion
                             #region G/G-R-R
-
                             else if (FindKnownPositionOnLink(j, j.Link2, out knownJoint1) &&
-                                     FindPartiallyKnownGearOnLink(j, j.Link1, out knownJoint2) &&
-                                     FindPartiallyKnownGearOnLink(j, j.Link1, out knownJoint3, knownJoint2))
+                                     FindPartiallyKnownGearOnLink(j.Link1, out knownJoint2) &&
+                                     FindPartiallyKnownGearOnLink(j.Link1, out knownJoint3, knownJoint2))
                                 solveGearCenterFromTwoGears(j.Link2, j, knownJoint1, j.Link1, knownJoint2,
                                     knownJoint3);
                             #endregion
-                            #region R-R-RP/RP
-
-                            //else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
-                            //         FindPartiallyKnownRPSlotOnLink(j, j.Link2, out knownJoint2) &&
-                            //         FindPartiallyKnownRPSlotOnLink(j, j.Link2, out knownJoint3, knownJoint2))
-                            //{
-                            //    throw new NotImplementedException("need to complete R-R-RP/RP");
-                            //}
-
-                            #endregion
-
                             break;
                         case JointTypes.P:
-
                             #region R-P-R
-
                             if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
                                 FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveRPRIntersection(j, knownJoint1, knownJoint2, out angleChange);
-                                assignJointPosition(j, j.Link2, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link2);
                                 setLinkPositionFromRotate(knownJoint1, j.Link1, angleChange);
                                 setLinkPositionFromRotate(j, j.Link2, angleChange);
                             }
                             #endregion
                             #region P-P-R
-
                             else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
                                      && FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* in this case, the block is on the rotating link and the slide is on the sliding link */
                                 var sJPoint = solveViaSlopeToCircleIntersectionPPR(j, knownJoint1, knownJoint2);
-                                assignJointPosition(j, j.Link2, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link2);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
                                 //setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast,
@@ -185,39 +169,30 @@ namespace PMKS.PositionSolving
                             }
                             #endregion
                             #region R-P-P
-
                             else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
                                      FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* in this case, the slide is on the rotating link and the block is on the sliding link */
                                 point sJPoint = solveViaSlopeToCircleIntersectionRPP(j, knownJoint1, knownJoint2);
-                                assignJointPosition(j, j.Link2, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link2);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
                                 //setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-P-P
-
                             else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1) &&
                                      FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
-                                assignJointPosition(j, j.Link1, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
-                                //setLinkPositionFromTranslation(knownJoint1, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast,
-                                //   knownJoint1.SlideAngle);
-                                //setLinkPositionFromTranslation(j, j.Link2, sJPoint.x, sJPoint.y, j.SlideAngle);
                             }
-
                             #endregion
-
                             break;
                         case JointTypes.RP:
-
                             #region R-RP-R&P
-
                             //if (FindKnownPositionOnLink(j.Link1, out knownJoint1) &&
                             //    FindKnownPositionAndSlopeOnLink(j.Link2, out knownJoint2))
                             //{
@@ -225,10 +200,8 @@ namespace PMKS.PositionSolving
                             //    /* why is it not possible?
                             //     * because j.Link2 would be the fixed pivot within the joint and since it was known fully, 
                             //     * j would have j.knownState = KnownState.Fully and would not be cycled over. */
-                            //}
-
+                            //}            
                             #endregion
-
                             #region P-RP-R&P
 
                             //else if (FindKnownSlopeOnLink(j.Link1, out knownJoint1)
@@ -241,70 +214,56 @@ namespace PMKS.PositionSolving
                             //}
 
                             #endregion
-
                             #region R&P-RP-R
 
                             if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1) &&
                                 FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
                             {
                                 var sJPoint = solveRotatePinToSlot(j, knownJoint2, out angleChange);
-                                assignJointPosition(j, j.Link2, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link2);
                                 setLinkPositionFromRotate(j, j.Link2, angleChange);
                             }
                             #endregion
                             #region R&P-RP-P
-
                             else if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1) &&
                                      FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
                             {
                                 /* not sure this is right, but j must be partially known so it has enough
                              * information to define the first line. */
                                 var sJPoint = solveViaIntersectingLines(j, j, knownJoint2);
-                                assignJointPosition(j, j.Link1, sJPoint);
+                                assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast,
                                     j.SlideAngle);
                             }
-
                             #endregion
-
                             break;
                         case JointTypes.G:
-
-                            #region R-G-R&P
-
-                            if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
-                                FindKnownPositionAndSlopeOnLink(j, j.Link2, out knownJoint2))
-                                solveGearAngleAndPos_R_G_R_and_P(j, j.Link1, knownJoint1, knownJoint2);
-                            #endregion
+                            var gData = gearsData[joints.IndexOf(j)];
                             #region R&P-G-R
 
-                            else if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1) &&
-                                     FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
-                                solveGearAngleAndPos_R_G_R_and_P(j, j.Link2, knownJoint2, knownJoint1);
-                            #endregion
-
-                            #region P-G-R&P
-
-                            else if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
-                                     && FindKnownPositionAndSlopeOnLink(j, j.Link2, out knownJoint2))
+                            if (gData.IsGearSolvableRP_G_R(joints, links))
                             {
-                                throw new NotImplementedException(
-                                    "The dyad solver for P-G-R&P has not been implemented yet.");
+                                var sJPoint = gData.SolveGearPositionAndAnglesRPGR(joints, links, out angleChange);
+                                setLinkPositionFromRotate(j, j.Link2, angleChange);
+                                assignJointPosition(j, sJPoint);
                             }
-
                             #endregion
-
-                            #region R&P-G-P
-
-                            else if (FindKnownPositionAndSlopeOnLink(j, j.Link1, out knownJoint1)
-                                     && FindKnownSlopeOnLink(j, j.Link2, out knownJoint2))
+                            #region R-G-R&P
+                            else if (gData.IsGearSolvableR_G_RP(joints, links))
                             {
-                                throw new NotImplementedException(
-                                    "The dyad solver for R&P-P-G has not been implemented yet.");
+                                var sJPoint = gData.SolveGearPositionAndAnglesRGRP(joints, links, out angleChange);
+                                setLinkPositionFromRotate(j, j.Link1, angleChange);
+                                assignJointPosition(j, sJPoint);
                             }
-
                             #endregion
-
+                            #region R-G-P
+                            else if (gData.IsGearSolvableRGP(joints, links))
+                                gData.SolveGearPositionAndAnglesRGP(joints, links);
+                            #endregion
+                            #region P-G-R
+                            else if (gData.IsGearSolvablePGR(joints, links))
+                                gData.SolveGearPositionAndAnglesPGR(joints, links);
+                            #endregion
                             break;
                     }
                     if (posResult == PositionAnalysisResults.InvalidPosition) return false;
@@ -331,7 +290,8 @@ namespace PMKS.PositionSolving
             if (posResult == PositionAnalysisResults.InvalidPosition) return false;
             if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))
                 return false;
-            if (joints.All(j => Math.Abs(j.x - j.xInitial) < minimumDeltaX || Math.Abs(j.y - j.yInitial) < minimumDeltaY))
+            if (joints.All(j => Math.Abs(j.x - j.xLast) < minimumDeltaX && Math.Abs(j.y - j.yLast) < minimumDeltaY    
+                && links.All(c => Math.Abs(c.Angle - c.AngleLast) < Constants.AngleMinimumFactor)))
                 return false;
 
             UpdateSliderPosition();
@@ -363,7 +323,7 @@ namespace PMKS.PositionSolving
             /* reset ground link and joints */
             groundLink.AngleIsKnown = KnownState.Fully;
             foreach (var j in groundLink.joints)
-                assignJointPosition(j, groundLink, j.xInitial, j.yInitial);
+                assignJointPosition(j, j.xInitial, j.yInitial, groundLink);
             foreach (var j in groundLink.joints.Where(j => j.jointType == JointTypes.P))
                 setLinkPositionFromRotate(j, j.OtherLink(groundLink), 0.0);
 
@@ -539,8 +499,6 @@ namespace PMKS.PositionSolving
             //return jPoint;
         }
 
-
-
         private point solveViaSlopeToCircleIntersectionPPR(joint j, joint slideJoint, joint circCenterJoint)
         {
             /* in this case, the block is on the rotating link and the slide is on the sliding link */
@@ -591,7 +549,7 @@ namespace PMKS.PositionSolving
 
         #region Gear Solving Methods
 
-        private void solveGearCenterFromTwoGears(link armLink, joint gearCenter, joint centerPivot, link gearLink, joint gearTeeth1, joint gearTeeth2)
+        private void solveGearCenterFromTwoGears(link armLink, joint gearCenter, joint armPivot, link gearLink, joint gearTeeth1, joint gearTeeth2)
         {
             double rKnownGear1, rKnownGear2, rUnkGear1, rUnkGear2;
             int othergearIndex1, othergearIndex2;
@@ -600,45 +558,21 @@ namespace PMKS.PositionSolving
             double gearAngle2 = findAngleChangeBetweenGears(gearTeeth2, gearLink, out rUnkGear2, out rKnownGear2, out othergearIndex2);
             double inputAngle2 = -(rUnkGear2 / rKnownGear2) * gearAngle2;
             var armAngleChange = (inputAngle1 + inputAngle2) / 2;
-            var dist = Constants.distance(centerPivot.xLast, centerPivot.yLast, gearCenter.xLast, gearCenter.yLast);
-            assignJointPosition(gearCenter, armLink, centerPivot.x + dist * Math.Cos(armLink.Angle + armAngleChange),
-                   centerPivot.y + dist * Math.Sin(armLink.Angle + armAngleChange));
+            var dist = Constants.distance(armPivot.xLast, armPivot.yLast, gearCenter.xLast, gearCenter.yLast);
+            assignJointPosition(gearCenter, armPivot.x + dist * Math.Cos(armLink.Angle + armAngleChange),
+                   armPivot.y + dist * Math.Sin(armLink.Angle + armAngleChange), armLink);
             setLinkPositionFromRotate(gearCenter, armLink, armAngleChange);
             setLinkPositionFromRotate(gearCenter, gearLink, gearAngle1 + gearAngle2);
-            assignRealGearPosition(gearTeeth1,
+            assignJointPosition(gearTeeth1,
                                    gearCenter.x +
                                    rUnkGear1 * (joints[othergearIndex1].x - gearCenter.x) / (rUnkGear1 + rKnownGear1),
                                    gearCenter.y +
                                    rUnkGear1 * (joints[othergearIndex1].y - gearCenter.y) / (rUnkGear1 + rKnownGear1));
-            assignRealGearPosition(gearTeeth2,
+            assignJointPosition(gearTeeth2,
                                    gearCenter.x +
                                    rUnkGear2 * (joints[othergearIndex2].x - gearCenter.x) / (rUnkGear2 + rKnownGear2),
                                    gearCenter.y +
                                    rUnkGear2 * (joints[othergearIndex2].y - gearCenter.y) / (rUnkGear2 + rKnownGear2));
-        }
-
-
-        private void solveGearAngleAndPos_R_G_R_and_P(joint gearTeeth, link unknownGear, joint gearCenterUnkRotate, joint gearCenterKnown)
-        {
-            double rKnownGear, rUnkGear;
-            var angleChange = findAngleChangeBetweenGears(gearTeeth, unknownGear, out rUnkGear, out rKnownGear);
-            double connectingRodAngleChange = findAngleChangeBetweenJoints(gearCenterKnown, gearCenterUnkRotate);
-            var ratio = rUnkGear / (rKnownGear + rUnkGear);
-            angleChange += connectingRodAngleChange / ratio;
-            //if (gearCenterUnkRotate.jointType != JointTypes.P)
-            //{
-            //    var g2AngleChange = gearTeeth.Link2.AngleNumerical - gearTeeth.Link2.AngleLast;
-            //    angleChange -= gData.radius2 * g2AngleChange / gData.radius1;
-            //}
-            setLinkPositionFromRotate(gearCenterUnkRotate, unknownGear, angleChange);
-            assignRealGearPosition(gearTeeth, gearCenterUnkRotate.x + ratio * (gearCenterKnown.x - gearCenterUnkRotate.x),
-                gearCenterUnkRotate.y + ratio * (gearCenterKnown.y - gearCenterUnkRotate.y));
-        }
-
-        private double findAngleChangeBetweenJoints(joint From, joint To)
-        {
-            return Constants.angle(From.x, From.y, To.x, To.y) -
-                   Constants.angle(From.xLast, From.yLast, To.xLast, To.yLast);
         }
 
         private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear)
@@ -663,7 +597,7 @@ namespace PMKS.PositionSolving
                 rKnownGear = gData.radius1;
                 rUnkGear = gData.radius2;
             }
-            return -(rKnownGear / rUnkGear) * findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth);
+            return -(rKnownGear / rUnkGear) * gearData.findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth);
         }
         #endregion
 
@@ -746,15 +680,14 @@ namespace PMKS.PositionSolving
         #endregion
 
         #region set & find link position and angles
-        private void assignJointPosition(joint j, link thisLink, point newPoint)
+        private void assignJointPosition(joint j, point newPoint, link thisLink = null)
         {
-            assignJointPosition(j, thisLink, newPoint.x, newPoint.y);
+            assignJointPosition(j, newPoint.x, newPoint.y, thisLink);
         }
 
-        private void assignJointPosition(joint j, link thisLink, double xNew, double yNew)
+        private void assignJointPosition(joint j, double xNew, double yNew, link thisLink = null)
         {
-            if (posResult == PositionAnalysisResults.InvalidPosition ||
-                double.IsInfinity(xNew) || double.IsInfinity(yNew) ||
+            if (double.IsInfinity(xNew) || double.IsInfinity(yNew) ||
                 double.IsNaN(xNew) || double.IsNaN(yNew))
                 posResult = PositionAnalysisResults.InvalidPosition;
             else
@@ -762,25 +695,15 @@ namespace PMKS.PositionSolving
                 j.x = xNew;
                 j.y = yNew;
                 posResult = PositionAnalysisResults.Normal;
-                if (!j.FixedWithRespectTo(thisLink))
-                    j.positionKnown = KnownState.Partially;
-                else
+                if (thisLink == null || j.FixedWithRespectTo(thisLink))
                 {
                     j.positionKnown = KnownState.Fully;
                     xNew -= j.xNumerical;
                     yNew -= j.yNumerical;
                     PositionError = Math.Sqrt(xNew * xNew + yNew * yNew);
                 }
+                else j.positionKnown = KnownState.Partially;
             }
-        }
-        private void assignRealGearPosition(joint j, double xNew, double yNew)
-        {
-            j.x = xNew;
-            j.y = yNew;
-            j.positionKnown = KnownState.Fully;
-            xNew -= j.xNumerical;
-            yNew -= j.yNumerical;
-            PositionError = Math.Sqrt(xNew * xNew + yNew * yNew);
         }
 
         /* ugh, this function is taking the most time.
@@ -833,8 +756,8 @@ namespace PMKS.PositionSolving
                         var length = thisLink.lengthBetween(j, knownJoint);
                         var angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j.xLast, j.yLast);
                         angle += angleChange;
-                        assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
-                            knownJoint.y + length * Math.Sin(angle));
+                        assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
+                            knownJoint.y + length * Math.Sin(angle), thisLink);
                     }
                     else
                     {
@@ -842,8 +765,8 @@ namespace PMKS.PositionSolving
                         var angle = j.SlideAngle - Math.PI / 2;
                         angle += angleChange;
                         //while (angle < -Math.PI / 2) angle += Math.PI;
-                        assignJointPosition(j, thisLink, knownJoint.x + length * Math.Cos(angle),
-                            knownJoint.y + length * Math.Sin(angle));
+                        assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
+                            knownJoint.y + length * Math.Sin(angle), thisLink);
                     }
                     var otherLink = j.OtherLink(thisLink);
                     if (otherLink == null) continue;
@@ -873,10 +796,10 @@ namespace PMKS.PositionSolving
                 if (knownJoint.FixedWithRespectTo(thisLink))
                 {
                     if (double.IsNaN(angle))
-                        assignJointPosition(j, thisLink, j.xLast + deltaX, j.yLast + deltaY);
+                        assignJointPosition(j, j.xLast + deltaX, j.yLast + deltaY, thisLink);
                     else
-                        assignJointPosition(j, thisLink, j.xLast + deltaX * Math.Cos(angle),
-                            j.yLast + deltaY * Math.Sin(angle));
+                        assignJointPosition(j, j.xLast + deltaX * Math.Cos(angle),
+                            j.yLast + deltaY * Math.Sin(angle), thisLink);
                 }
                 if (!j.FixedWithRespectTo(thisLink)) continue;
                 if (j.jointType == JointTypes.P)
@@ -905,18 +828,10 @@ namespace PMKS.PositionSolving
             knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j.positionKnown != KnownState.Unknown);
             return knownJoint != null;
         }
-        private bool FindPartiallyKnownRPSlotOnLink(joint unkJoint, link link, out joint knownJoint, joint notJoint = null)
+        private bool FindPartiallyKnownGearOnLink(link link, out joint knownJoint, joint notJoint = null)
         {
-            knownJoint = null;
-            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.RP && j != notJoint && j != unkJoint
-                && ((j.positionKnown == KnownState.Fully && !j.FixedWithRespectTo(link))
-                || (j.positionKnown == KnownState.Partially && j.FixedWithRespectTo(link))));
-            return knownJoint != null;
-        }
-        private bool FindPartiallyKnownGearOnLink(joint unkJoint, link link, out joint knownJoint, joint notJoint = null)
-        {
-            knownJoint = null;
-            knownJoint = link.joints.FirstOrDefault(j => j.positionKnown != KnownState.Unknown && j.jointType == JointTypes.G && j != unkJoint && j != notJoint);
+            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.G && j.positionKnown != KnownState.Unknown
+                && j != notJoint);
             return knownJoint != null;
         }
         #endregion

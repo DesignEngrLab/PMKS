@@ -238,6 +238,10 @@ namespace PMKS_Silverlight_App
                             new InputRPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
                                 YAxisOffset, j.SlideAngleInitial, j.isGround, jointRowData);
                         break;
+                    case JointTypes.G:
+                        inputJointBaseShape = new InputGJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
+                                YAxisOffset, j.SlideAngleInitial, j.isGround, jointRowData);
+                        break;
                 }
                 Children.Add(inputJointBaseShape);
                 initialPositionIcons.Add(inputJointBaseShape);
