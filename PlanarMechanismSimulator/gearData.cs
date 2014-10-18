@@ -4,7 +4,7 @@ using PMKS;
 
 namespace PMKS
 {
-    internal class gearData
+    internal class GearData
     {
         internal readonly double radius1;
         internal readonly double radius2;
@@ -15,7 +15,7 @@ namespace PMKS
         internal readonly int gear1LinkIndex;
         internal readonly int gear2LinkIndex;
 
-        public gearData(joint gearTeethJoint, int gearTeethIndex, joint gearCenter1, int gearCenter1Index, int gear1LinkIndex,
+        public GearData(joint gearTeethJoint, int gearTeethIndex, joint gearCenter1, int gearCenter1Index, int gear1LinkIndex,
             joint gearCenter2, int gearCenter2Index, int gear2LinkIndex,
             int connectingRodIndex, double initialGearAngle)
         {
@@ -75,8 +75,8 @@ namespace PMKS
             var gearCenterKnown = joints[gearCenter1Index];
             var rUnkGear = this.radius2;
             var gearCenterUnknown = joints[gearCenter2Index];
-            angleChange = findUnknownGearAngleChange(knownlink, rKnownGear, gearCenterKnown, rUnkGear, gearCenterUnknown);       
-            return findGearTeethPoint(gearCenterKnown, rKnownGear, gearCenterUnknown, rUnkGear);
+            angleChange = findUnknownGearAngleChange(rKnownGear, gearCenterKnown, rUnkGear, gearCenterUnknown, knownlink);
+            return findGearTeethPointAlongConnectingRod(gearCenterKnown, rKnownGear, gearCenterUnknown, rUnkGear);
         }
 
 
@@ -87,26 +87,25 @@ namespace PMKS
             var rKnownGear = radius2;
             var gearCenterKnown = joints[gearCenter2Index];
             var rUnkGear = radius1;
-            var gearCenterUnknown = joints[gearCenter1Index];  
-            angleChange = findUnknownGearAngleChange(knownlink, rKnownGear, gearCenterKnown, rUnkGear, gearCenterUnknown);
-            return findGearTeethPoint(gearCenterKnown, rKnownGear, gearCenterUnknown, rUnkGear);
+            var gearCenterUnknown = joints[gearCenter1Index];
+            angleChange = findUnknownGearAngleChange(rKnownGear, gearCenterKnown, rUnkGear, gearCenterUnknown, knownlink);
+            return findGearTeethPointAlongConnectingRod(gearCenterKnown, rKnownGear, gearCenterUnknown, rUnkGear);
         }
 
-        private static double findUnknownGearAngleChange(link knownlink, double rKnownGear, joint gearCenterKnown, double rUnkGear, joint gearCenterUnknown)
+        private static double findUnknownGearAngleChange(double rKnownGear, joint gearCenterKnown, double rUnkGear, joint gearCenterUnknown, link knownlink)
         {
-            return -(rKnownGear / rUnkGear) * (
-                 (knownlink.Angle - knownlink.AngleLast)
-                 + findAngleChangeBetweenJoints(gearCenterKnown, gearCenterUnknown));
-        }      
-        private static point findGearTeethPoint(joint center1, double rGear1, joint center2, double rGear2)
+            var linkAngle = (knownlink == null) ? 1.0 : (knownlink.Angle - knownlink.AngleLast);
+            return -(rKnownGear / rUnkGear) * (linkAngle + findAngleChangeBetweenOfConnectingRod(gearCenterKnown, gearCenterUnknown));
+        }
+        internal static point findGearTeethPointAlongConnectingRod(joint center1, double rGear1, joint center2, double rGear2)
         {
             var x = center1.x + rGear1 * (center2.x - center1.x) / (rGear2 + rGear1);
             var y = center1.y + rGear1 * (center2.y - center1.y) / (rGear2 + rGear1);
-            return new point(x,y);
+            return new point(x, y);
 
         }
 
-        internal static double findAngleChangeBetweenJoints(joint From, joint To)
+        internal static double findAngleChangeBetweenOfConnectingRod(joint From, joint To)
         {
             return Constants.angle(From.x, From.y, To.x, To.y) -
                    Constants.angle(From.xLast, From.yLast, To.xLast, To.yLast);
@@ -122,6 +121,35 @@ namespace PMKS
         internal void SolveGearPositionAndAnglesPGR(List<joint> joints, List<link> links)
         {
             throw new NotImplementedException();
+        }
+
+        internal double FindNominalGearRotation(List<joint> joints, List<link> links, link knownlink)
+        {
+            var rKnownGear = radiusOfLink(links.IndexOf(knownlink));
+            var rUnkGear = radiusOfOtherLink(links.IndexOf(knownlink));
+            return -(rKnownGear / rUnkGear) * (knownlink.Angle - knownlink.AngleLast);
+           
+        }
+
+        internal double radiusOfLink(int linkIndex)
+        {
+            if (linkIndex == gear1LinkIndex) return radius1;
+            if (linkIndex == gear2LinkIndex) return radius2;
+            return double.NaN;
+        }
+
+        internal double radiusOfOtherLink(int linkIndex)
+        {
+            if (linkIndex == gear1LinkIndex) return radius2;
+            if (linkIndex == gear2LinkIndex) return radius1;
+            return double.NaN;
+        }
+
+        internal int gearCenterIndex(int linkIndex)
+        {
+            if (linkIndex == gear1LinkIndex) return gearCenter1Index;
+            if (linkIndex == gear2LinkIndex) return gearCenter2Index;
+            return -1;
         }
     }
 

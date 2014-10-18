@@ -38,7 +38,7 @@ namespace PMKS
         private double _deltaAngle = Constants.DefaultStepSize;
         private int maxJointParamLengths;
         private double _maxSmoothingError = double.NaN;
-        private Dictionary<int, gearData> gearsData;
+        private Dictionary<int, GearData> gearsData;
 
         /// <summary>
         /// Gets or sets the epsilon.
@@ -482,7 +482,7 @@ namespace PMKS
         {
             var index = 0;
             if (AllJoints.All(j => j.jointType != JointTypes.G)) return;
-            gearsData = new Dictionary<int, gearData>();
+            gearsData = new Dictionary<int, GearData>();
             foreach (var gearTeethJoint in AllJoints)
             {
                 if (gearTeethJoint.jointType == JointTypes.G)
@@ -517,7 +517,7 @@ namespace PMKS
                     var connectingRod = bestCenterOption.Item3;
                     var gearAngle = bestCenterOption.Item4;
                     gearsData.Add(index,
-                        new gearData(gearTeethJoint, index, gearCenter1,               AllJoints.IndexOf(gearCenter1), AllLinks.IndexOf(gear1),
+                        new GearData(gearTeethJoint, index, gearCenter1,               AllJoints.IndexOf(gearCenter1), AllLinks.IndexOf(gear1),
                             gearCenter2, AllJoints.IndexOf(gearCenter2), AllLinks.IndexOf(gear2),
                                           AllLinks.IndexOf(connectingRod), gearAngle));
                 }

@@ -40,7 +40,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Enumerators.cs" />
-    <Compile Include="gearData.cs" />
+    <Compile Include="GearData.cs" />
     <Compile Include="joint.cs" />
     <Compile Include="link.cs" />
     <Compile Include="OOOT_Functions\abstractMeritFunction.cs" />

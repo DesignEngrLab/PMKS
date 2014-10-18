@@ -18,7 +18,7 @@ namespace PMKS.VelocityAndAcceleration
     internal class AccelerationSolver : VelocityAndAccelerationSolver
     {
         internal AccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                              int inputLinkIndex, double inputSpeed, Dictionary<int, gearData> gearsData, double averageLength)
+                              int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData, double averageLength)
             : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, inputSpeed, gearsData)
         {
             maximumJointValue = Constants.JointAccelerationLimitFactor * averageLength * inputSpeed * inputSpeed;
@@ -105,7 +105,7 @@ namespace PMKS.VelocityAndAcceleration
     internal class VelocitySolver : VelocityAndAccelerationSolver
     {
         internal VelocitySolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-            int inputLinkIndex, double inputSpeed, Dictionary<int, gearData> gearsData, double averageLength)
+            int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData, double averageLength)
             : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, inputSpeed, gearsData)
         {
             maximumJointValue = Constants.JointVelocityLimitFactor * averageLength * Math.Abs(inputSpeed);
@@ -218,7 +218,7 @@ namespace PMKS.VelocityAndAcceleration
         protected readonly double[] b;
         protected readonly List<object> unknownObjects;
         private int[][] matrixOrders;
-        protected readonly Dictionary<int, gearData> gearsData;
+        protected readonly Dictionary<int, GearData> gearsData;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VelocitySolver" /> class.
@@ -231,7 +231,7 @@ namespace PMKS.VelocityAndAcceleration
         /// <param name="inputSpeed">The input speed.</param>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
         public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
-                                             int inputLinkIndex, double inputSpeed, Dictionary<int, gearData> gearsData)
+                                             int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData)
         {
             /************ Initialization ************/
             this.joints = joints;

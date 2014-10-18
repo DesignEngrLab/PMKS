@@ -27,7 +27,7 @@ namespace PMKS.PositionSolving
         private const double BranchRatio = 0.5;
         internal readonly List<joint> joints;
         internal readonly List<link> links;
-        private readonly Dictionary<int, gearData> gearsData;
+        private readonly Dictionary<int, GearData> gearsData;
         private readonly int numLinks;
         private readonly link inputLink;
         private readonly link groundLink;
@@ -37,7 +37,7 @@ namespace PMKS.PositionSolving
         private readonly double minimumDeltaX;
         private readonly double minimumDeltaY;
 
-        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, gearData> gearsData,
+        public PositionFinder(List<joint> joints, List<link> links, Dictionary<int, GearData> gearsData,
             int inputJointIndex)
         {
             this.joints = joints;
@@ -290,7 +290,7 @@ namespace PMKS.PositionSolving
             if (posResult == PositionAnalysisResults.InvalidPosition) return false;
             if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))
                 return false;
-            if (joints.All(j => Math.Abs(j.x - j.xLast) < minimumDeltaX && Math.Abs(j.y - j.yLast) < minimumDeltaY    
+            if (joints.All(j => Math.Abs(j.x - j.xLast) < minimumDeltaX && Math.Abs(j.y - j.yLast) < minimumDeltaY
                 && links.All(c => Math.Abs(c.Angle - c.AngleLast) < Constants.AngleMinimumFactor)))
                 return false;
 
@@ -551,28 +551,30 @@ namespace PMKS.PositionSolving
 
         private void solveGearCenterFromTwoGears(link armLink, joint gearCenter, joint armPivot, link gearLink, joint gearTeeth1, joint gearTeeth2)
         {
-            double rKnownGear1, rKnownGear2, rUnkGear1, rUnkGear2;
-            int othergearIndex1, othergearIndex2;
-            double gearAngle1 = findAngleChangeBetweenGears(gearTeeth1, gearLink, out rUnkGear1, out rKnownGear1, out othergearIndex1);
-            double inputAngle1 = -(rUnkGear1 / rKnownGear1) * gearAngle1;
-            double gearAngle2 = findAngleChangeBetweenGears(gearTeeth2, gearLink, out rUnkGear2, out rKnownGear2, out othergearIndex2);
-            double inputAngle2 = -(rUnkGear2 / rKnownGear2) * gearAngle2;
-            var armAngleChange = (inputAngle1 + inputAngle2) / 2;
+            var gearData = gearsData[joints.IndexOf(gearTeeth1)];
+            var knownlinkIndex = links.IndexOf(gearLink);
+            var rKnownGear1 = gearData.radiusOfOtherLink(knownlinkIndex);
+            var rUnkGear1 = gearData.radiusOfLink(knownlinkIndex);
+            var knownGearCenterIndex1 = gearData.gearCenterIndex(knownlinkIndex);
+            var gearAngle1 = gearData.FindNominalGearRotation(joints, links, gearLink);
+
+            gearData = gearsData[joints.IndexOf(gearTeeth2)];
+            knownlinkIndex = links.IndexOf(gearLink);
+            var rKnownGear2 = gearData.radiusOfOtherLink(knownlinkIndex);
+            var rUnkGear2 = gearData.radiusOfLink(knownlinkIndex);
+            var knownGearCenterIndex2 = gearData.gearCenterIndex(knownlinkIndex);
+            var gearAngle2 = gearData.FindNominalGearRotation(joints, links, gearLink);
+
+            var armAngleChange = (gearAngle1 + gearAngle2) / 2;
             var dist = Constants.distance(armPivot.xLast, armPivot.yLast, gearCenter.xLast, gearCenter.yLast);
             assignJointPosition(gearCenter, armPivot.x + dist * Math.Cos(armLink.Angle + armAngleChange),
                    armPivot.y + dist * Math.Sin(armLink.Angle + armAngleChange), armLink);
             setLinkPositionFromRotate(gearCenter, armLink, armAngleChange);
             setLinkPositionFromRotate(gearCenter, gearLink, gearAngle1 + gearAngle2);
             assignJointPosition(gearTeeth1,
-                                   gearCenter.x +
-                                   rUnkGear1 * (joints[othergearIndex1].x - gearCenter.x) / (rUnkGear1 + rKnownGear1),
-                                   gearCenter.y +
-                                   rUnkGear1 * (joints[othergearIndex1].y - gearCenter.y) / (rUnkGear1 + rKnownGear1));
+                GearData.findGearTeethPointAlongConnectingRod(joints[knownGearCenterIndex1], rKnownGear1, gearCenter, rUnkGear1));
             assignJointPosition(gearTeeth2,
-                                   gearCenter.x +
-                                   rUnkGear2 * (joints[othergearIndex2].x - gearCenter.x) / (rUnkGear2 + rKnownGear2),
-                                   gearCenter.y +
-                                   rUnkGear2 * (joints[othergearIndex2].y - gearCenter.y) / (rUnkGear2 + rKnownGear2));
+                GearData.findGearTeethPointAlongConnectingRod(joints[knownGearCenterIndex2], rKnownGear2, gearCenter, rUnkGear2));
         }
 
         private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear)
@@ -597,7 +599,7 @@ namespace PMKS.PositionSolving
                 rKnownGear = gData.radius1;
                 rUnkGear = gData.radius2;
             }
-            return -(rKnownGear / rUnkGear) * gearData.findAngleChangeBetweenJoints(joints[knownGearCenterIndex], gearTeeth);
+            return -(rKnownGear / rUnkGear) * GearData.findAngleChangeBetweenOfConnectingRod(joints[knownGearCenterIndex], gearTeeth);
         }
         #endregion
 
