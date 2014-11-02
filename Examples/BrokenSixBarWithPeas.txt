@@ -1,0 +1,8 @@
+mech=
+input,ground,r,30,0,0,ffft
+input,coupler,r,30,8,0,ffff
+coupler,intermed,r,20,10,0,ffff
+intermed,ground,r,20,0,0,ffff
+intermed,coupler2,P,20,18,45,ffff
+coupler2,output,P,0,20,90,ffff
+output,ground,P,0,0,0,ffff

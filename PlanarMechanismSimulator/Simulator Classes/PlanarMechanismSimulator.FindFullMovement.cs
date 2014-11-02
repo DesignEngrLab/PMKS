@@ -140,18 +140,31 @@ namespace PMKS
         private bool DoesMechanismRepeatOnCrankCycle(double cyclePeriodTime)
         {
             // Does the mechanism return to the same place?
-            // even though the crank goes all the way around, other joints of the mechanism may be in different places.
-            var initState = JointParameters.Parameters[0];
+            // even though the crank goes all the way around, other joints of the mechanism may be in different places. 
+            var initJointState = JointParameters.Parameters[0];
+            var initLinkState = LinkParameters.Parameters[0];
             var topTime = JointParameters.Times[0] + cyclePeriodTime;
-            var maxError = Constants.ErrorInDeterminingCompleteCycle;
-            if (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0) maxError *= Math.Sqrt(MaxSmoothingError)*100;
+            double maxAngleError = Constants.ErrorInDeterminingCompleteCycle;
+            double maxLengthError = Constants.ErrorInDeterminingCompleteCycle * AverageLength;
+            if (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0)
+            {
+                maxAngleError *= Constants.SmoothingErrorRepeatFactor * Math.Sqrt(MaxSmoothingError);
+                maxLengthError *= Constants.SmoothingErrorRepeatFactor * Math.Sqrt(MaxSmoothingError) * AverageLength;
+            }
+            for (int i = 0; i < numLinks; i++)
+            {
+                var topLinkLocation = FindLinkAngleAtTime(topTime, i);
+                var initLinkAngle = initLinkState[i, 0];
+                if (Math.Abs(topLinkLocation - initLinkAngle) > maxAngleError)
+                    return false;
+            }
             for (int i = 0; i < numJoints; i++)
             {
                 var topJointLocation = FindJointPositionAtTime(topTime, i);
-                var initJointLocationX = initState[i, 0];
-                var initJointLocationY = initState[i, 1];
-                if (Math.Abs(topJointLocation[0] - initJointLocationX) > Constants.ErrorInDeterminingCompleteCycle
-                    || Math.Abs(topJointLocation[1] - initJointLocationY) > Constants.ErrorInDeterminingCompleteCycle)
+                var initJointLocationX = initJointState[i, 0];
+                var initJointLocationY = initJointState[i, 1];
+                if (Math.Abs(topJointLocation[0] - initJointLocationX) > maxLengthError
+                    || Math.Abs(topJointLocation[1] - initJointLocationY) > maxLengthError)
                     return false;
             }
             return true;

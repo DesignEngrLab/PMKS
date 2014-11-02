@@ -1,0 +1,9 @@
+mech=
+ground,input,P,-46.685546875,16.90234375,68.5002833984629,ffff
+input,coupler,R,35,0,0,ffff
+coupler,output,R,30,35,0,ffff
+output,ground,R,33.255859375,19.88671875,0,ffft
+coupler swing,RP,-82.5859375,-20.40234375,-88.2114663441676,ffff
+swing ground,R,-102.8125,-10.708984375,0,ffff
+red swing,RP,10,70,60,ffff
+input red,P,-69.333984375,45.240234375,10,tttf

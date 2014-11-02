@@ -20,7 +20,7 @@ namespace PMKS
         public const double epsilonSame = 1e-12;
 
         public const double epsilon = 1e-9 ;
-        internal const double ErrorInDeterminingCompleteCycle = 0.03;
+        internal const double ErrorInDeterminingCompleteCycle = 0.001;
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
         public const double SmallPerturbationFraction = 0.003;
@@ -48,6 +48,7 @@ namespace PMKS
         public const double LinkVelocityLimitFactor = 75.0;
         public const double FullCircle = 2 * Math.PI;
         public const double MaxSlope = 10e9;
+        public const double SmoothingErrorRepeatFactor = 10.0;
 
         public static Boolean sameCloseZero(double x1)
         {

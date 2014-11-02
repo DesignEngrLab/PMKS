@@ -77,7 +77,7 @@ namespace PMKS.PositionSolving
                     if (j.positionKnown == KnownState.Fully) continue;
                     joint knownJoint1;
                     joint knownJoint2;
-                    joint knownJoint3;
+                    GearData gData;
                     double angleChange;
                     switch (j.jointType)
                     {
@@ -101,7 +101,6 @@ namespace PMKS.PositionSolving
                                 assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1, angleChange);
                                 setLinkPositionFromRotate(j, j.Link2);
-                                // setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-R-R
@@ -113,7 +112,6 @@ namespace PMKS.PositionSolving
                                 assignJointPosition(j, sJPoint, j.Link2);
                                 setLinkPositionFromRotate(j, j.Link2, angleChange);
                                 setLinkPositionFromRotate(j, j.Link1);
-                                // setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
                             #region P-R-P
@@ -124,23 +122,25 @@ namespace PMKS.PositionSolving
                                 assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link2);
-                                //setLinkPositionFromTranslation(j, j.Link1, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
-                                //setLinkPositionFromTranslation(j, j.Link2, sJPoint.x - j.xLast, sJPoint.y - j.yLast);
                             }
                             #endregion
-                            #region R-R-G/G
+                            #region R-R-GG
                             else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
-                                     FindPartiallyKnownGearOnLink(j.Link2, out knownJoint2) &&
-                                     FindPartiallyKnownGearOnLink(j.Link2, out knownJoint3, knownJoint2))
-                                solveGearCenterFromTwoGears(j.Link1, j, knownJoint1, j.Link2, knownJoint2,
-                                    knownJoint3);
+                                     GearData.FindKnownGearAngleOnLink(j, j.Link1, j.Link2, joints, links, gearsData,
+                                out gData))
+                            {
+                                gData.SolveGearCenterFromKnownGearAngle(j, knownJoint1, links, out angleChange);
+                                setLinkPositionFromRotate(knownJoint1, j.Link1, angleChange);
+                            }
                             #endregion
-                            #region G/G-R-R
+                            #region GG-R-R
                             else if (FindKnownPositionOnLink(j, j.Link2, out knownJoint1) &&
-                                     FindPartiallyKnownGearOnLink(j.Link1, out knownJoint2) &&
-                                     FindPartiallyKnownGearOnLink(j.Link1, out knownJoint3, knownJoint2))
-                                solveGearCenterFromTwoGears(j.Link2, j, knownJoint1, j.Link1, knownJoint2,
-                                    knownJoint3);
+                                     GearData.FindKnownGearAngleOnLink(j, j.Link2, j.Link1, joints, links, gearsData,
+                                out gData))
+                            {
+                                gData.SolveGearCenterFromKnownGearAngle(j, knownJoint1, links, out angleChange);
+                                setLinkPositionFromRotate(knownJoint1, j.Link2, angleChange);
+                            }
                             #endregion
                             break;
                         case JointTypes.P:
@@ -238,31 +238,27 @@ namespace PMKS.PositionSolving
                             #endregion
                             break;
                         case JointTypes.G:
-                            var gData = gearsData[joints.IndexOf(j)];
-                            #region R&P-G-R
-
-                            if (gData.IsGearSolvableRP_G_R(joints, links))
+                            gData = gearsData[joints.IndexOf(j)];
+                            #region R-G-R
+                            if (gData.IsGearSolvableRGR(joints, links))
                             {
-                                var sJPoint = gData.SolveGearPositionAndAnglesRPGR(joints, links, out angleChange);
-                                setLinkPositionFromRotate(j, j.Link2, angleChange);
-                                assignJointPosition(j, sJPoint);
+                                gData.SolveGearPositionAndAnglesRGR(joints, links);
+                                posResult = PositionAnalysisResults.Normal;
                             }
                             #endregion
-                            #region R-G-R&P
-                            else if (gData.IsGearSolvableR_G_RP(joints, links))
+                            #region P-G-R
+                            else if (gData.IsGearSolvablePGR(joints, links))
                             {
-                                var sJPoint = gData.SolveGearPositionAndAnglesRGRP(joints, links, out angleChange);
-                                setLinkPositionFromRotate(j, j.Link1, angleChange);
-                                assignJointPosition(j, sJPoint);
+                                gData.SolveGearPositionAndAnglesPGR(joints, links);
+                                posResult = PositionAnalysisResults.Normal;
                             }
                             #endregion
                             #region R-G-P
                             else if (gData.IsGearSolvableRGP(joints, links))
+                            {
                                 gData.SolveGearPositionAndAnglesRGP(joints, links);
-                            #endregion
-                            #region P-G-R
-                            else if (gData.IsGearSolvablePGR(joints, links))
-                                gData.SolveGearPositionAndAnglesPGR(joints, links);
+                                posResult = PositionAnalysisResults.Normal;
+                            }
                             #endregion
                             break;
                     }
@@ -297,7 +293,6 @@ namespace PMKS.PositionSolving
             UpdateSliderPosition();
             return true;
         }
-
 
 
         internal void UpdateSliderPosition()
@@ -547,61 +542,6 @@ namespace PMKS.PositionSolving
         }
         #endregion
 
-        #region Gear Solving Methods
-
-        private void solveGearCenterFromTwoGears(link armLink, joint gearCenter, joint armPivot, link gearLink, joint gearTeeth1, joint gearTeeth2)
-        {
-            var gearData = gearsData[joints.IndexOf(gearTeeth1)];
-            var knownlinkIndex = links.IndexOf(gearLink);
-            var rKnownGear1 = gearData.radiusOfOtherLink(knownlinkIndex);
-            var rUnkGear1 = gearData.radiusOfLink(knownlinkIndex);
-            var knownGearCenterIndex1 = gearData.gearCenterIndex(knownlinkIndex);
-            var gearAngle1 = gearData.FindNominalGearRotation(joints, links, gearLink);
-
-            gearData = gearsData[joints.IndexOf(gearTeeth2)];
-            knownlinkIndex = links.IndexOf(gearLink);
-            var rKnownGear2 = gearData.radiusOfOtherLink(knownlinkIndex);
-            var rUnkGear2 = gearData.radiusOfLink(knownlinkIndex);
-            var knownGearCenterIndex2 = gearData.gearCenterIndex(knownlinkIndex);
-            var gearAngle2 = gearData.FindNominalGearRotation(joints, links, gearLink);
-
-            var armAngleChange = (gearAngle1 + gearAngle2) / 2;
-            var dist = Constants.distance(armPivot.xLast, armPivot.yLast, gearCenter.xLast, gearCenter.yLast);
-            assignJointPosition(gearCenter, armPivot.x + dist * Math.Cos(armLink.Angle + armAngleChange),
-                   armPivot.y + dist * Math.Sin(armLink.Angle + armAngleChange), armLink);
-            setLinkPositionFromRotate(gearCenter, armLink, armAngleChange);
-            setLinkPositionFromRotate(gearCenter, gearLink, gearAngle1 + gearAngle2);
-            assignJointPosition(gearTeeth1,
-                GearData.findGearTeethPointAlongConnectingRod(joints[knownGearCenterIndex1], rKnownGear1, gearCenter, rUnkGear1));
-            assignJointPosition(gearTeeth2,
-                GearData.findGearTeethPointAlongConnectingRod(joints[knownGearCenterIndex2], rKnownGear2, gearCenter, rUnkGear2));
-        }
-
-        private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear)
-        {
-            int knownGearCenterIndex;
-            return findAngleChangeBetweenGears(gearTeeth, unknownGear, out rUnkGear, out rKnownGear, out knownGearCenterIndex);
-        }
-
-        private double findAngleChangeBetweenGears(joint gearTeeth, link unknownGear, out double rUnkGear, out double rKnownGear,
-            out int knownGearCenterIndex)
-        {
-            var gData = gearsData[joints.IndexOf(gearTeeth)];
-            if (unknownGear.joints.Contains(joints[gData.gearCenter1Index]))
-            {
-                knownGearCenterIndex = gData.gearCenter2Index;
-                rKnownGear = gData.radius2;
-                rUnkGear = gData.radius1;
-            }
-            else
-            {
-                knownGearCenterIndex = gData.gearCenter1Index;
-                rKnownGear = gData.radius1;
-                rUnkGear = gData.radius2;
-            }
-            return -(rKnownGear / rUnkGear) * GearData.findAngleChangeBetweenOfConnectingRod(joints[knownGearCenterIndex], gearTeeth);
-        }
-        #endregion
 
         #region RP Solving Methods
         private point solveRotatePinToSlot(joint j, joint circleCenterJoint, out double angleChange)
@@ -682,12 +622,12 @@ namespace PMKS.PositionSolving
         #endregion
 
         #region set & find link position and angles
-        private void assignJointPosition(joint j, point newPoint, link thisLink = null)
+        private void assignJointPosition(joint j, point newPoint, link thisLink)// = null)
         {
             assignJointPosition(j, newPoint.x, newPoint.y, thisLink);
         }
 
-        private void assignJointPosition(joint j, double xNew, double yNew, link thisLink = null)
+        private void assignJointPosition(joint j, double xNew, double yNew, link thisLink)
         {
             if (double.IsInfinity(xNew) || double.IsInfinity(yNew) ||
                 double.IsNaN(xNew) || double.IsNaN(yNew))
@@ -697,7 +637,7 @@ namespace PMKS.PositionSolving
                 j.x = xNew;
                 j.y = yNew;
                 posResult = PositionAnalysisResults.Normal;
-                if (thisLink == null || j.FixedWithRespectTo(thisLink))
+                if (j.FixedWithRespectTo(thisLink))
                 {
                     j.positionKnown = KnownState.Fully;
                     xNew -= j.xNumerical;
@@ -727,12 +667,11 @@ namespace PMKS.PositionSolving
                             && j.FixedWithRespectTo(thisLink));
                     if (knownJoint == null) return;
                 }
-                var j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
-                    && j.FixedWithRespectTo(thisLink));
-                if (j2 == null)
-                    j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully);
-                if (j2 == null) j2 = thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Partially
-                     && !j.FixedWithRespectTo(thisLink));
+                var j2 = (thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
+                    && j.FixedWithRespectTo(thisLink))
+                    ?? thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully))
+                    ?? thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Partially
+                        && !j.FixedWithRespectTo(thisLink));
                 if (j2 == null) return;
                 var new_j2j_Angle = Constants.angle(knownJoint, j2);
                 var old_j2j_Angle = Constants.angle(knownJoint.xLast, knownJoint.yLast, j2.xLast, j2.yLast);
@@ -751,8 +690,11 @@ namespace PMKS.PositionSolving
             foreach (var j in thisLink.joints)
             {
                 if (j == knownJoint) continue;
+                var otherLink = j.OtherLink(thisLink);
                 if (j.positionKnown != KnownState.Fully && knownJoint != null)
                 {
+                    //if (j.jointType == JointTypes.G)
+                    //    assignJointPosition(j, j.x, j.y, thisLink);
                     if (j.FixedWithRespectTo(thisLink))
                     {
                         var length = thisLink.lengthBetween(j, knownJoint);
@@ -761,7 +703,7 @@ namespace PMKS.PositionSolving
                         assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
                             knownJoint.y + length * Math.Sin(angle), thisLink);
                     }
-                    else
+                    else if (j.jointType != JointTypes.G)
                     {
                         var length = thisLink.DistanceBetweenSlides(j, knownJoint);
                         var angle = j.SlideAngle - Math.PI / 2;
@@ -770,20 +712,20 @@ namespace PMKS.PositionSolving
                         assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
                             knownJoint.y + length * Math.Sin(angle), thisLink);
                     }
-                    var otherLink = j.OtherLink(thisLink);
-                    if (otherLink == null) continue;
-
-                    if (otherLink.AngleIsKnown != KnownState.Fully && j.jointType == JointTypes.P)
-                        setLinkPositionFromRotate(j, otherLink, angleChange);
-                    else if (j.positionKnown == KnownState.Fully)
-                        setLinkPositionFromRotate(j, otherLink);
                 }
-                else
+                if (otherLink == null) continue;
+                if (j.jointType == JointTypes.G
+                     && gearsData[joints.IndexOf(j)].SetGearRotation(thisLink, otherLink, links, joints))
                 {
-                    var otherLink = j.OtherLink(thisLink);
-                    if (otherLink != null && otherLink.AngleIsKnown != KnownState.Fully && j.jointType == JointTypes.P)
-                        setLinkPositionFromRotate(j, otherLink, angleChange);
+                    var otherKnownJoint =
+                        otherLink.joints.FirstOrDefault(
+                            jj => jj.FixedWithRespectTo(otherLink) && jj.positionKnown == KnownState.Fully);
+                    if (otherKnownJoint != null) setLinkPositionFromRotate(otherKnownJoint, otherLink);
                 }
+                else if (otherLink.AngleIsKnown != KnownState.Fully && j.jointType == JointTypes.P)
+                    setLinkPositionFromRotate(j, otherLink, angleChange);
+                else if (j.positionKnown == KnownState.Fully)
+                    setLinkPositionFromRotate(j, otherLink);
             }
         }
 
@@ -828,12 +770,6 @@ namespace PMKS.PositionSolving
             knownJoint = null;
             if (link.AngleIsKnown == KnownState.Unknown) return false;
             knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j.positionKnown != KnownState.Unknown);
-            return knownJoint != null;
-        }
-        private bool FindPartiallyKnownGearOnLink(link link, out joint knownJoint, joint notJoint = null)
-        {
-            knownJoint = link.joints.FirstOrDefault(j => j.jointType == JointTypes.G && j.positionKnown != KnownState.Unknown
-                && j != notJoint);
             return knownJoint != null;
         }
         #endregion

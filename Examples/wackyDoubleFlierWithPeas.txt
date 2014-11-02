@@ -1,0 +1,14 @@
+mech=
+AO,ground,r,-11.7,-14.3,0,ffft
+IS,ground,r,-9.87773437500073,-11.1539062500015,0,ffff
+AO,ABC,r,-15.8,-2.6,0,ffff
+ABC,BD,r,-12.5,12.27,0,tfff
+ABC,CFQ,r,1.54,6,0,ffff
+BD,DEG,P,10,-10.3,0,tfff
+DEG,EF,r,3.9,-3.8,0,tfff
+EF,CFQ,r,10.3,2.15,0,ffff
+DEG,GHI,P,9.6,8.3,30,tfff
+GHI,HR,P,18.5,1.9,90,ffff
+IS,GHI,r,16.4,-6,0,ffff
+HR,ground,P,8.95,-4,0,ffff
+CFQ,ground,P,3.2,-13.4,0,ffff
