@@ -15,13 +15,14 @@ namespace PMKS
     {
         private static AutoResetEvent forwardDone = new AutoResetEvent(false);
         private static AutoResetEvent backwardDone = new AutoResetEvent(false);
+        private Boolean useErrorMethod;
 
         public void FindFullMovement()
         {
             if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
                 throw new Exception(
                     "Either the smoothing error angle delta or the time step must be specified.");
-            bool useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
+             useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
 
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
@@ -36,20 +37,17 @@ namespace PMKS
             if (double.IsNaN(InputSpeed) || InputSpeed == 0.0) InputSpeed = Constants.DefaultInputSpeed;
             #endregion
 #if DEBUGSERIAL
-            if (useErrorMethod) SimulateWithinError(AllJoints, AllLinks, true);
-            else SimulateWithFixedDelta(AllJoints, AllLinks, true);
+            Simulate(AllJoints, AllLinks, true);
 #else
             List<joint> backwardJoints;
             List<link> backwardLinks;
             CopyJointsAndLinksForBackwards(AllJoints, AllLinks, out backwardJoints, out backwardLinks);
 
             /*** Stepping Forward in Time ***/
-            var forwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(AllJoints, AllLinks, true))
-                : Task.Factory.StartNew(() => SimulateWithFixedDelta(AllJoints, AllLinks, true));
+            var forwardTask =  Task.Factory.StartNew(() => Simulate(AllJoints, AllLinks, true));
 
             /*** Stepping Backward in Time ***/
-            var backwardTask = (useErrorMethod) ? Task.Factory.StartNew(() => SimulateWithinError(backwardJoints, backwardLinks, false))
-                : Task.Factory.StartNew(() => SimulateWithFixedDelta(backwardJoints, backwardLinks, false));
+            var backwardTask = Task.Factory.StartNew(() => Simulate(backwardJoints, backwardLinks, false));
             Task.WaitAll(forwardTask, backwardTask);
 #endif
             DefineMovementCharacteristics();
@@ -333,87 +331,14 @@ namespace PMKS
         }
 
 
-        private void SimulateWithFixedDelta(List<joint> joints, List<link> links, Boolean Forward)
+
+        private void Simulate(List<joint> joints, List<link> links, Boolean Forward)
         {
-            double timeStep = Forward ? FixedTimeStep : -FixedTimeStep;
-            double currentTime = 0.0;
-            Boolean validPosition;
-            var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
-            do
-            {
-                #region Find Next Positions
-
-                // this next function puts the xNumerical and yNumerical values in the joints
-                NumericalPosition(timeStep, joints, links);
-                double delta = InputSpeed * timeStep;
-                // this next function puts the x and y values in the joints
-                validPosition = posFinder.DefineNewPositions(delta);
-                #endregion
-
-                if (validPosition)
-                {
-                    if (Forward == (InputSpeed > 0))
-                        lock (InputRange)
-                        {
-                            InputRange[1] = links[inputLinkIndex].Angle;
-                        }
-                    else
-                        lock (InputRange)
-                        {
-                            InputRange[0] = links[inputLinkIndex].Angle;
-                        }
-
-                    #region Find Velocities for Current Position
-
-                    // this next functions puts the vx and vy values as well as the vx_unit and vy_unit in the joints
-                    if (!velSolver.Solve())
-                    {
-                        Status += "Instant Centers could not be found at" + currentTime + ".";
-                        NumericalVelocity(timeStep, joints, links);
-                    }
-
-                    #endregion
-
-                    #region Find Accelerations for Current Position
-
-                    // this next functions puts the ax and ay values in the joints
-                    if (!accelSolver.Solve())
-                    {
-                        Status += "Analytical acceleration could not be found at" + currentTime + ".";
-                        NumericalAcceleration(timeStep, joints, links);
-                    }
-
-                    #endregion
-
-                    currentTime += timeStep;
-                    double[,] jointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
-                    double[,] linkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
-                    if (Forward == (InputSpeed > 0))
-                    {
-                        lock (JointParameters)
-                            JointParameters.AddNearEnd(currentTime, jointParams);
-                        lock (LinkParameters)
-                            LinkParameters.AddNearEnd(currentTime, linkParams);
-                    }
-                    else
-                    {
-                        lock (JointParameters)
-                            JointParameters.AddNearBegin(currentTime, jointParams);
-                        lock (LinkParameters)
-                            LinkParameters.AddNearBegin(currentTime, linkParams);
-                    }
-                }
-            } while (validPosition && lessThanFullRotation());
-        }
-
-        private void SimulateWithinError(List<joint> joints, List<link> links, Boolean Forward)
-        {
-            double startingPosChange = (Forward == (InputSpeed > 0)) ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
+            var timeStep = (Forward == (InputSpeed > 0)) ? FixedTimeStep : -FixedTimeStep;
+            var startingPosChange = (Forward == (InputSpeed > 0)) ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
             if (inputJoint.jointType == JointTypes.P) startingPosChange *= AverageLength;
-            double maxLengthError = MaxSmoothingError * AverageLength;
-            double currentTime = 0.0;
+            var maxLengthError = MaxSmoothingError * AverageLength;
+            var currentTime = 0.0;
             Boolean validPosition;
             var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
             var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, InputSpeed, gearsData, AverageLength);
@@ -421,31 +346,45 @@ namespace PMKS
             do
             {
                 #region Find Next Positions
-                int k = 0;
-                double upperError, timeStep;
-                do
+
+                if (useErrorMethod)
                 {
-                    timeStep = startingPosChange / InputSpeed;
+                    int k = 0;
+                    double upperError;
+                    do
+                    {
+                        timeStep = startingPosChange/InputSpeed;
+                        NumericalPosition(timeStep, joints, links);
+                        validPosition = posFinder.DefineNewPositions(startingPosChange);
+                        upperError = posFinder.PositionError - maxLengthError;
+                        if (validPosition && upperError < 0)
+                        {
+                            startingPosChange *= Constants.ErrorSizeIncrease;
+                            // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
+                        }
+                        else
+                        {
+                            if (Math.Abs(startingPosChange*Constants.ConservativeErrorEstimation*0.5) <
+                                Constants.MinimumStepSize)
+                                validPosition = false;
+                            else startingPosChange *= Constants.ConservativeErrorEstimation*0.5;
+                        }
+                    } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError
+                             &&
+                             (Math.Abs(startingPosChange*Constants.ConservativeErrorEstimation*0.5) >=
+                              Constants.MinimumStepSize));
+                    //var tempStep = startingPosChange;
+                    //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
+                    //prevStep = tempStep;
+                }
+                else
+                {
+                    // this next function puts the xNumerical and yNumerical values in the joints
                     NumericalPosition(timeStep, joints, links);
-                    validPosition = posFinder.DefineNewPositions(startingPosChange);
-                    upperError = posFinder.PositionError - maxLengthError;
-                    if (validPosition && upperError < 0)
-                    {
-                        startingPosChange *= Constants.ErrorSizeIncrease;
-                        // startingPosChange = startingPosChange * maxLengthError / (maxLengthError + upperError);
-                    }
-                    else
-                    {
-                        if (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) <
-                            Constants.MinimumStepSize)
-                            validPosition = false;
-                        else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
-                    }
-                } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError
-                    && (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) >= Constants.MinimumStepSize));
-                //var tempStep = startingPosChange;
-                //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
-                //prevStep = tempStep;
+                    double delta = InputSpeed * timeStep;
+                    // this next function puts the x and y values in the joints
+                    validPosition = posFinder.DefineNewPositions(delta);
+                }
 
                 #endregion
 
