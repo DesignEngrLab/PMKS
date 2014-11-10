@@ -87,6 +87,25 @@ namespace PMKS.VelocityAndAcceleration
             return true;
         }
 
+        protected override double[] GetInitialGuess(int length)
+        {
+            var x = new double[length];
+            var index = 0;
+            foreach (var o in unknownObjects)
+            {
+                if (o is link)
+                    x[index++] = ((link)o).Acceleration;
+                else if (o is joint)
+                {
+                    x[index++] = ((joint)o).ax;
+                    x[index++] = ((joint)o).ay;
+                }
+                else if (o is Tuple<link, joint>)
+                    x[index++] = ((Tuple<link, joint>)o).Item2.SlideAcceleration;
+            }
+            return x;
+        }
+
 
         protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
         {
@@ -183,6 +202,24 @@ namespace PMKS.VelocityAndAcceleration
                 }
             }
             return true;
+        }
+        protected override double[] GetInitialGuess(int length)
+        {
+            var x = new double[length];
+            var index = 0;
+            foreach (var o in unknownObjects)
+            {
+                if (o is link)
+                    x[index++] = ((link)o).VelocityLast;
+                else if (o is joint)
+                {
+                    x[index++] = ((joint)o).vxLast;
+                    x[index++] = ((joint)o).vyLast;
+                }
+                else if (o is Tuple<link, joint>)
+                    x[index++] = ((Tuple<link, joint>)o).Item2.SlideVelocity;
+            }
+            return x;
         }
         protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
             bool linkIsKnown)
@@ -309,7 +346,7 @@ namespace PMKS.VelocityAndAcceleration
             }
             #endregion
 
-            /**** Set up equations. Number of unknowns is 2*unknown-joints + 1*unknown links. ****/
+            /**** Set up equations. Number of unknowns is 2*unknown_joints + 1*unknown_links. ****/
             foreach (var unknownObject in unknownObjects)
             {
                 if (unknownObject is joint) numUnknowns += 2;
@@ -446,6 +483,7 @@ namespace PMKS.VelocityAndAcceleration
         protected abstract void SetInitialInputAndGroundLinkStates();
         protected abstract void SetInitialInputAndGroundJointStates();
         protected abstract Boolean PutStateVarsBackInJointsAndLinks(double[] x);
+        protected abstract double[] GetInitialGuess(int length);
 
 
         internal Boolean Solve()
@@ -486,6 +524,8 @@ namespace PMKS.VelocityAndAcceleration
             }
             catch { return false; }
         }
+
+
 
         private int[] ChooseBestRowOrder(List<double[]> rows)
         {
