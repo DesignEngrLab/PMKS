@@ -84,6 +84,17 @@ namespace PMKS.VelocityAndAcceleration
                            (gearData.radius1 + gearData.radius2);
                 }
             }
+            foreach (var j in joints)
+            {
+                if (j.Link2 == null && !unknownObjects.Contains(j))
+                {
+                    var refJoint = j.Link1.ReferenceJoint1;
+                    j.ax = refJoint.ax + (refJoint.x - j.x) * j.Link1.Velocity * j.Link1.Velocity
+                        + (refJoint.y - j.y) * j.Link1.Acceleration;
+                    j.ay = refJoint.ay + (refJoint.y - j.y) * j.Link1.Velocity * j.Link1.Velocity
+                        + (j.x - refJoint.x) * j.Link1.Acceleration;
+                }
+            }
             return true;
         }
 
@@ -201,6 +212,15 @@ namespace PMKS.VelocityAndAcceleration
                            (gearData.radius1 + gearData.radius2);
                 }
             }
+            foreach (var j in joints)
+            {
+                if (j.Link2 == null && !unknownObjects.Contains(j))
+                {
+                    var refJoint = j.Link1.ReferenceJoint1;
+                    j.vx = refJoint.vx + (refJoint.y - j.y) * j.Link1.Velocity;
+                    j.vy = refJoint.vy + (j.x - refJoint.x) * j.Link1.Velocity;
+                }
+            }
             return true;
         }
         protected override double[] GetInitialGuess(int length)
@@ -292,17 +312,21 @@ namespace PMKS.VelocityAndAcceleration
             {
                 var l = links[i];
                 unknownObjects.Add(l);
-                var refJoint = l.joints.FirstOrDefault(j => j.isGround && !j.SlidingWithRespectTo(groundLink));
-                if (refJoint == null)
-                    refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j, l));
-                if (refJoint == null)
+                var refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j));
+                if (refJoint != null)
                 {
-                    refJoint = l.joints[0];
-                    for (int k = 1; k < l.joints.Count; k++)
-                        equations.Add(MakeJointToJointEquations(l.joints[k], refJoint, l, false, false, false));
+                    foreach (var j in l.joints.Where(j => j != refJoint))
+                        if ((j.Link2 != null || j == l.ReferenceJoint1) && !jointIsKnownState(j))
+                            equations.Add(MakeJointToJointEquations(j, refJoint, l, false, true, false));
                 }
-                else foreach (var j in l.joints.Where(j => j != refJoint))
-                        equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j, l), true, false));
+                else
+                {
+                    refJoint = l.ReferenceJoint1;
+                    foreach (var j in l.joints.Where(j => j != refJoint))
+                        if (j.Link2 != null)
+                            equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j), false, false));
+                }
+
             }
             /* now address the input link - well, the only unknown is the joints that slide on this input. */
             foreach (var j in inputLink.joints.Where(j => j.SlidingWithRespectTo(inputLink)))
@@ -323,6 +347,7 @@ namespace PMKS.VelocityAndAcceleration
             for (int i = 0; i < joints.Count; i++)
             {
                 var j = joints[i];
+                if (j.Link2 == null && j != j.Link1.ReferenceJoint1) continue;
                 if (j.jointType == JointTypes.R && i < firstInputJointIndex) unknownObjects.Add(j);
                 else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
                              j.Link2 != inputLink && j.Link2 != groundLink)
@@ -351,11 +376,6 @@ namespace PMKS.VelocityAndAcceleration
             {
                 if (unknownObject is joint) numUnknowns += 2;
                 else numUnknowns++;
-            }
-            if (numUnknowns > 200)
-            {
-                SkipMatrixInversionUntilSparseSolverIsDefined = true;
-                return;
             }
             A = new double[numUnknowns, numUnknowns];
             b = new double[numUnknowns];
@@ -471,10 +491,10 @@ namespace PMKS.VelocityAndAcceleration
 
 
 
-        private bool jointIsKnownState(joint j, link l)
+        private bool jointIsKnownState(joint j)
         {
             return ((j.isGround && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
-                || ((l == inputLink || j.OtherLink(l) == inputLink) && !j.SlidingWithRespectTo(inputLink)));
+                || ((j.Link2 == inputLink || (j.Link1 == inputLink && !j.SlidingWithRespectTo(inputLink)))));
         }
 
         protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
@@ -489,9 +509,6 @@ namespace PMKS.VelocityAndAcceleration
         internal Boolean Solve()
         {
             SetInitialInputAndGroundJointStates();
-            //todo: remove true after position solver works
-            if (SkipMatrixInversionUntilSparseSolverIsDefined) return false;
-
             try
             {
                 var rows = new List<double[]>();
@@ -552,8 +569,6 @@ namespace PMKS.VelocityAndAcceleration
             return (Math.Abs(x) > 1) ? 1 / Math.Abs(x) : Math.Abs(x);
 
         }
-
-        public bool SkipMatrixInversionUntilSparseSolverIsDefined { get; private set; }
     }
 }
 

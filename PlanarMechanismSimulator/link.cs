@@ -92,7 +92,8 @@ namespace PMKS
             numJoints = joints.Count;
             #region Define Initial Link Angle
             var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
-                OrderBy(j => (j.Link2 != null) ? 0 : 1).ThenBy(j => j.xInitial).ToList();
+                OrderBy(j => (j.isGround) ? 0 : 1).
+                ThenBy(j => (j.Link2 != null) ? 0 : 1).ThenBy(j => j.xInitial).ToList();
             ReferenceJoint1 = fixedJoints[0];
             /* the linkAngle is defined from "the joint with the lowest initial x value
              * that is fixed to this link" to "the joint with the highest initial x value

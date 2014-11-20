@@ -328,8 +328,7 @@ namespace PMKS.PositionSolving
         internal void UpdateSliderPosition()
         {
             foreach (var j in joints.Where(jt => jt.jointType == JointTypes.P || jt.jointType == JointTypes.RP
-                                                 || (jt.jointType == JointTypes.G && !double.IsNaN(jt.OffsetSlideAngle)))
-                )
+                                                 || (jt.jointType == JointTypes.G && !double.IsNaN(jt.OffsetSlideAngle))))
             {
                 var refJoint = j.Link1.ReferenceJoint1;
 
@@ -763,7 +762,7 @@ namespace PMKS.PositionSolving
                             assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
                                 knownJoint.y + length * Math.Sin(angle), thisLink);
                         }
-                    }    
+                    }
                     var otherLink = j.OtherLink(thisLink);
                     if (otherLink == null) continue;
                     if (j.jointType == JointTypes.G
