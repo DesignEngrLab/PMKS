@@ -28,7 +28,7 @@ namespace PMKS.PositionSolving
             this.joints = posFinder.joints;
             linkFunctions = new List<NonDyadicObjFunctionTerm>();
             unkJoints = new List<joint>();
-            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully && j.Link2 != null))
+            foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully && (j.Link2 != null || j.Link1.ReferenceJoint1 == j)))
                 /* we'll solve these tracer points later, hence the j.Link2 !=null. */
                 unkJoints.Add(j);
             foreach (var j in joints)

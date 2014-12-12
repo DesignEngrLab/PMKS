@@ -549,17 +549,19 @@ namespace PMKS.VelocityAndAcceleration
             if (matrixOrders[0] == null && matrixOrders[1] == null) return null;
             if (matrixOrders[0] == null) return matrixOrders[1];
             if (matrixOrders[1] == null) return matrixOrders[0];
-            var order0Value = 1.0;
-            var order1Value = 1.0;
+            var worstOrder0Value = 1.0;
+            var worstOrder1Value = 1.0;
 
             for (int i = 0; i < numUnknowns; i++)
             {
                 var value = MultiplicativeDistanceToOne(rows[matrixOrders[0][i]][i]);
-                if (value < order0Value) order0Value = value;
+                if (value == 0.0) return matrixOrders[1];
+                if (worstOrder0Value > value) worstOrder0Value = value;
                 value = MultiplicativeDistanceToOne(rows[matrixOrders[1][i]][i]);
-                if (value < order1Value) order1Value = value;
+                if (value == 0.0) return matrixOrders[0];
+                if (worstOrder1Value > value) worstOrder1Value = value;
             }
-            if (order0Value >= order1Value)
+            if (worstOrder0Value >= worstOrder1Value)
                 return matrixOrders[0];
             return matrixOrders[1];
         }

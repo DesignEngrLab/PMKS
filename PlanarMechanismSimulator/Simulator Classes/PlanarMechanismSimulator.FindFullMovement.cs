@@ -22,7 +22,7 @@ namespace PMKS
             if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
                 throw new Exception(
                     "Either the smoothing error angle delta or the time step must be specified.");
-             useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
+            useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
 
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
 
@@ -151,10 +151,10 @@ namespace PMKS
             }
             for (int i = 0; i < numLinks; i++)
             {
-                var topLinkLocation = FindLinkAngleAtTime(topTime, i);
-                var initLinkAngle = initLinkState[i, 0];
-                if (Math.Abs(topLinkLocation - initLinkAngle) > maxAngleError)
-                    return false;
+                var deltaLinkAngle = FindLinkAngleAtTime(topTime, i) - initLinkState[i, 0];
+                while (deltaLinkAngle > Math.PI) deltaLinkAngle -= 2 * Math.PI;
+                while (deltaLinkAngle < -Math.PI) deltaLinkAngle += 2 * Math.PI;
+                if (deltaLinkAngle > maxAngleError) return false;
             }
             for (int i = 0; i < numJoints; i++)
             {
@@ -353,7 +353,7 @@ namespace PMKS
                     double upperError;
                     do
                     {
-                        timeStep = startingPosChange/InputSpeed;
+                        timeStep = startingPosChange / InputSpeed;
                         NumericalPosition(timeStep, joints, links);
                         validPosition = posFinder.DefineNewPositions(startingPosChange);
                         upperError = posFinder.PositionError - maxLengthError;
@@ -364,14 +364,14 @@ namespace PMKS
                         }
                         else
                         {
-                            if (Math.Abs(startingPosChange*Constants.ConservativeErrorEstimation*0.5) <
+                            if (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) <
                                 Constants.MinimumStepSize)
                                 validPosition = false;
-                            else startingPosChange *= Constants.ConservativeErrorEstimation*0.5;
+                            else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
                         }
                     } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError
                              &&
-                             (Math.Abs(startingPosChange*Constants.ConservativeErrorEstimation*0.5) >=
+                             (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) >=
                               Constants.MinimumStepSize));
                     //var tempStep = startingPosChange;
                     //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);

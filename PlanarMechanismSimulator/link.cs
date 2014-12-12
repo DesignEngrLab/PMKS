@@ -232,8 +232,8 @@ namespace PMKS
             var index = numJoints * slideIndex + fixedIndex;
             if (distanceToSlideLine.ContainsKey(index))
                 return distanceToSlideLine[index];
-            else throw new Exception("link.DistanceBetweenSlides ->args wrong");
-            //return -distanceToSlideLine[numJoints * fixedIndex + slideIndex];
+            else //throw new Exception("link.DistanceBetweenSlides ->args wrong");
+            return distanceToSlideLine[numJoints * fixedIndex + slideIndex];
         }
         /// <summary>
         /// returns the angle between the slide and the reference joint.

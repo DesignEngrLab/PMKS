@@ -10,13 +10,15 @@ namespace PMKS_Silverlight_App
 {
     public static class IOStringFunctions
     {
-        private static string debugString = // "";
-      //  "mech=ground input R 0 0 tfft|input output G 25 0 0 tfff|output ground R 35 0 0 tfff|";
-        "mech=ground input R 10.86328125 -0.63671875 0 tfff|input c R 7 7 0 tfff|c r P 14 0 60 tfff|r h R 11.59375 -10.818359375 1 tfff|c out R -1.1015625 7.3359375 0 tfff|out ground R -7.359375 -4.017578125 0 tfff|h ground R 0 0 45 tfft|";
-         public const string GlobalSettingString = "set=";
+        private static string debugString = "";
+         // "mech=ground n0 R 83.472 75.437 173.000 ffft|n4 n2 R 87.823 110.239 1.000 ffff|n0 n4 R 108.374 87.807 71.000 ffff|n2 ground R 168.438 63.485 89.000 ffff|n4 n5 P 135.953 102.793 -39.000 ffff|n2 n5 RP 162.604 96.361 35.645 ffff|";
+        //"mech=ground n0 R 106.217608540122 70.0501205458313 173 ffft|n4 n2 R 139.898687659032 79.7116684147404 1 ffff|n0 n4 R 108.373760626942 87.8071432855759 71 ffff|n2 ground R 135.819073126942 59.2856589105759 89 ffff|n4 n5 P 135.953277245851 102.792909904481 -38.9995956999552 ffff|n2 n5 RP 162.603667870851 96.361269279485 35.645398000524 ffff|";
+        //  "mech=ground input R 0 0 tfft|input output G 25 0 0 tfff|output ground R 35 0 0 tfff|";
+       // "mech=ground input R 10.86328125 -0.63671875 0 tfff|input c R 7 7 0 tfff|c r P 14 0 60 tfff|r h R 11.59375 -10.818359375 1 tfff|c out R -1.1015625 7.3359375 0 tfff|out ground R -7.359375 -4.017578125 0 tfff|h ground R 0 0 45 tfft|";
+        public const string GlobalSettingString = "set=";
         public const string TargetShapeString = "ts=";
         public const string MechanismString = "mech=";
-       
+
         internal static Boolean UrlToGlobalSettings(MainPage main)
         {
             var globalSettingsString = getString(GlobalSettingString.TrimEnd('='));

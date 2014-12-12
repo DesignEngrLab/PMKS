@@ -55,7 +55,7 @@ namespace PMKS_Silverlight_App
 
         public string XPos
         {
-            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString("G", CultureInfo.InvariantCulture); }
+            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString("F3", CultureInfo.InvariantCulture); }
             set
             {
                 if (!double.TryParse(value, out _xPos))
@@ -65,7 +65,7 @@ namespace PMKS_Silverlight_App
 
         public string YPos
         {
-            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString("G", CultureInfo.InvariantCulture); }
+            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString("F3", CultureInfo.InvariantCulture); }
             set
             {
                 if (!double.TryParse(value, out _yPos))
@@ -103,7 +103,7 @@ namespace PMKS_Silverlight_App
                     && (string.Equals(JointType, "R", StringComparison.InvariantCultureIgnoreCase)
                     || string.IsNullOrWhiteSpace(JointType)))
                     return "";
-                return _angle.ToString();
+                return _angle.ToString("F3", CultureInfo.InvariantCulture);
             }
             set
             {
