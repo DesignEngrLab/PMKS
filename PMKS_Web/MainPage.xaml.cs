@@ -211,10 +211,10 @@ namespace PMKS_Silverlight_App
                 //}
                 //else
                 //{
-                    if (!validLinks()) return;
+                if (!validLinks()) return;
 
-                    if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
-                    pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
+                if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
+                pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
                 //}
                 mainViewer.ClearDynamicShapesAndBindings();
                 PlayButton_Unchecked(null, null);
@@ -284,7 +284,7 @@ namespace PMKS_Silverlight_App
                 if (pmks.LinkParameters == null || pmks.JointParameters == null || pmks.JointParameters.Count < 2)
                 {
                     status("The mechanism does not move.");
-                   // return;
+                    // return;
                 }
                 mainViewer.UpdateRanges(pmks);
                 mainViewer.FindVelocityAndAccelerationScalers(pmks);
@@ -671,8 +671,10 @@ namespace PMKS_Silverlight_App
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
 
-            mainViewer.Width = Application.Current.Host.Content.ActualWidth;
-            mainViewer.Height = Application.Current.Host.Content.ActualHeight;
+            mainViewer.Width = Application.Current.Host.Content.ActualWidth /
+                               Application.Current.Host.Content.ZoomFactor;
+            mainViewer.Height = Application.Current.Host.Content.ActualHeight /
+                               Application.Current.Host.Content.ZoomFactor;
         }
 
         private void RefreshButton_OnClick(object sender, RoutedEventArgs e)
