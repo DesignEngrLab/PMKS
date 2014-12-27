@@ -5,10 +5,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:src="clr-namespace:PMKS_Silverlight_App"
     x:Class="PMKS_Silverlight_App.MainPage"
-    mc:Ignorable="d" Loaded="MainPage_Loaded_1"      MouseLeftButtonUp="MouseUpStopPanning"
+    mc:Ignorable="d" Loaded="MainPage_Loaded_1" MouseLeftButtonUp="MouseUpStopPanning"
     MouseWheel="OnMouseWheel" MouseMove="OnMouseMove" MouseLeave="MouseUpStopPanning" LostMouseCapture="MouseUpStopPanning"
     MouseLeftButtonDown="MouseDownStartPan" 
-    d:DesignHeight="800" d:DesignWidth="1000" SizeChanged="UserControl_SizeChanged">
+    d:DesignHeight="800" d:DesignWidth="1000"
+    >
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

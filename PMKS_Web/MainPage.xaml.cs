@@ -91,6 +91,7 @@ namespace PMKS_Silverlight_App
             LinksInfo = new LinksViewModel();
             InitializeComponent();
             InputJointBaseShape.LoadShapes();
+            App.Current.Host.Content.Resized += Content_Resized;
         }
 
         private void MainPage_Loaded_1(object sender, RoutedEventArgs e)
@@ -666,16 +667,7 @@ namespace PMKS_Silverlight_App
             PlayButton_Unchecked(sender, e);
             if (e.Delta > 0) timeSlider.Value += timeSlider.LargeChange;
             else timeSlider.Value -= timeSlider.LargeChange;
-        }
-
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-
-            mainViewer.Width = Application.Current.Host.Content.ActualWidth /
-                               Application.Current.Host.Content.ZoomFactor;
-            mainViewer.Height = Application.Current.Host.Content.ActualHeight /
-                               Application.Current.Host.Content.ZoomFactor;
-        }
+        }          
 
         private void RefreshButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -685,6 +677,15 @@ namespace PMKS_Silverlight_App
             mainViewer.UpdateScaleAndCenter();
             mainViewer.DrawStaticShapes(pmks, JointsInfo.Data);
             mainViewer.DrawDynamicShapes(pmks, JointsInfo.Data, timeSlider);
+        }
+
+        void Content_Resized(object sender, EventArgs e)
+        {
+            mainViewer.Width = Application.Current.Host.Content.ActualWidth /
+                               Application.Current.Host.Content.ZoomFactor;
+            mainViewer.Height = Application.Current.Host.Content.ActualHeight /
+                               Application.Current.Host.Content.ZoomFactor;
+            mainViewer.UpdateScaleAndCenter();
         }
 
     }
