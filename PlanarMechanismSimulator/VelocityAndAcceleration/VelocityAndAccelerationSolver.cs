@@ -312,11 +312,12 @@ namespace PMKS.VelocityAndAcceleration
             {
                 var l = links[i];
                 unknownObjects.Add(l);
-                var refJoint = l.joints.FirstOrDefault(j => jointIsKnownState(j));
+                var refJoint = l.joints.FirstOrDefault(jointIsKnownState);
                 if (refJoint != null)
                 {
                     foreach (var j in l.joints.Where(j => j != refJoint))
-                        if ((j.Link2 != null || j == l.ReferenceJoint1) && !jointIsKnownState(j))
+                        if ((j.Link2 != null || j == l.ReferenceJoint1) && (!jointIsKnownState(j)
+                            || j.SlidingWithRespectTo(l)))
                             equations.Add(MakeJointToJointEquations(j, refJoint, l, false, true, false));
                 }
                 else
