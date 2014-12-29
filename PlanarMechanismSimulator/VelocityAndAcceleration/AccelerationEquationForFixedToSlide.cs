@@ -45,7 +45,6 @@ namespace PMKS.VelocityAndAcceleration
         }
         internal override double GetRow2Constant()
         {
-            // need to add in the coriolis term
             return 2 * joint1.SlideVelocity * Math.Cos(joint1.SlideAngle) * link.Velocity + base.GetRow2Constant();
         }
         internal override void CaptureUnknownIndicies(List<object> unknownObjects)

@@ -1,12 +1,9 @@
 ﻿#region
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using PMKS;
 using StarMathLib;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 #endregion
 
 namespace PMKS.VelocityAndAcceleration
@@ -318,7 +315,7 @@ namespace PMKS.VelocityAndAcceleration
                     foreach (var j in l.joints.Where(j => j != refJoint))
                         if ((j.Link2 != null || j == l.ReferenceJoint1) && (!jointIsKnownState(j)
                             || j.SlidingWithRespectTo(l)))
-                            equations.Add(MakeJointToJointEquations(j, refJoint, l, false, true, false));
+                            equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j), true, false));
                 }
                 else
                 {
