@@ -40,7 +40,7 @@ namespace PMKS
         /// </summary>
         public double OffsetSlideAngle = Double.NaN;
         //public double OffsetSlideAngle = 0.0;
-        public double SlideAngleInitial   { get { return Link1.AngleInitial + OffsetSlideAngle; } }
+        public double SlideAngleInitial { get { return Link1.AngleInitial + OffsetSlideAngle; } }
         internal double SlideAngle { get { return Link1.Angle + OffsetSlideAngle; } }
         internal double SlidePosition { get; set; }
         internal double SlideVelocity { get; set; }
@@ -85,7 +85,6 @@ namespace PMKS
 
         internal KnownState positionKnown;
 
-
         internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
         {
             isGround = IsGround;
@@ -122,13 +121,20 @@ namespace PMKS
         public Boolean FixedWithRespectTo(link link0)
         {
             if (link0 != Link1 && link0 != Link2) return false;
-                //throw new Exception("link0 is not connected to joint (in joint.FixedWithRespectTo).");
+            //throw new Exception("link0 is not connected to joint (in joint.FixedWithRespectTo).");
             if (jointType == JointTypes.R) return true;
             if (jointType == JointTypes.G) return false;
             /* then joint is either P or RP, so... */
             return (Link2 == link0);
         }
 
+        internal Boolean JustATracer
+        {
+            get
+            {
+                return (Link2 == null && this != Link1.ReferenceJoint1);
+            }
+        }
         internal link OtherLink(link thislink)
         {
             if (Link1 == thislink) return Link2;

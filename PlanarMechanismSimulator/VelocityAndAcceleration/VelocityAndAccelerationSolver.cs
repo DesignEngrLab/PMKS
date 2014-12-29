@@ -1,4 +1,6 @@
 ﻿#region
+
+using System.Diagnostics;
 using StarMathLib;
 using System;
 using System.Collections.Generic;
@@ -21,14 +23,11 @@ namespace PMKS.VelocityAndAcceleration
             maximumJointValue = Constants.JointAccelerationLimitFactor * averageLength * inputSpeed * inputSpeed;
             maximumLinkValue = Constants.LinkAccelerationLimitFactor * inputSpeed * inputSpeed;
         }
-        protected override void SetInitialInputAndGroundLinkStates()
-        {
-            groundLink.Acceleration = 0.0;
-            inputLink.Acceleration = 0.0;
-        }
 
-        protected override void SetInitialInputAndGroundJointStates()
+        protected override void SetInitialInputAndGroundStates()
         {
+            RecursivelySetLinkVelocityThroughPJoints(groundLink, new List<link>(), 0.0, false);
+            RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<link>(), 0.0, false);
             if (inputJoint.jointType == JointTypes.R)
             {
                 var xGnd = inputJoint.x;
@@ -42,8 +41,16 @@ namespace PMKS.VelocityAndAcceleration
                     }
                 }
             }
-            else if (inputJoint.jointType != JointTypes.P)
-                throw new Exception("Currently only R or P can be the input joints.");
+            else if (inputJoint.jointType == JointTypes.P)
+            {
+                inputJoint.SlideAcceleration = 0.0;
+                foreach (var j in inputLink.joints)
+                {
+                    if (j.FixedWithRespectTo(inputLink))
+                        j.ax = j.ay = 0.0;
+                }
+            }
+            else throw new Exception("Currently only R or P can be the input joints.");
         }
 
         protected override Boolean PutStateVarsBackInJointsAndLinks(double[] x)
@@ -138,30 +145,12 @@ namespace PMKS.VelocityAndAcceleration
             maximumJointValue = Constants.JointVelocityLimitFactor * averageLength * Math.Abs(inputSpeed);
             maximumLinkValue = Constants.LinkVelocityLimitFactor * Math.Abs(inputSpeed);
         }
-        protected override void SetInitialInputAndGroundLinkStates()
+        protected override void SetInitialInputAndGroundStates()
         {
-            if (inputJoint.jointType == JointTypes.R)
-                inputLink.Velocity = inputSpeed;
-            else if (inputJoint.jointType == JointTypes.P)
-            {
-                inputLink.Velocity = 0.0;
-                var vx = inputSpeed * Math.Cos(inputJoint.SlideAngle);
-                var vy = inputSpeed * Math.Sin(inputJoint.SlideAngle);
-                foreach (var j in inputLink.joints)
-                {
-                    if (j.SlidingWithRespectTo(inputLink)) continue;
-                    j.vx = vx;
-                    j.vy = vy;
-                }
-            }
-            else throw new Exception("Currently only R or P can be the input joints.");
-
-            groundLink.Velocity = 0.0;
-        }
-        protected override void SetInitialInputAndGroundJointStates()
-        {
+            RecursivelySetLinkVelocityThroughPJoints(groundLink, new List<link>(), 0.0, true);
             if (inputJoint.jointType == JointTypes.R)
             {
+                RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<link>(), inputSpeed, true);
                 var xGnd = inputJoint.x;
                 var yGnd = inputJoint.y;
                 foreach (var j in inputLink.joints)
@@ -171,9 +160,22 @@ namespace PMKS.VelocityAndAcceleration
                     j.vy = inputSpeed * (j.x - xGnd);
                 }
             }
-            else if (inputJoint.jointType != JointTypes.P)
-                throw new Exception("Currently only R or P can be the input joints.");
+            else if (inputJoint.jointType == JointTypes.P)
+            {
+                var vx = inputSpeed * Math.Cos(inputJoint.SlideAngle);
+                var vy = inputSpeed * Math.Sin(inputJoint.SlideAngle);
+                inputJoint.SlideVelocity = inputSpeed;
+                foreach (var j in inputLink.joints)
+                {
+                    if (j.SlidingWithRespectTo(inputLink)) continue;
+                    j.vx = vx;
+                    j.vy = vy;
+                }
+            }
+            else throw new Exception("Currently only R or P can be the input joints.");
         }
+
+
         protected override Boolean PutStateVarsBackInJointsAndLinks(double[] x)
         {
             var index = 0;
@@ -300,73 +302,52 @@ namespace PMKS.VelocityAndAcceleration
             this.gearsData = gearsData;
             equations = new List<EquationBase>();
 
+            /************ Set up unknown objects ************/
             unknownObjects = new List<object>();
-            /************ Set up Equations ************/
-            SetInitialInputAndGroundLinkStates();
-            #region go through the links to identify equations from joint-to-joint on a particular link
-            /* first address all the links at the beginning of the list (the ones that are not input or ground) */
-            for (int i = 0; i < inputLinkIndex; i++)
+            unknownObjects.AddRange(links);
+            unknownObjects.AddRange(joints);
+            foreach (var j in joints)
             {
-                var l = links[i];
-                unknownObjects.Add(l);
-                var refJoint = l.joints.FirstOrDefault(jointIsKnownState);
-                if (refJoint != null)
-                {
-                    foreach (var j in l.joints.Where(j => j != refJoint))
-                        if ((j.Link2 != null || j == l.ReferenceJoint1) && (!jointIsKnownState(j)
-                            || j.SlidingWithRespectTo(l)))
-                            equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j), true, false));
-                }
-                else
-                {
-                    refJoint = l.ReferenceJoint1;
-                    foreach (var j in l.joints.Where(j => j != refJoint))
-                        if (j.Link2 != null)
-                            equations.Add(MakeJointToJointEquations(j, refJoint, l, jointIsKnownState(j), false, false));
-                }
-
+                if (j.JustATracer) unknownObjects.Remove(j);
+                if (j.jointType == JointTypes.RP || j.jointType == JointTypes.P)
+                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
             }
-            /* now address the input link - well, the only unknown is the joints that slide on this input. */
-            foreach (var j in inputLink.joints.Where(j => j.SlidingWithRespectTo(inputLink)))
-                equations.Add(MakeJointToJointEquations(j, inputJoint, inputLink, false, true, true));
-
-            /* now address the ground link - again, only the joints that slide w.r.t. ground. */
-            foreach (var j in groundLink.joints.Where(j => j.SlidingWithRespectTo(groundLink)))
-                equations.Add(MakeJointToJointEquations(j, groundReferenceJoint, groundLink, false, true, true));
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
             /**** Set velocity of any links connected to input by a P joint and remove link from unknowns ****/
-            RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(groundLink, (this is VelocitySolver));
+            RecursivelyRemoveKnownLinks(groundLink);
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
-            RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(inputLink, (this is VelocitySolver));
-
-            #endregion
-            #region go through the joints to identify equations from slip velocities and link-to-link relationships
-            /**** Then there is the matter of the sliding velocities.. ****/
-            for (int i = 0; i < joints.Count; i++)
+            RecursivelyRemoveKnownLinks(inputLink);
+            unknownObjects.RemoveAll(o => groundLink.joints.Contains(o) && ((joint)o).FixedWithRespectTo(groundLink));
+            unknownObjects.RemoveAll(o => inputLink.joints.Contains(o) && ((joint)o).FixedWithRespectTo(inputLink));
+            if (inputJoint.jointType == JointTypes.P)
+                unknownObjects.RemoveAll(o => o is Tuple<link, joint> && ((Tuple<link, joint>)o).Item2 == inputJoint);
+            /************ Set up Equations ************/
+            #region go through the links to identify equations from joint-to-joint on a particular link
+            /* first address all the links at the beginning of the list (the ones that are not input or ground) */
+            foreach (var l in links)
             {
-                var j = joints[i];
-                if (j.Link2 == null && j != j.Link1.ReferenceJoint1) continue;
-                if (j.jointType == JointTypes.R && i < firstInputJointIndex) unknownObjects.Add(j);
-                else if (j.jointType == JointTypes.G && j.Link1 != inputLink && j.Link1 != groundLink &&
-                             j.Link2 != inputLink && j.Link2 != groundLink)
-                    unknownObjects.Add(j);
-                else if (j.jointType == JointTypes.P)
+                var r = l.ReferenceJoint1;
+                var l_is_unknown = unknownObjects.Contains(l);
+                var r_is_unknown = unknownObjects.Contains(r);
+                foreach (var j in l.joints.Where(j => j != r && j.Link2 != null))
                 {
-                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
-                    if (j.Link2 != inputLink && j.Link2 != groundLink)
-                    {
-                        unknownObjects.Add(j);
-                        if (j.Link1 != groundLink /*&& j.Link1 != inputLink*/)
-                            equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
-                    }
-                }
-                else if (j.jointType == JointTypes.RP)
-                {
-                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
-                    if (j.Link2 != inputLink && j.Link2 != groundLink)
-                        unknownObjects.Add(j);
+                    var j_is_unknown = unknownObjects.Contains(j);
+                    if (l_is_unknown || r_is_unknown || j_is_unknown)
+                        equations.Add(MakeJointToJointEquations(j, r, l, !j_is_unknown, !r_is_unknown, !l_is_unknown));
+                    if (!r_is_unknown && !j_is_unknown) l_is_unknown = false; // not sure this will ever be used, but if both joints are
+                    // known, then the first pass will provide a means for finding
+                    // link angular velocity/acceleration. 
                 }
             }
+            #endregion
+            #region go through the joints to identify any P-joint link-to-link relationships
+            /* Then there is the matter of P-joint additional equations. Notice above that we remove any chains of links 
+             * connected to ground or input via P-joints as these have the known angular velocities and accelerations. 
+             * Well, we may need to add equations for clusters of links connected by P-joints that are not on ground
+             * e.g. R-R-P-R. */
+            foreach (var j in joints)
+                if (j.jointType == JointTypes.P && unknownObjects.Contains(j.Link1))
+                    equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
             #endregion
 
             /**** Set up equations. Number of unknowns is 2*unknown_joints + 1*unknown_links. ****/
@@ -401,35 +382,23 @@ namespace PMKS.VelocityAndAcceleration
             DefineTwoMatrixOrders(rowNonZeroes);
         }
 
-        private void RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(link refLink, Boolean thisIsVelocitySolver)
+        private void RecursivelyRemoveKnownLinks(link l)
         {
-            foreach (var pJoint in refLink.joints.Where(j => j.jointType == JointTypes.P))
-            {
-                var otherLink = pJoint.OtherLink(refLink);
-                if (unknownObjects.Contains(otherLink))
-                {
-                    unknownObjects.Remove(otherLink);
-                    if (thisIsVelocitySolver)
-                    {
-                        otherLink.Velocity = refLink.Velocity;
-                        foreach (
-                        var eq in
-                            equations.Where(
-                                eq => eq is VelocityJointToJoint && ((VelocityJointToJoint)eq).link == otherLink))
-                            ((VelocityJointToJoint)eq).linkIsKnown = true;
-                    }
-                    else
-                    {
-                        otherLink.Acceleration = 0.0;
-                        //foreach (
-                        //var eq in
-                        //    equations.Where(
-                        //        eq => eq is AccelerationJointToJoint && ((AccelerationJointToJoint)eq).link == otherLink))
-                        //    ((AccelerationJointToJoint)eq).linkIsKnown = true;
-                    }
-                    RecursiveAssignmentOfKnownPAngularVelocityOrAcceleration(otherLink, thisIsVelocitySolver);
-                }
-            }
+            if (!unknownObjects.Contains(l)) return;
+            unknownObjects.Remove(l);
+            foreach (var pJoint in l.joints.Where(j => j.jointType == JointTypes.P))
+                RecursivelyRemoveKnownLinks(pJoint.OtherLink(l));
+        }
+
+        protected void RecursivelySetLinkVelocityThroughPJoints(link l, List<link> LinksAlreadySet,
+            double value, Boolean thisIsVelocity)
+        {
+            if (LinksAlreadySet.Contains(l)) return;
+            LinksAlreadySet.Add(l);
+            if (thisIsVelocity) l.Velocity = value;
+            else l.Acceleration = value;
+            foreach (var pJoint in l.joints.Where(j => j.jointType == JointTypes.P))
+                RecursivelySetLinkVelocityThroughPJoints(pJoint.OtherLink(l), LinksAlreadySet, value, thisIsVelocity);
         }
 
         private void DefineTwoMatrixOrders(List<List<int>> rowNonZeroes)
@@ -487,26 +456,17 @@ namespace PMKS.VelocityAndAcceleration
             }
         }
 
-
-
-        private bool jointIsKnownState(joint j)
-        {
-            return ((j.isGround && (j.jointType == JointTypes.R || j.jointType == JointTypes.G))
-                || ((j.Link2 == inputLink || (j.Link1 == inputLink && !j.SlidingWithRespectTo(inputLink)))));
-        }
-
         protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
             bool linkIsKnown);
 
-        protected abstract void SetInitialInputAndGroundLinkStates();
-        protected abstract void SetInitialInputAndGroundJointStates();
+        protected abstract void SetInitialInputAndGroundStates();
         protected abstract Boolean PutStateVarsBackInJointsAndLinks(double[] x);
         protected abstract double[] GetInitialGuess(int length);
 
 
         internal Boolean Solve()
         {
-            SetInitialInputAndGroundJointStates();
+            SetInitialInputAndGroundStates();
             try
             {
                 var rows = new List<double[]>();
@@ -531,6 +491,7 @@ namespace PMKS.VelocityAndAcceleration
                     StarMath.SetRow(j, A, rows[rowOrdering[j]]);
                     b[j] = answers[rowOrdering[j]];
                 }
+
                 var x = StarMath.solve(A, b);
                 if (x.Any(value => Double.IsInfinity(value) || Double.IsNaN(value))) return false;
                 if (x.Any() && x.All(Constants.sameCloseZero)) return false;

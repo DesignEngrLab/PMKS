@@ -10,8 +10,7 @@ namespace PMKS_Silverlight_App
 {
     public static class IOStringFunctions
     {
-        private static string debugString = //"";
-    "mech=ground input R 0.000 0.000 tfff|input a RP 25.000 0.000 0.000 tfff|a ground R 0.000 30.000 0.000 tfft|";
+        private static string debugString = "";
         public const string GlobalSettingString = "set=";
         public const string TargetShapeString = "ts=";
         public const string MechanismString = "mech=";

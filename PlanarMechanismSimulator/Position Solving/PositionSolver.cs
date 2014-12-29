@@ -75,8 +75,7 @@ namespace PMKS.PositionSolving
                 posResult = PositionAnalysisResults.NoSolvableDyadFound;
                 foreach (var j in joints)
                 {
-                    if (j.positionKnown == KnownState.Fully || (j.Link2 == null && j.Link1.ReferenceJoint1 != j))
-                        continue;
+                    if (j.positionKnown == KnownState.Fully || j.JustATracer) continue;
                     joint knownJoint1;
                     joint knownJoint2;
                     GearData gData;
@@ -86,15 +85,13 @@ namespace PMKS.PositionSolving
                         case JointTypes.R:
 
                             #region R-R-R
-                            if ((j.Link2 == null && j.Link1.ReferenceJoint1 == j)
-                                && FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
+                            if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
                                 && FindKnownSlopeOnLink(j, j.Link1, out knownJoint2, knownJoint1))
                             {
                                 var sJPoint = solveViaIntersectingLines(j, knownJoint1, knownJoint2);
                                 assignJointPosition(j, sJPoint, j.Link1);
                                 setLinkPositionFromRotate(j, j.Link1);
-                                setLinkPositionFromRotate(j, j.Link2);
-
+                                setLinkPositionFromRotate(j, j.Link2); 
                             }
                             else if (FindKnownPositionOnLink(j, j.Link1, out knownJoint1) &&
                                FindKnownPositionOnLink(j, j.Link2, out knownJoint2))
@@ -709,6 +706,7 @@ namespace PMKS.PositionSolving
         internal void setLinkPositionFromRotate(joint knownJoint, link thisLink, double angleChange = double.NaN)
         {
             if (thisLink == null) return;
+            if (posResult == PositionAnalysisResults.InvalidPosition) return;
             //if (thisLink.AngleIsKnown == KnownState.Fully) return; //this sometimes happen as the process recurses, esp. around RP and G joints   
             // if (double.IsNaN(angleChange) && thisLink.AngleIsKnown == KnownState.Fully)
             if (thisLink.AngleIsKnown == KnownState.Fully)

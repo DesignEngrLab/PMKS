@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using PMKS;
@@ -93,7 +94,7 @@ namespace PMKS.VelocityAndAcceleration
         {
             var value = 0.0;
             if (joint1IsKnown) value += joint1.vy;
-            if (joint2IsKnown) value -= joint2.vy;
+            if (joint2IsKnown) value -= joint2.vy;      
             if (linkIsKnown) value -= link.Velocity * (joint1.x - joint2.x);
             return value;
         }
