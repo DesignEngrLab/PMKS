@@ -15,6 +15,8 @@ namespace PMKS_Silverlight_App
 {
     public class GroundLinkShape : Panel
     {
+        private const int grayscale = 180;
+        private const int opacity = 180;
         #region Constructor
         public GroundLinkShape(link groundLink, double xOffset, double yOffset, double strokeThickness, double jointSize,
                             double startingBufferRadius)
@@ -57,18 +59,18 @@ namespace PMKS_Silverlight_App
                             Data =
                                 SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
                                     startingBufferRadius),
-                            Fill = new ImageBrush
-                            {
-                                ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
-                                Stretch = Stretch.UniformToFill
-                                //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
-                                // in order to do this, you will need code to handle the tiling - not native to Silverlight
-                                // use Shazzam (http://shazzam-tool.com/) to make the shader fx
-                                // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
-                                // or 
-                            }
-                            //Fill = new SolidColorBrush(Colors.DarkGray)
-                        });          
+                            //Fill = new ImageBrush
+                            //{
+                            //    ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
+                            //    Stretch = Stretch.UniformToFill
+                            //    //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
+                            //    // in order to do this, you will need code to handle the tiling - not native to Silverlight
+                            //    // use Shazzam (http://shazzam-tool.com/) to make the shader fx
+                            //    // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
+                            //    // or 
+                            //}
+                            Fill = new SolidColorBrush(new Color { A = opacity, B = grayscale, G = grayscale, R = grayscale })
+                        });
                         Children.Add(new Path
                         {
                             Data =
@@ -86,18 +88,19 @@ namespace PMKS_Silverlight_App
                               {
                                   Data =
                                       SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
-                                          startingBufferRadius),
-                                  Fill = new ImageBrush
-                                  {
-                                      ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
-                                      Stretch = Stretch.UniformToFill
-                                      //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
-                                      // in order to do this, you will need code to handle the tiling - not native to Silverlight
-                                      // use Shazzam (http://shazzam-tool.com/) to make the shader fx
-                                      // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
-                                      // or 
-                                  }
-                              });   
+                                          startingBufferRadius),     
+                            Fill = new SolidColorBrush(new Color { A = opacity, B = grayscale, G = grayscale, R = grayscale })
+                                  //Fill = new ImageBrush
+                                  //{
+                                  //    ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
+                                  //    Stretch = Stretch.UniformToFill
+                                  //    //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
+                                  //    // in order to do this, you will need code to handle the tiling - not native to Silverlight
+                                  //    // use Shazzam (http://shazzam-tool.com/) to make the shader fx
+                                  //    // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
+                                  //    // or 
+                                  //}
+                              });
                             Children.Add(new Path
                               {
                                   Data =
