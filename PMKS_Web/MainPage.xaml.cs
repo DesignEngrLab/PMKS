@@ -231,16 +231,20 @@ namespace PMKS_Silverlight_App
                     {
                         pmks.InputSpeed = Speed;
                         globalSettings.SpeedHeaderTextBlock.Text = "Speed (unit/sec)";
+                        if (AnalysisStep == AnalysisType.error)
+                            pmks.MaxSmoothingError = Error;
+                        else
+                            pmks.DeltaAngle = AngleIncrement;
                     }
                     else
                     {
                         pmks.InputSpeed = DisplayConstants.RadiansPerSecToRPM * Speed;
                         globalSettings.SpeedHeaderTextBlock.Text = "Speed (rpm)";
+                        if (AnalysisStep == AnalysisType.error)
+                            pmks.MaxSmoothingError = Error;
+                        else
+                            pmks.DeltaAngle = AngleIncrement / DisplayConstants.RadiansToDegrees;
                     }
-                    if (AnalysisStep == AnalysisType.error)
-                        pmks.MaxSmoothingError = Error;
-                    else
-                        pmks.DeltaAngle = AngleIncrement / DisplayConstants.RadiansToDegrees;
                 }
                 else
                 {
@@ -667,7 +671,7 @@ namespace PMKS_Silverlight_App
             PlayButton_Unchecked(sender, e);
             if (e.Delta > 0) timeSlider.Value += timeSlider.LargeChange;
             else timeSlider.Value -= timeSlider.LargeChange;
-        }          
+        }
 
         private void RefreshButton_OnClick(object sender, RoutedEventArgs e)
         {

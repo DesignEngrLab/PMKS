@@ -169,15 +169,15 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismKinematicSimulator.csproj">
-      <Project>{fce6c7c0-f4a9-46f9-97be-b4de7f8404c2}</Project>
-      <Name>PlanarMechanismKinematicSimulator</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Properties\groundhashMED.png" />
     <Content Include="Properties\AppManifest.xml" />
     <None Include="Properties\OutOfBrowserSettings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PlanarMechanismSimulator\PlanarMechanismKinematicSimulator.csproj">
+      <Project>{dc360453-2427-48dd-ab90-18b3fc1621e1}</Project>
+      <Name>PlanarMechanismKinematicSimulator</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
