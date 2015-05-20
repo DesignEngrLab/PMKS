@@ -26,7 +26,7 @@ namespace SimulatorConsoleApplication
             + "input,coupler,R,0,450\n"
             + "coupler,follower,R,120, 370\n"
             + "follower,ground,P,120,300";
-            // http://people.oregonstate.edu/~campmatt/pmks.html?mech=ground input R 0 350 ---+|input coupler R 0 450 ----|coupler follower R 120 370 ----|follower ground P 120 300 0 ----|
+            //  http://designengrlab.github.io/PMKS/pmks.html?mech=ground input R 0 350 ---+|input coupler R 0 450 ----|coupler follower R 120 370 ----|follower ground P 120 300 0 ----|
 
 
             var pms = new PMKS.Simulator(data);
