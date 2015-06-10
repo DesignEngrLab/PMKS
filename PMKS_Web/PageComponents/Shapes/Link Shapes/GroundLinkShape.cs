@@ -54,32 +54,60 @@ namespace PMKS_Silverlight_App
                         });
                         break;
                     case JointTypes.P:
-                        Children.Add(new Path
+                        if (j.SlidingWithRespectTo(groundLink))
                         {
-                            Data =
-                                SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
-                                    startingBufferRadius),
-                            //Fill = new ImageBrush
-                            //{
-                            //    ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
-                            //    Stretch = Stretch.UniformToFill
-                            //    //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
-                            //    // in order to do this, you will need code to handle the tiling - not native to Silverlight
-                            //    // use Shazzam (http://shazzam-tool.com/) to make the shader fx
-                            //    // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
-                            //    // or 
-                            //}
-                            Fill = new SolidColorBrush(new Color { A = opacity, B = grayscale, G = grayscale, R = grayscale })
-                        });
-                        Children.Add(new Path
+                            Children.Add(new Path
+                            {
+                                Data =
+                                    SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
+                                        startingBufferRadius),
+                                //Fill = new ImageBrush
+                                //{
+                                //    ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),
+                                //    Stretch = Stretch.UniformToFill
+                                //    //RelativeTransform = new ScaleTransform{ScaleX = 1.0,ScaleY = 1.0}
+                                //    // in order to do this, you will need code to handle the tiling - not native to Silverlight
+                                //    // use Shazzam (http://shazzam-tool.com/) to make the shader fx
+                                //    // then use http://silverscratch.blogspot.com/2010/09/tiled-image-brush-for-silverlight.html
+                                //    // or 
+                                //}
+                                Fill =
+                                    new SolidColorBrush(new Color
+                                    {
+                                        A = opacity,
+                                        B = grayscale,
+                                        G = grayscale,
+                                        R = grayscale
+                                    })
+                            });
+                            Children.Add(new Path
+                            {
+                                Data =
+                                    SlideShapeMaker.MakePSlotHole(j, groundLink, xOffset, yOffset, jointSize,
+                                        startingBufferRadius),
+                                Stroke = new SolidColorBrush(Colors.Black),
+                                Fill = new SolidColorBrush(Colors.White),
+                                StrokeThickness = strokeThickness
+                            });
+                        }
+                        else
                         {
-                            Data =
-                                SlideShapeMaker.MakePSlotHole(j, groundLink, xOffset, yOffset, jointSize,
-                                    startingBufferRadius),
-                            Stroke = new SolidColorBrush(Colors.Black),
-                            Fill = new SolidColorBrush(Colors.White),
-                            StrokeThickness = strokeThickness
-                        });
+                            Children.Add(new Path
+                            {
+                                Data =
+                                    SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
+                                        startingBufferRadius,true),
+                                Fill =
+                                    new SolidColorBrush(new Color
+                                    {
+                                        A = opacity,
+                                        B = grayscale,
+                                        G = grayscale,
+                                        R = grayscale
+                                    })
+                            });
+                        }
+
                         break;
                     case JointTypes.RP:
                         if (j.SlidingWithRespectTo(groundLink))
@@ -88,8 +116,8 @@ namespace PMKS_Silverlight_App
                               {
                                   Data =
                                       SlideShapeMaker.MakePSlotBorder(j, groundLink, xOffset, yOffset, jointSize,
-                                          startingBufferRadius),     
-                            Fill = new SolidColorBrush(new Color { A = opacity, B = grayscale, G = grayscale, R = grayscale })
+                                          startingBufferRadius),
+                                  Fill = new SolidColorBrush(new Color { A = opacity, B = grayscale, G = grayscale, R = grayscale })
                                   //Fill = new ImageBrush
                                   //{
                                   //    ImageSource = new BitmapImage(new Uri("../Properties/groundhashMED.png", UriKind.Relative)),

@@ -62,14 +62,15 @@ namespace PMKS_Silverlight_App
 
         }
 
-        internal static RectangleGeometry MakePSlotBorder(joint j, link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
+        internal static RectangleGeometry MakePSlotBorder(joint j, link thisLink, double xOffset, double yOffset, double jointSize,
+            double startingBufferRadius, Boolean showNoSlot = false)
         {
             var slideAngle = j.SlideAngleInitial + Math.PI;
             var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
-            var beforeSimulation = (j.MaxSlidePosition - j.MinSlidePosition < blockWidth);
+            showNoSlot = showNoSlot || (j.MaxSlidePosition - j.MinSlidePosition < blockWidth);
             var blockHeight = 2 * jointSize;
-            var slideWidth = (beforeSimulation) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
-            var origX = (beforeSimulation) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
+            var slideWidth = (showNoSlot) ? 3 * blockWidth : j.MaxSlidePosition - j.MinSlidePosition + blockWidth;
+            var origX = (showNoSlot) ? slideWidth / 2 : j.OrigSlidePosition - j.MinSlidePosition + blockWidth / 2;
 
             var borderShape = new RectangleGeometry
             {
@@ -86,7 +87,6 @@ namespace PMKS_Silverlight_App
                 }
             };
             return borderShape;
-
         }
     }
 }

@@ -254,7 +254,7 @@ namespace PMKS_Silverlight_App
             /* now add the link shapes */
             for (int i = 0; i < pmks.numLinks; i++)
             {
-                if (!pmks.AllLinks[i].isGround)
+                if (!pmks.AllLinks[i].name.Equals("ground"))
                     Children.Add(new LinkShape(i, pmks.AllLinks[i], XAxisOffset, YAxisOffset, penThick, jointSize, null,
                                                             DisplayConstants.DefaultBufferRadius / ScaleFactor));
             }

@@ -51,6 +51,8 @@ namespace PMKS
             Task.WaitAll(forwardTask, backwardTask);
 #endif
             DefineMovementCharacteristics();
+            if (invertedToSolveNonGroundInput)
+                TransposeLinkAndJointParameters();
         }
 
         private static void CopyJointsAndLinksForBackwards(List<joint> AllJoints, List<link> AllLinks,
@@ -133,6 +135,33 @@ namespace PMKS
                 CycleType = CycleTypes.MoreThanOneCycle;
             }
             InitializeQueryVars();
+        }
+
+        private void TransposeLinkAndJointParameters()
+        {     
+#if DEBUGSERIAL
+            var fixedGroundJoints = AllJoints.Where(j => j.FixedWithRespectTo(groundLink)).ToList();
+            var index1 = AllJoints.IndexOf(fixedGroundJoints.First());
+            var index2 = AllJoints.IndexOf(fixedGroundJoints.Last());
+            TransposeJointPosition(index1, index2);
+#else
+#endif
+        }
+
+        private void TransposeJointPosition(int index1, int index2)
+        {                                                 
+            var x1Offset = AllJoints[index1].xInitial;
+            var y1Offset = AllJoints[index1].yInitial;
+            var x2Offset = AllJoints[index2].xInitial;
+            var y2Offset = AllJoints[index2].yInitial;
+            for (int i = 0; i < JointParameters.LastIndex; i++)
+            {
+                var matrix = JointParameters[i].Value;
+                var tx = matrix[index1, 0] - x1Offset;
+                var ty = matrix[index1, 1] - y1Offset;
+                var rX = matrix[index2, 0] - x1Offset - x2Offset;
+                var rY = matrix[index2, 0] - y1Offset - y2Offset;
+            }
         }
 
         private bool DoesMechanismRepeatOnCrankCycle(double cyclePeriodTime)

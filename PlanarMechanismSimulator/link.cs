@@ -16,7 +16,7 @@ namespace PMKS
         /// <summary>
         /// Is the link the ground-link?
         /// </summary>
-        public readonly Boolean isGround;
+        public Boolean IsGround { get; internal set; }
 
         internal KnownState AngleIsKnown;
 
@@ -78,7 +78,7 @@ namespace PMKS
         {
             this.name = name;
             joints = Joints;
-            isGround = IsGround;
+            this.IsGround = IsGround;
         }
 
         private link()
@@ -100,7 +100,7 @@ namespace PMKS
              * it will necessarily have one due to the addition of a joint added in
              * Simulator.addReferencePivotsToSlideOnlyLinks()) or is ground, then the 
              * initial angle is zero. */
-            if (fixedJoints.Count == 2 && !this.isGround)
+            if (fixedJoints.Count == 2 && !this.IsGround)
                 AngleInitial = Constants.angle(ReferenceJoint1, fixedJoints[1]);
             else AngleInitial = 0.0;
             Angle = AngleNumerical = AngleLast = AngleInitial;
@@ -232,7 +232,7 @@ namespace PMKS
             if (distanceToSlideLine.ContainsKey(index))
                 return distanceToSlideLine[index];
             else //throw new Exception("link.DistanceBetweenSlides ->args wrong");
-            return distanceToSlideLine[numJoints * fixedIndex + slideIndex];
+                return distanceToSlideLine[numJoints * fixedIndex + slideIndex];
         }
         /// <summary>
         /// returns the angle between the slide and the reference joint.

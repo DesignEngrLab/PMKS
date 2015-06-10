@@ -19,7 +19,7 @@ namespace PMKS_Silverlight_App
            {
                Width = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease,
                Height = 2 * jointSize,
-               Fill = new SolidColorBrush(Colors.Transparent),
+               Fill = (isGround) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Transparent),
                Stroke = new SolidColorBrush(Colors.Black),
                StrokeThickness = strokeThickness,
                RenderTransformOrigin = new Point(0.5, 0.5),
