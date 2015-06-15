@@ -49,7 +49,8 @@ namespace PMKS
         /// Gets the index of the driving.
         /// </summary>
         /// <value>The index of the driving.</value>
-        public int DrivingIndex { get; private set; }
+        /// todo: get rid of this!
+        private int DrivingIndex { get;  set; }
 
         /// <summary>
         /// Gets the new index of a joint (value in the cell) given the original position.
@@ -462,14 +463,23 @@ namespace PMKS
                 invertedToSolveNonGroundInput = true;
                 originalGroundLink = groundLink;
                 var numFixedJointsOnLink1 = inputJoint.Link1.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link1));
-                if (numFixedJointsOnLink1 >= 2) groundLink = inputJoint.Link1;
+                if (numFixedJointsOnLink1 >= 2)
+                {
+                    inputLink = inputJoint.Link2;
+                    groundLink = inputJoint.Link1;
+                }
                 else
                 {
                     var numFixedJointsOnLink2 = inputJoint.Link2.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link2));
-                    if (numFixedJointsOnLink2 >= 2) groundLink = inputJoint.Link2;
+                    if (numFixedJointsOnLink2 >= 2)
+                    {
+                        inputLink = inputJoint.Link1;
+                        groundLink = inputJoint.Link2;
+                    }
                     else
                     {
                         groundLink = numFixedJointsOnLink1 > 0 ? inputJoint.Link1 : inputJoint.Link2;
+                        inputLink = numFixedJointsOnLink1 > 0 ? inputJoint.Link2 : inputJoint.Link1;
                         var newJoint = new joint(true, "r") { Link1 = groundLink };
                         groundLink.joints.Add(newJoint);
                         AllJoints.Add(newJoint);
@@ -495,13 +505,13 @@ namespace PMKS
                     inputJoint.Link2 = tempLinkRef;
                 }
                 inputLink = inputJoint.Link2;
-            }
+            }                                                    
+            /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
+            var origOrder = new List<joint>(AllJoints);
             /* reorder links, move input link and ground link to back of list */
             AllLinks.Remove(inputLink); AllLinks.Add(inputLink); //move inputLink to back of list
             AllLinks.Remove(groundLink); AllLinks.Add(groundLink); //move ground to back of list
             inputLinkIndex = numLinks - 2;
-            /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
-            var origOrder = new List<joint>(AllJoints);
             var groundPivots = groundLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(groundLink)).ToList();
             AllJoints.Remove(inputJoint);
             AllJoints.RemoveAll(groundPivots.Contains);

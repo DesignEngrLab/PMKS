@@ -178,7 +178,7 @@ namespace PMKS_Silverlight_App
                                           new PropertyMetadata(false));
 
 
-        public Boolean CanBeDriver { get { return (LinkNames != null && LinkNames.Contains("ground")); } }
+        public Boolean CanBeDriver { get { return (LinkNames != null && LinkNamesList.Count() > 1); } }
 
         internal static bool ConvertTextToData(string text, out List<JointData> jointsInfo)
         {
