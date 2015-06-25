@@ -10,7 +10,7 @@ namespace PMKS_Silverlight_App
     {
 
         public InputRPJointShape(double jointSize, double strokeThickness, double xPosition, double yPosition, double xAxisOffset,
-            double yAxisOffset, double angle, bool isGround, JointData jointData)
+            double yAxisOffset, double angle, bool isGround, int jointNum, JointData jointData)
             : base(2 * jointSize , 2 * jointSize, strokeThickness, xPosition,
             yPosition, xAxisOffset, yAxisOffset, angle, "PMoveArrows", "PRotateArrows", jointData)
         {

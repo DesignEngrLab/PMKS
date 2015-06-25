@@ -8,8 +8,8 @@ namespace PMKS_Silverlight_App
     public class InputRJointShape : InputJointBaseShape
     {
         public InputRJointShape(double radius, double strokeThickness, double xPosition, double yPosition, double xAxisOffset,
-            double yAxisOffset, bool isGround, JointData jointData)
-            : base(2 * radius, 2 * radius, strokeThickness, xPosition, yPosition, xAxisOffset, yAxisOffset, 0, "MoveArrows","", jointData)
+            double yAxisOffset, bool isGround, bool isDriver, int jointNum, JointData jointData)
+            : base(2 * radius, 2 * radius, strokeThickness, xPosition, yPosition, xAxisOffset, yAxisOffset, 0, "MoveArrows", "", jointData)
         {
             /* now draw the actual joint */
             var fillBrush = /*isGround ? new SolidColorBrush(Colors.Black) :*/ new SolidColorBrush(Colors.Transparent);
@@ -17,9 +17,9 @@ namespace PMKS_Silverlight_App
             {
                 Width = 2 * radius,
                 Height = 2 * radius,
-                Stroke = new SolidColorBrush(Colors.Black),
+                Stroke = (isDriver) ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Black),
+                StrokeThickness = (isDriver) ? 3 * strokeThickness : strokeThickness,
                 Fill = fillBrush,
-                StrokeThickness = strokeThickness,
                 RenderTransform = new TranslateTransform
                 {
                     X = -radius,

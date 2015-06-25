@@ -224,13 +224,14 @@ namespace PMKS
         /// </summary>
         /// <value>The input link.</value>
         public link inputLink { get; private set; }
+
         /// <summary>
         /// Gets the ground link.
         /// </summary>
         /// <value>The ground link.</value>
-        public link groundLink { get; private set; }
+        private link groundLinkForSimulation;
 
-        private link originalGroundLink;
+        public link GroundLink { get; private set; }
         /// <summary>
         /// Gets the indices of joints (in the new PMKS order, not the order originially given)
         /// that are not to be updated or assigned from the AssignPositions function.
@@ -455,18 +456,18 @@ namespace PMKS
             if (groundLinks.Count != 1)
                 throw new Exception("There can only be one ground link. In this case, there are "
                                     + groundLinks.Count);
-            groundLink = groundLinks[0];
+            GroundLink = groundLinkForSimulation = groundLinks[0];
             if (inputJoint.Link2 == null)
                 throw new Exception("The input driver must be between two links (cannot be applied to a single link as in the current description).");
             if (!inputJoint.Link1.IsGround && !inputJoint.Link2.IsGround)
             {
                 invertedToSolveNonGroundInput = true;
-                originalGroundLink = groundLink;
+                GroundLink = groundLinkForSimulation;
                 var numFixedJointsOnLink1 = inputJoint.Link1.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link1));
                 if (numFixedJointsOnLink1 >= 2)
                 {
                     inputLink = inputJoint.Link2;
-                    groundLink = inputJoint.Link1;
+                    groundLinkForSimulation = inputJoint.Link1;
                 }
                 else
                 {
@@ -474,24 +475,24 @@ namespace PMKS
                     if (numFixedJointsOnLink2 >= 2)
                     {
                         inputLink = inputJoint.Link1;
-                        groundLink = inputJoint.Link2;
+                        groundLinkForSimulation = inputJoint.Link2;
                     }
                     else
                     {
-                        groundLink = numFixedJointsOnLink1 > 0 ? inputJoint.Link1 : inputJoint.Link2;
+                        groundLinkForSimulation = numFixedJointsOnLink1 > 0 ? inputJoint.Link1 : inputJoint.Link2;
                         inputLink = numFixedJointsOnLink1 > 0 ? inputJoint.Link2 : inputJoint.Link1;
-                        var newJoint = new joint(true, "r") { Link1 = groundLink };
-                        groundLink.joints.Add(newJoint);
+                        var newJoint = new joint(true, "r") { Link1 = groundLinkForSimulation };
+                        groundLinkForSimulation.joints.Add(newJoint);
                         AllJoints.Add(newJoint);
                         additionalRefjoints.Add(newJoint);
                     }
                 }
-                groundLink.IsGround = true;
-                originalGroundLink.IsGround = false;
-                if (originalGroundLink.joints.Count(j => j.FixedWithRespectTo(originalGroundLink)) < 2)
+                groundLinkForSimulation.IsGround = true;
+                GroundLink.IsGround = false;
+                if (GroundLink.joints.Count(j => j.FixedWithRespectTo(GroundLink)) < 2)
                 {
-                    var newJoint = new joint(false, "r") { Link1 = originalGroundLink };
-                    originalGroundLink.joints.Add(newJoint);
+                    var newJoint = new joint(false, "r") { Link1 = GroundLink };
+                    GroundLink.joints.Add(newJoint);
                     AllJoints.Add(newJoint);
                     additionalRefjoints.Add(newJoint);
                 }
@@ -510,9 +511,9 @@ namespace PMKS
             var origOrder = new List<joint>(AllJoints);
             /* reorder links, move input link and ground link to back of list */
             AllLinks.Remove(inputLink); AllLinks.Add(inputLink); //move inputLink to back of list
-            AllLinks.Remove(groundLink); AllLinks.Add(groundLink); //move ground to back of list
+            AllLinks.Remove(groundLinkForSimulation); AllLinks.Add(groundLinkForSimulation); //move ground to back of list
             inputLinkIndex = numLinks - 2;
-            var groundPivots = groundLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(groundLink)).ToList();
+            var groundPivots = groundLinkForSimulation.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(groundLinkForSimulation)).ToList();
             AllJoints.Remove(inputJoint);
             AllJoints.RemoveAll(groundPivots.Contains);
 

@@ -44,7 +44,7 @@ namespace PMKS
             CopyJointsAndLinksForBackwards(AllJoints, AllLinks, out backwardJoints, out backwardLinks);
 
             /*** Stepping Forward in Time ***/
-            var forwardTask =  Task.Factory.StartNew(() => Simulate(AllJoints, AllLinks, true));
+            var forwardTask = Task.Factory.StartNew(() => Simulate(AllJoints, AllLinks, true));
 
             /*** Stepping Backward in Time ***/
             var backwardTask = Task.Factory.StartNew(() => Simulate(backwardJoints, backwardLinks, false));
@@ -139,70 +139,107 @@ namespace PMKS
 
         private void TransposeLinkAndJointParameters()
         {
+            var fixedGroundJoints = GroundLink.joints.Where(j => j.FixedWithRespectTo(GroundLink)).ToList();
+            var gndJointIndex = AllJoints.IndexOf(fixedGroundJoints[0]);
+            var gndLinkIndex = AllLinks.IndexOf(GroundLink);
+            for (int i = 0; i <= LinkParameters.LastIndex; i++)
+                LinkParameters[i].Value[gndLinkIndex, 0] -= GroundLink.AngleInitial;
+            TransposeJointPosition(gndJointIndex, gndLinkIndex);
 #if DEBUGSERIAL
-            var fixedGroundJoints = originalGroundLink.joints.Where(j => j.FixedWithRespectTo(originalGroundLink)).ToList();
-            var gndJointIndex1 = AllJoints.IndexOf(fixedGroundJoints[0]);
-            var gndJointIndex2 = AllJoints.IndexOf(fixedGroundJoints[1]);
-            var gndLinkIndex = AllLinks.IndexOf(originalGroundLink);
-            TransposeJointPosition(gndJointIndex1, gndJointIndex2);
-            TransposeJointVelocityOrAcceleration(gndJointIndex1, gndJointIndex2, 2);
-            TransposeJointVelocityOrAcceleration(gndJointIndex1, gndJointIndex2, 4);
-            var x1Offset = AllJoints[gndJointIndex1].xInitial;
-            var y1Offset = AllJoints[gndJointIndex1].yInitial;
-            var x2Offset = AllJoints[gndJointIndex2].xInitial;
-            var y2Offset = AllJoints[gndJointIndex2].yInitial;
-            TransposeLinkStateVariables(gndLinkIndex, 0, Math.Atan2(y2Offset - y1Offset, x2Offset - x1Offset));
+            TransposeJointVelocity(gndJointIndex, gndLinkIndex);
+            TransposeJointAcceleration(gndJointIndex, gndLinkIndex);
+            
+            TransposeLinkStateVariables(gndLinkIndex, 0);
             TransposeLinkStateVariables(gndLinkIndex, 1);
             TransposeLinkStateVariables(gndLinkIndex, 2);
 #else
+            /* These joint velocity and acceleration functions don't depend on each other, but they
+                 * require the position to be complete and that the link state variables stay untouched. */
+            var task1 = Task.Factory.StartNew(() => TransposeJointVelocity(gndJointIndex, gndLinkIndex));
+            var task2 = Task.Factory.StartNew(() => TransposeJointAcceleration(gndJointIndex, gndLinkIndex));
+            Task.WaitAll(task1, task2);    
+
+            var task3 = Task.Factory.StartNew(() => TransposeLinkStateVariables(gndLinkIndex, 0));
+            var task4 = Task.Factory.StartNew(() => TransposeLinkStateVariables(gndLinkIndex, 1));
+            var task5 = Task.Factory.StartNew(() => TransposeLinkStateVariables(gndLinkIndex, 2));
+            Task.WaitAll(task3, task4, task5);
 #endif
         }
 
-        private void TransposeJointPosition(int gndIndex1, int gndIndex2)
-        {
-            var x1Offset = AllJoints[gndIndex1].xInitial;
-            var y1Offset = AllJoints[gndIndex1].yInitial;
-            for (int i = 0; i <= JointParameters.LastIndex; i++)
-            {
-                var jParams = JointParameters[i].Value;
-                var tx = -jParams[gndIndex1, 0] + x1Offset;
-                var ty = -jParams[gndIndex1, 1] + y1Offset;
-                var newAngle = -Math.Atan2(jParams[gndIndex2, 1] - jParams[gndIndex1, 1], jParams[gndIndex2, 0] - jParams[gndIndex1, 0]);
-                var cosAngle = Math.Cos(newAngle);
-                var sinAngle = Math.Sin(newAngle);
-                for (int j = 0; j < numJoints; j++)
-                {
-                    var xNew = (jParams[j, 0] + tx) * cosAngle - (jParams[j, 1] + ty) * sinAngle;
-                    jParams[j, 1] = (jParams[j, 0] + tx) * sinAngle + (jParams[j, 1] + ty) * cosAngle;
-                    jParams[j, 0] = xNew;
-                }
-            }
-        }
-        private void TransposeLinkStateVariables(int gndLinkIndex, int varIndex, double origAngle = 0.0)
+        private void TransposeLinkStateVariables(int gndLinkIndex, int varIndex)
         {
             for (int i = 0; i <= LinkParameters.LastIndex; i++)
             {
                 var lParams = LinkParameters[i].Value;
-                var offset = origAngle - lParams[gndLinkIndex, varIndex];
+                var offset = lParams[gndLinkIndex, varIndex];
                 for (int j = 0; j < numLinks; j++)
-                    lParams[j, varIndex] += offset;
+                    lParams[j, varIndex] -= offset;
             }
         }
-        private void TransposeJointVelocityOrAcceleration(int index1, int index2, int xIndex)
+
+        private void TransposeJointPosition(int gndJointIndex, int gndLinkIndex)
         {
+            var xOffset = AllJoints[gndJointIndex].xInitial;
+            var yOffset = AllJoints[gndJointIndex].yInitial;
             for (int i = 0; i <= JointParameters.LastIndex; i++)
             {
                 var jParams = JointParameters[i].Value;
-                var tx = -jParams[index1, xIndex];
-                var ty = -jParams[index1, xIndex + 1];
-                var newAngle = -Math.Atan2(jParams[index2, xIndex + 1] - jParams[index1, xIndex + 1], jParams[index2, xIndex] - jParams[index1, xIndex]);
+                var tx = jParams[gndJointIndex, 0];
+                var ty = jParams[gndJointIndex, 1];
+                var newAngle = -LinkParameters[i].Value[gndLinkIndex, 0];
                 var cosAngle = Math.Cos(newAngle);
                 var sinAngle = Math.Sin(newAngle);
                 for (int j = 0; j < numJoints; j++)
                 {
-                    var xNew = (jParams[j, xIndex] + tx) * cosAngle - (jParams[j, xIndex + 1] + ty) * sinAngle;
-                    jParams[j, xIndex + 1] = (jParams[j, xIndex] + tx) * sinAngle + (jParams[j, xIndex + 1] + ty) * cosAngle;
-                    jParams[j, xIndex] = xNew;
+                    var xNew = (jParams[j, 0] - tx) * cosAngle - (jParams[j, 1] - ty) * sinAngle + xOffset;
+                    jParams[j, 1] = (jParams[j, 0] - tx) * sinAngle + (jParams[j, 1] - ty) * cosAngle + yOffset;
+                    jParams[j, 0] = xNew;
+                }
+            }
+        }
+        private void TransposeJointVelocity(int gndJointIndex1, int gndLinkIndex)
+        {
+            for (int i = 0; i <= JointParameters.LastIndex; i++)
+            {
+                var jParams = JointParameters[i].Value;
+                var VxGnd = jParams[gndJointIndex1, 2];
+                var VyGnd = jParams[gndJointIndex1, 3];
+                var newAngle = -LinkParameters[i].Value[gndLinkIndex, 0];
+                var cosAngle = Math.Cos(newAngle);
+                var sinAngle = Math.Sin(newAngle);
+                var angularVelocity = LinkParameters[i].Value[gndLinkIndex, 1];
+                for (int j = 0; j < numJoints; j++)
+                {
+                    var xNew = (jParams[j, 2] - VxGnd) * cosAngle - (jParams[j, 3] - VyGnd) * sinAngle
+                        + angularVelocity * (jParams[j, 1] - jParams[gndJointIndex1, 1]);
+                    jParams[j, 3] = (jParams[j, 2] - VxGnd) * sinAngle + (jParams[j, 3] - VyGnd) * cosAngle
+                        - angularVelocity * (jParams[j, 0] - jParams[gndJointIndex1, 0]);
+                    jParams[j, 2] = xNew;
+                }
+            }
+        }
+
+        private void TransposeJointAcceleration(int gndJointIndex1, int gndLinkIndex)
+        {
+            for (int i = 0; i <= JointParameters.LastIndex; i++)
+            {
+                var jParams = JointParameters[i].Value;
+                var ax = jParams[gndJointIndex1, 4];
+                var ay = jParams[gndJointIndex1, 5];
+                var newAngle = -LinkParameters[i].Value[gndLinkIndex, 0];
+                var cosAngle = Math.Cos(newAngle);
+                var sinAngle = Math.Sin(newAngle);
+                var angularVelocity = LinkParameters[i].Value[gndLinkIndex, 1];
+                var angularAcceleration = LinkParameters[i].Value[gndLinkIndex, 2];
+                for (int j = 0; j < numJoints; j++)
+                {
+                    var rx = (jParams[j, 0] - jParams[gndJointIndex1, 0]);
+                    var ry = (jParams[j, 1] - jParams[gndJointIndex1, 1]);
+                    var xNew = (jParams[j, 4] - ax) * cosAngle - (jParams[j, 5] - ay) * sinAngle
+                        + angularVelocity * angularVelocity * rx + angularAcceleration * ry;
+                    jParams[j, 5] = (jParams[j, 4] - ax) * sinAngle + (jParams[j, 5] - ay) * cosAngle
+                        + angularVelocity * angularVelocity * ry - angularAcceleration * rx;
+                    jParams[j, 4] = xNew;
                 }
             }
         }
