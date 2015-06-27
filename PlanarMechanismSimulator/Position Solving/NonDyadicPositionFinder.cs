@@ -33,10 +33,10 @@ namespace PMKS.PositionSolving
                 unkJoints.Add(j);
             foreach (var j in joints)
             {
-                if (j.jointType == JointTypes.R) continue;
+                if (j.jointType == JointType.R) continue;
                 var slideLink = j.Link1;
                 var blockLink = j.Link2;
-                if (j.jointType == JointTypes.RP)
+                if (j.jointType == JointType.RP)
                 {
                     var slideJoint = slideLink.ReferenceJoint1;
                     var refJoint = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
@@ -49,7 +49,7 @@ namespace PMKS.PositionSolving
                             unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
                             j.OffsetSlideAngle, slideLink.DistanceBetweenSlides(j, slideJoint)));
                 }
-                else if (j.jointType == JointTypes.P)
+                else if (j.jointType == JointType.P)
                 {
                     var refJoint = (blockLink.ReferenceJoint1 != j) ? blockLink.ReferenceJoint1 :
                         blockLink.joints.FirstOrDefault(jt => jt != j && jt.Link2 != null && jt.FixedWithRespectTo(blockLink));

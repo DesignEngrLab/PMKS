@@ -59,7 +59,7 @@ namespace PMKS_Silverlight_App
                         slideHoles = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                         slideBorders = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                     }
-                    if (j.jointType == JointTypes.P)
+                    if (j.jointType == JointType.P)
                         slideHoles.Children.Add(SlideShapeMaker.MakePSlotHole(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
                     else slideHoles.Children.Add(SlideShapeMaker.MakeRPSlotHole(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
                     slideBorders.Children.Add(SlideShapeMaker.MakePSlotBorder(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));

@@ -19,8 +19,9 @@ namespace PMKS
     /// <summary>
     /// the accepted joint types used in this software
     /// </summary>
-    public enum JointTypes
+    public enum JointType
     {
+        unspecified,
         R,
         P,
         RP,

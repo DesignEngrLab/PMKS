@@ -82,7 +82,7 @@ namespace PMKS.PositionSolving
                     double angleChange;
                     switch (j.jointType)
                     {
-                        case JointTypes.R:
+                        case JointType.R:
 
                             #region R-R-R
                             if (FindKnownSlopeOnLink(j, j.Link1, out knownJoint1)
@@ -160,7 +160,7 @@ namespace PMKS.PositionSolving
                             #endregion
 
                             break;
-                        case JointTypes.P:
+                        case JointType.P:
 
                             #region R-P-R
 
@@ -215,7 +215,7 @@ namespace PMKS.PositionSolving
                             #endregion
 
                             break;
-                        case JointTypes.RP:
+                        case JointType.RP:
 
                             #region R-RP-R&P
 
@@ -269,7 +269,7 @@ namespace PMKS.PositionSolving
                             #endregion
 
                             break;
-                        case JointTypes.G:
+                        case JointType.G:
                             gData = gearsData[joints.IndexOf(j)];
 
                             #region R-G-R
@@ -335,8 +335,8 @@ namespace PMKS.PositionSolving
 
         internal void UpdateSliderPosition()
         {
-            foreach (var j in joints.Where(jt => jt.jointType == JointTypes.P || jt.jointType == JointTypes.RP
-                                                 || (jt.jointType == JointTypes.G && !double.IsNaN(jt.OffsetSlideAngle))))
+            foreach (var j in joints.Where(jt => jt.jointType == JointType.P || jt.jointType == JointType.RP
+                                                 || (jt.jointType == JointType.G && !double.IsNaN(jt.OffsetSlideAngle))))
             {
                 var refJoint = j.Link1.ReferenceJoint1;
 
@@ -357,13 +357,13 @@ namespace PMKS.PositionSolving
             groundLink.AngleIsKnown = KnownState.Fully;
             foreach (var j in groundLink.joints)
                 assignJointPosition(j, j.xInitial, j.yInitial, groundLink);
-            foreach (var j in groundLink.joints.Where(j => j.jointType == JointTypes.P))
+            foreach (var j in groundLink.joints.Where(j => j.jointType == JointType.P))
                 setLinkPositionFromRotate(j, j.OtherLink(groundLink), 0.0);
 
             /* now, set input link. */
-            if (inputJoint.jointType == JointTypes.R)
+            if (inputJoint.jointType == JointType.R)
                 setLinkPositionFromRotate(inputJoint, inputLink, positionChange);
-            else if (inputJoint.jointType == JointTypes.P)
+            else if (inputJoint.jointType == JointType.P)
                 setLinkPositionFromTranslation(inputJoint, inputLink, positionChange * Math.Cos(inputJoint.SlideAngle),
                     positionChange * Math.Sin(inputJoint.SlideAngle));
             else
@@ -745,7 +745,7 @@ namespace PMKS.PositionSolving
             {
                 if (j.positionKnown == KnownState.Fully)
                 {
-                    if (j.jointType == JointTypes.P && j.OtherLink(thisLink).AngleIsKnown != KnownState.Fully)
+                    if (j.jointType == JointType.P && j.OtherLink(thisLink).AngleIsKnown != KnownState.Fully)
                         setLinkPositionFromRotate(j, j.OtherLink(thisLink), angleChange);
                 }
                 else
@@ -762,7 +762,7 @@ namespace PMKS.PositionSolving
                             assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
                                 knownJoint.y + length * Math.Sin(angle), thisLink);
                         }
-                        else if (j.jointType != JointTypes.G)
+                        else if (j.jointType != JointType.G)
                         {
                             var length = thisLink.DistanceBetweenSlides(j, knownJoint);
                             var angle = j.SlideAngle - Math.PI / 2;
@@ -774,7 +774,7 @@ namespace PMKS.PositionSolving
                     }
                     var otherLink = j.OtherLink(thisLink);
                     if (otherLink == null) continue;
-                    if (j.jointType == JointTypes.G
+                    if (j.jointType == JointType.G
                         && gearsData[joints.IndexOf(j)].SetGearRotation(thisLink, otherLink, links, joints))
                     {
                         var otherKnownJoint =
@@ -782,7 +782,7 @@ namespace PMKS.PositionSolving
                                 jj => jj.FixedWithRespectTo(otherLink) && jj.positionKnown == KnownState.Fully);
                         if (otherKnownJoint != null) setLinkPositionFromRotate(otherKnownJoint, otherLink);
                     }
-                    else if (otherLink.AngleIsKnown != KnownState.Fully && j.jointType == JointTypes.P)
+                    else if (otherLink.AngleIsKnown != KnownState.Fully && j.jointType == JointType.P)
                         setLinkPositionFromRotate(j, otherLink, angleChange);
                     else if (j.positionKnown == KnownState.Fully)
                         setLinkPositionFromRotate(j, otherLink);
@@ -802,7 +802,7 @@ namespace PMKS.PositionSolving
                 if (knownJoint.FixedWithRespectTo(thisLink))
                     assignJointPosition(j, j.xLast + deltaX, j.yLast + deltaY, thisLink);
                 if (!j.FixedWithRespectTo(thisLink)) continue;
-                if (j.jointType == JointTypes.P)
+                if (j.jointType == JointType.P)
                     setLinkPositionFromTranslation(j, j.OtherLink(thisLink), deltaX, deltaY);
                 else setLinkPositionFromRotate(j, j.OtherLink(thisLink));
             }
@@ -826,8 +826,8 @@ namespace PMKS.PositionSolving
             knownJoint = null;
             if (link.AngleIsKnown == KnownState.Unknown) return false;
             knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j != avoidJoint &&
-                (j.positionKnown != KnownState.Unknown && (j.jointType == JointTypes.R || j.jointType == JointTypes.P))
-               || (j.positionKnown == KnownState.Fully && j.jointType == JointTypes.RP)
+                (j.positionKnown != KnownState.Unknown && (j.jointType == JointType.R || j.jointType == JointType.P))
+               || (j.positionKnown == KnownState.Fully && j.jointType == JointType.RP)
                );
             return knownJoint != null;
         }

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using PMKS;
 using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
@@ -13,21 +14,11 @@ namespace PMKS_Silverlight_App
     public class JointData : DependencyObject, INotifyPropertyChanged
     {
 
-        public double _xPos = double.NaN;
-        public double _yPos = double.NaN;
-        public double _angle = double.NaN;
-        private string _jointType;
+        public double X = double.NaN;
+        public double Y = double.NaN;
+        public double AngleDegrees = double.NaN;
+        public JointType TypeOfJoint;
         private string _linkNames;
-
-        public string JointType
-        {
-            get { return _jointType; }
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value)) _jointType = "";
-                else _jointType = value.Split(',', ' ')[0];
-            }
-        }
 
         public string LinkNames
         {
@@ -35,41 +26,69 @@ namespace PMKS_Silverlight_App
             set
             {
                 _linkNames = value;
-                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("gnd"))
-                    _linkNames = _linkNames.Replace("gnd", "ground");
-                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("grnd"))
-                    _linkNames = _linkNames.Replace("grnd", "ground");
-                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("grond"))
-                    _linkNames = _linkNames.Replace("grond", "ground");
-                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("gound"))
-                    _linkNames = _linkNames.Replace("gound", "ground");
-                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("groud"))
-                    _linkNames = _linkNames.Replace("groud", "ground");
-                if (_linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Contains("0"))
-                    _linkNames = _linkNames.Replace("0", "ground");
+                _linkNames = _linkNames.Replace("gnd", "ground");
+                _linkNames = _linkNames.Replace("grnd", "ground");
+                _linkNames = _linkNames.Replace("grond", "ground");
+                _linkNames = _linkNames.Replace("gound", "ground");
+                _linkNames = _linkNames.Replace("groud", "ground");
+                _linkNames = _linkNames.Replace("0", "ground");
+            }
+        }
 
+        public string JointTypeString
+        {
+            get
+            {
+                if (TypeOfJoint == JointType.unspecified) return "";
+                return TypeOfJoint.ToString();
+            }
+            set
+            {
+                string jointTypeString;
+                if (string.IsNullOrWhiteSpace(value)) jointTypeString = "";
+                else jointTypeString = value.Split(',', ' ')[0];
+                Enum.TryParse(jointTypeString, true, out TypeOfJoint);
+            }
+        }
+
+        public string[] LinkNamesList
+        {
+            set
+            {
+                var tempList = "";
+                foreach (var s in value)
+                {
+                    tempList += s;
+                    tempList += ",";
+                }
+                _linkNames = tempList.Remove(tempList.Length - 1);
                 if (Application.Current.RootVisual != null)
-                    App.main.linkInputTable.UpdateLinksTableAfterAdd(this);
+                    App.main.linkInputTable.UpdateLinksTable();
+            }
+            get
+            {
+                if (_linkNames == null || string.IsNullOrWhiteSpace(_linkNames)) return new string[0];
+                return _linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             }
         }
 
         public string XPos
         {
-            get { return (double.IsNaN(_xPos)) ? "" : _xPos.ToString("F3", CultureInfo.InvariantCulture); }
+            get { return (double.IsNaN(X)) ? "" : X.ToString("F3", CultureInfo.InvariantCulture); }
             set
             {
-                if (!double.TryParse(value, out _xPos))
-                    _xPos = double.NaN;
+                if (!double.TryParse(value, out X))
+                    X = double.NaN;
             }
         }
 
         public string YPos
         {
-            get { return (double.IsNaN(_yPos)) ? "" : _yPos.ToString("F3", CultureInfo.InvariantCulture); }
+            get { return (double.IsNaN(Y)) ? "" : Y.ToString("F3", CultureInfo.InvariantCulture); }
             set
             {
-                if (!double.TryParse(value, out _yPos))
-                    _yPos = double.NaN;
+                if (!double.TryParse(value, out Y))
+                    Y = double.NaN;
             }
         }
         // Declare the PropertyChanged event
@@ -84,58 +103,30 @@ namespace PMKS_Silverlight_App
                 PropertyChanged(sender, new PropertyChangedEventArgs(propertyName));
             }
         }
-        public string[] LinkNamesList
-        {
-            get
-            {
-                if (LinkNames != null)
-                    return LinkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                else return new string[0];
-            }
-        }
-
 
         public string Angle
         {
             get
             {
-                if (double.IsNaN(_angle)
-                    && (string.Equals(JointType, "R", StringComparison.InvariantCultureIgnoreCase)
-                    || string.IsNullOrWhiteSpace(JointType)))
-                    return "";
-                return _angle.ToString("F3", CultureInfo.InvariantCulture);
+                if (double.IsNaN(AngleDegrees))
+                {
+                    if (TypeOfJoint == JointType.R || TypeOfJoint == JointType.G || TypeOfJoint == JointType.unspecified)
+                        return "";
+                    return "required";
+                }
+                return AngleDegrees.ToString("F3", CultureInfo.InvariantCulture);
             }
             set
             {
-                if (!double.TryParse(value, out _angle))
-                    _angle = 0.0;
+                if (!double.TryParse(value, out AngleDegrees))
+                {
+                    AngleDegrees = double.NaN;
+                }
+                while (AngleDegrees > 90) AngleDegrees -= 180.0;
+                while (AngleDegrees < -90) AngleDegrees += 180.0;
             }
         }
 
-        //get
-        //{
-        //    if (double.IsNaN(_angle))
-        //    {
-        //        if (string.Equals(JointType, "P", StringComparison.InvariantCultureIgnoreCase) ||
-        //            string.Equals(JointType, "RP", StringComparison.InvariantCultureIgnoreCase))
-        //            return "REQUIRED";
-        //        else return "";
-        //    }
-        //    if (App.main.AngleUnits == AngleType.Radians)
-        //        return _angle.ToString(CultureInfo.InvariantCulture);
-        //    else
-        //        return (DisplayConstants.RadiansToDegrees * _angle).ToString(CultureInfo.InvariantCulture);
-        //}
-        //set
-        //{
-        //    if (!double.TryParse(value, out _angle))
-        //        _angle = double.NaN;
-        //    if (App.main.AngleUnits == AngleType.Degrees)
-        //        _angle /= DisplayConstants.RadiansToDegrees;
-        //    while (_angle > Math.PI / 2) _angle -= Math.PI;
-        //    while (_angle < -Math.PI / 2) _angle += Math.PI;
-        //}
-        //}
 
         public Boolean PosVisible
         {
@@ -178,92 +169,24 @@ namespace PMKS_Silverlight_App
                                           new PropertyMetadata(false));
 
 
-        public Boolean CanBeDriver { get { return (LinkNames != null && LinkNamesList.Count() > 1); } }
-
-        internal static bool ConvertTextToData(string text, out List<JointData> jointsInfo)
+        public Boolean CanBeDriver
         {
-            jointsInfo = new List<JointData>();
-            var pivotSentences = text.Split('\n').ToList();
-            pivotSentences.RemoveAll(string.IsNullOrWhiteSpace);
-            if (pivotSentences.Count == 0) return false;
-            foreach (var pivotSentence in pivotSentences)
+            get
             {
-                var words = pivotSentence.Split(',', ' ', '|').ToList();
-                words.RemoveAll(string.IsNullOrWhiteSpace);
-                var lastJointType = words.LastOrDefault(s => s.Equals("R", StringComparison.InvariantCultureIgnoreCase)
-                                                             ||
-                                                             s.Equals("P", StringComparison.InvariantCultureIgnoreCase)
-                                                             ||
-                                                             s.Equals("RP", StringComparison.InvariantCultureIgnoreCase)
-                                                             ||
-                                                             s.Equals("G", StringComparison.InvariantCultureIgnoreCase));
-                var jointTypeIndex = words.LastIndexOf(lastJointType);
-                var index = jointTypeIndex;
-                if (index <= 0) return false;
-                var typeString = words[index];
-                string angleTemp = "";
-                double temp;
-                if (words.Count() < index + 3) return false;
-                if (!double.TryParse(words[index + 1], out temp) || !double.TryParse(words[index + 2], out temp))
-                    return false;
-                string Xtemp = words[++index];
-                string Ytemp = words[++index];
-                if ((words.Count() > ++index) && double.TryParse(words[index], out temp))
-                {
-                    angleTemp = words[index];
-                    index++;
-                }
-                var bools = new bool[4];
-                if (words.Count() > index && (words[index].Contains("t") || words[index].Contains("f")))
-                {
-                    var plusMinusString = words[index];
-                    int i = 0;
-                    while (i < plusMinusString.Length)
-                    {
-                        if (plusMinusString[i].Equals('t')) bools[i] = true;
-                        i++;
-                    }
-                }
-                else
-                {
-                    int i = 0;
-                    while (index + i < words.Count)
-                    {
-                        Boolean.TryParse(words[index], out bools[i]);
-                        i++;
-                    }
-                }
-                words.RemoveRange(jointTypeIndex, words.Count - jointTypeIndex);
-                var linkIDStr = words.Aggregate("", (current, s) => current + ("," + s));
-                linkIDStr = linkIDStr.Remove(0, 1);
-                jointsInfo.Add(new JointData
-                    {
-                        JointType = typeString,
-                        XPos = Xtemp,
-                        YPos = Ytemp,
-                        Angle = angleTemp,
-                        LinkNames = linkIDStr,
-                        PosVisible = bools[0],
-                        VelocityVisible = bools[1],
-                        AccelerationVisible = bools[2],
-                        DrivingInput = bools[3]
-                    });
+                return ((TypeOfJoint == JointType.R || TypeOfJoint == JointType.P)
+                    && LinkNamesList != null && LinkNamesList.Count() > 1);
             }
-            jointsInfo.Add(new JointData());
-            if (jointsInfo.All(jd => !jd.DrivingInput))
-                jointsInfo.First(jd => jd.CanBeDriver).DrivingInput = true;
-            return true;
         }
 
-        internal static string ConvertDataToText(ObservableCollection<JointData> collection)
+        internal static string ConvertDataToText(char jointSepChar)
         {
             var text = "";
-            foreach (var jInfo in collection)
+            foreach (var jInfo in App.main.JointsInfo.Data)
             {
-                if (string.IsNullOrWhiteSpace(jInfo.LinkNames) || (string.IsNullOrWhiteSpace(jInfo.JointType)))
+                if (string.IsNullOrWhiteSpace(jInfo.LinkNames) || (string.IsNullOrWhiteSpace(jInfo.JointTypeString)))
                     continue;
                 text += jInfo.LinkNames + ",";
-                text += jInfo.JointType + ",";
+                text += jInfo.JointTypeString + ",";
                 text += jInfo.XPos + ",";
                 text += jInfo.YPos;
                 text += (!string.IsNullOrWhiteSpace(jInfo.Angle)) ? "," + jInfo.Angle : "";
@@ -272,15 +195,7 @@ namespace PMKS_Silverlight_App
                               + (jInfo.VelocityVisible ? 't' : 'f')
                               + (jInfo.AccelerationVisible ? 't' : 'f')
                               + (jInfo.DrivingInput ? 't' : 'f');
-                //var boolStr = "," + jInfo.PosVisible
-                //    + "," + jInfo.VelocityVisible
-                //    + "," + jInfo.AccelerationVisible
-                //    + "," + jInfo.DrivingInput;
-                //while (boolStr.EndsWith(",False"))
-                //{
-                //    boolStr = boolStr.Remove(boolStr.Length - 6);
-                //}
-                text += boolStr + "\n";
+                text += boolStr + jointSepChar;
             }
             return text;
         }

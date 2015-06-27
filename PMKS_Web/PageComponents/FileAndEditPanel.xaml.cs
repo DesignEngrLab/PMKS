@@ -69,12 +69,12 @@ namespace PMKS_Silverlight_App
                 {
                     using (var writer = new StreamWriter(stream))
                     {
-                        var str = IOStringFunctions.GlobslSettingsToUrl(App.main);
+                        var str = IOStringFunctions.GlobalSettingsToUrl();
                         if (!string.IsNullOrWhiteSpace(str)) writer.WriteLine(str);
                         str = IOStringFunctions.TargetShapeToUrl(TargetShapeStream);
                         if (!string.IsNullOrWhiteSpace(str)) writer.WriteLine(str);
                         writer.WriteLine(IOStringFunctions.MechanismString);
-                        writer.Write(JointData.ConvertDataToText(App.main.JointsInfo.Data));
+                        writer.Write(JointData.ConvertDataToText('\n'));
                     }
                 }
         }
@@ -104,7 +104,7 @@ namespace PMKS_Silverlight_App
                     removedJoint = jointData[Jointstable.SelectedIndex];
                     jointData.RemoveAt(Jointstable.SelectedIndex);
                 }
-                App.main.linkInputTable.UpdateLinksTableAfterDeletion(removedJoint.LinkNamesList);
+                App.main.linkInputTable.UpdateLinksTable();
             }
             App.main.ParseData();
         }
@@ -183,15 +183,15 @@ namespace PMKS_Silverlight_App
             var rowJointData = (JointData)JointDataGrid.SelectedItem;
             if (jointComboBox.SelectedValue == null)
             {
-                if (string.IsNullOrWhiteSpace(rowJointData.JointType))
+                if (string.IsNullOrWhiteSpace(rowJointData.JointTypeString))
                     jointComboBox.SelectedValue = "R (pin joint)";
-                else if (rowJointData.JointType.Equals("r", StringComparison.InvariantCultureIgnoreCase))
+                else if (rowJointData.JointTypeString.Equals("r", StringComparison.InvariantCultureIgnoreCase))
                     jointComboBox.SelectedValue = "R (pin joint)";
-                else if (rowJointData.JointType.Equals("p", StringComparison.InvariantCultureIgnoreCase))
+                else if (rowJointData.JointTypeString.Equals("p", StringComparison.InvariantCultureIgnoreCase))
                     jointComboBox.SelectedValue = "P (sliding block)";
-                else if (rowJointData.JointType.Equals("rp", StringComparison.InvariantCultureIgnoreCase))
+                else if (rowJointData.JointTypeString.Equals("rp", StringComparison.InvariantCultureIgnoreCase))
                     jointComboBox.SelectedValue = "RP (pin in slot)";
-                else if (rowJointData.JointType.Equals("rp", StringComparison.InvariantCultureIgnoreCase))
+                else if (rowJointData.JointTypeString.Equals("rp", StringComparison.InvariantCultureIgnoreCase))
                     jointComboBox.SelectedValue = "G (gear teeth)";
             }
         }
@@ -261,11 +261,11 @@ namespace PMKS_Silverlight_App
             url = url.Split(' ', '?', '&')[0];
             url += "?";
 
-            var str = IOStringFunctions.GlobslSettingsToUrl(App.main);
+            var str = IOStringFunctions.GlobalSettingsToUrl();
             if (!string.IsNullOrWhiteSpace(str)) url += str + "&";
             str = IOStringFunctions.TargetShapeToUrl(TargetShapeStream);
             if (!string.IsNullOrWhiteSpace(str)) url += str + "&";
-            url += IOStringFunctions.MechanismToUrl(App.main);
+            url += IOStringFunctions.MechanismToUrl();
             UrlTextBox.Text = url;
             UrlPopUpStackPanel.Visibility = Visibility.Visible;
             UrlTextBox.Focus();

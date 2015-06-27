@@ -26,7 +26,7 @@ namespace PMKS_Silverlight_App
         {
             stateVariableTypeIndex = (int)jointState;
             JointIndex = pmks.AllJoints.IndexOf(j);
-            if (j.jointType == JointTypes.P || j.jointType == JointTypes.RP)
+            if (j.jointType == JointType.P || j.jointType == JointType.RP)
             {
                 includeAngle = true;
                 offsetSlideAngle = j.OffsetSlideAngle;

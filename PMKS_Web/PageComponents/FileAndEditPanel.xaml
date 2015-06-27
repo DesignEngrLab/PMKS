@@ -66,13 +66,13 @@
                             <s:DataGridTemplateColumn Header="Type of Joint">
                                 <s:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding JointType}" />
+                                        <TextBlock Text="{Binding JointTypeString}" />
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellTemplate>
                                 <s:DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <ComboBox LostFocus="JointDropDown_OnLostFocus"  ItemsSource="{Binding jointTypeList, Source={StaticResource jointTypeProvider}}" 
-                                       SelectedItem="{Binding JointType, Mode=TwoWay}" FontFamily="Portable User Interface"/>
+                                       SelectedItem="{Binding JointTypeString, Mode=TwoWay}" FontFamily="Portable User Interface"/>
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellEditingTemplate>
                             </s:DataGridTemplateColumn>

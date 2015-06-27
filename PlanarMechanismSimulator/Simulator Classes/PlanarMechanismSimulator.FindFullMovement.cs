@@ -88,7 +88,7 @@ namespace PMKS
             for (int i = 0; i < numJoints; i++)
             {
                 var j = AllJoints[i];
-                if (j.jointType == JointTypes.R) continue;
+                if (j.jointType == JointType.R) continue;
                 j.OrigSlidePosition = JointParameters[0.0][i, 6];
                 j.MinSlidePosition = JointParameters.Parameters.Min(jp => jp[i, 6]);
                 j.MaxSlidePosition = JointParameters.Parameters.Max(jp => jp[i, 6]);
@@ -445,7 +445,7 @@ namespace PMKS
         {
             var timeStep = (Forward == (InputSpeed > 0)) ? FixedTimeStep : -FixedTimeStep;
             var startingPosChange = (Forward == (InputSpeed > 0)) ? Constants.DefaultStepSize : -Constants.DefaultStepSize;
-            if (inputJoint.jointType == JointTypes.P) startingPosChange *= AverageLength;
+            if (inputJoint.jointType == JointType.P) startingPosChange *= AverageLength;
             var maxLengthError = MaxSmoothingError * AverageLength;
             var currentTime = 0.0;
             Boolean validPosition;
@@ -566,7 +566,7 @@ namespace PMKS
                 jointParams[i, 3] = j.vy;
                 jointParams[i, 4] = j.ax;
                 jointParams[i, 5] = j.ay;
-                if (j.jointType != JointTypes.R)
+                if (j.jointType != JointType.R)
                 {
                     jointParams[i, 6] = j.SlidePosition;
                     jointParams[i, 7] = j.SlideVelocity;

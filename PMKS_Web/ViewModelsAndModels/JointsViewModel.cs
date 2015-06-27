@@ -20,8 +20,8 @@ namespace PMKS_Silverlight_App
         {
             Data = new ObservableCollection<JointData>()
                 {
-                    new JointData {JointType = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input",DrivingInput = true},
-                    new JointData {JointType = "R (pin joint)", XPos = "25.0", YPos = "0.0", LinkNames = "input"}
+                    new JointData {JointTypeString = "R (pin joint)", XPos = "0.0", YPos = "0.0", LinkNames = "ground, input",DrivingInput = true},
+                    new JointData {JointTypeString = "R (pin joint)", XPos = "25.0", YPos = "0.0", LinkNames = "input"}
                 };
         }
     }

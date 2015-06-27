@@ -96,7 +96,7 @@
     <Compile Include="PageComponents\Shapes\Joint Shapes\InputShapes\DynamicJointBaseShape.cs" />
     <Compile Include="PageComponents\Shapes\Link Shapes\GroundLinkShape.cs" />
     <Compile Include="PageComponents\Shapes\SlideShapeMaker.cs" />
-    <Compile Include="URLArgumentHandling.cs" />
+    <Compile Include="IOStringFunctions.cs" />
     <Compile Include="ExportKinematicData.cs" />
     <Compile Include="PageComponents\FileAndEditPanel.xaml.cs">
       <DependentUpon>FileAndEditPanel.xaml</DependentUpon>

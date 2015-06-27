@@ -30,9 +30,9 @@ namespace Silverlight_PMKS
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             RootVisual = main = new MainPage();
-            IOStringFunctions.UrlToTargetShape(main);
-            IOStringFunctions.UrlToGlobalSettings(main);
-            main.fileAndEditPanel.CollapseExpandButton.IsChecked = !(IOStringFunctions.UrlToMechanism(main));
+            IOStringFunctions.UrlToTargetShape();
+            IOStringFunctions.UrlToGlobalSettings();
+            main.fileAndEditPanel.CollapseExpandButton.IsChecked = !(IOStringFunctions.UrlToMechanism());
         }
 
         private void Application_Exit(object sender, EventArgs e)

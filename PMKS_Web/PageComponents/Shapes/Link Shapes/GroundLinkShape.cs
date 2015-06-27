@@ -28,7 +28,7 @@ namespace PMKS_Silverlight_App
             {
                 switch (j.jointType)
                 {
-                    case JointTypes.R:
+                    case JointType.R:
 
                         Children.Add(new Line
                         {
@@ -53,7 +53,7 @@ namespace PMKS_Silverlight_App
                             }
                         });
                         break;
-                    case JointTypes.P:
+                    case JointType.P:
                         if (j.SlidingWithRespectTo(groundLink))
                         {
                             Children.Add(new Path
@@ -109,7 +109,7 @@ namespace PMKS_Silverlight_App
                         }
 
                         break;
-                    case JointTypes.RP:
+                    case JointType.RP:
                         if (j.SlidingWithRespectTo(groundLink))
                         {
                             Children.Add(new Path

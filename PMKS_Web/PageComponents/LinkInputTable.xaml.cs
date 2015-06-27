@@ -1,84 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Silverlight_PMKS;
 
 namespace PMKS_Silverlight_App
 {
     public partial class LinkInputTable : UserControl
-    {
-        
+    {  
         public LinkInputTable()
         {
             InitializeComponent();
-            DataContext = new LinksViewModel();
+          //  DataContext = App.main.LinksInfo;
         }
 
-        internal void UpdateLinksTableAfterDeletion(string[] linksToRemove)
+
+        internal void UpdateLinksTable()
         {
-            ObservableCollection<JointData> jointData = App.main.JointsInfo.Data;
-            ObservableCollection<LinkData> linkData = App.main.LinksInfo.Data;
-            foreach (string link in linksToRemove)
-            {
-                if (!linkValid(jointData, link))
-                    RemoveLink(linkData, link);
-            }
-
+            var linkData = App.main.LinksInfo.Data;
+            // make list of unique link names in joints (could be simpler Linq code, but problems exist when jData.LinkNamesList hasn't been initialized
+            var linkNamesInJoints =
+                App.main.JointsInfo.Data.Where(jData => jData.LinkNamesList != null)
+                    .SelectMany(jData => jData.LinkNamesList)
+                    .Distinct()
+                    .ToList();
+            for (int index = linkData.Count - 1; index >= 0; index--)
+                if (!linkNamesInJoints.Contains(linkData[index].Name))
+                    linkData.RemoveAt(index);
+            var linkNamesInLinkTable = linkData.Select(ld => ld.Name).ToList();
+            foreach (string linkName in linkNamesInJoints)
+                if (!linkNamesInLinkTable.Contains(linkName))
+                    linkData.Add(new LinkData { Name = linkName, Visible = true });
         }
-
-        private bool linkValid( ObservableCollection<JointData> jointData, string link)
-        {
-            bool found = false;
-                int index;
-                for (index = 0; index < jointData.Count && !found; index++)
-                    found = jointData[index].LinkNamesList.Contains(link);
-            return found;
-        }
-
-        private void RemoveLink(ObservableCollection<LinkData> LinksData, string link)
-        {
-            for (int index = 0; index < LinksData.Count; index++)
-                if (LinksData[index].Name.Equals(link))
-                {
-                    LinksData.RemoveAt(index);
-                    return;
-                }
-        }
-        
-        internal void UpdateLinksTableAfterAdd(JointData joint)
-        {
-            ObservableCollection<LinkData> linkData = App.main.LinksInfo.Data;
-            ObservableCollection<JointData> jointData = App.main.JointsInfo.Data;
-            int index = 0;
-            while (index < linkData.Count)
-            {
-                if (!linkValid(jointData, linkData[index].Name))
-                    RemoveLink(linkData, linkData[index].Name);
-                else
-                    index++;
-            }
-
-            foreach (string link in joint.LinkNamesList)
-                AddLink(linkData, link);
-        }
-
-        private void AddLink(ObservableCollection<LinkData> LinksData, string link)
-        {
-            for (int index = 0; index < LinksData.Count; index++)
-                if (LinksData[index].Name.Equals(link))
-                    return;
-            LinksData.Add(new LinkData { Name = link, Visible = true });
-        }
-
     }
 
 }

@@ -176,7 +176,7 @@ namespace PMKS_Silverlight_App
                 DynamicJointBaseShape displayJoint;
                 switch (jt.jointType)
                 {
-                    case JointTypes.P:
+                    case JointType.P:
                         var fixedLink = pmks.AllJoints[j].Link2;
                         displayJoint = new PJointShape(pmks.AllJoints[j], fixedLink, timeSlider, pmks, jointSize, penThick, XAxisOffset, YAxisOffset);
                         break;
@@ -231,22 +231,22 @@ namespace PMKS_Silverlight_App
                 InputJointBaseShape inputJointBaseShape = null;
                 switch (j.jointType)
                 {
-                    case JointTypes.R:
+                    case JointType.R:
                         inputJointBaseShape =
                             new InputRJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
                                 YAxisOffset, j.isGround, isDriver,index,jointRowData);
                         break;
-                    case JointTypes.P:
+                    case JointType.P:
                         inputJointBaseShape =
                             new InputPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
                                 YAxisOffset, j.SlideAngleInitial, j.isGround, isDriver, index, jointRowData);
                         break;
-                    case JointTypes.RP:
+                    case JointType.RP:
                         inputJointBaseShape =
                             new InputRPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
                                 YAxisOffset, j.SlideAngleInitial, j.isGround, index, jointRowData);
                         break;
-                    case JointTypes.G:
+                    case JointType.G:
                         inputJointBaseShape = new InputGJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
                                 YAxisOffset, j.SlideAngleInitial, j.isGround,index, jointRowData);
                         break;

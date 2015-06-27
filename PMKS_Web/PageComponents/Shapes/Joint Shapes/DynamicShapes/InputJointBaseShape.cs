@@ -193,8 +193,8 @@ namespace PMKS_Silverlight_App
             if (!mouseMoving && !mouseRotating) AdjustOpacity(mousePos);
             if (mouseMoving && !multiSelect)
             {
-                xCoord = jointData._xPos = oldXCoord + mousePos.X - startMovingReference.X;
-                yCoord = jointData._yPos = oldYCoord + mousePos.Y - startMovingReference.Y;
+                xCoord = jointData.X = oldXCoord + mousePos.X - startMovingReference.X;
+                yCoord = jointData.Y = oldYCoord + mousePos.Y - startMovingReference.Y;
                 jointData.RefreshTablePositions();
 
                 RenderTransformOrigin = new Point(0.5, 0.5);
@@ -214,7 +214,7 @@ namespace PMKS_Silverlight_App
                 while (tempAngle > Math.PI / 2) tempAngle -= Math.PI;
                 while (tempAngle < -Math.PI / 2) tempAngle += Math.PI;
                 angle =  tempAngle;
-                jointData._angle =DisplayConstants.RadiansToDegrees* tempAngle;
+                jointData.AngleDegrees =DisplayConstants.RadiansToDegrees* tempAngle;
                 jointData.RefreshTablePositions();
 
                 RenderTransformOrigin = new Point(0.5, 0.5);

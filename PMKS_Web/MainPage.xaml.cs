@@ -17,8 +17,8 @@ namespace PMKS_Silverlight_App
     {
         #region Fields
         public Simulator pmks;
-        public readonly List<List<string>> LinkIDs = new List<List<string>>();
-        public readonly List<string> JointTypes = new List<string>();
+        public readonly List<string[]> LinkIDs = new List<string[]>();
+        public readonly List<JointType> JointTypes = new List<JointType>();
         private readonly List<double[]> InitPositions = new List<double[]>();
         private int numJoints;
         public int drivingIndex;
@@ -87,8 +87,8 @@ namespace PMKS_Silverlight_App
 
         public MainPage()
         {
-            JointsInfo = new JointsViewModel();
             LinksInfo = new LinksViewModel();
+            JointsInfo = new JointsViewModel();
             InitializeComponent();
             InputJointBaseShape.LoadShapes();
             App.Current.Host.Content.Resized += Content_Resized;
@@ -202,21 +202,10 @@ namespace PMKS_Silverlight_App
                 numJoints = TrimEmptyJoints();
                 if (pmks != null && !ForceRerunOfSimulation && SameTopology() && SameParameters()) return;
                 DefineInputDriver();
-                /*** Note: on 4/1/14, I decided to comment the code below. It doesn't seem to save any time
-                 *         and there are potential problems using the same Simulator. Now we just make it 
-                 *         new every time. ***/
-                //if (pmks != null && SameTopology() && DataListsSameLength() && drivingIndex == pmks.DrivingIndex)
-                //{
-                //    DefinePositions();
-                //    pmks.AssignPositions(InitPositions);
-                //}
-                //else
-                //{
-                if (!validLinks()) return;
-
-                if (!(DefineLinkIDS() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
+                DefineLinkIDs();
+                if (!(GroundLinkFound() && DuplicateLinkNames() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
                 pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
-                //}
+
                 mainViewer.ClearDynamicShapesAndBindings();
                 PlayButton_Unchecked(null, null);
 
@@ -227,7 +216,7 @@ namespace PMKS_Silverlight_App
                 status("Degrees of freedom = " + dof);
                 if (dof == 1)
                 {
-                    if (JointsInfo.Data[drivingIndex].JointType.Equals("P", StringComparison.InvariantCultureIgnoreCase))
+                    if (JointsInfo.Data[drivingIndex].JointTypeString.Equals("P", StringComparison.InvariantCultureIgnoreCase))
                     {
                         pmks.InputSpeed = Speed;
                         globalSettings.SpeedHeaderTextBlock.Text = "Speed (unit/sec)";
@@ -307,6 +296,13 @@ namespace PMKS_Silverlight_App
             }
         }
 
+        private void DefineLinkIDs()
+        {
+            LinkIDs.Clear();
+            for (int i = 0; i < numJoints; i++)
+                LinkIDs.Add(JointsInfo.Data[i].LinkNamesList);
+        }
+
         private void DefineInputDriver()
         {
             var inputDriver = JointsInfo.Data.FirstOrDefault(jd => jd.DrivingInput);
@@ -315,72 +311,31 @@ namespace PMKS_Silverlight_App
             drivingIndex = JointsInfo.Data.IndexOf(inputDriver);
         }
 
-        private bool validLinks()
+        private bool GroundLinkFound()
         {
-            List<string> flatList = new List<string>();
-            if (!DefineLinkIDS())
-            {
-                return true;
-            }
-            //generates a flat list of strings
-            foreach (List<string> linklist in LinkIDs)
-            {
-                foreach (string s in linklist)
-                {
-                    flatList.Add(s);
-                }
-            }
-            foreach (string s in flatList)
-            {
-                int count = 0;
-                for (int i = 0; i < flatList.Count; i++)
-                {
-                    if (s.Equals(flatList.ElementAt(i)))
-                    {
-                        count++;
-                    }
-                }
-                if (count < 2)
-                {
-                    //status("Only one Link named " + s.ToString());
-                    //return false;
-                    //this should not return false if it is simply one connected to ground.
-                }
-            }
-            int groundlinks = 0;
-            foreach (string s in flatList)
-            {
-                if (s.ToLower().Equals("0") || s.ToLower().Equals("grnd") || s.ToLower().Equals("ground") || s.ToLower().Equals("gnd") || s.ToLower().Equals("grd") || s.ToLower().Equals("zero"))
-                {
-                    groundlinks++;
-                }
-            }
-            if (groundlinks == 0)
+            var flatListOfLinkNames = LinkIDs.SelectMany(linkID => linkID).ToList();
+            int numGroundLinks = flatListOfLinkNames.Count(s => s.Equals("ground"));
+
+            if (numGroundLinks == 0)
             {
                 status("There are no links named ground. There must be at least one ground link.");
                 return false;
             }
+            if (numGroundLinks == 1)
+                status("There is only one connection to ground. This only makes sense for the one move link.");
+            return true;
+        }
 
-
-            foreach (List<string> linklist in LinkIDs)
-            {
+        private bool DuplicateLinkNames()
+        {
+            foreach (var linklist in LinkIDs)
                 foreach (string mystring in linklist)
-                {
-                    int stringcount = 0;
-                    foreach (string s in linklist)
-                    {
-                        if (mystring.Equals(s))
-                        {
-                            stringcount++;
-                        }
-                    }
-                    if (stringcount > 1)
+
+                    if (linklist.Count(s => s.Equals(mystring)) > 1)
                     {
                         status("No link should be referenced twice in the same joint. " + mystring.ToString());
+                        return false;
                     }
-                }
-            }
-
             return true;
         }
 
@@ -390,10 +345,7 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < JointsInfo.Data.Count; i++)
             {
                 var row = JointsInfo.Data[i];
-                double dummy;
-                if (row.LinkNamesList.Count() == 1 && double.TryParse(row.XPos, out dummy) && double.TryParse(row.YPos, out dummy))
-                    row.JointType = "R (pin joint)";
-                if (string.IsNullOrWhiteSpace(row.JointType)) return i;
+                if (row.LinkNamesList == null || string.IsNullOrWhiteSpace(row.LinkNames)) return i;
             }
             return JointsInfo.Data.Count;
         }
@@ -420,11 +372,10 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < numJoints; i++)
             {
                 if (i == drivingIndex && !JointsInfo.Data[i].DrivingInput) return false;
-                if (JointsInfo.Data[i].JointType != JointTypes[i]) return false;
-                var newLinkIDS = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
-                    StringSplitOptions.RemoveEmptyEntries));
+                if (JointsInfo.Data[i].TypeOfJoint != JointTypes[i]) return false;
+                var newLinkIDS = JointsInfo.Data[i].LinkNamesList;
                 if (i >= LinkIDs.Count) return false;
-                if (newLinkIDS.Count != LinkIDs[i].Count) return false;
+                if (newLinkIDS.GetLength(0) != LinkIDs[i].GetLength(0)) return false;
                 if (newLinkIDS.Where((t, j) => t != LinkIDs[i][j]).Any())
                     return false;
             }
@@ -443,8 +394,8 @@ namespace PMKS_Silverlight_App
             JointTypes.Clear();
             for (int i = 0; i < numJoints; i++)
             {
-                if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointType)) return false;
-                JointTypes.Add(JointsInfo.Data[i].JointType);
+                if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].JointTypeString)) return false;
+                JointTypes.Add(JointsInfo.Data[i].TypeOfJoint);
             }
             return true;
         }
@@ -474,29 +425,8 @@ namespace PMKS_Silverlight_App
             base.OnKeyUp(e);
         }
 
-
-        private List<string> distinctLinkNames;
         public bool Panning;
         private Point panStartReference, mousePositionWRTPage, mousePositionWRTCanvas;
-
-        private Boolean DefineLinkIDS()
-        {
-            distinctLinkNames = new List<string>();
-            LinkIDs.Clear();
-            for (int i = 0; i < numJoints; i++)
-            {
-                if (string.IsNullOrWhiteSpace(JointsInfo.Data[i].LinkNames)) return false;
-                var linkNames = new List<string>(JointsInfo.Data[i].LinkNames.Split(new[] { ',', ' ' },
-                    StringSplitOptions.RemoveEmptyEntries));
-                if (linkNames.Count == 0)
-                    throw new Exception("it doesn't seem you should ever be able to get here");
-                //return false;
-                LinkIDs.Add(linkNames);
-                distinctLinkNames.AddRange(linkNames);
-            }
-            distinctLinkNames = distinctLinkNames.Distinct().ToList();
-            return true;
-        }
 
         private Boolean DefinePositions()
         {
@@ -526,9 +456,7 @@ namespace PMKS_Silverlight_App
             for (int i = 0; i < numRows; i++)
             {
                 var jStr = JointTypes[i];
-                if (InitPositions[i].GetLength(0) != 3 &&
-                    (jStr.Split(',', ' ')[0].Equals("p", StringComparison.InvariantCultureIgnoreCase) ||
-                    jStr.Split(',', ' ')[0].Equals("rp", StringComparison.InvariantCultureIgnoreCase)))
+                if (InitPositions[i].GetLength(0) != 3 && (jStr == JointType.P || jStr == JointType.RP))
                     return false;
             }
             return true;

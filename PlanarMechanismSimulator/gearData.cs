@@ -51,7 +51,7 @@ namespace PMKS
         {
             return (links[gear1LinkIndex].AngleIsKnown == KnownState.Fully
                     && joints[gearCenter1Index].positionKnown == KnownState.Fully
-                    && joints[gearCenter2Index].jointType == JointTypes.R
+                    && joints[gearCenter2Index].jointType == JointType.R
                     && joints[gearCenter2Index].positionKnown == KnownState.Fully);
         }
 
@@ -59,7 +59,7 @@ namespace PMKS
         {
             return (links[gear2LinkIndex].AngleIsKnown == KnownState.Fully
                     && joints[gearCenter2Index].positionKnown == KnownState.Fully
-                    && joints[gearCenter1Index].jointType == JointTypes.R
+                    && joints[gearCenter1Index].jointType == JointType.R
                     && joints[gearCenter1Index].positionKnown == KnownState.Fully);
         }
 

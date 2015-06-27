@@ -17,12 +17,7 @@ namespace PMKS_Silverlight_App
     {
         public LinksViewModel()
         {
-            Data = new ObservableCollection<LinkData>()
-            {
-                new LinkData {Name="ground", Visible=true},
-                new LinkData {Name="coupler", Visible=true},
-                new LinkData {Name="input", Visible=true}
-            };
+            Data = new ObservableCollection<LinkData>();
         }
 
         public static readonly DependencyProperty DataCollectionProperty

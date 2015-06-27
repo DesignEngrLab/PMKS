@@ -130,7 +130,7 @@ namespace PMKS
                     {
                         addSlideDictionaryEntry(iJoint, jJoint, i, j);
                         addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
-                        if (jJoint.jointType == JointTypes.P)
+                        if (jJoint.jointType == JointType.P)
                         {
                             addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
                             addSlideDictionaryEntry(jJoint, iJoint, j, i);
@@ -140,7 +140,7 @@ namespace PMKS
                     {
                         addSlideDictionaryEntry(jJoint, iJoint, j, i);
                         addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
-                        if (iJoint.jointType == JointTypes.P)
+                        if (iJoint.jointType == JointType.P)
                         {
                             addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
                             addSlideDictionaryEntry(iJoint, jJoint, i, j);
@@ -150,12 +150,12 @@ namespace PMKS
                     {
                         lengths.Add(numJoints * i + j,
                                 Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
-                        if (iJoint.jointType == JointTypes.P)
+                        if (iJoint.jointType == JointType.P)
                         {
                             addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
                             addSlideDictionaryEntry(iJoint, jJoint, i, j);
                         }
-                        if (jJoint.jointType == JointTypes.P)
+                        if (jJoint.jointType == JointType.P)
                         {
                             addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
                             addSlideDictionaryEntry(jJoint, iJoint, j, i);
@@ -191,7 +191,7 @@ namespace PMKS
         private void addBlockAngleDictionaryEntry(joint pJoint, joint refJoint, int pIndex, int refIndex)
         {
             var key = numJoints * pIndex + refIndex;
-            var result = (pJoint.jointType == JointTypes.G) ? Math.PI / 2 : pJoint.SlideAngleInitial -
+            var result = (pJoint.jointType == JointType.G) ? Math.PI / 2 : pJoint.SlideAngleInitial -
                          Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
             angleFromBlockToJoint.Add(key, result);
         }

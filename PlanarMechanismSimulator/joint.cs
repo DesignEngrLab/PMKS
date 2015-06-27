@@ -26,7 +26,7 @@ namespace PMKS
         /// <summary>
         /// The joint type
         /// </summary>
-        public JointTypes jointType;
+        public JointType jointType;
         /// <summary>
         /// The initial x-coordinate
         /// </summary>
@@ -85,21 +85,19 @@ namespace PMKS
 
         internal KnownState positionKnown;
 
-        internal joint(bool IsGround, string pTypeStr, double[] currentJointPosition = null)
+        internal joint(bool IsGround, JointType jointType, double[] currentJointPosition = null)
         {
             isGround = IsGround;
-            JointTypes pType;
-            if (Enum.TryParse(pTypeStr, true, out pType)) jointType = pType;
-            else throw new Exception("Unable to cast joint type " + pTypeStr + " as a recognized JointType.");
+            this.jointType = jointType;
 
             if (currentJointPosition == null) return;
             if (currentJointPosition.GetLength(0) < 2)
                 throw new Exception("Values for x and y must be provided for joint.");
             x = xInitial = xLast = xNumerical = currentJointPosition[0];
             y = yInitial = yLast = yNumerical = currentJointPosition[1];
-            if (currentJointPosition.GetLength(0) >= 3 && jointType != JointTypes.R)
+            if (currentJointPosition.GetLength(0) >= 3 && jointType != JointType.R)
                 OffsetSlideAngle = currentJointPosition[2];
-            else if (jointType == JointTypes.P || jointType == JointTypes.RP)
+            else if (jointType == JointType.P || jointType == JointType.RP)
             {
                 OffsetSlideAngle = 0.0;
             }
@@ -122,8 +120,8 @@ namespace PMKS
         {
             if (link0 != Link1 && link0 != Link2) return false;
             //throw new Exception("link0 is not connected to joint (in joint.FixedWithRespectTo).");
-            if (jointType == JointTypes.R) return true;
-            if (jointType == JointTypes.G) return false;
+            if (jointType == JointType.R) return true;
+            if (jointType == JointType.G) return false;
             /* then joint is either P or RP, so... */
             return (Link2 == link0);
         }
