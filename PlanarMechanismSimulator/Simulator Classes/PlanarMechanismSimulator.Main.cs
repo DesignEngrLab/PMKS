@@ -11,6 +11,7 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,68 +21,302 @@ using PMKS.PositionSolving;
 namespace PMKS
 {
     /// <summary>
-    /// Class Simulator.
+    ///     Class Simulator.
     /// </summary>
     public partial class Simulator : IDependentAnalysis
     {
+        /// <summary>
+        ///     Gets the degrees of freedom.
+        /// </summary>
+        /// <value>The degrees of freedom.</value>
+        public int DegreesOfFreedom
+        {
+            get
+            {
+                var numRJoints = SimulationJoints.Count(j => j.Link2 != null && (j.TypeOfJoint == JointType.R));
+                var numPJoints = SimulationJoints.Count(j => j.TypeOfJoint == JointType.P);
+                var numRPJoints = SimulationJoints.Count(j => j.TypeOfJoint == JointType.RP);
+                var numGJoints = SimulationJoints.Count(j => j.TypeOfJoint == JointType.G);
+                if (NumLinks == 3 && numPJoints == 3 && numRJoints == 0 && numRPJoints == 0 && numGJoints == 0)
+                    return 1;
+                if (NumLinks == 4 && numPJoints == 4 && numRJoints == 0 && numRPJoints == 0 && numGJoints == 0)
+                    return 2;
+                if (NumLinks == 4 && numPJoints == 3 && numRJoints == 1 && numRPJoints == 0 && numGJoints == 0)
+                    return 0;
+                return 3 * (SimulationLinks.Count - 1) - 2 * (numRJoints + numPJoints) - (numRPJoints + numGJoints);
+            }
+        }
+
+        /// <summary>
+        ///     Calculates the full movement for a set of new initial positions stored in x.
+        ///     this is nearly the same as the function above it.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        public void calculate(double[] x = null)
+        {
+            if (x != null) // && x.GetLength(0) == numJoints)
+                AssignPositions(x);
+            FindFullMovement();
+        }
+
+        /// <summary>
+        ///     Assigns the initial positions of all the pivots.
+        /// </summary>
+        /// <param name="InitPositions">The init positions.</param>
+        public void AssignPositions(IList<double[]> InitPositions)
+        {
+            try
+            {
+                int k = 0;
+                for (int i = 0; i < NumJoints; i++)
+                {
+                    if (ReadOnlyJointIndices.Contains(i)) continue;
+
+                    var j = SimulationJoints[k];
+                    j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k][0];
+                    j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k][1];
+                    if (j.TypeOfJoint != JointType.R)
+                        j.OffsetSlideAngle = InitPositions[k][2];
+                    k++;
+                }
+                setAdditionalReferencePositions();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to assign positions to topology (see inner exception).", e);
+            }
+
+        }
+
+        /// <summary>
+        /// Assigns the positions of all the joints but keeps the topology the same.
+        /// </summary>
+        /// <param name="initPositions">The newly assigned positions.</param>
+        /// <param name="includesAnglesForAllJoints">The includes angles for all joints.</param>
+        /// <exception cref="System.Exception">Failed to assign positions to topology (see inner exception).</exception>
+        /// <exception cref="Exception">Failed to assign positions to topology (see inner exeception).</exception>
+        public void AssignPositions(double[] initPositions, Boolean includesAnglesForAllJoints = false)
+        {
+            try
+            {
+                var numPositions = NumJoints - ReadOnlyJointIndices.GetLength(0);
+                var positionArray = new double[numPositions][];
+                var k = 0;
+                var j = 0;
+                for (var i = 0; i < numPositions; i++)
+                {
+                    while (ReadOnlyJointIndices.Contains(i)) j++;
+                    if (Joints[j].TypeOfJoint != JointType.R || includesAnglesForAllJoints)
+                        positionArray[i] = new[] { initPositions[k++], initPositions[k++], initPositions[k++] };
+                    else
+                        positionArray[i] = new[] { initPositions[k++], initPositions[k++] };
+                    j++;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to assign positions to topology (see inner exception).", e);
+            }
+        }
+
+        /// <summary>
+        ///     Assigns the lengths of the links.
+        /// </summary>
+        /// <param name="Lengths">The lengths.</param>
+        /// <exception cref="Exception">Failed to assign lengths to topology (see inner exeception).</exception>
+        public void AssignLengths(IList<double[]> Lengths)
+        {
+            try
+            {
+                for (var i = 0; i < Lengths.Count(); i++)
+                {
+                    var p1 = SimulationJoints[(int)Lengths[i][0]];
+                    var p2 = SimulationJoints[(int)Lengths[i][1]];
+                    var link0 = SimulationLinks.First(l => l.joints.Contains(p1) && l.joints.Contains(p2));
+                    var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
+                    pivotIndices.Sort();
+                    link0.SetLength(p1, p2, Lengths[i][2]);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to assign lengths to topology (see inner exeception).", e);
+            }
+        }
+
+        /// <summary>
+        ///     Finds the initial positions from lengths.
+        /// </summary>
+        /// <param name="inputX">The input X.</param>
+        /// <param name="inputY">The input Y.</param>
+        /// <param name="gnd1X">The GND1 X.</param>
+        /// <param name="gnd1Y">The GND1 Y.</param>
+        /// <returns>Boolean.</returns>
+        /// <exception cref="Exception">
+        ///     Input and first ground position do not match expected length of  +
+        ///     inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1])
+        ///     or
+        ///     Failed to assign positions from lengths (see inner exeception).
+        /// </exception>
+        public Boolean FindInitialPositionsFromLengths(double inputX, double inputY, double gnd1X, double gnd1Y)
+        {
+            try
+            {
+                //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
+                //    throw new Exception("Link lengths for all links need to be set first.");
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[inputJointIndex + 1]),
+                    Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
+                    throw new Exception("Input and first ground position do not match expected length of " +
+                                        inputLink.lengthBetween(inputJoint, SimulationJoints[inputJointIndex + 1]));
+                inputJoint.xInitial = inputX;
+                inputJoint.yInitial = inputY;
+                SimulationJoints[inputJointIndex + 1].xInitial = gnd1X;
+                SimulationJoints[inputJointIndex + 1].yInitial = gnd1Y;
+                // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
+                double[,] JointPositions, LinkAngles;
+                return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to assign positions from lengths (see inner exeception).", e);
+            }
+        }
+
+        /// <summary>
+        ///     Finds the initial positions from lengths.
+        /// </summary>
+        /// <param name="inputX">The input X.</param>
+        /// <param name="inputY">The input Y.</param>
+        /// <param name="AngleToGnd1">The angle to GND1.</param>
+        /// <returns>Boolean.</returns>
+        /// <exception cref="Exception">Failed to assign positions from lengths (see inner exeception).</exception>
+        public Boolean FindInitialPositionsFromLengths(double inputX, double inputY, double AngleToGnd1)
+        {
+            try
+            {
+                //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
+                //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
+                inputJoint.xInitial = inputX;
+                inputJoint.yInitial = inputY;
+                SimulationJoints[inputJointIndex + 1].xInitial = inputX +
+                                                          Math.Cos(AngleToGnd1) *
+                                                          inputLink.lengthBetween(inputJoint,
+                                                              SimulationJoints[inputJointIndex + 1]);
+                SimulationJoints[inputJointIndex + 1].yInitial = inputY +
+                                                          Math.Sin(AngleToGnd1) *
+                                                          inputLink.lengthBetween(inputJoint,
+                                                              SimulationJoints[inputJointIndex + 1]);
+                // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
+                double[,] JointPositions, LinkAngles;
+                return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to assign positions from lengths (see inner exeception).", e);
+            }
+        }
+
+        /// <summary>
+        ///     Finds the initial position main.
+        /// </summary>
+        /// <param name="JointPositions">The joint positions.</param>
+        /// <param name="LinkAngles">The link angles.</param>
+        /// <returns>System.Double.</returns>
+        private double FindInitialPositionMain(out double[,] JointPositions, out double[,] LinkAngles)
+        {
+            LinkAngles = new double[NumLinks, 1];
+            JointPositions = new double[NumAllJoints, 2];
+            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, inputJointIndex));
+            return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
+        }
+
+        /// <summary>
+        ///     Finds the position at crank angle.
+        /// </summary>
+        /// <param name="angle">The angle.</param>
+        /// <returns>Boolean.</returns>
+        internal Boolean FindPositionAtCrankAngle(double angle)
+        {
+            return false;
+        }
+
+        /// <summary>
+        ///     Lesses the than full rotation.
+        /// </summary>
+        /// <returns>Boolean.</returns>
+        private Boolean lessThanFullRotation()
+        {
+            if (inputJoint.TypeOfJoint == JointType.P)
+                return true; // if the input is a sliding block, then there is no limit 
+            // eventually, links will reach invalid positions in both directions. 
+            double range;
+            lock (InputRange)
+            {
+                range = Math.Abs(InputRange[0] - InputRange[1]);
+            }
+            return range < Constants.FullCircle;
+        }
+
         #region Properties and Fields
+
         /// <summary>
-        /// Gets the pivot parameters.
+        ///     Gets the pivot parameters.
         /// </summary>
-        public TimeSortedList JointParameters;
+        public TimeSortedList JointParameters { get; internal set; }
+
         /// <summary>
-        /// Gets the link parameters.
+        ///     Gets the link parameters.
         /// </summary>
-        public TimeSortedList LinkParameters;
+        public TimeSortedList LinkParameters { get; internal set; }
+
         /// <summary>
-        /// Gets the status.
+        ///     Gets the status.
         /// </summary>
         /// <value>The status.</value>
         public string Status { get; private set; }
 
         /// <summary>
-        /// Gets the input range.
+        ///     Gets the input range.
         /// </summary>
         /// <value>The input range.</value>
-        public double[] InputRange { get; private set; }
+        internal double[] InputRange { get; private set; }
 
         /// <summary>
-        /// Gets the new index of a joint (value in the cell) given the original position.
-        /// </summary>
-        /// <value>The joint new index from original.</value>
-        public int[] JointNewIndexFromOriginal { get; private set; }
-        /// <summary>
-        /// The inverted to solve non ground input
+        ///     The inverted to solve non ground input
         /// </summary>
         private Boolean invertedToSolveNonGroundInput;
+
         /// <summary>
-        /// The _delta angle
+        ///     The _delta angle
         /// </summary>
         private double _deltaAngle = Constants.DefaultStepSize;
+
         /// <summary>
-        /// The maximum joint parameter lengths
+        ///     The maximum joint parameter lengths
         /// </summary>
         private int maxJointParamLengths;
+
         /// <summary>
-        /// The _max smoothing error
+        ///     The _max smoothing error
         /// </summary>
         private double _maxSmoothingError = double.NaN;
+
         /// <summary>
-        /// The gears data
+        ///     The gears data
         /// </summary>
         private Dictionary<int, GearData> gearsData;
 
         /// <summary>
-        /// Gets or sets the epsilon.
+        ///     Gets or sets the epsilon.
         /// </summary>
         /// <value>The epsilon.</value>
-        public double epsilon
+        internal double epsilon
         {
             get { return Constants.epsilonSame; }
         }
 
         /// <summary>
-        /// Gets or sets the delta angle.
+        ///     Gets or sets the delta angle.
         /// </summary>
         /// <value>The delta angle.</value>
         public double DeltaAngle
@@ -96,10 +331,14 @@ namespace PMKS
         }
 
         /// <summary>
-        /// Gets or sets the fixed time step.
+        ///     Gets or sets the fixed time step.
         /// </summary>
         /// <value>The fixed time step.</value>
-        public double FixedTimeStep { get { return _deltaAngle / InputSpeed; } }
+        internal double FixedTimeStep
+        {
+            get { return _deltaAngle / InputSpeed; }
+        }
+
         //{
         //    get { return _fixedTimeStep; }
         //    set
@@ -110,9 +349,8 @@ namespace PMKS
         //}
 
 
-
         /// <summary>
-        /// Gets or sets the maximum smoothing error.
+        ///     Gets or sets the maximum smoothing error.
         /// </summary>
         /// <value>The maximum smoothing error.</value>
         public double MaxSmoothingError
@@ -127,39 +365,39 @@ namespace PMKS
         }
 
         /// <summary>
-        /// Gets or sets the input angular speed in radians/second.
+        ///     Gets or sets the input angular speed in radians/second.
         /// </summary>
         /// <value>The input angular speed.</value>
         public double InputSpeed { get; set; }
 
         /// <summary>
-        /// Gets the average length.
+        ///     Gets the average length.
         /// </summary>
         /// <value>The average length.</value>
-        internal double AverageLength { get; private set; }
+        public double AverageLength { get; private set; }
 
         /// <summary>
-        /// Gets whether or not the mechanism completes a cycle and repeats.
+        ///     Gets whether or not the mechanism completes a cycle and repeats.
         /// </summary>
         /// <value>The complete cycle.</value>
         public CycleTypes CycleType { get; private set; }
 
 
         /// <summary>
-        /// Gets the begin time.
+        ///     Gets the begin time.
         /// </summary>
         /// <value>The begin time.</value>
         public double BeginTime { get; private set; }
 
 
         /// <summary>
-        /// Gets the end time.
+        ///     Gets the end time.
         /// </summary>
         /// <value>The end time.</value>
         public double EndTime { get; private set; }
 
         /// <summary>
-        /// Gets the time span.
+        ///     Gets the time span.
         /// </summary>
         /// <value>The time span.</value>
         public double Time_Span
@@ -167,90 +405,124 @@ namespace PMKS
             get { return EndTime - BeginTime; }
         }
 
-        readonly List<joint> additionalRefjoints = new List<joint>();
+        private List<Joint> additionalRefjoints;
+
         #endregion
 
         #region Set by the Topology (from the Constructor)
 
         /// <summary>
-        /// Gets the number links.
+        ///     Gets the number links.
         /// </summary>
         /// <value>The number links.</value>
-        public int numLinks { get; private set; }
+        public int NumLinks { get; private set; }
+
+        /// <summary>
+        ///     Gets the number of all links - including ones created to ease the analysis.
+        /// </summary>
+        /// <value>The number links.</value>
+        internal int NumAllLinks { get; private set; }
+
+        /// <summary>
+        ///     Gets the number of all joints - including ones created to ease the analysis.
+        /// </summary>
+        /// <value>The number joints.</value>
+        internal int NumAllJoints { get; private set; }
+
         /// <summary>
         /// Gets the number joints.
         /// </summary>
         /// <value>The number joints.</value>
-        public int numJoints { get; private set; }
+        public int NumJoints { get; private set; }
+
         /// <summary>
-        /// Gets all links.
+        ///     Gets the links as created in the constructor.
         /// </summary>
         /// <value>All links.</value>
-        public List<link> AllLinks { get; private set; }
+        public List<Link> Links { get; private set; }
+
         /// <summary>
-        /// Gets all joints.
+        ///     Gets all of the links, which includes the additional ones created for the simulation.
         /// </summary>
         /// <value>All joints.</value>
-        public List<joint> AllJoints { get; private set; }
+        private List<Link> SimulationLinks { get; set; }
         /// <summary>
-        /// Gets the first index of the input joint.
+        ///     Gets the joints as created in the constructor.
+        /// </summary>
+        /// <value>All joints.</value>
+        public List<Joint> Joints { get; private set; }
+
+        /// <summary>
+        ///     Gets all of the joints, which includes the additional ones created for the simulation.
+        /// </summary>
+        /// <value>All joints.</value>
+        private List<Joint> SimulationJoints { get; set; }
+
+        /// <summary>
+        ///     Gets the first index of the input joint.
         /// </summary>
         /// <value>The first index of the input joint.</value>
-        public int firstInputJointIndex { get; private set; }
+        internal int firstInputJointIndex { get; private set; }
+
         /// <summary>
-        /// Gets the index of the input joint.
+        ///     Gets the index of the input joint.
         /// </summary>
         /// <value>The index of the input joint.</value>
-        public int inputJointIndex { get; private set; }
+        internal int inputJointIndex { get; private set; }
+
         /// <summary>
-        /// Gets the input joint.
+        ///     Gets the input joint.
         /// </summary>
         /// <value>The input joint.</value>
-        public joint inputJoint { get; private set; }
+        internal Joint inputJoint { get; private set; }
+
         /// <summary>
-        /// Gets the index of the input link.
+        ///     Gets the index of the input link.
         /// </summary>
         /// <value>The index of the input link.</value>
-        public int inputLinkIndex { get; private set; }
+        internal int inputLinkIndex { get; private set; }
+
         /// <summary>
-        /// Gets the input link.
+        ///     Gets the input link.
         /// </summary>
         /// <value>The input link.</value>
-        public link inputLink { get; private set; }
+        internal Link inputLink { get; private set; }
 
         /// <summary>
-        /// Gets the ground link.
+        ///     Gets the ground link.
         /// </summary>
         /// <value>The ground link.</value>
-        private link groundLinkForSimulation;
+        private Link groundLinkForSimulation;
 
-        public link GroundLink { get; private set; }
+        public Link GroundLink { get; private set; }
+
         /// <summary>
-        /// Gets the indices of joints (in the new PMKS order, not the order originially given)
-        /// that are not to be updated or assigned from the AssignPositions function.
+        ///     Gets the indices of joints (in the new PMKS order, not the order originially given)
+        ///     that are not to be updated or assigned from the AssignPositions function.
         /// </summary>
         /// <value>The index of the output joint.</value>
-        public int[] ReadOnlyJointIndices { get; private set; }
+        internal int[] ReadOnlyJointIndices { get; private set; }
+
         /// <summary>
-        /// The name base for gear connector
+        ///     The name base for gear connector
         /// </summary>
         private const string nameBaseForGearConnector = "auto_generated_gear_connect_";
 
         /// <summary>
-        /// Gets a value indicating whether this instance is dyadic.
+        ///     Gets a value indicating whether this instance is dyadic.
         /// </summary>
         /// <value><c>true</c> if this instance is dyadic; otherwise, <c>false</c>.</value>
         public Boolean IsDyadic
         {
             get
             {
-                var knownPositions = AllJoints.Where(j => j.isGround || inputLink.joints.Contains(j)).ToList();
-                var unknownPositions = AllJoints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
+                var knownPositions = SimulationJoints.Where(j => j.IsGround || inputLink.joints.Contains(j)).ToList();
+                var unknownPositions = SimulationJoints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
                 do
                 {
                     var determined = unknownPositions.FirstOrDefault(j =>
                         (j.Link1.joints.Count(knownPositions.Contains)
-                        + j.Link2.joints.Count(knownPositions.Contains) >= 2));
+                         + j.Link2.joints.Count(knownPositions.Contains) >= 2));
                     if (determined == null) return false;
                     knownPositions.Add(determined);
                     unknownPositions.Remove(determined);
@@ -262,27 +534,27 @@ namespace PMKS
         #endregion
 
         #region Constructor - requires the topology of the mechanism to be provided.
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="Simulator" /> class.
+        ///     Initializes a new instance of the <see cref="Simulator" /> class.
         /// </summary>
         /// <param name="linkIDs">The link IDs.</param>
         /// <param name="jointTypes">The pivot types.</param>
         /// <param name="driverIndex">Index of the driver.</param>
         /// <param name="initPositions">The init positions.</param>
         /// <param name="readOnlyJointIndices">The fixed or unassignable joint indices.</param>
-        public Simulator(IList<string[]> linkIDs, IList<JointType> jointTypes, int driverIndex = 0, IList<double[]> initPositions = null,
+        public Simulator(IList<string[]> linkIDs, IList<JointType> jointTypes, int driverIndex = 0,
+            IList<double[]> initPositions = null,
             int[] readOnlyJointIndices = null)
         {
             CreateLinkAndPositionDetails(linkIDs, jointTypes, driverIndex, initPositions);
             RearrangeLinkAndJointLists();
-            addReferencePivotsToSlideOnlyLinks();
             setAdditionalReferencePositions();
-            ReadOnlyJointIndices = (readOnlyJointIndices == null)
-                ? new int[0]
-                : readOnlyJointIndices.Select(index => JointNewIndexFromOriginal[index]).ToArray();
+            ReadOnlyJointIndices = readOnlyJointIndices;
         }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="Simulator"/> class.
+        ///     Initializes a new instance of the <see cref="Simulator" /> class.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <exception cref="Exception">No joint type found in:  + pivotSentence</exception>
@@ -295,16 +567,14 @@ namespace PMKS
             List<Boolean[]> unusedDisplayBools;
             ConvertTextToData(data, out linkIDs, out jointTypes, out driverIndex, out initPositions,
                 out unusedDisplayBools);
-
             CreateLinkAndPositionDetails(linkIDs, jointTypes, driverIndex, initPositions);
             RearrangeLinkAndJointLists();
-            addReferencePivotsToSlideOnlyLinks();
             setAdditionalReferencePositions();
         }
 
 
         /// <summary>
-        /// Converts the text to data.
+        ///     Converts the text to data.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="linkIDs">The link i ds.</param>
@@ -313,8 +583,8 @@ namespace PMKS
         /// <param name="initPositions">The initialize positions.</param>
         /// <param name="displayBools">The display bools.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public static bool ConvertTextToData(string text, out List<string[]> linkIDs, out  List<JointType> jointTypes,
-            out  int driverIndex, out  List<double[]> initPositions, out List<Boolean[]> displayBools)
+        public static bool ConvertTextToData(string text, out List<string[]> linkIDs, out List<JointType> jointTypes,
+            out int driverIndex, out List<double[]> initPositions, out List<Boolean[]> displayBools)
         {
             linkIDs = new List<string[]>();
             jointTypes = new List<JointType>();
@@ -324,7 +594,7 @@ namespace PMKS
             var pivotSentences = text.Split('\n', '|').ToList();
             pivotSentences.RemoveAll(string.IsNullOrWhiteSpace);
             if (pivotSentences.Count == 0) return false;
-            for (int jointIndex = 0; jointIndex < pivotSentences.Count; jointIndex++)
+            for (var jointIndex = 0; jointIndex < pivotSentences.Count; jointIndex++)
             {
                 var pivotSentence = pivotSentences[jointIndex];
                 var words = pivotSentence.Split(',', ' ').ToList();
@@ -358,13 +628,13 @@ namespace PMKS
                 if (words.Count() > position && (words[position].Contains("t") || words[position].Contains("f")))
                 {
                     var plusMinusString = words[position];
-                    for (int i = 0; i < plusMinusString.Length; i++)
+                    for (var i = 0; i < plusMinusString.Length; i++)
                         if (plusMinusString[i].Equals('t') || plusMinusString[i].Equals('+')) bools[i] = true;
                 }
                 else
                 {
-                    for (int i = position; i < words.Count; i++)
-                        Boolean.TryParse(words[position], out bools[i-position]);
+                    for (var i = position; i < words.Count; i++)
+                        Boolean.TryParse(words[position], out bools[i - position]);
                 }
                 if (bools.Count() >= 4 && bools[3]) driverIndex = jointIndex;
                 displayBools.Add(bools);
@@ -373,7 +643,7 @@ namespace PMKS
             }
             if (driverIndex == -1)
             {
-                for (int i = 0; i < linkIDs.Count; i++)
+                for (var i = 0; i < linkIDs.Count; i++)
                 {
                     if (linkIDs[i].GetLength(0) > 1
                         && (jointTypes[i] == JointType.R || jointTypes[i] == JointType.P))
@@ -389,55 +659,55 @@ namespace PMKS
 
 
         /// <summary>
-        /// Creates the link and position details.
+        ///     Creates the link and position details.
         /// </summary>
         /// <param name="linkIDs">The link i ds.</param>
         /// <param name="jointTypes">The joint type strings.</param>
         /// <param name="drivingIndex">Index of the driving.</param>
         /// <param name="positions">The positions.</param>
         /// <exception cref="Exception">
-        /// The number of PivotTypes (which is  + numJoints + ) must be the
-        ///                                         + same as the number of LinkID pairs (which is  + LinkIDs.Count + )
-        /// or
-        /// More than two links is not allowed for  + JointTypeStrings[i] +  joints.
-        /// or
-        /// Input cannot be gear teeth.
-        /// or
-        /// Input cannot be an RP joint (2 DOF inputs are not allowed).
-        /// or
-        /// There can only be one ground link. In this case, there are 
-        ///                                             + groundLinks.Count
-        /// or
-        /// Failed to construct Planar Mechanism Simulator from topology data (InputIndex, Connections, PivotTypes).
+        ///     The number of PivotTypes (which is  + numJoints + ) must be the
+        ///     + same as the number of LinkID pairs (which is  + LinkIDs.Count + )
+        ///     or
+        ///     More than two links is not allowed for  + JointTypeStrings[i] +  joints.
+        ///     or
+        ///     Input cannot be gear teeth.
+        ///     or
+        ///     Input cannot be an RP joint (2 DOF inputs are not allowed).
+        ///     or
+        ///     There can only be one ground link. In this case, there are
+        ///     + groundLinks.Count
+        ///     or
+        ///     Failed to construct Planar Mechanism Simulator from topology data (InputIndex, Connections, PivotTypes).
         /// </exception>
         private void CreateLinkAndPositionDetails(IList<string[]> linkIDs, IList<JointType> jointTypes,
             int drivingIndex, IList<double[]> positions = null)
         {
-
             try
             {
                 inputJointIndex = drivingIndex;
                 if (jointTypes.Count != linkIDs.Count)
-                    throw new Exception("The number of PivotTypes (which is " + numJoints + ") must be the"
+                    throw new Exception("The number of PivotTypes (which is " + NumAllJoints + ") must be the"
                                         + "same as the number of LinkID pairs (which is " + linkIDs.Count + ")");
 
                 foreach (var linkID in linkIDs)
-                    for (int i = linkID.GetLength(0) - 1; i >= 0; i--)
+                    for (var i = linkID.GetLength(0) - 1; i >= 0; i--)
                         //if (string.IsNullOrWhiteSpace(linkID[i])) linkID.RemoveAt(i);
                         if (linkID[i].Equals("0", StringComparison.CurrentCultureIgnoreCase)
-                                 || linkID[i].Equals("gnd", StringComparison.CurrentCultureIgnoreCase)
-                                 || linkID[i].Equals("grnd", StringComparison.CurrentCultureIgnoreCase)
-                                 || linkID[i].Equals("grond", StringComparison.CurrentCultureIgnoreCase)
-                                 || linkID[i].Equals("gound", StringComparison.CurrentCultureIgnoreCase)
-                                 || linkID[i].Equals("groud", StringComparison.CurrentCultureIgnoreCase)
-                                 || linkID[i].StartsWith("ground", StringComparison.CurrentCultureIgnoreCase))
+                            || linkID[i].Equals("gnd", StringComparison.CurrentCultureIgnoreCase)
+                            || linkID[i].Equals("grnd", StringComparison.CurrentCultureIgnoreCase)
+                            || linkID[i].Equals("grond", StringComparison.CurrentCultureIgnoreCase)
+                            || linkID[i].Equals("gound", StringComparison.CurrentCultureIgnoreCase)
+                            || linkID[i].Equals("groud", StringComparison.CurrentCultureIgnoreCase)
+                            || linkID[i].StartsWith("ground", StringComparison.CurrentCultureIgnoreCase))
                             linkID[i] = "ground";
                 var linkNames = linkIDs.SelectMany(a => a).Distinct().ToList();
 
                 var newLinkIDs = new List<List<string>>();
                 /* create the pivots */
-                AllJoints = new List<joint>(); //create an arry of pivots
-                for (int i = 0; i < jointTypes.Count; i++)
+                Joints = new List<Joint>();
+                additionalRefjoints = new List<Joint>();
+                for (var i = 0; i < jointTypes.Count; i++)
                 {
                     double[] currentJointPosition = null;
                     if (positions != null) currentJointPosition = positions[i];
@@ -445,45 +715,44 @@ namespace PMKS
                     {
                         /* if the specified joint is only a point to be traced on a given link, then we make it
                          * an "R" joint. */
-                        AllJoints.Add(new joint((linkIDs[i][0] == "ground"), JointType.R, currentJointPosition));
+                        Joints.Add(new Joint((linkIDs[i][0] == "ground"), JointType.R, currentJointPosition));
                         newLinkIDs.Add(new List<string> { linkIDs[i][0] });
                     }
                     else
-                        for (int j = 0; j < linkIDs[i].GetLength(0) - 1; j++)
+                        for (var j = 0; j < linkIDs[i].GetLength(0) - 1; j++)
                         {
                             /* At the end of these conditions, the "else" statement handles the normal two-link joint. 
                              * If there are more than 2  links at this joint, then it's actually multiple co-located joints. 
                              * This really only make sense for "R" joints. We assume that if it is typed as an RP      
                              * joint then between 0 and 1 there is an RP; and between 1 and 2, 2 and 3 and so on, it is an R joint. */
                             if (j > 0 && jointTypes[i] == JointType.RP)
-                                AllJoints.Add(new joint((linkIDs[i][j] == "ground" || linkIDs[i][j + 1] == "ground"),
-                                    JointType.R, currentJointPosition));
+                                additionalRefjoints.Add(new Joint(Joints.Last()));
                             /* if there are more than 2 links and the joint is typed G or P then we throw an error. */
                             else if (j > 0 && (jointTypes[i] == JointType.G || jointTypes[i] == JointType.P))
-                                throw new Exception("More than two links is not allowed for " + jointTypes[i] + " joints.");
+                                throw new Exception("More than two links is not allowed for " + jointTypes[i] +
+                                                    " joints.");
                             /* else...this is the normal case of a joint between two links. */
                             else
-                                AllJoints.Add(new joint(
-                                    (linkIDs[i][j] == "ground" || linkIDs[i][j + 1] == "ground"),
-                                    jointTypes[i], currentJointPosition));
+                                Joints.Add(new Joint(linkIDs[i].Contains("ground"), jointTypes[i], currentJointPosition));
                             newLinkIDs.Add(new List<string> { linkIDs[i][j], linkIDs[i][j + 1] });
                         }
                 }
+                maxJointParamLengths = Joints.All(j => j.TypeOfJoint == JointType.R) ? 6 : 9;
                 /* now onto the links */
-                AllLinks = new List<link>(); //create an array of LINKS
-                foreach (string linkName in linkNames)
+                Links = new List<Link>(); //create an array of LINKS
+                foreach (var linkName in linkNames)
                 {
                     var pivotIndices =
                         newLinkIDs.Where(lid => lid.Contains(linkName)).Select(lid => newLinkIDs.IndexOf(lid));
-                    var pivotsForThisLink = pivotIndices.Select(i => AllJoints[i]).ToList();
-                    AllLinks.Add(new link(linkName, pivotsForThisLink, pivotsForThisLink.All(piv => piv.isGround)));
+                    var pivotsForThisLink = pivotIndices.Select(i => Joints[i]).ToList();
+                    Links.Add(new Link(linkName, pivotsForThisLink, pivotsForThisLink.All(piv => piv.IsGround)));
                 }
                 /* now that links have been created, need to add these to pivots */
-                for (int i = 0; i < newLinkIDs.Count; i++)
+                for (var i = 0; i < newLinkIDs.Count; i++)
                 {
-                    AllJoints[i].Link1 = AllLinks[linkNames.IndexOf(newLinkIDs[i][0])];
+                    Joints[i].Link1 = Links[linkNames.IndexOf(newLinkIDs[i][0])];
                     if (newLinkIDs[i].Count > 1)
-                        AllJoints[i].Link2 = AllLinks[linkNames.IndexOf(newLinkIDs[i][1])];
+                        Joints[i].Link2 = Links[linkNames.IndexOf(newLinkIDs[i][1])];
                 }
             }
             catch (Exception e)
@@ -492,22 +761,25 @@ namespace PMKS
                     "Failed to construct Planar Mechanism Simulator from topology data (InputIndex, Connections, PivotTypes).",
                     e);
             }
+            NumLinks = Links.Count; //count the number of links in the system
+            NumJoints = Joints.Count; //count the number of pivots in the system
         }
 
         private void RearrangeLinkAndJointLists()
         {
-            numLinks = AllLinks.Count; //count the number of links in the system
-            numJoints = AllJoints.Count; //count the number of pivots in the system
-            inputJoint = AllJoints[inputJointIndex];
-            if (inputJoint.jointType == JointType.G) throw new Exception("Input cannot be gear teeth.");
-            if (inputJoint.jointType == JointType.RP) throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
-            var groundLinks = AllLinks.Where(c => c.IsGround).ToList(); //move inputLink to back of list
+            #region Define Input Joint and Link, and Ground Link
+            inputJoint = Joints[inputJointIndex];
+            if (inputJoint.TypeOfJoint == JointType.G) throw new Exception("Input cannot be gear teeth.");
+            if (inputJoint.TypeOfJoint == JointType.RP)
+                throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
+            var groundLinks = Links.Where(c => c.IsGround).ToList(); //move inputLink to back of list
             if (groundLinks.Count != 1)
                 throw new Exception("There can only be one ground link. In this case, there are "
                                     + groundLinks.Count);
             GroundLink = groundLinkForSimulation = groundLinks[0];
             if (inputJoint.Link2 == null)
-                throw new Exception("The input driver must be between two links (cannot be applied to a single link as in the current description).");
+                throw new Exception(
+                    "The input driver must be between two links (cannot be applied to a single link as in the current description).");
             if (!inputJoint.Link1.IsGround && !inputJoint.Link2.IsGround)
             {
                 invertedToSolveNonGroundInput = true;
@@ -520,7 +792,8 @@ namespace PMKS
                 }
                 else
                 {
-                    var numFixedJointsOnLink2 = inputJoint.Link2.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link2));
+                    var numFixedJointsOnLink2 =
+                        inputJoint.Link2.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link2));
                     if (numFixedJointsOnLink2 >= 2)
                     {
                         inputLink = inputJoint.Link1;
@@ -530,9 +803,8 @@ namespace PMKS
                     {
                         groundLinkForSimulation = numFixedJointsOnLink1 > 0 ? inputJoint.Link1 : inputJoint.Link2;
                         inputLink = numFixedJointsOnLink1 > 0 ? inputJoint.Link2 : inputJoint.Link1;
-                        var newJoint = new joint(true, JointType.R) { Link1 = groundLinkForSimulation };
+                        var newJoint = new Joint(true, JointType.R, null, JointSpecifiedAs.FixedPointForLink) { Link1 = groundLinkForSimulation };
                         groundLinkForSimulation.joints.Add(newJoint);
-                        AllJoints.Add(newJoint);
                         additionalRefjoints.Add(newJoint);
                     }
                 }
@@ -540,9 +812,8 @@ namespace PMKS
                 GroundLink.IsGround = false;
                 if (GroundLink.joints.Count(j => j.FixedWithRespectTo(GroundLink)) < 2)
                 {
-                    var newJoint = new joint(false, JointType.R) { Link1 = GroundLink };
+                    var newJoint = new Joint(false, JointType.R, null, JointSpecifiedAs.FixedPointForLink) { Link1 = GroundLink };
                     GroundLink.joints.Add(newJoint);
-                    AllJoints.Add(newJoint);
                     additionalRefjoints.Add(newJoint);
                 }
             }
@@ -556,75 +827,150 @@ namespace PMKS
                 }
                 inputLink = inputJoint.Link2;
             }
-            /* reorder pivots to ease additional computation. put ground pivots at end, move input to just before those. */
-            var origOrder = new List<joint>(AllJoints);
+            #endregion    
+            SimulationLinks = new List<Link>(Links);  
+            SimulationJoints = new List<Joint>(Joints);
+            SimulationJoints.AddRange(additionalRefjoints);
+            addReferenceJoints();                    
+            #region Move Links around to ease Simulation
+            /* reorder links to ease additional computation. put ground link at end, 
+             * move input to just before those. */
+            SimulationLinks.Remove(inputLink);
+            SimulationLinks.Remove(groundLinkForSimulation);
+            inputLinkIndex = SimulationLinks.Count;
+            SimulationLinks.Add(inputLink); //move inputLink to back of list
+            SimulationLinks.Add(groundLinkForSimulation); //move ground to back of list
+            #endregion
+            #region Set up SimulationJoints by moving Joints around to ease Simulation
             /* reorder links, move input link and ground link to back of list */
-            AllLinks.Remove(inputLink); AllLinks.Add(inputLink); //move inputLink to back of list
-            AllLinks.Remove(groundLinkForSimulation); AllLinks.Add(groundLinkForSimulation); //move ground to back of list
-            inputLinkIndex = numLinks - 2;
-            var groundPivots = groundLinkForSimulation.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(groundLinkForSimulation)).ToList();
-            AllJoints.Remove(inputJoint);
-            AllJoints.RemoveAll(groundPivots.Contains);
+            var groundPivots =
+                groundLinkForSimulation.joints.Where(
+                    j => j != inputJoint && j.FixedWithRespectTo(groundLinkForSimulation)).ToList();
+            SimulationJoints.Remove(inputJoint);
+            SimulationJoints.RemoveAll(groundPivots.Contains);
 
-            var connectedInputJoints = inputLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(inputLink)).ToList();
-            AllJoints.RemoveAll(connectedInputJoints.Contains);
-            firstInputJointIndex = AllJoints.Count;
-            AllJoints.AddRange(connectedInputJoints);
-            inputJointIndex = AllJoints.Count;
-            AllJoints.Add(inputJoint);
-            AllJoints.AddRange(groundPivots);
+            var connectedInputJoints =
+                inputLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(inputLink)).ToList();
+            SimulationJoints.RemoveAll(connectedInputJoints.Contains);
+            firstInputJointIndex = SimulationJoints.Count;
+            SimulationJoints.AddRange(connectedInputJoints);
+            inputJointIndex = SimulationJoints.Count;
+            SimulationJoints.Add(inputJoint);
+            SimulationJoints.AddRange(groundPivots);
+            #endregion
 
-            maxJointParamLengths = AllJoints.All(j => j.jointType == JointType.R) ? 6 : 9;
-            JointNewIndexFromOriginal = new int[numJoints];
-            for (int i = 0; i < numJoints; i++)
-                JointNewIndexFromOriginal[i] = AllJoints.IndexOf(origOrder[i]);
-        }
+            NumAllJoints = SimulationJoints.Count;
+            NumAllLinks = SimulationLinks.Count;
 
-
-        /// <summary>
-        /// Adds the reference pivots to slide only links.
-        /// </summary>
-        /// <returns>List&lt;joint&gt;.</returns>
-        private void addReferencePivotsToSlideOnlyLinks()
-        {
-            foreach (var c in AllLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
+            oIOSJ = new int[NumAllJoints];
+            var nonDesignJointIndex = NumJoints;
+            for (var i = 0; i < NumAllJoints; i++)
             {
-                var newJoint = new joint(c.IsGround, JointType.R) { Link1 = c };
-                c.joints.Add(newJoint);
-                AllJoints.Add(newJoint);
-                additionalRefjoints.Add(newJoint);
+                var index = Joints.IndexOf(SimulationJoints[i]);
+                oIOSJ[i] = (index == -1) ? nonDesignJointIndex++ : index;
+            }
+            oIOSL = new int[NumAllLinks];
+            var nonDesignLinkIndex = NumJoints;
+            for (var i = 0; i < NumAllLinks; i++)
+            {
+                var index = Links.IndexOf(SimulationLinks[i]);
+                oIOSL[i] = (index == -1) ? nonDesignLinkIndex++ : index;
             }
         }
+
         /// <summary>
-        /// Sets the positions of additional reference positions.
+        /// Gets or sets the O.I.O.S.J., the original indices of Simulated Joints.
+        /// </summary>
+        /// <value>The o iosj.</value>
+        private int[] oIOSJ { get; set; }
+        private int[] oIOSL { get; set; }
+
+
+        /// <summary>
+        ///     Adds the reference pivots to slide only links.
+        /// </summary>
+        /// <returns>List&lt;joint&gt;.</returns>
+        private void addReferenceJoints()
+        {
+            foreach (var c in SimulationLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
+            {
+                var newJoint = new Joint(c.IsGround, JointType.R) { Link1 = c };
+                c.joints.Add(newJoint);
+                additionalRefjoints.Add(newJoint);
+            }
+
+            if (SimulationJoints.All(j => j.TypeOfJoint != JointType.G)) return;
+            var counter = 0;
+            foreach (var j in SimulationJoints)
+            {
+                if (j.TypeOfJoint != JointType.G) continue;
+                // link1Neighbors are the links adjacent to this gear joint's link1
+                var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
+                // if any of the joints on link2 (not including this gear joint) connect to the link1Neighbors,
+                // then it is assumed that a support link and it's two joints are not needed
+                if (j.Link2.joints.Any(
+                    jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)))) continue;
+                if (double.IsNaN(j.OffsetSlideAngle))
+                    throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
+                var newJoint1 = new Joint(j.Link1.IsGround, JointType.P, new[] { j.xInitial, j.yInitial, j.OffsetSlideAngle }, JointSpecifiedAs.GearSupport);
+                var gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.TypeOfJoint == JointType.R);
+                if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
+                var newJoint2 = new Joint(j.Link2.IsGround, JointType.R, new[] { gearCenter2.xInitial, gearCenter2.yInitial }, JointSpecifiedAs.GearSupport);
+                var connectLink = new Link(nameBaseForGearConnector + (counter++),
+                    new List<Joint> { newJoint1, newJoint2 }, false);
+                newJoint1.Link1 = j.Link1;
+                newJoint2.Link1 = j.Link2;
+                newJoint1.Link2 = newJoint2.Link2 = connectLink;
+                additionalRefjoints.Add(newJoint1);
+                additionalRefjoints.Add(newJoint2);
+                SimulationLinks.Add(connectLink);
+            }
+        }
+
+        /// <summary>
+        ///     Sets the positions of additional reference positions.
         /// </summary>
         private void setAdditionalReferencePositions()
         {
-            foreach (var j in AllJoints.Where(j => j.jointType == JointType.R))
-                j.OffsetSlideAngle = Double.NaN;
-
-            if (additionalRefjoints != null)
+            if (additionalRefjoints == null) return;
+            foreach (var joint in additionalRefjoints)
             {
-                foreach (var thisAdditionalJoint in additionalRefjoints)
+                switch (joint.jointSpecifiedAs)
                 {
-                    var xSum = 0.0;
-                    var ySum = 0.0;
-                    foreach (var otherJoint in thisAdditionalJoint.Link1.joints)
-                    {
-                        if (otherJoint == thisAdditionalJoint) continue;
-                        xSum += otherJoint.xInitial;
-                        ySum += otherJoint.yInitial;
-                    }
-                    thisAdditionalJoint.x = thisAdditionalJoint.xNumerical = thisAdditionalJoint.xLast = thisAdditionalJoint.xInitial
-                        = xSum / (thisAdditionalJoint.Link1.joints.Count - 1);
-                    thisAdditionalJoint.y = thisAdditionalJoint.yNumerical = thisAdditionalJoint.yLast = thisAdditionalJoint.yInitial
-                        = ySum / (thisAdditionalJoint.Link1.joints.Count - 1);
+                    case JointSpecifiedAs.Design:
+                        continue;
+                    case JointSpecifiedAs.TernaryJoint:
+                        joint.x =
+                            joint.xNumerical = joint.xLast = joint.xInitial
+                                = joint.sameJointAs.xInitial;
+                        joint.y =
+                            joint.yNumerical = joint.yLast = joint.yInitial
+                                = joint.sameJointAs.yInitial;
+                        break;
+                    case JointSpecifiedAs.FixedPointForLink:
+                        var xSum = 0.0;
+                        var ySum = 0.0;
+                        foreach (var otherJoint in joint.Link1.joints)
+                        {
+                            if (otherJoint == joint) continue;
+                            xSum += otherJoint.xInitial;
+                            ySum += otherJoint.yInitial;
+                        }
+                        joint.x =
+                            joint.xNumerical = joint.xLast = joint.xInitial
+                                = xSum / (joint.Link1.joints.Count - 1);
+                        joint.y =
+                            joint.yNumerical = joint.yLast = joint.yInitial
+                                = ySum / (joint.Link1.joints.Count - 1);
+                        break;
+                    case JointSpecifiedAs.GearSupport:
+                        setGearData(); //todo: this function is kind of a mess.Need to revisit auto-created joints for gears
+                        break;
                 }
             }
-            setGearData();
             var totalLength = 0.0;
-            int numLengths = 0;
-            foreach (var eachLink in AllLinks)
+            var numLengths = 0;
+            foreach (var eachLink in SimulationLinks)
             {
                 eachLink.DetermineLengthsAndReferences();
                 totalLength += eachLink.TotalLength;
@@ -633,66 +979,34 @@ namespace PMKS
             AverageLength = totalLength / numLengths;
         }
 
-        /// <summary>
-        /// Infers the additional gear links.
-        /// </summary>
-        /// <exception cref="Exception">
-        /// No link connects between gears:  + j.Link1.name +  and  + j.Link2.name
-        /// or
-        /// No pivot (R joint) for  + j.Link2.name
-        /// </exception>
-        private void inferAdditionalGearLinks()
-        {
-            if (AllJoints.All(j => j.jointType != JointType.G)) return;
-            var counter = 0;
-            foreach (var j in AllJoints)
-            {
-                if (j.jointType != JointType.G) continue;
-                var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
-                if (j.Link2.joints.Any(
-                           jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)))) continue;
-                if (double.IsNaN(j.OffsetSlideAngle))
-                    throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
-                var newJoint1 = new joint(false, JointType.P, new[] { j.xInitial, j.yInitial, j.OffsetSlideAngle });
-                var gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.jointType == JointType.R);
-                if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
-                var newJoint2 = new joint(false, JointType.R, new[] { gearCenter2.xInitial, gearCenter2.yInitial });
-                var connectLink = new link(nameBaseForGearConnector + (counter++), new List<joint> { newJoint1, newJoint2 }, false);
-                newJoint1.Link1 = j.Link1;
-                newJoint2.Link1 = j.Link2;
-                newJoint1.Link2 = newJoint2.Link2 = connectLink;
-                AllJoints.Add(newJoint1); AllJoints.Add(newJoint2); AllLinks.Add(connectLink);
-            }
-        }
-
 
         /// <summary>
-        /// Sets the gear data.
+        ///     Sets the gear data.
         /// </summary>
         private void setGearData()
         {
             var index = 0;
-            if (AllJoints.All(j => j.jointType != JointType.G)) return;
+            if (SimulationJoints.All(j => j.TypeOfJoint != JointType.G)) return;
             gearsData = new Dictionary<int, GearData>();
-            foreach (var gearTeethJoint in AllJoints)
+            foreach (var gearTeethJoint in SimulationJoints)
             {
-                if (gearTeethJoint.jointType == JointType.G)
+                if (gearTeethJoint.TypeOfJoint == JointType.G)
                 {
                     var gear1 = gearTeethJoint.Link1;
                     var gear2 = gearTeethJoint.Link2;
-                    var possibleGear1Centers = gear1.joints.Where(j => j.jointType != JointType.G && j.Link2 != null);
+                    var possibleGear1Centers = gear1.joints.Where(j => j.TypeOfJoint != JointType.G && j.Link2 != null);
                     var possibleGear2Centers =
-                        gear2.joints.Where(j => j.jointType != JointType.G && j.Link2 != null).ToList();
-                    var bestCenterOption = new Tuple<joint, joint, link, double>(null, null, null, double.NaN);
+                        gear2.joints.Where(j => j.TypeOfJoint != JointType.G && j.Link2 != null).ToList();
+                    var bestCenterOption = new Tuple<Joint, Joint, Link, double>(null, null, null, double.NaN);
                     var bestError = double.PositiveInfinity;
                     foreach (var g1 in possibleGear1Centers)
                         foreach (var g2 in possibleGear2Centers)
                         {
-                            if (g1.jointType == JointType.P && g2.jointType == JointType.P) continue;
-                            if (g1.jointType == JointType.RP && g1.Link1 == gear1) continue;
-                            if (g2.jointType == JointType.RP && g2.Link1 == gear2) continue;
+                            if (g1.TypeOfJoint == JointType.P && g2.TypeOfJoint == JointType.P) continue;
+                            if (g1.TypeOfJoint == JointType.RP && g1.Link1 == gear1) continue;
+                            if (g2.TypeOfJoint == JointType.RP && g2.Link1 == gear2) continue;
                             var connectLink =
-                                AllLinks.FirstOrDefault(c => c.joints.Contains(g1) && c.joints.Contains(g2));
+                                SimulationLinks.FirstOrDefault(c => c.joints.Contains(g1) && c.joints.Contains(g2));
                             if (connectLink == null) continue;
                             var angle1 = FindInitialGearAngle(g1, gearTeethJoint);
                             var angle2 = FindInitialGearAngle(g2, gearTeethJoint);
@@ -700,7 +1014,8 @@ namespace PMKS
                             if (bestError > error)
                             {
                                 bestError = error;
-                                bestCenterOption = new Tuple<joint, joint, link, double>(g1, g2, connectLink, (angle1 + angle2) / 2);
+                                bestCenterOption = new Tuple<Joint, Joint, Link, double>(g1, g2, connectLink,
+                                    (angle1 + angle2) / 2);
                             }
                         }
                     var gearCenter1 = bestCenterOption.Item1;
@@ -708,241 +1023,31 @@ namespace PMKS
                     var connectingRod = bestCenterOption.Item3;
                     var gearAngle = bestCenterOption.Item4;
                     gearsData.Add(index,
-                        new GearData(gearTeethJoint, index, gearCenter1, AllJoints.IndexOf(gearCenter1), AllLinks.IndexOf(gear1),
-                            gearCenter2, AllJoints.IndexOf(gearCenter2), AllLinks.IndexOf(gear2),
-                                          AllLinks.IndexOf(connectingRod), gearAngle));
+                        new GearData(gearTeethJoint, index, gearCenter1, SimulationJoints.IndexOf(gearCenter1),
+                            SimulationLinks.IndexOf(gear1),
+                            gearCenter2, SimulationJoints.IndexOf(gearCenter2), SimulationLinks.IndexOf(gear2),
+                            SimulationLinks.IndexOf(connectingRod), gearAngle));
                 }
                 index++;
             }
         }
 
         /// <summary>
-        /// Finds the initial gear angle.
+        ///     Finds the initial gear angle.
         /// </summary>
         /// <param name="g1">The g1.</param>
         /// <param name="gearTeeth">The gear teeth.</param>
         /// <returns>System.Double.</returns>
-        private double FindInitialGearAngle(joint g1, joint gearTeeth)
+        private double FindInitialGearAngle(Joint g1, Joint gearTeeth)
         {
-            if (g1.jointType != JointType.R) return g1.SlideAngleInitial;
+            if (g1.TypeOfJoint != JointType.R) return g1.SlideAngleInitial;
             var angle = Math.Atan2((gearTeeth.yInitial - g1.yInitial), (gearTeeth.xInitial - g1.xInitial))
-                + Math.PI / 2;
+                        + Math.PI / 2;
             while (angle > Math.PI / 2) angle -= Math.PI;
             while (angle < -Math.PI / 2) angle += Math.PI;
             return angle;
         }
+
         #endregion
-
-        /// <summary>
-        /// Assigns the initial positions of all the pivots.
-        /// </summary>
-        /// <param name="InitPositions">The init positions.</param>
-        public void AssignPositions(IList<double[]> InitPositions)
-        {
-            var initPosList = new List<double>();
-            foreach (var position in InitPositions)
-            {
-                initPosList.AddRange(position);
-            }
-            AssignPositions(initPosList.ToArray());
-        }
-        /// <summary>
-        /// Assigns the initial positions of all the pivots.
-        /// </summary>
-        /// <param name="InitPositions">The init positions.</param>
-        /// <exception cref="Exception">Failed to assign positions to topology (see inner exeception).</exception>
-        private void AssignPositions(double[] InitPositions)
-        {
-            try
-            {
-                var k = 0;
-                for (int i = 0; i < numJoints; i++)
-                {
-                    var newIndex = JointNewIndexFromOriginal[i];
-                    if (ReadOnlyJointIndices.Contains(newIndex)) continue;
-                    var j = AllJoints[newIndex];
-                    j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k++];
-                    j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k++];
-                    //if (j.jointType != JointTypes.R)
-                    j.OffsetSlideAngle = InitPositions[k++];
-                }
-                setAdditionalReferencePositions();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Failed to assign positions to topology (see inner exeception).", e);
-            }
-        }
-
-
-        /// <summary>
-        /// Assigns the lengths of the links.
-        /// </summary>
-        /// <param name="Lengths">The lengths.</param>
-        /// <exception cref="Exception">Failed to assign lengths to topology (see inner exeception).</exception>
-        /// todo: unclear the format of these lengths - how to relate to the link rigid body constraint
-        public void AssignLengths(IList<double[]> Lengths)
-        {
-            try
-            {
-                for (int i = 0; i < Lengths.Count(); i++)
-                {
-                    var p1 = AllJoints[(int)Lengths[i][0]];
-                    var p2 = AllJoints[(int)Lengths[i][1]];
-                    var link0 = AllLinks.First(l => l.joints.Contains(p1) && l.joints.Contains(p2));
-                    var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
-                    pivotIndices.Sort();
-                    link0.SetLength(p1, p2, Lengths[i][2]);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Failed to assign lengths to topology (see inner exeception).", e);
-            }
-        }
-
-        /// <summary>
-        /// Finds the initial positions from lengths.
-        /// </summary>
-        /// <param name="inputX">The input X.</param>
-        /// <param name="inputY">The input Y.</param>
-        /// <param name="gnd1X">The GND1 X.</param>
-        /// <param name="gnd1Y">The GND1 Y.</param>
-        /// <returns>Boolean.</returns>
-        /// <exception cref="Exception">
-        /// Input and first ground position do not match expected length of  +
-        ///                                         inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1])
-        /// or
-        /// Failed to assign positions from lengths (see inner exeception).
-        /// </exception>
-        public Boolean FindInitialPositionsFromLengths(double inputX, double inputY, double gnd1X, double gnd1Y)
-        {
-
-            try
-            {
-                //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
-                //    throw new Exception("Link lengths for all links need to be set first.");
-                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]),
-                    Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
-                    throw new Exception("Input and first ground position do not match expected length of " +
-                                        inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]));
-                inputJoint.xInitial = inputX;
-                inputJoint.yInitial = inputY;
-                AllJoints[inputJointIndex + 1].xInitial = gnd1X;
-                AllJoints[inputJointIndex + 1].yInitial = gnd1Y;
-                // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
-                double[,] JointPositions, LinkAngles;
-                return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
-
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Failed to assign positions from lengths (see inner exeception).", e);
-            }
-        }
-
-        /// <summary>
-        /// Finds the initial positions from lengths.
-        /// </summary>
-        /// <param name="inputX">The input X.</param>
-        /// <param name="inputY">The input Y.</param>
-        /// <param name="AngleToGnd1">The angle to GND1.</param>
-        /// <returns>Boolean.</returns>
-        /// <exception cref="Exception">Failed to assign positions from lengths (see inner exeception).</exception>
-        public Boolean FindInitialPositionsFromLengths(double inputX, double inputY, double AngleToGnd1)
-        {
-
-            try
-            {
-                //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
-                //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
-                inputJoint.xInitial = inputX;
-                inputJoint.yInitial = inputY;
-                AllJoints[inputJointIndex + 1].xInitial = inputX + Math.Cos(AngleToGnd1) * inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]);
-                AllJoints[inputJointIndex + 1].yInitial = inputY + Math.Sin(AngleToGnd1) * inputLink.lengthBetween(inputJoint, AllJoints[inputJointIndex + 1]);
-                // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
-                double[,] JointPositions, LinkAngles;
-                return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
-
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Failed to assign positions from lengths (see inner exeception).", e);
-            }
-        }
-
-        /// <summary>
-        /// Finds the initial position main.
-        /// </summary>
-        /// <param name="JointPositions">The joint positions.</param>
-        /// <param name="LinkAngles">The link angles.</param>
-        /// <returns>System.Double.</returns>
-        private double FindInitialPositionMain(out double[,] JointPositions, out double[,] LinkAngles)
-        {
-            LinkAngles = new double[numLinks, 1];
-            JointPositions = new double[numJoints, 2];
-            var NDPS = new NonDyadicPositionSolver(new PositionFinder(AllJoints, AllLinks, gearsData, inputJointIndex));
-            return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
-        }
-        /// <summary>
-        /// Finds the position at crank angle.
-        /// </summary>
-        /// <param name="angle">The angle.</param>
-        /// <returns>Boolean.</returns>
-        public Boolean FindPositionAtCrankAngle(double angle)
-        {
-            return false;
-        }
-
-
-        /// <summary>
-        /// Lesses the than full rotation.
-        /// </summary>
-        /// <returns>Boolean.</returns>
-        private Boolean lessThanFullRotation()
-        {
-            if (inputJoint.jointType == JointType.P) return true; // if the input is a sliding block, then there is no limit 
-            // eventually, links will reach invalid positions in both directions. 
-            double range;
-            lock (InputRange)
-            {
-                range = Math.Abs(InputRange[0] - InputRange[1]);
-            }
-            return range < Constants.FullCircle;
-        }
-
-
-
-        /// <summary>
-        /// Calculates the full movement for a set of new initial positions stored in x.
-        /// this is nearly the same as the function above it.
-        /// </summary>
-        /// <param name="x">The x.</param>
-        public void calculate(double[] x = null)
-        {
-            if (x != null) // && x.GetLength(0) == numJoints)
-                AssignPositions(x);
-            FindFullMovement();
-        }
-
-
-        /// <summary>
-        /// Gets the degrees of freedom.
-        /// </summary>
-        /// <value>The degrees of freedom.</value>
-        public int DegreesOfFreedom
-        {
-            get
-            {
-                var numRJoints = AllJoints.Count(j => j.Link2 != null && (j.jointType == JointType.R));
-                var numPJoints = AllJoints.Count(j => j.jointType == JointType.P);
-                var numRPJoints = AllJoints.Count(j => j.jointType == JointType.RP);
-                var numGJoints = AllJoints.Count(j => j.jointType == JointType.G);
-                if (numLinks == 3 && numPJoints == 3 && numRJoints == 0 && numRPJoints == 0 && numGJoints == 0) return 1;
-                if (numLinks == 4 && numPJoints == 4 && numRJoints == 0 && numRPJoints == 0 && numGJoints == 0) return 2;
-                if (numLinks == 4 && numPJoints == 3 && numRJoints == 1 && numRPJoints == 0 && numGJoints == 0) return 0;
-                return 3 * (AllLinks.Count - 1) - 2 * (numRJoints + numPJoints) - (numRPJoints + numGJoints);
-            }
-        }
     }
 }

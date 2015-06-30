@@ -100,7 +100,7 @@ namespace PMKS.PositionSolving
 
 
 
-        public override double calculate(double[] x)
+        internal override double calculate(double[] x)
         {
             assignPositions(x);
             return innerFunction * innerFunction;
@@ -155,7 +155,7 @@ namespace PMKS.PositionSolving
             }
         }
 
-        public override double deriv_wrt_xi(double[] x, int i)
+        internal override double deriv_wrt_xi(double[] x, int i)
         {
             if (!(i == varIndex_Xb || i == varIndex_Yb ||
                i == varIndex_Xs || i == varIndex_Ys ||
@@ -191,7 +191,7 @@ namespace PMKS.PositionSolving
             return 2 * innerFunction * InnerDerivatives[i];
         }
 
-        public override double second_deriv_wrt_ij(double[] x, int i, int j)
+        internal override double second_deriv_wrt_ij(double[] x, int i, int j)
         {
             if (!(i == varIndex_Xb || i == varIndex_Yb ||
                 i == varIndex_Xs || i == varIndex_Ys ||

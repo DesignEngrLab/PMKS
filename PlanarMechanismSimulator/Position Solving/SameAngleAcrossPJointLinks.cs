@@ -38,7 +38,7 @@ namespace PMKS.PositionSolving
         private double deriv_innerFunction_wrt_ySlide1;
         private double deriv_innerFunction_wrt_ySlide2;
 
-        public SameAngleAcrossPJointLinks(int varIndexBlock1, int jointIndexBlock1, double xBlock1, double yBlock1,
+        internal SameAngleAcrossPJointLinks(int varIndexBlock1, int jointIndexBlock1, double xBlock1, double yBlock1,
             int varIndexBlock2, int jointIndexBlock2, double xBlock2, double yBlock2,
             int varIndexSlide1, int jointIndexSlide1, double xSlide1, double ySlide1,
             int varIndexSlide2, int jointIndexSlide2, double xSlide2, double ySlide2,
@@ -78,13 +78,13 @@ namespace PMKS.PositionSolving
             AngleToLengthScaler *= AngleToLengthScaler;
         }
 
-        public override double calculate(double[] x)
+        internal override double calculate(double[] x)
         {
             assignPositions(x);
             return AngleToLengthScaler * innerFunction * innerFunction;
         }
 
-        public override double deriv_wrt_xi(double[] x, int i)
+        internal override double deriv_wrt_xi(double[] x, int i)
         {
             if (!(i == varIndex_Xb1 || i == varIndex_Yb1 ||
                 i == varIndex_Xb2 || i == varIndex_Yb2 ||
@@ -129,7 +129,7 @@ namespace PMKS.PositionSolving
             return 2 *AngleToLengthScaler * innerFunction * answer;
         }
 
-        public override double second_deriv_wrt_ij(double[] x, int i, int j)
+        internal override double second_deriv_wrt_ij(double[] x, int i, int j)
         {
             if (!(i == varIndex_Xb1 || i == varIndex_Yb1 ||
                 i == varIndex_Xb2 || i == varIndex_Yb2 ||

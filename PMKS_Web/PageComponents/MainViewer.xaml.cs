@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Silverlight_PMKS;
 using Silverlight_PMKS.Shapes.Static_Shapes;
+using Point = System.Windows.Point;
 
 
 namespace PMKS_Silverlight_App
@@ -166,31 +167,30 @@ namespace PMKS_Silverlight_App
                 if (child is LinkShape)
                     ((LinkShape)child).SetBindings(timeSlider, pmks, XAxisOffset, YAxisOffset);
 
-            for (int i = 0; i < pmks.numJoints; i++)
+            for (int i = 0; i < pmks.NumJoints; i++)
             {
-                var j = pmks.JointNewIndexFromOriginal[i];
-                var jt = pmks.AllJoints[j];
+                var jt = pmks.Joints[i];
                 if (jt.FixedWithRespectTo(pmks.GroundLink)) continue;
-                Children.Add(new PositionPath(i, j, pmks.JointParameters, jointData[i], XAxisOffset, YAxisOffset, pmks.CycleType == CycleTypes.OneCycle,
+                Children.Add(new PositionPath(i, pmks.JointParameters, jointData[i], XAxisOffset, YAxisOffset, pmks.CycleType == CycleTypes.OneCycle,
                      penThick));
                 DynamicJointBaseShape displayJoint;
-                switch (jt.jointType)
+                switch (jt.TypeOfJoint)
                 {
                     case JointType.P:
-                        var fixedLink = pmks.AllJoints[j].Link2;
-                        displayJoint = new PJointShape(pmks.AllJoints[j], fixedLink, timeSlider, pmks, jointSize, penThick, XAxisOffset, YAxisOffset);
+                        var fixedLink = pmks.Joints[i].Link2;
+                        displayJoint = new PJointShape(pmks.Joints[i], fixedLink, timeSlider, pmks, jointSize, penThick, XAxisOffset, YAxisOffset);
                         break;
-                    default: displayJoint = new RJointShape(pmks.AllJoints[j], timeSlider, pmks, jointSize, penThick, XAxisOffset, YAxisOffset);
+                    default: displayJoint = new RJointShape(pmks.Joints[i], timeSlider, pmks, jointSize, penThick, XAxisOffset, YAxisOffset);
                         break;
                 }
-                if (pmks.inputJointIndex == j)
+                if (App.main.drivingIndex == i)
                 {
                     displayJoint.Stroke = new SolidColorBrush {Color = Color.FromArgb(180, 40, 255,0)};
                     displayJoint.StrokeThickness = 30.0;
                 }
                 Children.Add(displayJoint);
-                Children.Add(new AccelerationVector(pmks.AllJoints[j], timeSlider, pmks, AccelFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
-                Children.Add(new VelocityVector(pmks.AllJoints[j], timeSlider, pmks, VelocityFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
+                Children.Add(new AccelerationVector(pmks.Joints[i], timeSlider, pmks, AccelFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
+                Children.Add(new VelocityVector(pmks.Joints[i], timeSlider, pmks, VelocityFactor, penThick, XAxisOffset, YAxisOffset, displayJoint, jointData[i]));
             }
             /******************************************************************/
             #endregion
@@ -222,33 +222,32 @@ namespace PMKS_Silverlight_App
             Children.Clear();
             Children.Add(axes);
             initialPositionIcons.Clear();
-            for (int index = 0; index < pmks.AllJoints.Count; index++)
+            for (int index = 0; index < pmks.Joints.Count; index++)
             {
-                var simulationIndex = pmks.JointNewIndexFromOriginal[index];
-                var j = pmks.AllJoints[simulationIndex];
-                var isDriver = (simulationIndex == pmks.inputJointIndex);
+                var j = pmks.Joints[index];
+                var isDriver = (index == App.main.drivingIndex);
                 JointData jointRowData = (index < jointData.Count) ? jointData[index] : null;
                 InputJointBaseShape inputJointBaseShape = null;
-                switch (j.jointType)
+                switch (j.TypeOfJoint)
                 {
                     case JointType.R:
                         inputJointBaseShape =
                             new InputRJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.isGround, isDriver,index,jointRowData);
+                                YAxisOffset, j.IsGround, isDriver,index,jointRowData);
                         break;
                     case JointType.P:
                         inputJointBaseShape =
                             new InputPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.SlideAngleInitial, j.isGround, isDriver, index, jointRowData);
+                                YAxisOffset, j.SlideAngleInitial, j.IsGround, isDriver, index, jointRowData);
                         break;
                     case JointType.RP:
                         inputJointBaseShape =
                             new InputRPJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.SlideAngleInitial, j.isGround, index, jointRowData);
+                                YAxisOffset, j.SlideAngleInitial, j.IsGround, index, jointRowData);
                         break;
                     case JointType.G:
                         inputJointBaseShape = new InputGJointShape(jointSize, penThick, j.xInitial, j.yInitial, XAxisOffset,
-                                YAxisOffset, j.SlideAngleInitial, j.isGround,index, jointRowData);
+                                YAxisOffset, j.SlideAngleInitial, j.IsGround,index, jointRowData);
                         break;
                 }
                 Children.Add(inputJointBaseShape);
@@ -260,10 +259,10 @@ namespace PMKS_Silverlight_App
                                                  DisplayConstants.DefaultBufferRadius / ScaleFactor);
             Children.Add(groundLinkShape);
             /* now add the link shapes */
-            for (int i = 0; i < pmks.numLinks; i++)
+            for (int i = 0; i < pmks.NumLinks; i++)
             {
-                if (!pmks.AllLinks[i].name.Equals("ground"))
-                    Children.Add(new LinkShape(i, pmks.AllLinks[i], XAxisOffset, YAxisOffset, penThick, jointSize, null,
+                if (!pmks.Links[i].name.Equals("ground"))
+                    Children.Add(new LinkShape(i, pmks.Links[i], XAxisOffset, YAxisOffset, penThick, jointSize, null,
                                                             DisplayConstants.DefaultBufferRadius / ScaleFactor));
             }
             if (TargetPath != null)
@@ -309,9 +308,9 @@ namespace PMKS_Silverlight_App
                     if (child is LinkShape)
                     {
                         ((LinkShape)child).ClearBindings();
-                        var thisLink = movingPMKS.AllLinks.Contains(((LinkShape)child).thisLink)
+                        var thisLink = movingPMKS.Links.Contains(((LinkShape)child).thisLink)
                             ? ((LinkShape)child).thisLink
-                            : movingPMKS.AllLinks.First(c => c.name == ((LinkShape)child).thisLink.name);
+                            : movingPMKS.Links.First(c => c.name == ((LinkShape)child).thisLink.name);
                         child = new LinkShape(((LinkShape)child).linkNum, thisLink, XAxisOffset, YAxisOffset, penThick,
                             jointSize, null, DisplayConstants.DefaultBufferRadius / ScaleFactor);
                     }
@@ -322,7 +321,7 @@ namespace PMKS_Silverlight_App
                     {
                         child.ClearValue(OpacityProperty);
                         var i = ((PositionPath)child).index;
-                        child = new PositionPath(i, movingPMKS.JointNewIndexFromOriginal[i], movingPMKS.JointParameters, data[i],
+                        child = new PositionPath(i, movingPMKS.JointParameters, data[i],
                             XAxisOffset, YAxisOffset, movingPMKS.CycleType == CycleTypes.OneCycle,
                             penThick);
                     }
@@ -365,7 +364,7 @@ namespace PMKS_Silverlight_App
             var origMaxX = maxX = DisplayConstants.AxesBuffer;
             var origMaxY = maxY = DisplayConstants.AxesBuffer;
 
-            for (int i = 0; i < pmks.numJoints; i++)
+            for (int i = 0; i < pmks.NumJoints; i++)
             {
                 if (origMinX > pmks.JointParameters.Parameters[0][i, 0])
                     origMinX = pmks.JointParameters.Parameters[0][i, 0];
@@ -377,7 +376,7 @@ namespace PMKS_Silverlight_App
                     origMaxY = pmks.JointParameters.Parameters[0][i, 1];
             }
             for (int j = 0; j < pmks.JointParameters.Count; j++)
-                for (int i = 0; i < pmks.numJoints; i++)
+                for (int i = 0; i < pmks.NumJoints; i++)
                 {
                     if (minX > pmks.JointParameters.Parameters[j][i, 0])
                         minX = pmks.JointParameters.Parameters[j][i, 0];

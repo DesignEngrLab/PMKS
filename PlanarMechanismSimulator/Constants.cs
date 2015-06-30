@@ -7,6 +7,9 @@ using StarMathLib;
 
 namespace PMKS
 {
+    /// <summary>
+    /// Class of Constants and simple static functions used in PMKS.
+    /// </summary>
     public static class Constants
     {
 
@@ -17,44 +20,55 @@ namespace PMKS
         ///   position of points (mostly in checking for a valid transformation (see
         ///   ValidTransformation) and if other nodes comply (see otherNodesComply).
         /// </summary>
-        public const double epsilonSame = 1e-12;
+        internal const double epsilonSame = 1e-12;
 
-        public const double epsilon = 1e-9 ;
+        internal const double epsilon = 1e-9 ;
         internal const double ErrorInDeterminingCompleteCycle = 0.001;
         internal const double rangeMultiplier = 5.0;
         internal const int numberOfTries = 50;
-        public const double SmallPerturbationFraction = 0.003;
-        public const double DefaultStepSize = 0.5;
-        public const double MinimumStepSize = 0.0005;
-        public const int MaxItersInPositionError = 10;
-        public const double ConservativeErrorEstimation = 0.9;
-        public const double ErrorEstimateInertia = 2.0;
-        public const double ErrorSizeIncrease = 1.2;
-        public const long MaxItersInNonDyadicSolver = 300;
-        public const double DefaultInputSpeed = 1.0;
+        internal const double SmallPerturbationFraction = 0.003;
+        internal const double DefaultStepSize = 0.5;
+        internal const double MinimumStepSize = 0.0005;
+        internal const int MaxItersInPositionError = 10;
+        internal const double ConservativeErrorEstimation = 0.9;
+        internal const double ErrorEstimateInertia = 2.0;
+        internal const double ErrorSizeIncrease = 1.2;
+        internal const long MaxItersInNonDyadicSolver = 300;
+        internal const double DefaultInputSpeed = 1.0;
 
-        public static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan((long)2000000);
+        internal static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan((long)2000000);
 
-        public const double XRangeLimitFactor = 5.0;
-        public const double YRangeLimitFactor = 5.0;      
-        public const double BoundingBoxAspectRatio = 2.0;
-        public const double XMinimumFactor = 1e-8;
-        public const double YMinimumFactor = 1e-8;
-        public const double AngleMinimumFactor = 1e-6;
+        internal const double XRangeLimitFactor = 5.0;
+        internal const double YRangeLimitFactor = 5.0;      
+        internal const double BoundingBoxAspectRatio = 2.0;
+        internal const double XMinimumFactor = 1e-8;
+        internal const double YMinimumFactor = 1e-8;
+        internal const double AngleMinimumFactor = 1e-6;
 
-        public const double JointAccelerationLimitFactor = 75.0;
-        public const double LinkAccelerationLimitFactor = 75.0;
-        public const double JointVelocityLimitFactor = 75.0;
-        public const double LinkVelocityLimitFactor = 75.0;
-        public const double FullCircle = 2 * Math.PI;
-        public const double MaxSlope = 10e9;
-        public const double SmoothingErrorRepeatFactor = 10.0;
+        internal const double JointAccelerationLimitFactor = 75.0;
+        internal const double LinkAccelerationLimitFactor = 75.0;
+        internal const double JointVelocityLimitFactor = 75.0;
+        internal const double LinkVelocityLimitFactor = 75.0;
+        internal const double FullCircle = 2 * Math.PI;
+        internal const double MaxSlope = 10e9;
+        internal const double SmoothingErrorRepeatFactor = 10.0;
 
+        /// <summary>
+        /// Is x1s the close zero?
+        /// </summary>
+        /// <param name="x1">The x1.</param>
+        /// <returns>Boolean.</returns>
         public static Boolean sameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilonSame;
         }
 
+        /// <summary>
+        /// Are x1 and x2 the same?
+        /// </summary>
+        /// <param name="x1">The x1.</param>
+        /// <param name="x2">The x2.</param>
+        /// <returns>Boolean.</returns>
         public static Boolean sameCloseZero(double x1, double x2)
         {
             return sameCloseZero(x1 - x2);
@@ -63,14 +77,14 @@ namespace PMKS
 
         #region DistanceSquared
 
-        public static double distanceSqared(double x1, double y1, double x2 = 0, double y2 = 0)
+        internal static double distanceSqared(double x1, double y1, double x2 = 0, double y2 = 0)
         {
             return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
         }
 
-        internal static double distanceSqared(point point1, point point2)
+        internal static double distanceSqared(Point point1, Point point2)
         {
-            return distanceSqared(point1.x, point1.y, point2.x, point2.y);
+            return distanceSqared(point1.X, point1.Y, point2.X, point2.Y);
         }
 
         #endregion
@@ -82,21 +96,35 @@ namespace PMKS
             return Math.Sqrt(distanceSqared(x1, y1, x2, y2));
         }
 
-        internal static double distance(point point1, point point2)
+        internal static double distance(Point point1, Point point2)
         {
-            return distance(point1.x, point1.y, point2.x, point2.y);
+            return distance(point1.X, point1.Y, point2.X, point2.Y);
         }
 
         #endregion
 
         #region Angle
 
-        public static double angle(point start, point end)
+        /// <summary>
+        /// Finds the angle on the vector from start to end.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <returns>System.Double.</returns>
+        public static double angle(Point start, Point end)
         {
-            return angle(start.x, start.y, end.x, end.y);
+            return angle(start.X, start.Y, end.X, end.Y);
         }
 
 
+        /// <summary>
+        /// Finds the angle on the vector from start to end.
+        /// </summary>
+        /// <param name="startX">The start x.</param>
+        /// <param name="startY">The start y.</param>
+        /// <param name="endX">The end x.</param>
+        /// <param name="endY">The end y.</param>
+        /// <returns>System.Double.</returns>
         public static double angle(double startX, double startY, double endX, double endY)
         {
             return Math.Atan2(endY - startY, endX - startX);
@@ -104,20 +132,20 @@ namespace PMKS
 
         #endregion
 
-        public static point solveViaIntersectingLines(double slopeA, point ptA, double slopeB, point ptB)
+        public static Point solveViaIntersectingLines(double slopeA, Point ptA, double slopeB, Point ptB)
         {
-            if (sameCloseZero(ptA.x, ptB.x) && sameCloseZero(ptA.y, ptB.y)) return ptA;
-            if (sameCloseZero(slopeA, slopeB)) return new point(Double.NaN, Double.NaN);
-            var offsetA = ptA.y - slopeA * ptA.x;
-            var offsetB = ptB.y - slopeB * ptB.x;
+            if (sameCloseZero(ptA.X, ptB.X) && sameCloseZero(ptA.Y, ptB.Y)) return ptA;
+            if (sameCloseZero(slopeA, slopeB)) return new Point(Double.NaN, Double.NaN);
+            var offsetA = ptA.Y - slopeA * ptA.X;
+            var offsetB = ptB.Y - slopeB * ptB.X;
             if (verticalSlope(slopeA))
-                return new point(ptA.x, slopeB * ptA.x + offsetB);
+                return new Point(ptA.X, slopeB * ptA.X + offsetB);
             if (verticalSlope(slopeB))
-                return new point(ptB.x, slopeA * ptB.x + offsetA);
+                return new Point(ptB.X, slopeA * ptB.X + offsetA);
 
             var x = (offsetB - offsetA) / (slopeA - slopeB);
             var y = slopeA * x + offsetA;
-            return new point(x, y);
+            return new Point(x, y);
         }
 
         private static Boolean verticalSlope(double slope)

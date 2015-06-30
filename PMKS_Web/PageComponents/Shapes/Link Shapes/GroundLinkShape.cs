@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using PMKS_Silverlight_App;
+using Point = System.Windows.Point;
 
 namespace PMKS_Silverlight_App
 {
@@ -18,7 +19,7 @@ namespace PMKS_Silverlight_App
         private const int grayscale = 180;
         private const int opacity = 180;
         #region Constructor
-        public GroundLinkShape(link groundLink, double xOffset, double yOffset, double strokeThickness, double jointSize,
+        public GroundLinkShape(Link groundLink, double xOffset, double yOffset, double strokeThickness, double jointSize,
                             double startingBufferRadius)
         {
             Name = "ground";
@@ -26,7 +27,7 @@ namespace PMKS_Silverlight_App
             double triangleSideLength = 2.5 * jointSize;
             foreach (var j in groundLink.joints)
             {
-                switch (j.jointType)
+                switch (j.TypeOfJoint)
                 {
                     case JointType.R:
 

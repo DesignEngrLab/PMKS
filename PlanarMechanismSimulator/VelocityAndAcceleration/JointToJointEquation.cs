@@ -9,18 +9,18 @@ namespace PMKS.VelocityAndAcceleration
 {
     internal abstract class JointToJointEquation : EquationBase
     {
-        protected readonly joint joint1;
+        protected readonly Joint joint1;
         protected int joint1XIndex = -1;
         protected int joint1YIndex = -1;
-        protected readonly joint joint2;
+        protected readonly Joint joint2;
         protected int joint2XIndex = -1;
         protected int joint2YIndex = -1;
-        public readonly link link;
+        internal readonly Link link;
         protected int linkIndex = -1;
         protected readonly bool joint1IsKnown;
         protected readonly bool joint2IsKnown;
 
-        protected JointToJointEquation(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown)
+        protected JointToJointEquation(Joint joint1, Joint joint2, Link link, bool Joint1IsKnown, bool Joint2IsKnown)
         {
             this.joint1 = joint1;
             this.joint2 = joint2;
@@ -46,7 +46,7 @@ namespace PMKS.VelocityAndAcceleration
                     joint2YIndex = index + 1;
                 }
                 else if (o == link) linkIndex = index;
-                if (o is joint) index += 2;
+                if (o is Joint) index += 2;
                 else index++;
             }
         }
@@ -75,8 +75,8 @@ namespace PMKS.VelocityAndAcceleration
 
     internal abstract class VelocityJointToJoint : JointToJointEquation
     {
-        public bool linkIsKnown;
-        protected VelocityJointToJoint(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown, bool linkIsKnown)
+        internal bool linkIsKnown;
+        protected VelocityJointToJoint(Joint joint1, Joint joint2, Link link, bool Joint1IsKnown, bool Joint2IsKnown, bool linkIsKnown)
             : base(joint1, joint2, link, Joint1IsKnown, Joint2IsKnown)
         {
             this.linkIsKnown = linkIsKnown;
@@ -101,7 +101,7 @@ namespace PMKS.VelocityAndAcceleration
     }
     internal abstract class AccelerationJointToJoint : JointToJointEquation
     {
-        protected AccelerationJointToJoint(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown)
+        protected AccelerationJointToJoint(Joint joint1, Joint joint2, Link link, bool Joint1IsKnown, bool Joint2IsKnown)
             : base(joint1, joint2, link, Joint1IsKnown, Joint2IsKnown) { }
 
         internal override double GetRow1Constant()

@@ -22,7 +22,7 @@ namespace PMKS.PositionSolving
         private double newLength;
 
 
-        public LinkLengthFunction(int varListIndex1, int jointListIndex1, int varListIndex2, int jointListIndex2, double origLengthSquared)
+        internal LinkLengthFunction(int varListIndex1, int jointListIndex1, int varListIndex2, int jointListIndex2, double origLengthSquared)
         {
             if (varListIndex1 < varListIndex2)
             {
@@ -42,13 +42,13 @@ namespace PMKS.PositionSolving
             origLength = Math.Sqrt(origLengthSquared);
         }
 
-        public override double calculate(double[] x)
+        internal override double calculate(double[] x)
         {
             assignPositions(x);
             return newLengthSqared - 2 * origLength * newLength + origLengthSquared;
         }
 
-        public override double deriv_wrt_xi(double[] x, int i)
+        internal override double deriv_wrt_xi(double[] x, int i)
         {
             if (!(i == 2 * varListIndex1 || i == 2 * varListIndex1 + 1 || i == 2 * varListIndex2 || i == 2 * varListIndex2 + 1)) return 0;
             assignPositions(x);
@@ -67,7 +67,7 @@ namespace PMKS.PositionSolving
             throw new Exception("Gradient:you shouldn't be seeing this! how did you get by the initial if-statement?");
         }
 
-        public override double second_deriv_wrt_ij(double[] x, int i, int j)
+        internal override double second_deriv_wrt_ij(double[] x, int i, int j)
         {
             if ((!(i == 2 * varListIndex1 || i == 2 * varListIndex1 + 1 || i == 2 * varListIndex2 || i == 2 * varListIndex2 + 1))
                 || (!(j == 2 * varListIndex1 || j == 2 * varListIndex1 + 1 || j == 2 * varListIndex2 || j == 2 * varListIndex2 + 1))) return 0;

@@ -4,6 +4,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using PMKS;
+using Point = PMKS.Point;
 
 namespace PMKS_Silverlight_App
 {
@@ -12,7 +13,7 @@ namespace PMKS_Silverlight_App
         private readonly bool _isClosed; 
         public int index { get;private set; }
 
-        public PositionPath(int index, int pmksIndex, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY, Boolean isClosed,
+        public PositionPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY, Boolean isClosed,
             double penThick)
         {
             this.index = index;
@@ -21,9 +22,9 @@ namespace PMKS_Silverlight_App
                 {
                     Figures = new PathFigureCollection
                         {
-                            //LinearPath(pmksIndex, JointParameters, jData, offsetX, offsetY)
+                            //LinearPath(index, JointParameters, jData, offsetX, offsetY)
                             //,
-                            QuadraticPath(pmksIndex, JointParameters, jData,  offsetX,  offsetY)
+                            QuadraticPath(index, JointParameters, jData,  offsetX,  offsetY)
                         }
                 };
             StrokeThickness = penThick;
@@ -44,13 +45,13 @@ namespace PMKS_Silverlight_App
 
         public PathFigure LinearPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)
         {
-            var start = new Point(JointParameters[0].Value[index, 0] + offsetX, JointParameters[0].Value[index, 1] + offsetY);
+            var start = new System.Windows.Point(JointParameters[0].Value[index, 0] + offsetX, JointParameters[0].Value[index, 1] + offsetY);
             var points = new PointCollection();
             for (int i = 1; i < JointParameters.Count; i++)
             {
                 var x = JointParameters[i].Value[index, 0] + offsetX;
                 var y = JointParameters[i].Value[index, 1] + offsetY;
-                points.Add(new Point(x, y));
+                points.Add(new System.Windows.Point(x, y));
             }
             #region see if path should be closed
             //var last_i = JointParameters.Count - 1;
@@ -77,7 +78,7 @@ namespace PMKS_Silverlight_App
 
         public PathFigure QuadraticPath(int index, TimeSortedList JointParameters, JointData jData, double offsetX, double offsetY)
         {
-            var start = new Point(JointParameters[0].Value[index, 0] + offsetX, JointParameters[0].Value[index, 1] + offsetY);
+            var start = new System.Windows.Point(JointParameters[0].Value[index, 0] + offsetX, JointParameters[0].Value[index, 1] + offsetY);
             var points = new PointCollection();
             for (int i = 1; i < JointParameters.Count; i++)
             {
@@ -89,13 +90,13 @@ namespace PMKS_Silverlight_App
                 var y2 = JointParameters[i].Value[index, 1] + offsetY;
                 var v_2x = JointParameters[i].Value[index, 2];
                 var v_2y = JointParameters[i].Value[index, 3];
-                var interPt = Constants.solveViaIntersectingLines(v_1y / v_1x, new point(x1, y1),
-                      v_2y / v_2x, new point(x2, y2));
-                if (double.IsNaN(interPt.x) || double.IsNaN(interPt.y))
-                    points.Add(new Point((x1 + x2) / 2, (y1 + y2) / 2));
+                var interPt = Constants.solveViaIntersectingLines(v_1y / v_1x, new Point(x1, y1),
+                      v_2y / v_2x, new Point(x2, y2));
+                if (double.IsNaN(interPt.X) || double.IsNaN(interPt.Y))
+                    points.Add(new System.Windows.Point((x1 + x2) / 2, (y1 + y2) / 2));
                 else
-                    points.Add(new Point(interPt.x, interPt.y));
-                points.Add(new Point(x2, y2));
+                    points.Add(new System.Windows.Point(interPt.X, interPt.Y));
+                points.Add(new System.Windows.Point(x2, y2));
             }
             if (_isClosed)
             {
@@ -107,13 +108,13 @@ namespace PMKS_Silverlight_App
                 var y2 = JointParameters[0].Value[index, 1] + offsetY;
                 var v_2x = JointParameters[0].Value[index, 2];
                 var v_2y = JointParameters[0].Value[index, 3];
-                var interPt = Constants.solveViaIntersectingLines(v_1y / v_1x, new point(x1, y1),
-                      v_2y / v_2x, new point(x2, y2));
-                if (double.IsNaN(interPt.x) || double.IsNaN(interPt.y))
-                    points.Add(new Point((x1 + x2) / 2, (y1 + y2) / 2));
+                var interPt = Constants.solveViaIntersectingLines(v_1y / v_1x, new Point(x1, y1),
+                      v_2y / v_2x, new Point(x2, y2));
+                if (double.IsNaN(interPt.X) || double.IsNaN(interPt.Y))
+                    points.Add(new System.Windows.Point((x1 + x2) / 2, (y1 + y2) / 2));
                 else
-                    points.Add(new Point(interPt.x, interPt.y));
-                points.Add(new Point(x2, y2));
+                    points.Add(new System.Windows.Point(interPt.X, interPt.Y));
+                points.Add(new System.Windows.Point(x2, y2));
             }
             #region see if path should be closed
             //var last_i = JointParameters.Count - 1;

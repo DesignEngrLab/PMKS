@@ -36,7 +36,7 @@ namespace PMKS_Silverlight_App
             ((DynamicJointBaseShape)d).Redraw();
         }
 
-        protected DynamicJointBaseShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
+        protected DynamicJointBaseShape(Joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
             : base(radius, strokeThickness, xOffset, yOffset)
         {
             Height = Width = DisplayConstants.UnCroppedDimension;

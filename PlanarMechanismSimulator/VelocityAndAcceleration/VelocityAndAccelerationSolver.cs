@@ -16,7 +16,7 @@ namespace PMKS.VelocityAndAcceleration
     /// </summary>
     internal class AccelerationSolver : VelocityAndAccelerationSolver
     {
-        internal AccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
+        internal AccelerationSolver(List<Joint> joints, List<Link> links, int firstInputJointIndex, int inputJointIndex,
                               int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData, double averageLength)
             : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, inputSpeed, gearsData)
         {
@@ -26,9 +26,9 @@ namespace PMKS.VelocityAndAcceleration
 
         protected override void SetInitialInputAndGroundStates()
         {
-            RecursivelySetLinkVelocityThroughPJoints(groundLink, new List<link>(), 0.0, false);
-            RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<link>(), 0.0, false);
-            if (inputJoint.jointType == JointType.R)
+            RecursivelySetLinkVelocityThroughPJoints(groundLink, new List<Link>(), 0.0, false);
+            RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<Link>(), 0.0, false);
+            if (inputJoint.TypeOfJoint == JointType.R)
             {
                 var xGnd = inputJoint.x;
                 var yGnd = inputJoint.y;
@@ -41,7 +41,7 @@ namespace PMKS.VelocityAndAcceleration
                     }
                 }
             }
-            else if (inputJoint.jointType == JointType.P)
+            else if (inputJoint.TypeOfJoint == JointType.P)
             {
                 inputJoint.SlideAcceleration = 0.0;
                 foreach (var j in inputLink.joints)
@@ -58,22 +58,22 @@ namespace PMKS.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link)
+                if (o is Link)
                 {
                     var a = x[index++];
                     if (Math.Abs(a) > maximumLinkValue) return false;
-                    ((link)o).Acceleration = a;
+                    ((Link)o).Acceleration = a;
                 }
-                else if (o is joint)
+                else if (o is Joint)
                 {
                     var ax = x[index++];
                     var ay = x[index++];
                     if (Math.Abs(ax) > maximumJointValue || Math.Abs(ay) > maximumJointValue) return false;
-                    ((joint)o).ax = ax;
-                    ((joint)o).ay = ay;
+                    ((Joint)o).ax = ax;
+                    ((Joint)o).ay = ay;
                 }
-                else if (o is Tuple<link, joint>)
-                    ((Tuple<link, joint>)o).Item2.SlideAcceleration = x[index++];
+                else if (o is Tuple<Link, Joint>)
+                    ((Tuple<Link, Joint>)o).Item2.SlideAcceleration = x[index++];
             }
             if (gearsData != null)
             {
@@ -108,21 +108,21 @@ namespace PMKS.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link)
-                    x[index++] = ((link)o).Acceleration;
-                else if (o is joint)
+                if (o is Link)
+                    x[index++] = ((Link)o).Acceleration;
+                else if (o is Joint)
                 {
-                    x[index++] = ((joint)o).ax;
-                    x[index++] = ((joint)o).ay;
+                    x[index++] = ((Joint)o).ax;
+                    x[index++] = ((Joint)o).ay;
                 }
-                else if (o is Tuple<link, joint>)
-                    x[index++] = ((Tuple<link, joint>)o).Item2.SlideAcceleration;
+                else if (o is Tuple<Link, Joint>)
+                    x[index++] = ((Tuple<Link, Joint>)o).Item2.SlideAcceleration;
             }
             return x;
         }
 
 
-        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
+        protected override JointToJointEquation MakeJointToJointEquations(Joint kJoint, Joint jJoint, Link l, bool jointKIsKnown, bool jointJIsKnown, bool linkIsKnown)
         {
             if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
                 return new AccelerationEquationForDoubleSlide(jJoint, kJoint, l, jointJIsKnown, jointKIsKnown);
@@ -138,7 +138,7 @@ namespace PMKS.VelocityAndAcceleration
     /// </summary>
     internal class VelocitySolver : VelocityAndAccelerationSolver
     {
-        internal VelocitySolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
+        internal VelocitySolver(List<Joint> joints, List<Link> links, int firstInputJointIndex, int inputJointIndex,
             int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData, double averageLength)
             : base(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex, inputSpeed, gearsData)
         {
@@ -147,10 +147,10 @@ namespace PMKS.VelocityAndAcceleration
         }
         protected override void SetInitialInputAndGroundStates()
         {
-            RecursivelySetLinkVelocityThroughPJoints(groundLink, new List<link>(), 0.0, true);
-            if (inputJoint.jointType == JointType.R)
+            RecursivelySetLinkVelocityThroughPJoints(groundLink, new List<Link>(), 0.0, true);
+            if (inputJoint.TypeOfJoint == JointType.R)
             {
-                RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<link>(), inputSpeed, true);
+                RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<Link>(), inputSpeed, true);
                 var xGnd = inputJoint.x;
                 var yGnd = inputJoint.y;
                 foreach (var j in inputLink.joints)
@@ -160,7 +160,7 @@ namespace PMKS.VelocityAndAcceleration
                     j.vy = inputSpeed * (j.x - xGnd);
                 }
             }
-            else if (inputJoint.jointType == JointType.P)
+            else if (inputJoint.TypeOfJoint == JointType.P)
             {
                 var vx = inputSpeed * Math.Cos(inputJoint.SlideAngle);
                 var vy = inputSpeed * Math.Sin(inputJoint.SlideAngle);
@@ -181,22 +181,22 @@ namespace PMKS.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link)
+                if (o is Link)
                 {
                     var v = x[index++];
                     if (Math.Abs(v) > maximumJointValue) return false;
-                    ((link)o).Velocity = v;
+                    ((Link)o).Velocity = v;
                 }
-                else if (o is joint)
+                else if (o is Joint)
                 {
                     var vx = x[index++];
                     var vy = x[index++];
                     if (Math.Abs(vx) > maximumJointValue || Math.Abs(vy) > maximumJointValue) return false;
-                    ((joint)o).vx = vx;
-                    ((joint)o).vy = vy;
+                    ((Joint)o).vx = vx;
+                    ((Joint)o).vy = vy;
                 }
-                else if (o is Tuple<link, joint>)
-                    ((Tuple<link, joint>)o).Item2.SlideVelocity = x[index++];
+                else if (o is Tuple<Link, Joint>)
+                    ((Tuple<Link, Joint>)o).Item2.SlideVelocity = x[index++];
             }
             if (gearsData != null)
             {
@@ -228,19 +228,19 @@ namespace PMKS.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is link)
-                    x[index++] = ((link)o).VelocityLast;
-                else if (o is joint)
+                if (o is Link)
+                    x[index++] = ((Link)o).VelocityLast;
+                else if (o is Joint)
                 {
-                    x[index++] = ((joint)o).vxLast;
-                    x[index++] = ((joint)o).vyLast;
+                    x[index++] = ((Joint)o).vxLast;
+                    x[index++] = ((Joint)o).vyLast;
                 }
-                else if (o is Tuple<link, joint>)
-                    x[index++] = ((Tuple<link, joint>)o).Item2.SlideVelocity;
+                else if (o is Tuple<Link, Joint>)
+                    x[index++] = ((Tuple<Link, Joint>)o).Item2.SlideVelocity;
             }
             return x;
         }
-        protected override JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
+        protected override JointToJointEquation MakeJointToJointEquations(Joint kJoint, Joint jJoint, Link l, bool jointKIsKnown, bool jointJIsKnown,
             bool linkIsKnown)
         {
             if (jJoint.SlidingWithRespectTo(l) && kJoint.SlidingWithRespectTo(l))
@@ -258,17 +258,17 @@ namespace PMKS.VelocityAndAcceleration
     /// </summary>
     internal abstract class VelocityAndAccelerationSolver
     {
-        protected readonly List<joint> joints;
+        protected readonly List<Joint> joints;
         protected readonly int firstInputJointIndex;
         protected readonly int inputJointIndex;
         protected readonly double inputSpeed;
         protected double maximumJointValue;
         protected double maximumLinkValue;
-        protected readonly joint inputJoint;
-        protected readonly joint groundReferenceJoint;
+        protected readonly Joint inputJoint;
+        protected readonly Joint groundReferenceJoint;
         protected readonly List<EquationBase> equations;
-        protected readonly link inputLink;
-        protected readonly link groundLink;
+        protected readonly Link inputLink;
+        protected readonly Link groundLink;
         protected readonly int numUnknowns;
         protected readonly double[,] A;
         protected readonly double[] b;
@@ -286,7 +286,7 @@ namespace PMKS.VelocityAndAcceleration
         /// <param name="inputLinkIndex">Index of the input link.</param>
         /// <param name="inputSpeed">The input speed.</param>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
-        public VelocityAndAccelerationSolver(List<joint> joints, List<link> links, int firstInputJointIndex, int inputJointIndex,
+        internal VelocityAndAccelerationSolver(List<Joint> joints, List<Link> links, int firstInputJointIndex, int inputJointIndex,
                                              int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData)
         {
             /************ Initialization ************/
@@ -309,18 +309,18 @@ namespace PMKS.VelocityAndAcceleration
             foreach (var j in joints)
             {
                 if (j.JustATracer) unknownObjects.Remove(j);
-                if (j.jointType == JointType.RP || j.jointType == JointType.P)
-                    unknownObjects.Add(new Tuple<link, joint>(j.Link1, j));
+                if (j.TypeOfJoint == JointType.RP || j.TypeOfJoint == JointType.P)
+                    unknownObjects.Add(new Tuple<Link, Joint>(j.Link1, j));
             }
             /* Since links connected by a P joint rotate at same speed, we need to remove those from the unknown list. */
             /**** Set velocity of any links connected to input by a P joint and remove link from unknowns ****/
             RecursivelyRemoveKnownLinks(groundLink);
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
             RecursivelyRemoveKnownLinks(inputLink);
-            unknownObjects.RemoveAll(o => groundLink.joints.Contains(o) && ((joint)o).FixedWithRespectTo(groundLink));
-            unknownObjects.RemoveAll(o => inputLink.joints.Contains(o) && ((joint)o).FixedWithRespectTo(inputLink));
-            if (inputJoint.jointType == JointType.P)
-                unknownObjects.RemoveAll(o => o is Tuple<link, joint> && ((Tuple<link, joint>)o).Item2 == inputJoint);
+            unknownObjects.RemoveAll(o => groundLink.joints.Contains(o) && ((Joint)o).FixedWithRespectTo(groundLink));
+            unknownObjects.RemoveAll(o => inputLink.joints.Contains(o) && ((Joint)o).FixedWithRespectTo(inputLink));
+            if (inputJoint.TypeOfJoint == JointType.P)
+                unknownObjects.RemoveAll(o => o is Tuple<Link, Joint> && ((Tuple<Link, Joint>)o).Item2 == inputJoint);
             /************ Set up Equations ************/
             #region go through the links to identify equations from joint-to-joint on a particular link
             /* first address all the links at the beginning of the list (the ones that are not input or ground) */
@@ -346,14 +346,14 @@ namespace PMKS.VelocityAndAcceleration
              * Well, we may need to add equations for clusters of links connected by P-joints that are not on ground
              * e.g. R-R-P-R. */
             foreach (var j in joints)
-                if (j.jointType == JointType.P && unknownObjects.Contains(j.Link1))
+                if (j.TypeOfJoint == JointType.P && unknownObjects.Contains(j.Link1))
                     equations.Add(new EqualLinkToLinkStateVarEquation(j.Link1, j.Link2));
             #endregion
 
             /**** Set up equations. Number of unknowns is 2*unknown_joints + 1*unknown_links. ****/
             foreach (var unknownObject in unknownObjects)
             {
-                if (unknownObject is joint) numUnknowns += 2;
+                if (unknownObject is Joint) numUnknowns += 2;
                 else numUnknowns++;
             }
             A = new double[numUnknowns, numUnknowns];
@@ -382,22 +382,22 @@ namespace PMKS.VelocityAndAcceleration
             DefineTwoMatrixOrders(rowNonZeroes);
         }
 
-        private void RecursivelyRemoveKnownLinks(link l)
+        private void RecursivelyRemoveKnownLinks(Link l)
         {
             if (!unknownObjects.Contains(l)) return;
             unknownObjects.Remove(l);
-            foreach (var pJoint in l.joints.Where(j => j.jointType == JointType.P))
+            foreach (var pJoint in l.joints.Where(j => j.TypeOfJoint == JointType.P))
                 RecursivelyRemoveKnownLinks(pJoint.OtherLink(l));
         }
 
-        protected void RecursivelySetLinkVelocityThroughPJoints(link l, List<link> LinksAlreadySet,
+        protected void RecursivelySetLinkVelocityThroughPJoints(Link l, List<Link> LinksAlreadySet,
             double value, Boolean thisIsVelocity)
         {
             if (LinksAlreadySet.Contains(l)) return;
             LinksAlreadySet.Add(l);
             if (thisIsVelocity) l.Velocity = value;
             else l.Acceleration = value;
-            foreach (var pJoint in l.joints.Where(j => j.jointType == JointType.P))
+            foreach (var pJoint in l.joints.Where(j => j.TypeOfJoint == JointType.P))
                 RecursivelySetLinkVelocityThroughPJoints(pJoint.OtherLink(l), LinksAlreadySet, value, thisIsVelocity);
         }
 
@@ -456,7 +456,7 @@ namespace PMKS.VelocityAndAcceleration
             }
         }
 
-        protected abstract JointToJointEquation MakeJointToJointEquations(joint kJoint, joint jJoint, link l, bool jointKIsKnown, bool jointJIsKnown,
+        protected abstract JointToJointEquation MakeJointToJointEquations(Joint kJoint, Joint jJoint, Link l, bool jointKIsKnown, bool jointJIsKnown,
             bool linkIsKnown);
 
         protected abstract void SetInitialInputAndGroundStates();
@@ -524,7 +524,7 @@ namespace PMKS.VelocityAndAcceleration
                 return matrixOrders[0];
             return matrixOrders[1];
         }
-        public double MultiplicativeDistanceToOne(double x)
+        internal double MultiplicativeDistanceToOne(double x)
         {
             if (double.IsInfinity(x) || double.IsNaN(x) || x == 0.0) return 0;
             return (Math.Abs(x) > 1) ? 1 / Math.Abs(x) : Math.Abs(x);

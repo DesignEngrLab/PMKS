@@ -60,9 +60,9 @@ namespace OptimizationToolbox
 
         protected override double run(out double[] xStar)
         {
-            if (!(f[0] is ITwiceDifferentiable))
-                throw new Exception("Newton's method requires that the objective function be twice differentiable"
-                + "\n(Must inherit from ITwiceDifferentiable).");
+            //if (!(f[0] is ITwiceDifferentiable))
+            //    throw new Exception("Newton's method requires that the objective function be twice differentiable"
+            //    + "\n(Must inherit from ITwiceDifferentiable).");
             /* this is just to overcome a small issue with the compiler. It thinks that xStar will
              * not have a value since it only appears in a conditional statement below. This initi-
              * alization is to "ensure" that it does and that the code compiles. */
@@ -76,7 +76,7 @@ namespace OptimizationToolbox
                 for (int i = 0; i < n; i++)
                     for (int j = i; j < n; j++)
                        // if (i == j) Hessian[i, j] = Hessian[j, i] = 1.0;
-                        Hessian[i, j] = Hessian[j, i] = ((ITwiceDifferentiable)f[0]).second_deriv_wrt_ij(x, i, j);
+                        Hessian[i, j] = Hessian[j, i] = f[0].second_deriv_wrt_ij(x, i, j);
                 dk = StarMath.multiply(-1, StarMath.multiply(StarMath.inverse(Hessian), gradF));
                 if (double.IsNaN(StarMath.sum(dk)))
                     dk = StarMath.multiply(-1, gradF);

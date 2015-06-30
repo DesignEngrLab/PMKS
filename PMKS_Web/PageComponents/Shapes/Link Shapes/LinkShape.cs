@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using PMKS;
+using Point = System.Windows.Point;
 
 namespace PMKS_Silverlight_App
 {
@@ -16,16 +17,16 @@ namespace PMKS_Silverlight_App
         #region Fields
         public readonly double MinimumBufferRadius;
         private readonly List<Point> cvxCenters;
-        public link thisLink { get; private set; }
+        public Link thisLink { get; private set; }
         public int linkNum { get; private set; }
-        private joint fixedJoint;
+        private Joint fixedJoint;
         private int updatedStateVars = 0;
         private GeometryGroup slideBorders, slideHoles;
         #endregion
 
         #region Constructor
 
-        public LinkShape(int linkNum, link thisLink, double xOffset, double yOffset, double strokeThickness, double jointSize, Slider bufferRadiusSlider,
+        public LinkShape(int linkNum, Link thisLink, double xOffset, double yOffset, double strokeThickness, double jointSize, Slider bufferRadiusSlider,
             double startingBufferRadius)
         {
             this.linkNum = linkNum;
@@ -59,7 +60,7 @@ namespace PMKS_Silverlight_App
                         slideHoles = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                         slideBorders = new GeometryGroup { FillRule = FillRule.Nonzero, Children = new GeometryCollection() };
                     }
-                    if (j.jointType == JointType.P)
+                    if (j.TypeOfJoint == JointType.P)
                         slideHoles.Children.Add(SlideShapeMaker.MakePSlotHole(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
                     else slideHoles.Children.Add(SlideShapeMaker.MakeRPSlotHole(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
                     slideBorders.Children.Add(SlideShapeMaker.MakePSlotBorder(j, thisLink, xOffset, yOffset, jointSize, startingBufferRadius));
@@ -193,7 +194,7 @@ namespace PMKS_Silverlight_App
         {
             this.xOffset = xOffset;
             this.yOffset = yOffset;
-            fixedJoint = thisLink.joints.FirstOrDefault(j => j.isGround && j.FixedWithRespectTo(thisLink));
+            fixedJoint = thisLink.joints.FirstOrDefault(j => j.IsGround && j.FixedWithRespectTo(thisLink));
             if (fixedJoint == null) fixedJoint = thisLink.joints.FirstOrDefault(j => j.FixedWithRespectTo(thisLink));
             if (fixedJoint == null) throw new Exception("Cannot display links that lack a fixed joint.");
             xFixedJoint = fixedJoint.xInitial + xOffset;

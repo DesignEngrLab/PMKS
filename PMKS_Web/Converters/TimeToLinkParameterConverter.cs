@@ -10,10 +10,10 @@ namespace PMKS_Silverlight_App
     public class TimeToLinkParameterConverter : TimeToJointParameterConverter
     {
         protected int LinkIndex;
-        public TimeToLinkParameterConverter(link l, joint j, StateVariableType linkState, Simulator pmks)
+        public TimeToLinkParameterConverter(Link l, Joint j, StateVariableType linkState, Simulator pmks)
             : base(j, linkState, pmks)
         {
-            LinkIndex = pmks.AllLinks.IndexOf(l);
+            LinkIndex = pmks.Links.IndexOf(l);
         }
 
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)

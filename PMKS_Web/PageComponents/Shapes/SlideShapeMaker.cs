@@ -9,12 +9,13 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using PMKS;
+using Point = System.Windows.Point;
 
 namespace PMKS_Silverlight_App
 {
     public static class SlideShapeMaker
     {
-        internal static RectangleGeometry MakeRPSlotHole(joint j, link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
+        internal static RectangleGeometry MakeRPSlotHole(Joint j, Link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
         {
             var slideAngle = j.SlideAngleInitial + Math.PI;
             var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
@@ -39,7 +40,7 @@ namespace PMKS_Silverlight_App
 
         }
 
-        internal static RectangleGeometry MakePSlotHole(joint j, link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
+        internal static RectangleGeometry MakePSlotHole(Joint j, Link thisLink, double xOffset, double yOffset, double jointSize, double startingBufferRadius)
         {
             var slideAngle = j.SlideAngleInitial + Math.PI;
             var blockWidth = 2 * jointSize * DisplayConstants.SliderRectangleWidthIncrease;
@@ -62,7 +63,7 @@ namespace PMKS_Silverlight_App
 
         }
 
-        internal static RectangleGeometry MakePSlotBorder(joint j, link thisLink, double xOffset, double yOffset, double jointSize,
+        internal static RectangleGeometry MakePSlotBorder(Joint j, Link thisLink, double xOffset, double yOffset, double jointSize,
             double startingBufferRadius, Boolean showNoSlot = false)
         {
             var slideAngle = j.SlideAngleInitial + Math.PI;

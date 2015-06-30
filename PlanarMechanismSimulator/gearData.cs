@@ -17,9 +17,9 @@ namespace PMKS
         internal readonly int gear1LinkIndex;
         internal readonly int gear2LinkIndex;
 
-        public GearData(joint gearTeethJoint, int gearTeethIndex, joint gearCenter1, int gearCenter1Index,
+        internal GearData(Joint gearTeethJoint, int gearTeethIndex, Joint gearCenter1, int gearCenter1Index,
             int gear1LinkIndex,
-            joint gearCenter2, int gearCenter2Index, int gear2LinkIndex,
+            Joint gearCenter2, int gearCenter2Index, int gear2LinkIndex,
             int connectingRodIndex, double initialGearAngle)
         {
             this.gearTeethIndex = gearTeethIndex;
@@ -47,23 +47,23 @@ namespace PMKS
             }
         }
 
-        internal bool IsGearSolvableRP_G_R(List<joint> joints, List<link> links)
+        internal bool IsGearSolvableRP_G_R(List<Joint> joints, List<Link> links)
         {
             return (links[gear1LinkIndex].AngleIsKnown == KnownState.Fully
                     && joints[gearCenter1Index].positionKnown == KnownState.Fully
-                    && joints[gearCenter2Index].jointType == JointType.R
+                    && joints[gearCenter2Index].TypeOfJoint == JointType.R
                     && joints[gearCenter2Index].positionKnown == KnownState.Fully);
         }
 
-        internal bool IsGearSolvableR_G_RP(List<joint> joints, List<link> links)
+        internal bool IsGearSolvableR_G_RP(List<Joint> joints, List<Link> links)
         {
             return (links[gear2LinkIndex].AngleIsKnown == KnownState.Fully
                     && joints[gearCenter2Index].positionKnown == KnownState.Fully
-                    && joints[gearCenter1Index].jointType == JointType.R
+                    && joints[gearCenter1Index].TypeOfJoint == JointType.R
                     && joints[gearCenter1Index].positionKnown == KnownState.Fully);
         }
 
-        internal point SolveGearPositionAndAnglesRPGR(List<joint> joints, List<link> links,
+        internal Point SolveGearPositionAndAnglesRPGR(List<Joint> joints, List<Link> links,
             out double angleChange)
         {
             var knownlink = links[gear1LinkIndex];
@@ -79,7 +79,7 @@ namespace PMKS
         }
 
 
-        internal point SolveGearPositionAndAnglesRGRP(List<joint> joints, List<link> links,
+        internal Point SolveGearPositionAndAnglesRGRP(List<Joint> joints, List<Link> links,
             out double angleChange)
         {
             var knownlink = links[gear2LinkIndex];
@@ -91,9 +91,9 @@ namespace PMKS
             return findGearTeethPointAlongConnectingRod(gearCenterKnown, rKnownGear, gearCenterUnknown, rUnkGear);
         }
 
-        private static double findUnknownGearAngleChange(double rKnownGear, joint gearCenterKnown, double rUnkGear,
-            joint gearCenterUnknown,
-            link knownlink, link unknownlink = null)
+        private static double findUnknownGearAngleChange(double rKnownGear, Joint gearCenterKnown, double rUnkGear,
+            Joint gearCenterUnknown,
+            Link knownlink, Link unknownlink = null)
         {
             var linkAngle = (knownlink.Angle - knownlink.AngleLast);
             linkAngle *= -(rKnownGear / rUnkGear) *
@@ -113,21 +113,21 @@ namespace PMKS
             return linkAngle;
         }
 
-        internal static point findGearTeethPointAlongConnectingRod(joint center1, double rGear1, joint center2,
+        internal static Point findGearTeethPointAlongConnectingRod(Joint center1, double rGear1, Joint center2,
             double rGear2)
         {
             var x = center1.x + rGear1 * (center2.x - center1.x) / (rGear2 + rGear1);
             var y = center1.y + rGear1 * (center2.y - center1.y) / (rGear2 + rGear1);
-            return new point(x, y);
+            return new Point(x, y);
         }
 
-        internal static double findAngleChangeBetweenOfConnectingRod(joint From, joint To)
+        internal static double findAngleChangeBetweenOfConnectingRod(Joint From, Joint To)
         {
             return Constants.angle(From.x, From.y, To.x, To.y) -
                    Constants.angle(From.xLast, From.yLast, To.xLast, To.yLast);
         }
 
-        internal double FindNominalGearRotation(List<link> links, link knownlink)
+        internal double FindNominalGearRotation(List<Link> links, Link knownlink)
         {
             var rKnownGear = radiusOfLink(links.IndexOf(knownlink));
             var rUnkGear = radiusOfOtherLink(links.IndexOf(knownlink));
@@ -158,8 +158,8 @@ namespace PMKS
 
         #region for R-R-G/G
 
-        public static Boolean FindKnownGearAngleOnLink(joint gearCenter, link connectingRod, link gearLink, List<joint> joints,
-            List<link> links, Dictionary<int, GearData> gearsData, out GearData gData)
+        internal static Boolean FindKnownGearAngleOnLink(Joint gearCenter, Link connectingRod, Link gearLink, List<Joint> joints,
+            List<Link> links, Dictionary<int, GearData> gearsData, out GearData gData)
         {
             if (gearLink.AngleIsKnown == KnownState.Fully)
             {
@@ -182,7 +182,7 @@ namespace PMKS
             return false;
         }
 
-        internal void SolveGearCenterFromKnownGearAngle(joint gearCenter, joint armPivot, List<link> links, out double angleChange)
+        internal void SolveGearCenterFromKnownGearAngle(Joint gearCenter, Joint armPivot, List<Link> links, out double angleChange)
         {
             var angle1Change = links[gear1LinkIndex].Angle - links[gear1LinkIndex].AngleLast;
             var angle2Change = links[gear2LinkIndex].Angle - links[gear2LinkIndex].AngleLast;
@@ -192,13 +192,13 @@ namespace PMKS
         #endregion
         #region for R-G-R
 
-        internal bool IsGearSolvableRGR(List<joint> joints, List<link> links)
+        internal bool IsGearSolvableRGR(List<Joint> joints, List<Link> links)
         {
             return (joints[gearCenter1Index].positionKnown == KnownState.Fully &&
                 joints[gearCenter2Index].positionKnown == KnownState.Fully);
         }
 
-        internal void SolveGearPositionAndAnglesRGR(List<joint> joints, List<link> links)
+        internal void SolveGearPositionAndAnglesRGR(List<Joint> joints, List<Link> links)
         {
             var gearTeeth = joints[gearTeethIndex];
             var center1 = joints[gearCenter1Index];
@@ -211,13 +211,13 @@ namespace PMKS
 
         #endregion
         #region for R-G-P or P-G-R
-        internal bool IsGearSolvableRGP(List<joint> joints, List<link> links)
+        internal bool IsGearSolvableRGP(List<Joint> joints, List<Link> links)
         {
             return (joints[gearCenter2Index].positionKnown != KnownState.Unknown
                 && links[gear2LinkIndex].AngleIsKnown == KnownState.Fully
                 && joints[gearCenter1Index].positionKnown == KnownState.Fully);
         }
-        internal void SolveGearPositionAndAnglesRGP(List<joint> joints, List<link> links)
+        internal void SolveGearPositionAndAnglesRGP(List<Joint> joints, List<Link> links)
         {
             var gearTeeth = joints[gearTeethIndex];
             var angle = links[gear2LinkIndex].Angle;
@@ -225,13 +225,13 @@ namespace PMKS
             var Rcenter = joints[gearCenter1Index];
             SolveGearPositionAndAnglesPGR(gearTeeth, Pcenter, Rcenter, angle, radius1);
         }
-        internal bool IsGearSolvablePGR(List<joint> joints, List<link> links)
+        internal bool IsGearSolvablePGR(List<Joint> joints, List<Link> links)
         {
             return (joints[gearCenter1Index].positionKnown != KnownState.Unknown
                 && links[gear1LinkIndex].AngleIsKnown == KnownState.Fully
                 && joints[gearCenter2Index].positionKnown == KnownState.Fully);
         }
-        internal void SolveGearPositionAndAnglesPGR(List<joint> joints, List<link> links)
+        internal void SolveGearPositionAndAnglesPGR(List<Joint> joints, List<Link> links)
         {
             var gearTeeth = joints[gearTeethIndex];
             var angle = links[gear1LinkIndex].Angle;
@@ -239,7 +239,7 @@ namespace PMKS
             var Rcenter = joints[gearCenter2Index];
             SolveGearPositionAndAnglesPGR(gearTeeth, Pcenter, Rcenter, angle, radius2);
         }
-        private void SolveGearPositionAndAnglesPGR(joint gearTeeth, joint Pcenter, joint Rcenter, double angle, double gearRadius)
+        private void SolveGearPositionAndAnglesPGR(Joint gearTeeth, Joint Pcenter, Joint Rcenter, double angle, double gearRadius)
         {
             angle += Math.PI / 2;
             var angleUnitVector = new[] { Math.Cos(angle), Math.Sin(angle) };
@@ -268,7 +268,7 @@ namespace PMKS
         /// <param name="unknownGearLink">The unknown gear link.</param>
         /// <param name="links">The links.</param>
         /// <param name="joints">The joints.</param>
-        internal Boolean SetGearRotation(link knownGearLink, link unknownGearLink, List<link> links, List<joint> joints)
+        internal Boolean SetGearRotation(Link knownGearLink, Link unknownGearLink, List<Link> links, List<Joint> joints)
         {
             if (unknownGearLink.AngleIsKnown == KnownState.Fully) return false;
             var rKnownGear = radiusOfLink(links.IndexOf(knownGearLink));

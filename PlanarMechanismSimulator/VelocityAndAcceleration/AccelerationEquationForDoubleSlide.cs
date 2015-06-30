@@ -11,7 +11,7 @@ namespace PMKS.VelocityAndAcceleration
         private int slide1SpeedIndex = -1;
         private int slide2SpeedIndex = -1;
 
-        internal AccelerationEquationForDoubleSlide(joint slide1Joint, joint slide2Joint, link link, bool slideJointIsKnown, bool fixedJointIsKnown)
+        internal AccelerationEquationForDoubleSlide(Joint slide1Joint, Joint slide2Joint, Link link, bool slideJointIsKnown, bool fixedJointIsKnown)
             : base(slide1Joint, slide2Joint, link, slideJointIsKnown, fixedJointIsKnown) { }
 
         internal override double[] GetRow1Coefficients()
@@ -62,17 +62,17 @@ namespace PMKS.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is Tuple<link, joint>)
+                if (o is Tuple<Link, Joint>)
                 {
-                    if (((Tuple<link, joint>)o).Item1 == link)
+                    if (((Tuple<Link, Joint>)o).Item1 == link)
                     {
-                        if (((Tuple<link, joint>)o).Item2 == joint1)
+                        if (((Tuple<Link, Joint>)o).Item2 == joint1)
                             slide1SpeedIndex = index;
-                        else if (((Tuple<link, joint>)o).Item2 == joint2)
+                        else if (((Tuple<Link, Joint>)o).Item2 == joint2)
                             slide2SpeedIndex = index;
                     }
                 }
-                if (o is joint) index += 2;
+                if (o is Joint) index += 2;
                 else index++;
             }
         }

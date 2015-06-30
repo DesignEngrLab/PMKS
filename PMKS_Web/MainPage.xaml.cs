@@ -10,6 +10,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using Silverlight_PMKS;
+using Point = System.Windows.Point;
 
 namespace PMKS_Silverlight_App
 {

@@ -160,7 +160,7 @@ namespace PMKS
             return GetEnumerator();
         }
 
-        public double[,] this[double t]
+        internal double[,] this[double t]
         {
             get { return Parameters[Times.IndexOf(t)]; }
         }
@@ -206,7 +206,7 @@ namespace PMKS
         // until the first MoveNext() call.
         int position = -1;
         private readonly int length;
-        public TimeKeyValueEnumerator(double[] timeKeys, double[][,] parameterValues)
+        internal TimeKeyValueEnumerator(double[] timeKeys, double[][,] parameterValues)
         {
             this.timeKeys = timeKeys;
             this.parameterValues = parameterValues;

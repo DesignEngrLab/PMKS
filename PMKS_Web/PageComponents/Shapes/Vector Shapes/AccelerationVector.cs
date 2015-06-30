@@ -12,7 +12,7 @@ namespace PMKS_Silverlight_App
 {
     public class AccelerationVector : DisplayVectorBaseShape
     {
-        public AccelerationVector(joint j, Slider timeSlider, Simulator pmks, double factor, double strokeThickness, double xOffset, double yOffset, 
+        public AccelerationVector(Joint j, Slider timeSlider, Simulator pmks, double factor, double strokeThickness, double xOffset, double yOffset, 
             DynamicJointBaseShape displayJoint, JointData jData)
             : base(factor, strokeThickness, xOffset, yOffset)
         {

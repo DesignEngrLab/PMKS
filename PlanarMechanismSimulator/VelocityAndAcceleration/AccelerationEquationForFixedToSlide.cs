@@ -9,7 +9,7 @@ namespace PMKS.VelocityAndAcceleration
     internal class AccelerationEquationForFixedToSlide : AccelerationJointToJoint
     {
         private int slideSpeedIndex = -1;
-        internal AccelerationEquationForFixedToSlide(joint slideJoint, joint fixedJoint, link link, bool slideJointIsKnown, bool fixedJointIsKnown)
+        internal AccelerationEquationForFixedToSlide(Joint slideJoint, Joint fixedJoint, Link link, bool slideJointIsKnown, bool fixedJointIsKnown)
             : base(slideJoint, fixedJoint, link, slideJointIsKnown, fixedJointIsKnown) { }
 
         internal override double[] GetRow1Coefficients()
@@ -53,11 +53,11 @@ namespace PMKS.VelocityAndAcceleration
             var index = 0;
             foreach (var o in unknownObjects)
             {
-                if (o is Tuple<link, joint>
-                    && ((Tuple<link, joint>)o).Item1 == link
-                    && ((Tuple<link, joint>)o).Item2 == joint1)
+                if (o is Tuple<Link, Joint>
+                    && ((Tuple<Link, Joint>)o).Item1 == link
+                    && ((Tuple<Link, Joint>)o).Item2 == joint1)
                     slideSpeedIndex = index;
-                if (o is joint) index += 2;
+                if (o is Joint) index += 2;
                 else index++;
             }
         }

@@ -7,36 +7,36 @@ using PMKS;
 
 namespace PMKS.PositionSolving
 {
-    internal class NonDyadicPositionSolver : IObjectiveFunction, IDifferentiable, ITwiceDifferentiable
+    internal class NonDyadicPositionSolver : IObjectiveFunction
     {
         private readonly List<NonDyadicObjFunctionTerm> linkFunctions;
         private readonly abstractConvergence ConvergedWithinLimit;
         private readonly abstractOptMethod optMethod;
 
         private readonly int numUnknownJoints;
-        private readonly IList<link> links;
-        private readonly IList<joint> joints;
-        private readonly IList<joint> unkJoints;
+        private readonly IList<Link> links;
+        private readonly IList<Joint> joints;
+        private readonly IList<Joint> unkJoints;
         private PositionFinder posFinder;
         internal long NumEvals { get; private set; }
 
 
-        public NonDyadicPositionSolver(PositionFinder posFinder)
+        internal NonDyadicPositionSolver(PositionFinder posFinder)
         {
             this.posFinder = posFinder;
             this.links = posFinder.links;
             this.joints = posFinder.joints;
             linkFunctions = new List<NonDyadicObjFunctionTerm>();
-            unkJoints = new List<joint>();
+            unkJoints = new List<Joint>();
             foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully && !j.JustATracer))
                 /* we'll solve these tracer points later, hence the j.Link2 !=null. */
                 unkJoints.Add(j);
             foreach (var j in joints)
             {
-                if (j.jointType == JointType.R) continue;
+                if (j.TypeOfJoint == JointType.R) continue;
                 var slideLink = j.Link1;
                 var blockLink = j.Link2;
-                if (j.jointType == JointType.RP)
+                if (j.TypeOfJoint == JointType.RP)
                 {
                     var slideJoint = slideLink.ReferenceJoint1;
                     var refJoint = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
@@ -49,7 +49,7 @@ namespace PMKS.PositionSolving
                             unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
                             j.OffsetSlideAngle, slideLink.DistanceBetweenSlides(j, slideJoint)));
                 }
-                else if (j.jointType == JointType.P)
+                else if (j.TypeOfJoint == JointType.P)
                 {
                     var refJoint = (blockLink.ReferenceJoint1 != j) ? blockLink.ReferenceJoint1 :
                         blockLink.joints.FirstOrDefault(jt => jt != j && jt.Link2 != null && jt.FixedWithRespectTo(blockLink));
@@ -203,7 +203,7 @@ namespace PMKS.PositionSolving
         }
 
 
-        public double calculate(double[] x)
+        internal override double calculate(double[] x)
         {
             double sum = 0;
             foreach (NonDyadicObjFunctionTerm a in linkFunctions)
@@ -212,7 +212,7 @@ namespace PMKS.PositionSolving
         }
 
 
-        public double deriv_wrt_xi(double[] x, int i)
+        internal override double deriv_wrt_xi(double[] x, int i)
         {
             double sum = 0;
             foreach (NonDyadicObjFunctionTerm a in linkFunctions)
@@ -221,7 +221,7 @@ namespace PMKS.PositionSolving
         }
 
 
-        public double second_deriv_wrt_ij(double[] x, int i, int j)
+        internal override double second_deriv_wrt_ij(double[] x, int i, int j)
         { return linkFunctions.Sum(a => a.second_deriv_wrt_ij(x, i, j)); }
 
 

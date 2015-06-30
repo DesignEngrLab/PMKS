@@ -12,13 +12,13 @@ namespace PMKS.VelocityAndAcceleration
     /// </summary>
     internal class EqualLinkToLinkStateVarEquation : EquationBase
     {
-        protected readonly link link1;
+        protected readonly Link link1;
         protected int link1Index = -1;
-        protected readonly link link2;
+        protected readonly Link link2;
         protected int link2Index = -1;
 
 
-        internal EqualLinkToLinkStateVarEquation(link link1, link link2)
+        internal EqualLinkToLinkStateVarEquation(Link link1, Link link2)
         {
             this.link1 = link1;
             this.link2 = link2;
@@ -31,7 +31,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 if (o == link1) link1Index = index;
                 else if (o == link2) link2Index = index;
-                if (o is joint) index += 2;
+                if (o is Joint) index += 2;
                 else index++;
             }
         }

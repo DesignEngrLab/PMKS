@@ -281,7 +281,7 @@ namespace OptimizationToolbox
         /// <returns></returns>
         internal double deriv_wrt_xi(IOptFunction function, double[] point, int i)
         {
-                    return ((IDifferentiable)function).deriv_wrt_xi(point, i);
+                    return function.deriv_wrt_xi(point, i);
         }
 
 

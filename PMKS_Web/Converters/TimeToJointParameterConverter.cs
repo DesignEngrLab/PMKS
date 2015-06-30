@@ -22,15 +22,15 @@ namespace PMKS_Silverlight_App
         protected double offsetSlideAngle;
         protected int slideLinkIndex;
 
-        public TimeToJointParameterConverter(joint j, StateVariableType jointState, Simulator pmks)
+        public TimeToJointParameterConverter(Joint j, StateVariableType jointState, Simulator pmks)
         {
             stateVariableTypeIndex = (int)jointState;
-            JointIndex = pmks.AllJoints.IndexOf(j);
-            if (j.jointType == JointType.P || j.jointType == JointType.RP)
+            JointIndex = pmks.Joints.IndexOf(j);
+            if (j.TypeOfJoint == JointType.P || j.TypeOfJoint == JointType.RP)
             {
                 includeAngle = true;
                 offsetSlideAngle = j.OffsetSlideAngle;
-                slideLinkIndex = pmks.AllLinks.IndexOf(j.Link1);
+                slideLinkIndex = pmks.Links.IndexOf(j.Link1);
             }
             this.pmks = pmks;
         }

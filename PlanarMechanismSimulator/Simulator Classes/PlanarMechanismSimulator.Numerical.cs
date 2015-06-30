@@ -1,15 +1,40 @@
-﻿using System.Collections.Generic;
+﻿// ***********************************************************************
+// Assembly         : PlanarMechanismKinematicSimulator
+// Author           : Matt
+// Created          : 06-10-2015
+//
+// Last Modified By : Matt
+// Last Modified On : 06-28-2015
+// ***********************************************************************
+// <copyright file="PlanarMechanismSimulator.Numerical.cs" company="">
+//     Copyright ©  2014
+// </copyright>
+// <summary></summary>
+// ***********************************************************************
+using System.Collections.Generic;
 using OptimizationToolbox;
 using System;
-using PMKS;
 
+/// <summary>
+/// The PMKS namespace.
+/// </summary>
 namespace PMKS
 {
+    /// <summary>
+    /// Class Simulator.
+    /// </summary>
     public partial class Simulator : IDependentAnalysis
     {
-        private void NumericalPosition(double deltaTime, List<joint> joints, List<link> links)
+        /// <summary>
+        /// 
+        /// Finds the numerical position.
+        /// </summary>
+        /// <param name="deltaTime">The delta time.</param>
+        /// <param name="joints">The joints.</param>
+        /// <param name="links">The links.</param>
+        private void NumericalPosition(double deltaTime, List<Joint> joints, List<Link> links)
         {
-            for (int i = 0; i < numJoints; i++)
+            for (int i = 0; i < NumAllJoints; i++)
             {
                 joints[i].xNumerical = joints[i].xLast + joints[i].vx * deltaTime + 0.5 * joints[i].ax * deltaTime * deltaTime;
                 joints[i].yNumerical = joints[i].yLast + joints[i].vy * deltaTime + 0.5 * joints[i].ay * deltaTime * deltaTime;
@@ -23,7 +48,13 @@ namespace PMKS
             }
         }
 
-        private void NumericalVelocity(double deltaTime, List<joint> joints, List<link> links)
+        /// <summary>
+        /// Numericals the velocity.
+        /// </summary>
+        /// <param name="deltaTime">The delta time.</param>
+        /// <param name="joints">The joints.</param>
+        /// <param name="links">The links.</param>
+        private void NumericalVelocity(double deltaTime, List<Joint> joints, List<Link> links)
         {
             for (int i = 0; i < firstInputJointIndex; i++)
             {
@@ -35,7 +66,13 @@ namespace PMKS
                 links[i].Velocity = (links[i].Angle - links[i].AngleLast) / deltaTime;
         }
 
-        private void NumericalAcceleration(double deltaTime, List<joint> joints, List<link> links)
+        /// <summary>
+        /// Numericals the acceleration.
+        /// </summary>
+        /// <param name="deltaTime">The delta time.</param>
+        /// <param name="joints">The joints.</param>
+        /// <param name="links">The links.</param>
+        private void NumericalAcceleration(double deltaTime, List<Joint> joints, List<Link> links)
         {
             for (int i = 0; i < firstInputJointIndex; i++)
             {
@@ -50,10 +87,24 @@ namespace PMKS
 
         #region Retrieve State Variable Methods at a particular time
 
+        /// <summary>
+        /// The last query time
+        /// </summary>
         private double lastQueryTime, prevQueryTime, nextQueryTime, nextToPrevTime;
+        /// <summary>
+        /// The previous query index
+        /// </summary>
         private int prevQueryIndex, nextQueryIndex;
+        /// <summary>
+        /// The tau
+        /// </summary>
         protected double tau;
-
+        /// <summary>
+        /// Finds the joint position at time.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
+        /// <param name="JointIndex">Index of the joint. This is not the simulation index, but the designer specified index.</param>
+        /// <returns>System.Double[].</returns>
         public double[] FindJointPositionAtTime(double queryTime, int JointIndex)
         {
             setTimeIndices(queryTime);
@@ -84,6 +135,12 @@ namespace PMKS
         }
 
 
+        /// <summary>
+        /// Finds the joint velocity at time.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
+        /// <param name="JointIndex">Index of the joint. This is not the simulation index, but the designer specified index.</param>
+        /// <returns>System.Double[].</returns>
         public double[] FindJointVelocityAtTime(double queryTime, int JointIndex)
         {
             setTimeIndices(queryTime);
@@ -109,6 +166,12 @@ namespace PMKS
                         };
         }
 
+        /// <summary>
+        /// Finds the joint acceleration at time.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
+        /// <param name="JointIndex">Index of the joint. This is not the simulation index, but the designer specified index.</param>
+        /// <returns>System.Double[].</returns>
         public double[] FindJointAccelerationAtTime(double queryTime, int JointIndex)
         {
             setTimeIndices(queryTime);
@@ -131,6 +194,12 @@ namespace PMKS
         }
 
 
+        /// <summary>
+        /// Finds the link angle at time.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
+        /// <param name="LinkIndex">Index of the link.</param>
+        /// <returns>System.Double.</returns>
         public double FindLinkAngleAtTime(double queryTime, int LinkIndex)
         {
             setTimeIndices(queryTime);
@@ -161,6 +230,12 @@ namespace PMKS
         }
 
 
+        /// <summary>
+        /// Finds the link velocity at time.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
+        /// <param name="LinkIndex">Index of the link.  This is not the simulation index, but the designer specified index.</param>
+        /// <returns>System.Double.</returns>
         public double FindLinkVelocityAtTime(double queryTime, int LinkIndex)
         {
             setTimeIndices(queryTime);
@@ -174,6 +249,12 @@ namespace PMKS
 
         }
 
+        /// <summary>
+        /// Finds the link acceleration at time.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
+        /// <param name="LinkIndex">Index of the link.  This is not the simulation index, but the designer specified index.</param>
+        /// <returns>System.Double.</returns>
         public double FindLinkAccelerationAtTime(double queryTime, int LinkIndex)
         {
             setTimeIndices(queryTime);
@@ -186,6 +267,9 @@ namespace PMKS
         }
 
 
+        /// <summary>
+        /// Initializes the query vars.
+        /// </summary>
         private void InitializeQueryVars()
         {
             lastQueryTime = prevQueryTime = nextQueryTime = nextToPrevTime = 0.0;
@@ -194,6 +278,10 @@ namespace PMKS
         }
 
 
+        /// <summary>
+        /// Sets the time indices.
+        /// </summary>
+        /// <param name="queryTime">The query time.</param>
         private void setTimeIndices(double queryTime)
         {
                 while (queryTime < BeginTime) queryTime += Time_Span;
@@ -245,7 +333,19 @@ namespace PMKS
                 if (nextToPrevTime < 0) nextToPrevTime += Time_Span;
                 lastQueryTime = queryTime;
             }
-        
+
+        /// <summary>
+        /// Finds the positionat time.
+        /// </summary>
+        /// <param name="tau">The tau.</param>
+        /// <param name="deltaTime">The delta time.</param>
+        /// <param name="posPrevious">The position previous.</param>
+        /// <param name="posNext">The position next.</param>
+        /// <param name="vPrevious">The v previous.</param>
+        /// <param name="vNext">The v next.</param>
+        /// <param name="aPrevious">a previous.</param>
+        /// <param name="aNext">a next.</param>
+        /// <returns>System.Double.</returns>
         static double FindPositionatTime(double tau, double deltaTime, double posPrevious, double posNext, double vPrevious,
                double vNext, double aPrevious, double aNext)
         {
@@ -273,7 +373,7 @@ namespace PMKS
         /// <param name="vNext">next x or y-velocity</param>
         /// <param name="aPrevious">previous x or y-acceleration</param>
         /// <param name="aNext">next x or y-acceleration</param>
-        /// <returns></returns>
+        /// <returns>System.Double.</returns>
         static double FindVelocityatTime(double tau, double deltaTime, double vPrevious, double vNext, double aPrevious, double aNext)
         {
             if (deltaTime == 0.0) return vPrevious;
@@ -295,7 +395,7 @@ namespace PMKS
         /// <param name="deltaTime">The delta time is the difference between the next time value and the previous.</param>
         /// <param name="aPrevious">previous x or y-acceleration</param>
         /// <param name="aNext">next x or y-acceleration</param>
-        /// <returns></returns>
+        /// <returns>System.Double.</returns>
         static double FindAccelerationatTime(double tau, double deltaTime, double aPrevious, double aNext)
         {
             if (deltaTime == 0.0) return aPrevious;

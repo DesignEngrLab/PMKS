@@ -8,7 +8,7 @@ namespace PMKS.VelocityAndAcceleration
 {
     internal class VelocityEquationForFixedJoints : VelocityJointToJoint
     {
-        internal VelocityEquationForFixedJoints(joint joint1, joint joint2, link link, bool Joint1IsKnown, bool Joint2IsKnown, bool linkIsKnown)
+        internal VelocityEquationForFixedJoints(Joint joint1, Joint joint2, Link link, bool Joint1IsKnown, bool Joint2IsKnown, bool linkIsKnown)
             : base(joint1, joint2, link, Joint1IsKnown, Joint2IsKnown,  linkIsKnown) { }
 
         internal override double[] GetRow1Coefficients()

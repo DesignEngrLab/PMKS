@@ -12,6 +12,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using PMKS;
 using Silverlight_PMKS;
+using Point = System.Windows.Point;
 
 namespace PMKS_Silverlight_App
 {

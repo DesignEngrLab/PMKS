@@ -16,7 +16,7 @@ namespace PMKS_Silverlight_App
 {
     public class RJointShape : DynamicJointBaseShape
     {
-        public RJointShape(joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
+        public RJointShape(Joint j, Slider timeSlider, Simulator pmks, double radius, double strokeThickness, double xOffset, double yOffset)
        :base(j,timeSlider,pmks,radius,strokeThickness,xOffset,yOffset) 
         {
             Data = new EllipseGeometry
