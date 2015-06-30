@@ -70,9 +70,9 @@ namespace PMKS
                 int k = 0;
                 for (int i = 0; i < NumJoints; i++)
                 {
-                    if (ReadOnlyJointIndices.Contains(i)) continue;
+                    if (ReadOnlyJointIndices != null && ReadOnlyJointIndices.Contains(i)) continue;
 
-                    var j = SimulationJoints[k];
+                    var j = Joints[k];
                     j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k][0];
                     j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k][1];
                     if (j.TypeOfJoint != JointType.R)
@@ -827,11 +827,11 @@ namespace PMKS
                 }
                 inputLink = inputJoint.Link2;
             }
-            #endregion    
-            SimulationLinks = new List<Link>(Links);  
+            #endregion
+            SimulationLinks = new List<Link>(Links);
             SimulationJoints = new List<Joint>(Joints);
             SimulationJoints.AddRange(additionalRefjoints);
-            addReferenceJoints();                    
+            addReferenceJoints();
             #region Move Links around to ease Simulation
             /* reorder links to ease additional computation. put ground link at end, 
              * move input to just before those. */

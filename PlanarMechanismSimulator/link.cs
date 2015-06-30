@@ -79,7 +79,7 @@ namespace PMKS
         /// Is the link the ground-link?
         /// </summary>
         /// <value>The is ground.</value>
-        internal Boolean IsGround { get; set; }
+        public Boolean IsGround { get; set; }
 
         /// <summary>
         /// Gets or sets the reference joint1.
@@ -100,7 +100,7 @@ namespace PMKS
         /// Gets the sum of all the lengths between the pivots.
         /// </summary>
         /// <value>The total length.</value>
-        internal double TotalLength
+        public double TotalLength
         {
             get { return lengths.Values.Sum(v => Math.Abs(v)); }
         }

@@ -69,13 +69,12 @@
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.FindFullMovement.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.Main.cs" />
     <Compile Include="Simulator Classes\PlanarMechanismSimulator.Numerical.cs" />
-    <Compile Include="StarMath_Functions\3D transforms.cs" />
-    <Compile Include="StarMath_Functions\add subtract multiply.cs" />
-    <Compile Include="StarMath_Functions\find functions.cs" />
+    <Compile Include="StarMath_Functions\add subtract multiply.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="StarMath_Functions\inversion transpose.cs" />
     <Compile Include="StarMath_Functions\make extract.cs" />
     <Compile Include="StarMath_Functions\norm functions.cs" />
-    <Compile Include="StarMath_Functions\print functions.cs" />
     <Compile Include="StarMath_Functions\solve.cs" />
     <Compile Include="TimeSortedList.cs" />
     <Compile Include="VelocityAndAcceleration\AccelerationEquationForDoubleSlide.cs" />

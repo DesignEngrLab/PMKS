@@ -206,7 +206,7 @@ namespace PMKS_Silverlight_App
                 DefineLinkIDs();
                 if (!(GroundLinkFound() && DuplicateLinkNames() && DefinePositions() && DefineJointTypeList() && DataListsSameLength())) return;
                 pmks = new Simulator(LinkIDs, JointTypes, drivingIndex, InitPositions);
-
+                JointData.UpdateRandomRange(InitPositions);
                 mainViewer.ClearDynamicShapesAndBindings();
                 PlayButton_Unchecked(null, null);
 

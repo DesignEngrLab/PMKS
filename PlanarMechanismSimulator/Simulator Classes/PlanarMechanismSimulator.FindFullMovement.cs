@@ -61,10 +61,10 @@ namespace PMKS
 #else
             List<Joint> backwardJoints;
             List<Link> backwardLinks;
-            CopyJointsAndLinksForBackwards(SimulationJoints, Links, out backwardJoints, out backwardLinks);
+            CopyJointsAndLinksForBackwards(SimulationJoints, SimulationLinks, out backwardJoints, out backwardLinks);
 
             /*** Stepping Forward in Time ***/
-            var forwardTask = Task.Factory.StartNew(() => Simulate(SimulationJoints, Links, true));
+            var forwardTask = Task.Factory.StartNew(() => Simulate(SimulationJoints, SimulationLinks, true));
 
             /*** Stepping Backward in Time ***/
             var backwardTask = Task.Factory.StartNew(() => Simulate(backwardJoints, backwardLinks, false));
@@ -436,7 +436,7 @@ namespace PMKS
             if (forwardSuccess && backwardSuccess)
             {
                 /* central difference puts values in init parameters. */
-                for (var i = 0; i <= NumAllJoints; i++)
+                for (var i = 0; i < NumAllJoints; i++)
                 {
                     /* first-order central finite difference */
                     initJointParams[i, 2] = (ForwardJointParams[i, 0] - BackwardJointParams[i, 0])/(2*smallTimeStep);
@@ -447,7 +447,7 @@ namespace PMKS
                     initJointParams[i, 5] = (ForwardJointParams[i, 1] - 2*initJointParams[i, 1] +
                                              BackwardJointParams[i, 1])/(smallTimeStep*smallTimeStep);
                 }
-                for (var i = 0; i <= NumAllLinks; i++)
+                for (var i = 0; i < NumAllLinks; i++)
                 {
                     /* first-order central finite difference */
                     initLinkParams[i, 1] = (ForwardLinkParams[i] - BackwardLinkParams[i]) / (2 * smallTimeStep);
@@ -459,20 +459,20 @@ namespace PMKS
             else if (forwardSuccess)
             {
                 /* forward difference puts values in init parameters. */
-                for (var i = 0; i <= NumAllJoints; i++)
+                for (var i = 0; i < NumAllJoints; i++)
                 {
                     /* first-order forward finite difference */
                     initJointParams[i, 2] = (ForwardJointParams[i, 0] - initJointParams[i, 0]) / smallTimeStep;
                     initJointParams[i, 3] = (ForwardJointParams[i, 1] - initJointParams[i, 1]) / smallTimeStep;
                 }
-                for (var i = 0; i <= NumAllLinks; i++)
+                for (var i = 0; i < NumAllLinks; i++)
                     /* first-order forward finite difference */
                     initLinkParams[i, 1] = (ForwardLinkParams[i] - initLinkParams[i, 0]) / smallTimeStep;
             }
             else if (backwardSuccess)
             {
                 /* backward difference puts values in init parameters. */
-                for (var i = 0; i <= NumAllJoints; i++)
+                for (var i = 0; i < NumAllJoints; i++)
                 {
                     /* first-order backward finite difference */
                     initJointParams[i, 2] = (initJointParams[i, 0] - BackwardJointParams[i, 0]) / smallTimeStep;

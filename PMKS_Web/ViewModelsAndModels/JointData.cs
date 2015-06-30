@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -32,6 +33,7 @@ namespace PMKS_Silverlight_App
                 _linkNames = _linkNames.Replace("gound", "ground");
                 _linkNames = _linkNames.Replace("groud", "ground");
                 _linkNames = _linkNames.Replace("0", "ground");
+
             }
         }
 
@@ -78,7 +80,7 @@ namespace PMKS_Silverlight_App
             set
             {
                 if (!double.TryParse(value, out X))
-                    X = double.NaN;
+                    X = GetRandomNewXCoord(Y);
             }
         }
 
@@ -88,7 +90,7 @@ namespace PMKS_Silverlight_App
             set
             {
                 if (!double.TryParse(value, out Y))
-                    Y = double.NaN;
+                    Y = GetRandomNewYCoord(X);
             }
         }
         // Declare the PropertyChanged event
@@ -177,6 +179,14 @@ namespace PMKS_Silverlight_App
                     && LinkNamesList != null && LinkNamesList.Count() > 1);
             }
         }
+        public double CanPlotStateVars
+        {
+            get
+            {
+                if (LinkNames.Contains("ground")) return 0.0;
+                else return 1.0;
+            }
+        }
 
         internal static string ConvertDataToText(char jointSepChar)
         {
@@ -208,6 +218,46 @@ namespace PMKS_Silverlight_App
             onPropertyChanged(this, "XPos");
             onPropertyChanged(this, "YPos");
             onPropertyChanged(this, "Angle");
+        }
+
+
+
+        private static double xRangeCenter, yRangeCenter, radiusRange;
+        private static Random random = new Random();
+        private static double GetRandomNewXCoord(double yCoord = double.NaN)
+        {
+            if (double.IsNaN(yCoord))
+                return xRangeCenter + random.NextDouble() * radiusRange;
+            else
+            {
+                var angle = Math.Asin((yCoord - yRangeCenter) / radiusRange);
+                if (random.NextDouble() > 0.5)
+                    return xRangeCenter + radiusRange * Math.Cos(angle);
+                else return xRangeCenter - radiusRange * Math.Cos(angle);
+            }
+        }
+        private static double GetRandomNewYCoord(double xCoord = double.NaN)
+        {
+            if (double.IsNaN(xCoord))
+                return yRangeCenter + random.NextDouble() * radiusRange;
+            else
+            {
+                var angle = Math.Acos((xCoord - xRangeCenter) / radiusRange);
+                if (random.NextDouble() > 0.5)
+                    return yRangeCenter + radiusRange * Math.Sin(angle);
+                else return yRangeCenter - radiusRange * Math.Sin(angle);
+            }
+        }
+
+        internal static void UpdateRandomRange(List<double[]> initPositions)
+        {
+            var xMin = initPositions.Min(coord => coord[0]);
+            var xMax = initPositions.Max(coord => coord[0]);
+            var yMin = initPositions.Min(coord => coord[1]);
+            var yMax = initPositions.Max(coord => coord[1]);
+            xRangeCenter = (xMax + xMin) / 2;
+            yRangeCenter = (yMax + yMin) / 2;
+            radiusRange = Math.Max((xMax - xMin), (yMax - yMin)) / 2;
         }
     }
 }

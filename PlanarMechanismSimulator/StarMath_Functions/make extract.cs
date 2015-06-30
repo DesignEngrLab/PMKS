@@ -206,7 +206,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((colIndex < 0) || (colIndex >= numCols))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + colIndex
                                     + " for getColumn is not in required range from 0 up to (but not including) "
                                     + numRows + ".");
@@ -227,7 +227,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((colIndex < 0) || (colIndex >= numCols))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + colIndex
                                     + " for getColumn is not in required range from 0 up to (but not including) "
                                     + numRows + ".");
@@ -248,7 +248,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((rowIndex < 0) || (rowIndex >= numRows))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + rowIndex
                                     + " for getRow is not in required range from 0 up to (but not including) "
                                     + numRows + ".");
@@ -268,7 +268,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((rowIndex < 0) || (rowIndex >= numRows))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + rowIndex
                                     + " for getRow is not in required range from 0 up to (but not including) "
                                     + numRows + ".");
@@ -289,7 +289,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((rowIndex < 0) || (rowIndex >= numRows))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + rowIndex
                                     + " for getRow is not in required range from 0 up to (but not including) "
                                     + numRows + ".");
@@ -307,7 +307,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((rowIndex < 0) || (rowIndex >= numRows))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + rowIndex
                                     + " for getRow is not in required range from 0 up to (but not including) "
                                     + numRows + ".");
@@ -326,7 +326,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((colIndex < 0) || (colIndex >= numCols))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + colIndex
                                     + " for getColumn is not in required range from 0 up to (but not including) "
                                     + numCols + ".");
@@ -345,7 +345,7 @@ namespace StarMathLib
             var numRows = A.GetLength(0);
             var numCols = A.GetLength(1);
             if ((colIndex < 0) || (colIndex >= numCols))
-                throw new Exception("MatrixMath Size Error: An index value of "
+                throw new Exception("StarMath Size Error: An index value of "
                                     + colIndex
                                     + " for getColumn is not in required range from 0 up to (but not including) "
                                     + numCols + ".");
@@ -454,7 +454,7 @@ namespace StarMathLib
         internal static double[,] JoinCol(double[,] Matrix1, double[,] Matrix2)
         {
             if (Matrix1.GetLength(0) != Matrix2.GetLength(0))
-                throw new Exception("MatrixMath Size Error: Row dimensions do not match for matrix1 and matrix2");
+                throw new Exception("StarMath Size Error: Row dimensions do not match for matrix1 and matrix2");
             var NumRows = Matrix1.GetLength(0);
             var NumCols = Matrix1.GetLength(1) + Matrix2.GetLength(1);
             var Mat1Cols = Matrix1.GetLength(1);
@@ -483,7 +483,7 @@ namespace StarMathLib
         internal static double[,] JoinRow(double[,] Matrix1, double[,] Matrix2)
         {
             if (Matrix1.GetLength(1) != Matrix2.GetLength(1))
-                throw new Exception("MatrixMath Size Error: Column dimensions do not match for matrix1 and matrix2");
+                throw new Exception("StarMath Size Error: Column dimensions do not match for matrix1 and matrix2");
             var numRows = Matrix1.GetLength(0) + Matrix2.GetLength(0);
             var numCols = Matrix1.GetLength(1);
             var mat1Rows = Matrix1.GetLength(0);

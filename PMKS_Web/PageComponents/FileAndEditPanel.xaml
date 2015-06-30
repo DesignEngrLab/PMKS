@@ -82,7 +82,7 @@
                             <s:DataGridTemplateColumn Header="P">
                                 <s:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox Tag="{Binding}" Click="PositionVisible_Click" IsChecked="{Binding PosVisible}" 
+                                        <CheckBox Tag="{Binding}" Click="PositionVisible_Click" IsChecked="{Binding PosVisible}"   Opacity="{Binding CanPlotStateVars}"
                                   VerticalAlignment="Center"  HorizontalAlignment="Center" />
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellTemplate>
@@ -90,7 +90,7 @@
                             <s:DataGridTemplateColumn Header="V">
                                 <s:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox Tag="{Binding}" Click="VelocityVisible_Click" IsChecked="{Binding VelocityVisible}" 
+                                        <CheckBox Tag="{Binding}" Click="VelocityVisible_Click" IsChecked="{Binding VelocityVisible}"  Opacity="{Binding CanPlotStateVars}"
                                   VerticalAlignment="Center"  HorizontalAlignment="Center" />
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellTemplate>
@@ -98,7 +98,7 @@
                             <s:DataGridTemplateColumn Header="A">
                                 <s:DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox Tag="{Binding}" Click="AccelerationVisible_Click" IsChecked="{Binding AccelerationVisible}" 
+                                        <CheckBox Tag="{Binding}" Click="AccelerationVisible_Click" IsChecked="{Binding AccelerationVisible}"  Opacity="{Binding CanPlotStateVars}"
                                   VerticalAlignment="Center"  HorizontalAlignment="Center" />
                                     </DataTemplate>
                                 </s:DataGridTemplateColumn.CellTemplate>
