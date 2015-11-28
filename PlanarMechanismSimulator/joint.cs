@@ -271,7 +271,7 @@ namespace PMKS
         /// Gets the just a tracer.
         /// </summary>
         /// <value>The just a tracer.</value>
-        internal Boolean JustATracer
+        public Boolean JustATracer
         {
             get { return (Link2 == null && this != Link1.ReferenceJoint1); }
         }
