@@ -190,12 +190,22 @@ namespace PMKS_Silverlight_App
 
         internal static string ConvertDataToText(char jointSepChar)
         {
+            var nameTrimChars = new[] { ' ', ',', ';', ':', '.', '|' };
             var text = "";
             foreach (var jInfo in App.main.JointsInfo.Data)
             {
                 if (string.IsNullOrWhiteSpace(jInfo.LinkNames) || (string.IsNullOrWhiteSpace(jInfo.JointTypeString)))
                     continue;
-                text += jInfo.LinkNames + ",";
+                var linkNames = jInfo.LinkNames;
+                var linkNamesList = linkNames.Split(nameTrimChars);
+                linkNames = "";
+                foreach (var name in linkNamesList)
+                {
+                    var trimmedName = name.Trim(nameTrimChars);
+                    if (!string.IsNullOrWhiteSpace(trimmedName))
+                        linkNames += name.Trim(nameTrimChars) + ",";
+                }
+                text += linkNames;
                 text += jInfo.JointTypeString + ",";
                 text += jInfo.XPos + ",";
                 text += jInfo.YPos;
