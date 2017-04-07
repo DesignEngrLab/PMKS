@@ -26,14 +26,14 @@ namespace PMKS_Silverlight_App
             get { return _linkNames; }
             set
             {
-                _linkNames = value;
+                _linkNames = value.ToLower();
                 _linkNames = _linkNames.Replace("gnd", "ground");
                 _linkNames = _linkNames.Replace("grnd", "ground");
                 _linkNames = _linkNames.Replace("grond", "ground");
                 _linkNames = _linkNames.Replace("gound", "ground");
                 _linkNames = _linkNames.Replace("groud", "ground");
                 _linkNames = _linkNames.Replace("0", "ground");
-
+                _linkNames = _linkNames.Replace("1", "ground");
             }
         }
 
