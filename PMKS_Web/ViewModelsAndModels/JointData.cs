@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using PMKS;
 using Silverlight_PMKS;
@@ -33,20 +32,8 @@ namespace PMKS_Silverlight_App
                 _linkNames = _linkNames.Replace("grond", "ground");
                 _linkNames = _linkNames.Replace("gound", "ground");
                 _linkNames = _linkNames.Replace("groud", "ground");
-                if (Regex.Match(_linkNames[0].ToString(), @"[0,1]").Success
-                    && Regex.Match(_linkNames[1].ToString(), @"[^a-z,^0-9]").Success)
-                {
-                    _linkNames = _linkNames.Remove(0, 1);
-                    _linkNames = "ground" + _linkNames;
-                }
-                var lastIndex = _linkNames.Length - 1;
-                if (Regex.Match(_linkNames[lastIndex].ToString(), @"[0,1]").Success
-                    && Regex.Match(_linkNames[lastIndex - 1].ToString(), @"[^a-z,^0-9]").Success)
-                {
-                    _linkNames = _linkNames.Remove(lastIndex);
-                    _linkNames += "ground";
-                }
-                _linkNames = Regex.Replace(_linkNames, @"[^a-z,^0-9][0,1][^a-z,^0-9]", " ground ");
+                _linkNames = _linkNames.Replace("0", "ground");
+                _linkNames = _linkNames.Replace("1", "ground");
             }
         }
 
@@ -83,14 +70,7 @@ namespace PMKS_Silverlight_App
             get
             {
                 if (_linkNames == null || string.IsNullOrWhiteSpace(_linkNames)) return new string[0];
-                return _linkNames.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                //var tempList = _linkNames.Split(new [] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                //for (int i = 0; i < tempList.Length; i++)
-                //{
-                //    var s = tempList[i];
-                //    if (s.Equals("0") || s.Equals("1")) tempList[i] = "ground";
-                //}
-                //return tempList;
+                return _linkNames.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
             }
         }
 
