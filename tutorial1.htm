@@ -1,0 +1,206 @@
+﻿<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PMKS: Planar Mechanism Kinematic Simulator by DesignEngrLab</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+.auto-style1 {
+	vertical-align: middle;
+}
+</style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">PMKS: Planar Mechanism Kinematic Simulator</h1>
+        <p class="header">PMKS returns quick and accurate results for the position, velocity, and acceleration of rigid bodies connected as planar mechanisms.</p>
+        <ul>
+          <li><a class="buttons header" href="pmks.html">Run PMKS now!</a></li>
+        </ul>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/DesignEngrLab/PMKS/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/DesignEngrLab/PMKS/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/DesignEngrLab/PMKS">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/DesignEngrLab">DesignEngrLab</a></p>
+
+
+      </header>
+      <section>
+  
+<h1>Creating a Four-bar Mechanism: Tutorial 1</h1>
+
+  <p>In this tutorial, we will create a four-bar mechanism. You will use
+  four-bar as a basis for many linkages. It is used for the <a
+  href="tutorial2.htm">crank-&amp;-slider</a>, and the <a
+  href="tutorial3.htm">six-bar mechanism</a> described in <a
+  href="tutorial2.htm">Tutorial 2</a> and <a
+  href="tutorial3.htm">Tutorial 3</a>.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>1.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>From
+  the start screen (<a href="http://purl.org/pmks/sim">http://purl.org/pmks/sim</a>),
+  notice the pendulum swinging around counter-clockwise at 10 rpm. Let us first
+  change the speed to twice as fast in the opposite direction. This is
+  accomplished by replacing the “10.0” in the speed box, with a -20.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>2.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Next,
+  find the second joint in the table. Under the Links column, it only lists
+  “input.” This is the name of the single link that is spinning around. Note
+  that its <i>x-y position</i> is at {25,
+  0}, which corresponds to the open circle in the main viewer. As your mouse
+  approaches the icon, the purple move arrow appears. Click and drag the joint
+  to the y-axis – a point near {0, 50}. Feel free to click on the row and type
+  0 and 50 in the appropriate boxes. If you need to <b>pan, use the arrow keys</b>; if you need to zoom in or out, you can
+  do this by the following methods:</p>
+  <p align=center style='margin-top:5.0pt;margin-right:0in;margin-bottom:0in;
+  margin-left:.5in;margin-bottom:.0001pt;text-align:center'><i>Table 1: Shortcuts for zooming in &amp;
+  out.<o:p></o:p></i></p>
+  <div align=center>
+  <table >
+   <tr>
+    <td >
+    </td>
+    <td  >
+    <p><strong>Mouse Wheel</strong></p>
+    </td>
+    <td  >
+    <p><strong>Keyboard</strong></p>
+    </td>
+    <td >
+    <p><strong>Buttons in window</strong></p>
+    </td>
+   </tr>
+   <tr >
+    <td ><p>Zoom In</p>
+    </td>
+    <td  >
+    <p>Forward</p>
+    </td>
+    <td >
+    <p>PageUp, Home Add(“+”), or Insert  </p>
+    </td>
+    <td  rowspan=2 >
+   <img src="images/redrawzoomButtons.png" class="auto-style1" >
+    </td>
+    <td ></td>
+   </tr>
+   <tr >
+    <td >
+    <p>Zoom Out</p>
+    </td>
+    <td  >
+    <p>Backward</p>
+    </td>
+    <td  >
+    <p>PageDown, End, Subtract (“–”), or Delete</p>
+    </td>
+    <td ></td>
+   </tr>
+   </table>
+  </div>
+  <p style='margin-left:.5in;text-indent:-.25in;'>3.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Add
+  a new link to this joint by typing a new <i>link-name</i>
+  on the line next to “input.” First double-click the cell and put a comma or
+  space to separate the name from “input”. You can write anything for the 
+  <span
+  style='color:#7F6000;'>name – use
+  “coupler”, or your first name or simply the number “1” or the letter “a.”</span>
+  Note that the simulation stops and a faint shape appear at the end of the
+  joint.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>4.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Add
+  two more joints. This is done by writing in two more rows in the table. On a
+  new row, add two link-names to the Links column. Ensure that one of them is
+  the <span style='color:#7F6000;'>same name as your new name in Step 3</span>; 
+  <span
+  style='color:#548235;'>make up another
+  name</span>. Use the default “<i>R (pin
+  joint)</i>” for all new joints. For the <i>x-y
+  position</i>, put any values in. Now, add a fourth joint. Under the Links
+  column, <span style='color:#548235;'>include your latest name </span>and a second name which is either
+  “ground” or “0”. Note that <i>ground</i>
+  is a special link that must exist in your mechanism. PMKS_Web will likely
+  correct common misspellings of ground as well. Once you finish putting in the
+  new <i>x-y position </i>, you will likely
+  notice movement. This is because you now have a one Degree-of-Freedom
+  mechanism again and the simulation begins automatically. </p>
+  <p style='margin-left:.5in'><i>Troubleshooting:
+  If you don’t have a four-bar moving on your screen and the DOF is not 1 –
+  make sure that you have not made a mistake in misspelling the link-names. If
+  the naming is correct and there is 1 DOF, try clicking the “Redraw” button in
+  the lower left.<o:p></o:p></i></p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>5.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Move
+  the joints around and notice the changes in behavior. By now you likely
+  noticed the three checkboxes at the end of the row and the one radio-button
+  at the front of the row. </p>
+  <p class="auto-style1" >  <img 
+  src="images/jointTableExtremes.jpg" ></p>
+  <p class="auto-style1" >  <em>Figure 1: The left-most and right-most
+  part of the tables include check boxes for showing <br>
+  the position (or path), the velocity and the acceleration of each joint. Also
+  the “Input” <br>
+  column on the far left shows which ground link is driving the mechanism at
+  the speed shown <br>
+  in the Speed box.</em><o:p></o:p></p>
+  <p style='margin-left:.25in' class="auto-style4">These “P, V, A” check boxes show the <u>P</u>ath,
+  <u>V</u>elocity, and <u>A</u>cceleration of the chosen joint. Check these to
+  see the result in your mechanism. Note that the checkboxes have no effect for
+  the grounded joints. You will also note in this figure the DOF shown in the
+  bottom corner and buttons to remove rows in the mechanism.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>6.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Add
+  one more joint to the mechanism (add one more row to the table) for a
+  path-tracer point. Assign only one link. It should be the name you used for
+  the non-grounded link. Move this new point around to see the coupler-curves.
+  Be sure to click the “P” checkbox in this new row to show the green path
+  followed by this tracer point. You mechanism might look something like this:</p>
+  <p class="auto-style3">
+ <img src="images/typicalFourBar.png"></p>
+  <p align=center style='margin-left:.25in;text-align:center' class="auto-style5">Figure 2: Example Four-bar created through
+  this tutorial.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'><i>7.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span></i>Save your work. It is important to save your
+  work often, since this is a web program (and very must in beta development!).
+  There are two ways to do this: click the “Save Configuration” button, which
+  will say the details as a small text file; or click the “Get as URL” button.
+  This latter choice doesn’t save anything but rather generates a messy URL
+  that you should copy and paste somewhere else.<i><o:p></o:p></i></p>
+  <p style='margin-left:.5in'>Check out other tutorials:&nbsp;</p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial2.htm">Tutorial
+  2: Creating a Crank-and-Slider</a></p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial3.htm">Tutorial
+  3: Additional Capabilities (n-Bar, Target Shapes, &amp; Outputting Data)</a></p>
+  <p class="auto-style1"  ><a href="http://oregonstate.edu/copyright">
+		<em><span class="auto-style2">Copyright</span></em></a><em><span class="auto-style2">&nbsp; ©2014 Matthew I. Campbell,  Oregon 
+State University&nbsp; </span> </em> <a href="http://oregonstate.edu/disclaimer"><em>
+		<span class="auto-style2">Disclaimer</span></em></a> 
+
+		
+ </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>

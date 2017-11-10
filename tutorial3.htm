@@ -1,0 +1,204 @@
+﻿<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PMKS: Planar Mechanism Kinematic Simulator by DesignEngrLab</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">PMKS: Planar Mechanism Kinematic Simulator</h1>
+        <p class="header">PMKS returns quick and accurate results for the position, velocity, and acceleration of rigid bodies connected as planar mechanisms.</p>
+        <ul>
+          <li><a class="buttons header" href="pmks.html">Run PMKS now!</a></li>
+        </ul>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/DesignEngrLab/PMKS/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/DesignEngrLab/PMKS/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/DesignEngrLab/PMKS">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/DesignEngrLab">DesignEngrLab</a></p>
+
+
+      </header>
+      <section>
+  
+
+
+<h1>Additional Capabilities: Target Shape, n-bars <br>and Outputting Data: Tutorial 3</h1>
+
+<table border=0 cellpadding=0 width=750 >
+ <tr >
+  <td style='padding:.75pt .75pt .75pt .75pt' class="auto-style8">
+  <p>This tutorial will focus on some of the additinoal capabilities that are 
+  useful for designing and analyzing mechanisms in PMKS. </p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>1.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Let 
+  us start with the same four-bar mechanism that was created in the Tutorial 1. Open the four-bar you 
+  created in the first tutorial, or if you didn't save one, you can start with this
+  <a href="pmks.html?mech=ground input R 0 0 0 ffft|input coupler R 0 50 0 ffff|coupler output R 115 80 0 ffff|output ground R 85 0 0 ffff|coupler R 50 80 0 ffff|" target="_blank">
+  one</a>. <a href="pmks.html" target="_blank">Click here 
+  to get to the simulator.</a></p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>2.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  In order to design a mechanism it is useful to have some additional shapes or 
+  frames of reference appear on the screen. In the current configuration, these 
+  are added through the Target Shape box near the top of the joints table.</span><p style='margin-left:.5in;text-indent:-.25in;' class="auto-style1">
+  <img alt="target shape and output data button" height="126" longdesc="top of joint editing table" src="images/addnlcapabilitiesbuttons.png" width="773"><span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'><br>
+  <em>Figure 1: This tutorial focuses on the two buttons on the top of the joint 
+  edit table.</em></span><p style='margin-left:.5in;text-indent:-.25in;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  This currently supports vector drawings in a rather simple compact format that 
+  is described at here:
+  <a href="https://msdn.microsoft.com/en-us/library/ms752293(v=vs.100).aspx">Path 
+  Markup Syntax</a>. Here are some example shapes that can be used to define 
+  target paths.</span><ul>
+	  <li>
+	  <p style='margin-left:.5in;text-indent:-.25in;'><a href="pmks.html?ts=M 0 0 L 10 10">straight 
+	  line from {0, 0} to {10, 10}(M 0 0 L 10 10)</a></li>
+	  <li>
+	  <p style='margin-left:.5in;text-indent:-.25in;'><a href="pmks.html?ts=m-50 0 C -50 125,50 -125,50 0 S -50 -125 -50 0">figure eight (move back to {-50,0} and draw to connected B-splines)</a></li>
+	  <li>
+	  <p style='margin-left:.5in;text-indent:-.25in;'><a href="pmks.html?ts=m -50 -100 a 50 50 0 1 0 100 0 z">sideways "D" shape (draw semicircle with radius of 50 starting at {-50, -100} 
+	  </a></li>
+<li>
+	  <p style='margin-left:.5in;text-indent:-.25in;'><a href="pmks.html?ts=m5 5v50h5v-5h-5zm-20 -10v50h5v-5h-5zm50 11h50v-5h-5v5">3 positions of coupler for motion four-bar (Three-Position Synthesis)</a></li>
+  </ul>
+  <p style='margin-left:.5in;text-indent:-.25in;'>3.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  Consider this last case. After applying three-position synthesis, we may be 
+  lucky enough to arrive at a functioning four-bar like this
+  <a href="pmks.html?set=s3&ts=m5 5v50h5v-5h-5zm-20 -10v50h5v-5h-5zm50 11h50v-5h-5v5&mech=ground input R -75 194.5 0 tfft|input coupler R 5 -4.3 0 tfff|coupler output R 4.6 55 0 tfff|output ground R 25.5 -3 0 tfff|">
+  one</a>. However, since it is a double-rocker, it won't likely be actuated by 
+  a continuous motor. This is often and easily remedied by designing an 
+  additional <em>dyad</em> to drive the mechanism through this path.
+  <a href="pmks.html?set=s3&ts=m5 5v50h5v-5h-5zm-20 -10v50h5v-5h-5zm50 11h50v-5h-5v5&mech=ground input R -75 194.5 0 tfft|input coupler R 5 -4.3 0 tfff|coupler output R 4.6 55 0 tfff|output ground R 25.5 -3 0 tfff|">
+  With this mechanism</a>, let's add three more joints and two more links.</span><p style='margin-left:.5in;text-indent:-.25in;'>4.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  We only need to move the long input link about 10 degrees. In order to do so, 
+  add a new joint about halfway along the link with a new coupler name, like <em>
+  c2</em>. See Figure 2 below. (This is intentionally left vague to test your 
+  knowledge from Tutorial 1). </span>
+  <table cellpadding="2" style="height: 583;" class="auto-style2">
+	  <tr>
+		  <td ><img alt="start of new joint" longdesc="The start of new joint is located at the red circle." src="images/sixbar_newjoint.png" ><span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'></td>
+		  <td ><img alt="completed six-bar mechanism"  longdesc="completed six-bar mechanism" src="images/sixbarWatt2.png" ><span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'></td>
+	  </tr>
+	  <tr>
+		  <td class="auto-style3" valign="top" >
+		  <em>Figure 2: Add a new joint the input link with a new link name.</em></td>
+		  <td class="auto-style4" valign="top" >
+		  <em>Figure 3: The completed six-bar mechanism.</em></td>
+	  </tr>
+  </table>
+  <p style='margin-left:.5in;text-indent:-.25in;'>5.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  Now add two more R joints to make an input crank like the figure above on the 
+  right . 
+  Be sure to change the input column radio-button so that this new grounded 
+  crank is the input. Congratulations, you've just made a Watt II six-bar 
+  mechanism.</span><p style='margin-left:.5in;text-indent:-.25in;'>6.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  In order to get a more detailed understanding of the movement, one might prefer to export the 
+  data to Excel or Matlab. This is easily done by 
+  clicking the "Export Kinematic Data" button shown above in Figure 1. This will 
+  create either a tab-delimited .txt file or comma-separated .csv file to 
+  your desktop. You are welcome to change the name, but it should be uniquiely 
+  identified by its time-stamped filename. Let us save this as a .txt file. </span><p style='margin-left:.5in;text-indent:-.25in;'>
+  7.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  Now, let's open this txt file in Excel. First open Excel and then Excel's open 
+  dialog. Note: you will have to tell Excel to show other file types to find 
+  this file. When faced with the import wizard, choose delimited (as shown 
+  below), and indicate that the 'delimiters' are tabs and/or commas.</span><table cellpadding="0" cellspacing="0" style="width: 66%" align="center">
+	  <tr>
+		  <td><img  src="images/delimited.png" ></td>
+		  <td class="auto-style5"><em>Figure 4: When importing to Excel, choose Delimited whether the file was saved as tab-delimited (.txt) or comma-separated (.csv).</em></td>
+	  </tr>
+  </table>
+  <p style='margin-left:.5in;text-indent:-.25in;'>
+  8.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  The table is organized with rows indicating the time steps and columns for all 
+  of the joint and link state variables. Following the order of joints in the 
+  table, the columns will correspond to: joint1's x-position, joint1's 
+  y-position, joint1's x-velocity, joint1's y-velocity, joint1's x-acceleration, 
+  joint1's y-acceleration, and so on for the next joints.</span><p style='margin-left:.5in;text-indent:-.25in;'>
+  <img alt="" height="275" src="images/excelJoints.png" width="781"><p style='margin-left:.5in;text-indent:-.25in;'>
+  9.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span
+  style='font-style: normal; font-variant: normal; font-weight: normal; line-height: normal;'>
+  Next, the table will have columns for the link data. There will be three 
+  columns for each link: angle (in radians, NOT degrees), angular velocity (in 
+  rad/s), and angular acceleration (in rad/s<sup>2</sup>). Use these values for 
+  making plots as a function of time or searching for peak values in the 
+  movement.</span><p style='margin-left:.5in;text-indent:-.25in;'>
+  <img alt="" height="273" src="images/excelLinks.png" width="924"><p style='margin-left:.5in;text-indent:-.25in;'>
+  &nbsp;<p >&nbsp;Check out these tutorials: </p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial1.htm">Tutorial
+  1: Creating a Four-Bar</a> </p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial2.htm">Tutorial
+  2: Creating a Crank-and-Slider</a></p>
+		<p style='margin-left:.5in;text-indent:-.25in;'>
+  	  &nbsp;  <p class="auto-style1"  ><a href="http://oregonstate.edu/copyright">
+		<em><span class="auto-style5" >Copyright</span></em></a><em><span class="auto-style5" >&nbsp; ©2014 Matthew I. Campbell,  Oregon 
+State University&nbsp; </span> </em> <a href="http://oregonstate.edu/disclaimer"><em>
+		<span class="auto-style5" >Disclaimer</span></em></a> 
+
+		</td>
+ </tr>
+</table>
+
+<p ><o:p>&nbsp;</o:p></p>
+
+
+
+
+
+
+
+ </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>

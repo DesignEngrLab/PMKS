@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PMKS: Planar Mechanism Kinematic Simulator by DesignEngrLab</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">PMKS: Planar Mechanism Kinematic Simulator</h1>
+        <p class="header">PMKS returns quick and accurate results for the position, velocity, and acceleration of rigid bodies connected as planar mechanisms.</p>
+        <ul>
+          <li><a class="buttons header" href="pmks.html">Run PMKS now!</a></li>
+        </ul>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/DesignEngrLab/PMKS/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/DesignEngrLab/PMKS/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/DesignEngrLab/PMKS">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/DesignEngrLab">DesignEngrLab</a></p>
+
+
+      </header>
+      <section>
+  
+
+<h1>Creating a Crank-&amp;-Slider Mechanism: Tutorial 2</h1>
+
+<table Table border=0 cellpadding=0 width=750 style='width:562.5pt;
+ '>
+ <tr>
+  <td style='padding:.75pt .75pt .75pt .75pt' class="auto-style8">
+  <p>This tutorial will define a very popular mechanism referred to as a
+  crank-slider. It is simply done by changing one of the revolute (R) joints
+  from the four-bar to a prismatic slider (P). </p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>1.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  Open the four-bar you created in the first tutorial by clicking the open 
+  button in the upper left. If you didn't save one, you can start with this
+  <a href="pmks.html?mech=ground input R 0 0 0 ffft|input coupler R 0 50 0 ffff|coupler output R 115 80 0 ffff|output ground R 85 0 0 ffff|coupler R 50 80 0 ffff|" target="_blank">
+  one</a>. <a href="pmks.html" target="_blank">Click here 
+  to get to the simulator.</a></p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>2.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Set
+  the last joint from the “R” joint to a “P” joint. This is the link that is connected
+  to ground – not the tracer point made in step 6 of the first tutorial. You
+  should see something like this:<p class="auto-style1">
+ <img src="images/crank-slider.png"></br>
+  <em>Figure 
+  1: Example Crank-Slider.</em></p>
+<p>Note:
+  that the “P” joint requires an angle to be provide for it to be properly
+  specified. Indicate in the Angle column a value in degrees. Typically values
+  can range from -90° to +90°.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>4.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>In
+  addition to specifying the angle and position in the table, one may also
+  click and drag the icon. Click on the purple arrows to move the joint in x
+  &amp; y or click on pink arrows to rotate the slide. Note: you are not having
+  to catch the moving link! You manipulate the unfilled icon that appears at
+  the initial location.</p>
+  <p class="auto-style1" ><em><img src="images/moveIcon.png" ></br>Figure
+  2: A close-up of the icons that can be clicked and dragged with the mouse.
+  Don’t try to catch <br>
+  the moving filled-in joints – you move the hollow icons that indicate the
+  joints position at t = 0.</em><o:p></o:p><em></i></em></p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>5.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>On
+  the far left of the table, you can change the input or the driving joint in
+  the mechanism to any joint connected to ground. This applies to “P” joints as
+  well. Click the radio-button in the row for your “P” joint. What happened?
+  Hopefully, the mechanism is moving but it might be moving at a different
+  speed. Note how the text above the speed box has changed from rpm to units/sec.
+  Now the input is to move the slider at the designated velocity. The “units”
+  can be thought of as either inches, or mm.</p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>6.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Set
+  that link back to an “R” joint to return to a four-bar. Now, let us set one
+  of the non-grounded joints to a “P” joint. This essentially creates an
+  inversion of a crank-slider. Don’t forget to specify an angle. You might have
+  a new mechanism that looks something like one of these:</p>
+  <p class="auto-style1" ><em><img src="images/three-example-rrpr.png"><br>Figure
+  3: Three example four-bar mechanisms with an intermediate joint as a
+  prismatic slider (“P” joint).</em></p>
+  <p style='margin-left:.5in;text-indent:-.25in;'>7.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Note
+  how the slider is one link and the other link connects to the fixed block.
+  This is not arbitrary. It depends on the order of the link-names as provided
+  in the “Links” column. Try switching the order. For example change:</p>
+  <div class="auto-style1">
+  <img src="images/porder1.png" class="auto-style6" ><span class="auto-style4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	  <img src="images/porder2.png" class="auto-style7" ></span> </div>
+  <p></p>
+  <p style='margin-left:.5in;text-indent:-.25in;' class="auto-style8">7.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Additionally,
+  you can try replacing other R joints with P joints, but beware of the
+  following constraints:</p>
+  <p style='margin-left:1.0in;text-indent:-.25in;' class="auto-style8">a.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>The
+  simulation will not be able to start if any P joints are at the same angle.
+  This is because at this starting point there is an additional degree-of-freedom
+  that cannot be handled. </p>
+  <p style='margin-left:1.0in;text-indent:-.25in;' class="auto-style8">b.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>You
+  cannot have a 4-bar with only one “R” joint as the rotation of this single “R”
+  will need to be accommodated by some counter-rotation in another R joint.
+  PMKS will indicate this as a zero DOF mechanism.</p>
+  <p style='margin-left:1.0in;text-indent:-.25in;' class="auto-style8">c.<span
+  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>You
+  cannot make a mechanism consisting of four P joints. This will have 2 degrees
+  of freedom, but you can make a mechanism with 3 links and 3 joints.</p>
+  <p style='margin-left:.5in'>Check out other tutorials:&nbsp;</p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial1.htm">Tutorial
+  1: Creating a Four-Bar</a> </p>
+		<p style='margin-left:1.0in;text-indent:-.25in;' >
+		<span
+  style='font-family:Symbol;'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  	  </span></span><a href="tutorial3.htm">Tutorial
+  3: Additional Capabilities (n-Bar, Target Shapes, &amp; Outputting Data)</a></p><p class="auto-style1" ><a href="http://oregonstate.edu/copyright">
+		<em><span class="auto-style2">Copyright</span></em></a><em><span class="auto-style2">&nbsp; ©2014 Matthew I. Campbell,  Oregon 
+State University&nbsp; </span> </em> <a href="http://oregonstate.edu/disclaimer"><em>
+		<span class="auto-style2">Disclaimer</span></em></a> 
+
+		</td>
+
+  </td>
+ </tr>
+</table>
+
+
+
+
+
+
+
+ </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
