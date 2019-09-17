@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using OptimizationToolbox;
-using PMKS;
 
 namespace PMKS.PositionSolving
 {
@@ -24,8 +22,8 @@ namespace PMKS.PositionSolving
         internal NonDyadicPositionSolver(PositionFinder posFinder)
         {
             this.posFinder = posFinder;
-            this.links = posFinder.links;
-            this.joints = posFinder.joints;
+            links = posFinder.links;
+            joints = posFinder.joints;
             linkFunctions = new List<NonDyadicObjFunctionTerm>();
             unkJoints = new List<Joint>();
             foreach (var j in joints.Where(j => j.positionKnown != KnownState.Fully && !j.JustATracer))

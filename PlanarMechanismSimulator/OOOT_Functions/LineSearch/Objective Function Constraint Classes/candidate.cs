@@ -73,12 +73,12 @@ namespace OptimizationToolbox
 
         internal Candidate(double f, double[] x)
         {
-            this.fValues = new[] {f};
+            fValues = new[] {f};
             this.x = (double[])x.Clone();
         }
         internal Candidate(double[] f, double[] x)
         {
-            this.fValues = (double[])f.Clone();
+            fValues = (double[])f.Clone();
             this.x = (double[])x.Clone();
         }
     }

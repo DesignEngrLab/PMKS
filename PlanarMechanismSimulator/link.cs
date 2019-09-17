@@ -11,6 +11,7 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -312,7 +313,7 @@ namespace PMKS
         {
             var key = numJoints*pIndex + refIndex;
             var result = (pJoint.TypeOfJoint == JointType.G)
-                ? Math.PI/2
+                ? Constants.QuarterCircle
                 : pJoint.SlideAngleInitial -
                   Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
             angleFromBlockToJoint.Add(key, result);

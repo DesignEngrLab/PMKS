@@ -19,6 +19,7 @@
  *     Please find further details and contact information on OOOT
  *     at http://ooot.codeplex.com/.
  *************************************************************************/
+
 using System;
 
 namespace OptimizationToolbox
@@ -31,7 +32,7 @@ namespace OptimizationToolbox
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GoldenSection"/> class.
+        /// Initializes a new instance of the <see cref="FixedOrGoldenSection" /> class.
         /// Unlike other line search methods, there is no need to provide a kmax.
         /// This is determined directly from the epsilon in the body of the code
         /// </summary>

@@ -11,13 +11,11 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
+using System;
 using System.Collections.Generic;
 using OptimizationToolbox;
-using System;
 
-/// <summary>
-/// The PMKS namespace.
-/// </summary>
 namespace PMKS
 {
     /// <summary>

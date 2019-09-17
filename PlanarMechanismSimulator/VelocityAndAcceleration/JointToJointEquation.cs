@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using PMKS;
+﻿using System.Collections.Generic;
 
 namespace PMKS.VelocityAndAcceleration
 {
@@ -25,8 +20,8 @@ namespace PMKS.VelocityAndAcceleration
             this.joint1 = joint1;
             this.joint2 = joint2;
             this.link = link;
-            this.joint1IsKnown = Joint1IsKnown;
-            this.joint2IsKnown = Joint2IsKnown;
+            joint1IsKnown = Joint1IsKnown;
+            joint2IsKnown = Joint2IsKnown;
         }
 
 

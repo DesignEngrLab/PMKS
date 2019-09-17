@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using PMKS;
 using StarMathLib;
 
 namespace PMKS.PositionSolving
@@ -318,7 +316,7 @@ namespace PMKS.PositionSolving
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine("Error in setting up and running NonDyadicPositionSolver.");
+                    Debug.WriteLine("Error in setting up and running NonDyadicPositionSolver: "+ e.Message);
                 }
             }
             if (posResult == PositionAnalysisResults.InvalidPosition) return false;
@@ -451,7 +449,7 @@ namespace PMKS.PositionSolving
         private Point defineParallelLineThroughJoint(Joint positionJoint, Joint slopeJoint, Link thisLink)
         {
             var length = thisLink.DistanceBetweenSlides(slopeJoint, positionJoint);
-            var angle = slopeJoint.SlideAngle + Math.PI / 2;
+            var angle = slopeJoint.SlideAngle + Constants.QuarterCircle;
             return new Point(slopeJoint.x + length * Math.Cos(angle),
                 slopeJoint.y + length * Math.Sin(angle));
         }
@@ -498,7 +496,7 @@ namespace PMKS.PositionSolving
             //var yExtPos = knownJoint2.y + rAC * Math.Sin(thetaExtPos);
             //var distthetaExtPosSquared = Constants.distanceSqared(xExtPos, yExtPos, numPt.x, numPt.y);
 
-            ///* second, the External negative case */
+            // second, the External negative case 
             //var thetaExtNeg = phi - beta - alpha;
             //var xExtNeg = knownJoint2.x + rAC * Math.Cos(thetaExtNeg);
             //var yExtNeg = knownJoint2.y + rAC * Math.Sin(thetaExtNeg);
@@ -567,7 +565,7 @@ namespace PMKS.PositionSolving
             var ptB = defineParallelLineThroughJoint(j, slideJoint, j.Link2);
 
             var actualSlideAngle = j.SlideAngle;
-            var thetaNeg = actualSlideAngle - Math.PI / 2;
+            var thetaNeg = actualSlideAngle - Constants.QuarterCircle;
             var rAC = j.Link1.DistanceBetweenSlides(j, circCenterJoint);
             var orthoPt = new Point(circCenterJoint.x + rAC * Math.Cos(thetaNeg),
                 circCenterJoint.y + rAC * Math.Sin(thetaNeg));
@@ -575,7 +573,7 @@ namespace PMKS.PositionSolving
             var ptNeg = Constants.solveViaIntersectingLines(slopeA, orthoPt, slopeB, ptB);
             var distNegSquared = Constants.distanceSqared(ptNeg.X, ptNeg.Y, j.xNumerical, j.yNumerical);
 
-            var thetaPos = actualSlideAngle + Math.PI / 2;
+            var thetaPos = actualSlideAngle + Constants.QuarterCircle;
             orthoPt = new Point(circCenterJoint.x + rAC * Math.Cos(thetaPos), circCenterJoint.y + rAC * Math.Sin(thetaPos));
             slopeA = Math.Tan(actualSlideAngle);
             var ptPos = Constants.solveViaIntersectingLines(slopeA, orthoPt, slopeB, ptB);
@@ -647,11 +645,11 @@ namespace PMKS.PositionSolving
             var slideAngleNeg = j2j_angle - changeInSlideAngle;
             var lastSlideAngle = slideJoint.OffsetSlideAngle + thisLink.AngleLast;
             var deltaAnglePos = slideAnglePos - lastSlideAngle;
-            while (deltaAnglePos > Math.PI / 2) deltaAnglePos -= Math.PI;
-            while (deltaAnglePos < -Math.PI / 2) deltaAnglePos += Math.PI;
+            while (deltaAnglePos > Constants.QuarterCircle) deltaAnglePos -= Math.PI;
+            while (deltaAnglePos < -Constants.QuarterCircle) deltaAnglePos += Math.PI;
             var deltaAngleNeg = slideAngleNeg - lastSlideAngle;
-            while (deltaAngleNeg > Math.PI / 2) deltaAngleNeg -= Math.PI;
-            while (deltaAngleNeg < -Math.PI / 2) deltaAngleNeg += Math.PI;
+            while (deltaAngleNeg > Constants.QuarterCircle) deltaAngleNeg -= Math.PI;
+            while (deltaAngleNeg < -Constants.QuarterCircle) deltaAngleNeg += Math.PI;
 
             var deltaAngleNum = thisLink.AngleNumerical - thisLink.AngleLast;
             while (deltaAngleNum > Math.PI) deltaAngleNum -= Constants.FullCircle;
@@ -765,9 +763,9 @@ namespace PMKS.PositionSolving
                         else if (j.TypeOfJoint != JointType.G)
                         {
                             var length = thisLink.DistanceBetweenSlides(j, knownJoint);
-                            var angle = j.SlideAngle - Math.PI / 2;
+                            var angle = j.SlideAngle - Constants.QuarterCircle;
                             angle += angleChange;
-                            //while (angle < -Math.PI / 2) angle += Math.PI;
+                            //while (angle < -Constants.QuarterCircle) angle += Math.PI;
                             assignJointPosition(j, knownJoint.x + length * Math.Cos(angle),
                                 knownJoint.y + length * Math.Sin(angle), thisLink);
                         }

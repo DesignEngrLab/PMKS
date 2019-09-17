@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using PMKS;
-using PMKS.PositionSolving;
 using StarMathLib;
 
 namespace PMKS
@@ -67,11 +65,11 @@ namespace PMKS
             out double angleChange)
         {
             var knownlink = links[gear1LinkIndex];
-            var rKnownGear = this.radius1;
+            var rKnownGear = radius1;
             var gearCenterKnown = joints[gearCenter1Index];
 
             var unknownlink = links[gear2LinkIndex];
-            var rUnkGear = this.radius2;
+            var rUnkGear = radius2;
             var gearCenterUnknown = joints[gearCenter2Index];
             angleChange = findUnknownGearAngleChange(rKnownGear, gearCenterKnown, rUnkGear, gearCenterUnknown, knownlink,
                 unknownlink);
@@ -102,12 +100,12 @@ namespace PMKS
             var change = linkAngle - unknownlink.AngleNumerical;
             while (change > Math.PI)
             {
-                linkAngle -= 2 * Math.PI;
+                linkAngle -= Constants.FullCircle;
                 change = linkAngle - unknownlink.AngleNumerical;
             }
             while (change < -Math.PI)
             {
-                linkAngle += 2 * Math.PI;
+                linkAngle += Constants.FullCircle;
                 change = linkAngle - unknownlink.AngleNumerical;
             }
             return linkAngle;
@@ -241,7 +239,7 @@ namespace PMKS
         }
         private void SolveGearPositionAndAnglesPGR(Joint gearTeeth, Joint Pcenter, Joint Rcenter, double angle, double gearRadius)
         {
-            angle += Math.PI / 2;
+            angle += Constants.QuarterCircle;
             var angleUnitVector = new[] { Math.Cos(angle), Math.Sin(angle) };
             var toSlideVector = new[] { (Pcenter.x - Rcenter.x), (Pcenter.y - Rcenter.y) };
             if (StarMath.dotProduct(angleUnitVector, toSlideVector) < 0)
@@ -293,13 +291,10 @@ namespace PMKS
                 unknownGearLink.AngleIsKnown = KnownState.Partially;
                 return false;
             }
-            else
-            {
-                var angleTemp = gearAngleChange + unknownGearLink.AngleLast;
-                unknownGearLink.Angle = (unknownGearLink.Angle + angleTemp) / 2.0;
-                unknownGearLink.AngleIsKnown = KnownState.Fully;
-                return true;
-            }
+            var angleTemp = gearAngleChange + unknownGearLink.AngleLast;
+            unknownGearLink.Angle = (unknownGearLink.Angle + angleTemp) / 2.0;
+            unknownGearLink.AngleIsKnown = KnownState.Fully;
+            return true;
         }
 
     }

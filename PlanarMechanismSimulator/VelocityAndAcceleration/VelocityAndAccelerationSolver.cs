@@ -1,11 +1,11 @@
 ﻿#region
 
-using System.Diagnostics;
-using StarMathLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StarMathLib;
+
 #endregion
 
 namespace PMKS.VelocityAndAcceleration
@@ -285,6 +285,9 @@ namespace PMKS.VelocityAndAcceleration
         /// <param name="inputJointIndex">Index of the input joint.</param>
         /// <param name="inputLinkIndex">Index of the input link.</param>
         /// <param name="inputSpeed">The input speed.</param>
+        /// <param name="gearsData">The gears data.</param>
+        /// <exception cref="Exception">The number of equations, " + numEquations + ", must be as big as the " +
+        ///                       "number of unknowns, " + numUnknowns</exception>
         /// <exception cref="System.Exception">Currently only R or P can be the input joints.</exception>
         internal VelocityAndAccelerationSolver(List<Joint> joints, List<Link> links, int firstInputJointIndex, int inputJointIndex,
                                              int inputLinkIndex, double inputSpeed, Dictionary<int, GearData> gearsData)

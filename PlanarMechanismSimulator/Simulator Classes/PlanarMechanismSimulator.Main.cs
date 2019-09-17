@@ -12,11 +12,11 @@
 // <summary></summary>
 // ***********************************************************************
 
+using OptimizationToolbox;
+using PMKS.PositionSolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OptimizationToolbox;
-using PMKS.PositionSolving;
 
 namespace PMKS
 {
@@ -71,12 +71,8 @@ namespace PMKS
                 for (int i = 0; i < NumJoints; i++)
                 {
                     if (ReadOnlyJointIndices != null && ReadOnlyJointIndices.Contains(i)) continue;
-
                     var j = Joints[k];
-                    j.xInitial = j.xNumerical = j.xLast = j.x = InitPositions[k][0];
-                    j.yInitial = j.yNumerical = j.yLast = j.y = InitPositions[k][1];
-                    if (j.TypeOfJoint != JointType.R)
-                        j.OffsetSlideAngle = InitPositions[k][2];
+                    ChangeJointPosition(InitPositions[k], j,false);
                     k++;
                 }
                 setAdditionalReferencePositions();
@@ -85,7 +81,20 @@ namespace PMKS
             {
                 throw new Exception("Failed to assign positions to topology (see inner exception).", e);
             }
+        }
 
+        /// <summary>Changes the initial positions of the provided joint.</summary>
+        /// <param name="position"></param>
+        /// <param name="j"></param>
+        /// <param name="updateAdditionalPositions"></param>
+        public void ChangeJointPosition(double[] position, Joint j, bool updateAdditionalPositions)
+        {
+            j.xInitial = j.xNumerical = j.xLast = j.x = position[0];
+            j.yInitial = j.yNumerical = j.yLast = j.y = position[1];
+            if (j.TypeOfJoint != JointType.R)
+                j.OffsetSlideAngle = position[2];
+            if (updateAdditionalPositions)
+                setAdditionalReferencePositions();
         }
 
         /// <summary>
@@ -164,14 +173,14 @@ namespace PMKS
             {
                 //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
                 //    throw new Exception("Link lengths for all links need to be set first.");
-                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[inputJointIndex + 1]),
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[drivingIndex + 1]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
-                                        inputLink.lengthBetween(inputJoint, SimulationJoints[inputJointIndex + 1]));
+                                        inputLink.lengthBetween(inputJoint, SimulationJoints[drivingIndex + 1]));
                 inputJoint.xInitial = inputX;
                 inputJoint.yInitial = inputY;
-                SimulationJoints[inputJointIndex + 1].xInitial = gnd1X;
-                SimulationJoints[inputJointIndex + 1].yInitial = gnd1Y;
+                SimulationJoints[drivingIndex + 1].xInitial = gnd1X;
+                SimulationJoints[drivingIndex + 1].yInitial = gnd1Y;
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -198,14 +207,14 @@ namespace PMKS
                 //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
                 inputJoint.xInitial = inputX;
                 inputJoint.yInitial = inputY;
-                SimulationJoints[inputJointIndex + 1].xInitial = inputX +
+                SimulationJoints[drivingIndex + 1].xInitial = inputX +
                                                           Math.Cos(AngleToGnd1) *
                                                           inputLink.lengthBetween(inputJoint,
-                                                              SimulationJoints[inputJointIndex + 1]);
-                SimulationJoints[inputJointIndex + 1].yInitial = inputY +
+                                                              SimulationJoints[drivingIndex + 1]);
+                SimulationJoints[drivingIndex + 1].yInitial = inputY +
                                                           Math.Sin(AngleToGnd1) *
                                                           inputLink.lengthBetween(inputJoint,
-                                                              SimulationJoints[inputJointIndex + 1]);
+                                                              SimulationJoints[drivingIndex + 1]);
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -226,7 +235,7 @@ namespace PMKS
         {
             LinkAngles = new double[NumLinks, 1];
             JointPositions = new double[NumAllJoints, 2];
-            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, inputJointIndex));
+            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, drivingIndex));
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
 
@@ -468,7 +477,7 @@ namespace PMKS
         ///     Gets the index of the input joint.
         /// </summary>
         /// <value>The index of the input joint.</value>
-        internal int inputJointIndex { get; private set; }
+        public int drivingIndex { get; private set; }
 
         /// <summary>
         ///     Gets the input joint.
@@ -494,6 +503,12 @@ namespace PMKS
         /// <value>The ground link.</value>
         private Link groundLinkForSimulation;
 
+        /// <summary>
+        /// Gets the ground link.
+        /// </summary>
+        /// <value>
+        /// The ground link.
+        /// </value>
         public Link GroundLink { get; private set; }
 
         /// <summary>
@@ -685,22 +700,14 @@ namespace PMKS
         {
             try
             {
-                inputJointIndex = drivingIndex;
+                this.drivingIndex = drivingIndex;
                 if (jointTypes.Count != linkIDs.Count)
                     throw new Exception("The number of PivotTypes (which is " + NumAllJoints + ") must be the"
                                         + "same as the number of LinkID pairs (which is " + linkIDs.Count + ")");
 
                 foreach (var linkID in linkIDs)
                     for (var i = linkID.GetLength(0) - 1; i >= 0; i--)
-                        //if (string.IsNullOrWhiteSpace(linkID[i])) linkID.RemoveAt(i);
-                        if (linkID[i].Equals("0", StringComparison.CurrentCultureIgnoreCase)
-                            || linkID[i].Equals("gnd", StringComparison.CurrentCultureIgnoreCase)
-                            || linkID[i].Equals("grnd", StringComparison.CurrentCultureIgnoreCase)
-                            || linkID[i].Equals("grond", StringComparison.CurrentCultureIgnoreCase)
-                            || linkID[i].Equals("gound", StringComparison.CurrentCultureIgnoreCase)
-                            || linkID[i].Equals("groud", StringComparison.CurrentCultureIgnoreCase)
-                            || linkID[i].StartsWith("ground", StringComparison.CurrentCultureIgnoreCase))
-                            linkID[i] = "ground";
+                        if (IsGroundLinkName(linkID[i])) linkID[i] = "ground";
                 var linkNames = linkIDs.SelectMany(a => a).Distinct().ToList();
 
                 var newLinkIDs = new List<List<string>>();
@@ -765,10 +772,23 @@ namespace PMKS
             NumJoints = Joints.Count; //count the number of pivots in the system
         }
 
+        public static bool IsGroundLinkName(string linkName)
+        {
+            if (linkName.Equals("0", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.Equals("gnd", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.Equals("grnd", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.Equals("grond", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.Equals("gound", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.Equals("groud", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.Equals("ground", StringComparison.CurrentCultureIgnoreCase)
+                || linkName.StartsWith("ground", StringComparison.CurrentCultureIgnoreCase))
+                return true;
+            return false;
+        }
         private void RearrangeLinkAndJointLists()
         {
             #region Define Input Joint and Link, and Ground Link
-            inputJoint = Joints[inputJointIndex];
+            inputJoint = Joints[drivingIndex];
             if (inputJoint.TypeOfJoint == JointType.G) throw new Exception("Input cannot be gear teeth.");
             if (inputJoint.TypeOfJoint == JointType.RP)
                 throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
@@ -854,7 +874,7 @@ namespace PMKS
             SimulationJoints.RemoveAll(connectedInputJoints.Contains);
             firstInputJointIndex = SimulationJoints.Count;
             SimulationJoints.AddRange(connectedInputJoints);
-            inputJointIndex = SimulationJoints.Count;
+            drivingIndex = SimulationJoints.Count;
             SimulationJoints.Add(inputJoint);
             SimulationJoints.AddRange(groundPivots);
             #endregion
@@ -1042,9 +1062,9 @@ namespace PMKS
         {
             if (g1.TypeOfJoint != JointType.R) return g1.SlideAngleInitial;
             var angle = Math.Atan2((gearTeeth.yInitial - g1.yInitial), (gearTeeth.xInitial - g1.xInitial))
-                        + Math.PI / 2;
-            while (angle > Math.PI / 2) angle -= Math.PI;
-            while (angle < -Math.PI / 2) angle += Math.PI;
+                        + Constants.QuarterCircle;
+            while (angle > Constants.QuarterCircle) angle -= Math.PI;
+            while (angle < -Constants.QuarterCircle) angle += Math.PI;
             return angle;
         }
 

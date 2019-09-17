@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using PMKS;
+﻿using System.Collections.Generic;
 
 namespace PMKS.VelocityAndAcceleration
 {

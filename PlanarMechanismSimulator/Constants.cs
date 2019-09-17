@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using PMKS.VelocityAndAcceleration;
-using PMKS;
-using StarMathLib;
 
 namespace PMKS
 {
@@ -36,7 +31,7 @@ namespace PMKS
         internal const long MaxItersInNonDyadicSolver = 300;
         internal const double DefaultInputSpeed = 1.0;
 
-        internal static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan((long)2000000);
+        internal static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan(2000000);
 
         internal const double XRangeLimitFactor = 5.0;
         internal const double YRangeLimitFactor = 5.0;      
@@ -49,7 +44,14 @@ namespace PMKS
         internal const double LinkAccelerationLimitFactor = 75.0;
         internal const double JointVelocityLimitFactor = 75.0;
         internal const double LinkVelocityLimitFactor = 75.0;
-        internal const double FullCircle = 2 * Math.PI;
+        /// <summary>
+        /// The full circle or rather 2pi
+        /// </summary>
+        public const double FullCircle = 2 * Math.PI;
+        /// <summary>
+        /// A quarter of a circle, or Pi divided by 2
+        /// </summary>
+        public const double QuarterCircle = Math.PI / 2.0;
         internal const double MaxSlope = 10e9;
         internal const double SmoothingErrorRepeatFactor = 10.0;
 
@@ -132,6 +134,14 @@ namespace PMKS
 
         #endregion
 
+        /// <summary>
+        /// Solves the via intersecting lines.
+        /// </summary>
+        /// <param name="slopeA">The slope a.</param>
+        /// <param name="ptA">The pt a.</param>
+        /// <param name="slopeB">The slope b.</param>
+        /// <param name="ptB">The pt b.</param>
+        /// <returns></returns>
         public static Point solveViaIntersectingLines(double slopeA, Point ptA, double slopeB, Point ptB)
         {
             if (sameCloseZero(ptA.X, ptB.X) && sameCloseZero(ptA.Y, ptB.Y)) return ptA;
@@ -151,7 +161,7 @@ namespace PMKS
         private static Boolean verticalSlope(double slope)
         {
             return (Double.IsNaN(slope) || Double.IsInfinity(slope)
-                    || Math.Abs(slope) > Constants.MaxSlope);
+                    || Math.Abs(slope) > MaxSlope);
         }
     }
 }

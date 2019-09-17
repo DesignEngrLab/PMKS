@@ -20,8 +20,6 @@
  *     at http://ooot.codeplex.com/.
  *************************************************************************/
 
-using System;
-using System.Diagnostics;
 using StarMathLib;
 
 namespace OptimizationToolbox

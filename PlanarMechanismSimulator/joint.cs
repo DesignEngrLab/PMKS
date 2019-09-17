@@ -13,9 +13,6 @@
 // ***********************************************************************
 using System;
 
-/// <summary>
-/// The PMKS namespace.
-/// </summary>
 namespace PMKS
 {
     /// <summary>
@@ -40,8 +37,8 @@ namespace PMKS
         /// <param name="y">The y.</param>
         public Point(double x, double y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
     }
 
@@ -84,8 +81,8 @@ namespace PMKS
             else if (jointType == JointType.P || jointType == JointType.RP)
                 OffsetSlideAngle = 0.0;
 
-            while (OffsetSlideAngle > Math.PI / 2) OffsetSlideAngle -= Math.PI;
-            while (OffsetSlideAngle < -Math.PI / 2) OffsetSlideAngle += Math.PI;          
+            while (OffsetSlideAngle > Constants.QuarterCircle) OffsetSlideAngle -= Math.PI;
+            while (OffsetSlideAngle < -Constants.QuarterCircle) OffsetSlideAngle += Math.PI;          
         }
 
         /// <summary>

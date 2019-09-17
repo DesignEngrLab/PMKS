@@ -11,9 +11,6 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
-/// <summary>
-/// The PMKS namespace.
-/// </summary>
 namespace PMKS
 {
     /// <summary>
@@ -69,7 +66,7 @@ namespace PMKS
         G
         // non-slip roll, like rack and pinion - although this challenges the 2 DOF nature of just gear teeth
         // cabling or belt or chain
-    };
+    }
 
     /// <summary>
     /// Enum KnownState
@@ -88,7 +85,7 @@ namespace PMKS
         /// The fully
         /// </summary>
         Fully
-    };
+    }
 
 
     /// <summary>

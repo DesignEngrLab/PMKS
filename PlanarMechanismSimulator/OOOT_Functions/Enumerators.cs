@@ -29,7 +29,7 @@ namespace OptimizationToolbox
         minimize = -1,
         neither = 0,
         maximize = 1
-    } ;
+    }
 
     /* This enumerator is used primarily by the parameter tuning where suboptimization
      * functions (that derive from the Optimization Toolbox's abstractOptFunction) need
@@ -44,5 +44,5 @@ namespace OptimizationToolbox
         Back2,
         Forward2,
         Central4
-    } ;
+    }
 }
