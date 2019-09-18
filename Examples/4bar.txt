@@ -1,5 +1,0 @@
-ground, input,R,0,0
-input coupler,R,-2,0,0
-coupler rocker,R,5,6
-rocker ground,R,4,0
-coupler,R,7,7,False,False,false

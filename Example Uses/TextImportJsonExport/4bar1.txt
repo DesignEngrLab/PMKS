@@ -1,0 +1,7 @@
+mech=
+ground,input,R,100.00,100.00,0.000,tfft
+input,coupler,R,350.00,100.00,0.000,tfff
+coupler,output,R,400.00,480.00,0.000,tfff
+output,ground,R,600.00,100.00,0.000,tfff
+coupler,R,500.00,125.00,0.000,tfft
+

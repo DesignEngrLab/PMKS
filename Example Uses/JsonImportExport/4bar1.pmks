@@ -1,0 +1,120 @@
+{
+  "Joints": [
+    {
+      "PositionVisible": true,
+      "AccelerationVisible": false,
+      "VelocityVisible": false,
+      "X": 100.0,
+      "Y": 100.0,
+      "Angle": 0.0,
+      "TypeOfJoint": "R",
+      "Links": [
+        "ground",
+        "input"
+      ]
+    },
+    {
+      "PositionVisible": true,
+      "AccelerationVisible": false,
+      "VelocityVisible": false,
+      "X": 350.0,
+      "Y": 100.0,
+      "Angle": 0.0,
+      "TypeOfJoint": "R",
+      "Links": [
+        "input",
+        "coupler"
+      ]
+    },
+    {
+      "PositionVisible": true,
+      "AccelerationVisible": false,
+      "VelocityVisible": false,
+      "X": 400.0,
+      "Y": 480.0,
+      "Angle": 0.0,
+      "TypeOfJoint": "R",
+      "Links": [
+        "coupler",
+        "output"
+      ]
+    },
+    {
+      "PositionVisible": true,
+      "AccelerationVisible": false,
+      "VelocityVisible": false,
+      "X": 600.0,
+      "Y": 100.0,
+      "Angle": 0.0,
+      "TypeOfJoint": "R",
+      "Links": [
+        "output",
+        "ground"
+      ]
+    },
+    {
+      "PositionVisible": true,
+      "AccelerationVisible": false,
+      "VelocityVisible": false,
+      "X": 500.0,
+      "Y": 125.0,
+      "Angle": 0.0,
+      "TypeOfJoint": "R",
+      "Links": [
+        "coupler"
+      ]
+    }
+  ],
+  "Links": [
+    {
+      "FillColor": "#7FE5B2B2",
+      "StrokeColor": "#BF821616",
+      "PenThickness": 1.0,
+      "BufferRadius": 8.0,
+      "Name": "input",
+      "ShapeDescriptor": "Convex"
+    },
+    {
+      "FillColor": "#7FE5C6B2",
+      "StrokeColor": "#BF824116",
+      "PenThickness": 1.0,
+      "BufferRadius": 8.0,
+      "Name": "coupler",
+      "ShapeDescriptor": "Convex"
+    },
+    {
+      "FillColor": "#7FE5DBB2",
+      "StrokeColor": "#BF826C16",
+      "PenThickness": 1.0,
+      "BufferRadius": 8.0,
+      "Name": "output",
+      "ShapeDescriptor": "Convex"
+    }
+  ],
+  "Name": "4bar1",
+  "DrivingIndex": 0,
+  "InputSpeed": 10.0,
+  "AngleIncrement": 0.0,
+  "MaxSmoothingError": 0.001,
+  "TargetShape": "",
+  "AxisThickness": 0.5,
+  "AxisOpacity": 0.5,
+  "GridOpacity": 0.2,
+  "NumberMinorPerUnit": 5,
+  "GridSize": 16,
+  "ScaleFactor": 1.1735477388243538,
+  "ViewBox": [
+    1.0,
+    1.1,
+    10.5,
+    10.9
+  ],
+  "CurrentTime": 5.817657470703125,
+  "EndTime": 6.0,
+  "StartTime": 0.0,
+  "AccelFactor": 0.97185230539337375,
+  "VelocityFactor": 1.8766829199469008,
+  "VectorPenThickness": 2.0,
+  "JointSize": 4.0,
+  "JointPenThickness": 1.0
+}

@@ -39,10 +39,10 @@ namespace PMKS
         /// <exception cref="System.Exception">Either the smoothing error angle delta or the time step must be specified.</exception>
         public bool FindFullMovement()
         {
-            if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
+            if (double.IsNaN(AngleIncrement) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
             {
                 throw new ArgumentException("Either the smoothing error angle delta or the time step must be specified.");
-                return false;
+                //return false;
             }
             useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
 
@@ -353,11 +353,11 @@ namespace PMKS
         private void SetInitialVelocityAndAcceleration(List<Joint> joints, List<Link> links,
             out double[,] initJointParams, out double[,] initLinkParams)
         {
-            var posFinder = new PositionFinder(joints, links, gearsData, DrivingIndex);
+            var posFinder = new PositionFinder(joints, links, gearsData, simulationDriveIndex);
             posFinder.UpdateSliderPosition();
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, DrivingIndex, inputLinkIndex,
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, simulationDriveIndex, inputLinkIndex,
                 InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, DrivingIndex,
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, simulationDriveIndex,
                 inputLinkIndex, InputSpeed, gearsData, AverageLength);
 
             initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
@@ -367,7 +367,7 @@ namespace PMKS
                 : Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
             {
-                for (var i = 0; i <= DrivingIndex; i++)
+                for (var i = 0; i <= simulationDriveIndex; i++)
                 {
                     initJointParams[oIOSJ[i], 2] = joints[i].vxLast = joints[i].vx;
                     initJointParams[oIOSJ[i], 3] = joints[i].vyLast = joints[i].vy;
@@ -376,7 +376,7 @@ namespace PMKS
                     initLinkParams[oIOSL[i], 1] = links[i].VelocityLast = links[i].Velocity;
                 if (accelSolver.Solve())
                 {
-                    for (var i = 0; i <= DrivingIndex; i++)
+                    for (var i = 0; i <= simulationDriveIndex; i++)
                     {
                         initJointParams[oIOSJ[i], 4] = joints[i].ax;
                         initJointParams[oIOSJ[i], 5] = joints[i].ay;
@@ -387,11 +387,11 @@ namespace PMKS
                 else
                 {
                     /* velocity was successfully found, but not acceleration. */
-                    if (posFinder.DefineNewPositions(smallTimeStep * InputSpeed) &&
+                    if (posFinder.DefineNewPositions(smallTimeStep * InputSpeed, ref IsDyadic) &&
                         velSolver.Solve())
                     {
                         /* forward difference on velocities to create accelerations. */
-                        for (var i = 0; i <= DrivingIndex; i++)
+                        for (var i = 0; i <= simulationDriveIndex; i++)
                         {
                             initJointParams[oIOSJ[i], 4] = joints[i].ax = (joints[i].vx - joints[i].vxLast) / smallTimeStep;
                             initJointParams[oIOSJ[i], 5] = joints[i].ay = (joints[i].vy - joints[i].vyLast) / smallTimeStep;
@@ -414,7 +414,7 @@ namespace PMKS
             var ForwardJointParams = new double[NumAllJoints, 2];
             var ForwardLinkParams = new double[NumLinks];
             /*** Stepping Forward in Time ***/
-            var forwardSuccess = posFinder.DefineNewPositions(smallTimeStep * InputSpeed);
+            var forwardSuccess = posFinder.DefineNewPositions(smallTimeStep * InputSpeed, ref IsDyadic);
             if (forwardSuccess)
             {
                 for (var i = 0; i < NumAllJoints; i++)
@@ -428,7 +428,7 @@ namespace PMKS
             /*** Stepping Backward in Time ***/
             var BackwardJointParams = new double[NumAllJoints, 2];
             var BackwardLinkParams = new double[NumLinks];
-            var backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep * InputSpeed);
+            var backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep * InputSpeed, ref IsDyadic);
             if (backwardSuccess)
             {
                 for (var i = 0; i < NumAllJoints; i++)
@@ -514,10 +514,10 @@ namespace PMKS
             var maxLengthError = MaxSmoothingError * AverageLength;
             var currentTime = 0.0;
             Boolean validPosition;
-            var posFinder = new PositionFinder(joints, links, gearsData, DrivingIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, DrivingIndex, inputLinkIndex,
+            var posFinder = new PositionFinder(joints, links, gearsData, simulationDriveIndex);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, simulationDriveIndex, inputLinkIndex,
                 InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, DrivingIndex,
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, simulationDriveIndex,
                 inputLinkIndex, InputSpeed, gearsData, AverageLength);
             do
             {
@@ -531,7 +531,7 @@ namespace PMKS
                     {
                         timeStep = startingPosChange / InputSpeed;
                         NumericalPosition(timeStep, joints, links);
-                        validPosition = posFinder.DefineNewPositions(startingPosChange);
+                        validPosition = posFinder.DefineNewPositions(startingPosChange, ref IsDyadic);
                         upperError = posFinder.PositionError - maxLengthError;
                         if (validPosition && upperError < 0)
                         {
@@ -559,7 +559,7 @@ namespace PMKS
                     NumericalPosition(timeStep, joints, links);
                     var delta = InputSpeed * timeStep;
                     // this next function puts the x and y values in the joints
-                    validPosition = posFinder.DefineNewPositions(delta);
+                    validPosition = posFinder.DefineNewPositions(delta, ref IsDyadic);
                 }
 
                 #endregion

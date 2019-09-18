@@ -61,7 +61,7 @@ namespace PMKS.PositionSolving
             minimumDeltaY = Constants.YMinimumFactor * yBounding;
         }
 
-        internal Boolean DefineNewPositions(double positionChange)
+        internal Boolean DefineNewPositions(double positionChange, ref bool isDyadic)
         {
             posResult = PositionAnalysisResults.Normal;
             InitializeJointsAndLinks(positionChange);
@@ -306,6 +306,7 @@ namespace PMKS.PositionSolving
             {
                 try
                 {
+                    isDyadic = false;
                     if (NDPS == null)
                         NDPS = new NonDyadicPositionSolver(this);
                     var NDPSError = 0.0;

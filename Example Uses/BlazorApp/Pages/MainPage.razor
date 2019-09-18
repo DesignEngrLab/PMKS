@@ -1,0 +1,34 @@
+﻿@page "/"
+
+<h1>Running PMKS with Blazor</h1>
+<p>here is the data that will be simulated</p>
+<p>@data</p>
+
+<button class="btn btn-primary" @onclick="RunSimulation">Click me</button>
+
+<p>Number of Time Steps: @numTimeSteps</p>
+<p>Here are the x-positions of the 3rd joint</p>
+<p>@xPos3rdJoint</p>
+@code {
+    int numTimeSteps = 0;
+    string data = "ground,input,R,0,350\n"
++ "input,coupler,R,0,450\n"
++ "coupler,follower,R,120, 370\n"
++ "follower,ground,P,120,300";
+    string xPos3rdJoint = "";
+
+    void RunSimulation()
+    {
+
+        var pmks = new PMKS.Simulator(data);
+        pmks.InputSpeed = 123.0;
+        pmks.MaxSmoothingError = 0.01;
+        pmks.FindFullMovement();
+        numTimeSteps = pmks.JointParameters.Count;
+        for (int i = 0; i < numTimeSteps; i++)
+        {
+            xPos3rdJoint += pmks.JointParameters[i].Value[2, 0];
+            if (i != numTimeSteps - 1) xPos3rdJoint += ", ";
+        }
+    }
+}

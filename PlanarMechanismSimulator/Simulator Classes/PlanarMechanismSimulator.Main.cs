@@ -13,6 +13,7 @@
 // ***********************************************************************
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OptimizationToolbox;
 using PMKS.PositionSolving;
 using System;
@@ -176,14 +177,14 @@ namespace PMKS
             {
                 //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
                 //    throw new Exception("Link lengths for all links need to be set first.");
-                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[DrivingIndex + 1]),
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[firstGroundJointIndex]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
-                                        inputLink.lengthBetween(inputJoint, SimulationJoints[DrivingIndex + 1]));
+                                        inputLink.lengthBetween(inputJoint, SimulationJoints[firstGroundJointIndex]));
                 inputJoint.XInitial = inputX;
                 inputJoint.YInitial = inputY;
-                SimulationJoints[DrivingIndex + 1].XInitial = gnd1X;
-                SimulationJoints[DrivingIndex + 1].YInitial = gnd1Y;
+                SimulationJoints[firstGroundJointIndex].XInitial = gnd1X;
+                SimulationJoints[firstGroundJointIndex].YInitial = gnd1Y;
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -210,14 +211,14 @@ namespace PMKS
                 //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
                 inputJoint.XInitial = inputX;
                 inputJoint.YInitial = inputY;
-                SimulationJoints[DrivingIndex + 1].XInitial = inputX +
+                SimulationJoints[firstGroundJointIndex].XInitial = inputX +
                                                           Math.Cos(AngleToGnd1) *
                                                           inputLink.lengthBetween(inputJoint,
-                                                              SimulationJoints[DrivingIndex + 1]);
-                SimulationJoints[DrivingIndex + 1].YInitial = inputY +
+                                                              SimulationJoints[firstGroundJointIndex]);
+                SimulationJoints[firstGroundJointIndex].YInitial = inputY +
                                                           Math.Sin(AngleToGnd1) *
                                                           inputLink.lengthBetween(inputJoint,
-                                                              SimulationJoints[DrivingIndex + 1]);
+                                                              SimulationJoints[firstGroundJointIndex]);
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -238,7 +239,7 @@ namespace PMKS
         {
             LinkAngles = new double[NumLinks, 1];
             JointPositions = new double[NumAllJoints, 2];
-            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, DrivingIndex));
+            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, simulationDriveIndex));
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
 
@@ -270,6 +271,12 @@ namespace PMKS
         }
 
         #region Properties and Fields
+        /// <summary>
+        /// Gets or sets the name of this simulation. This is not used
+        /// internally, but may be necessary to applications wanting to keep track
+        /// of different simulations.
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         ///     Gets the pivot parameters.
@@ -301,7 +308,7 @@ namespace PMKS
         /// <summary>
         ///     The _delta angle
         /// </summary>
-        private double _deltaAngle = Constants.DefaultStepSize;
+        private double _angleIncrement = Constants.DefaultStepSize;
 
         /// <summary>
         ///     The maximum joint parameter lengths
@@ -331,14 +338,14 @@ namespace PMKS
         ///     Gets or sets the delta angle.
         /// </summary>
         /// <value>The delta angle.</value>
-        public double DeltaAngle
+        public double AngleIncrement
         {
-            get { return _deltaAngle; }
+            get { return _angleIncrement; }
             set
             {
-                _deltaAngle = value;
+                _angleIncrement = value;
                 _maxSmoothingError = double.NaN;
-                // _fixedTimeStep = _deltaAngle / InputSpeed;
+                // _fixedTimeStep = _angleIncrement / InputSpeed;
             }
         }
 
@@ -348,7 +355,7 @@ namespace PMKS
         /// <value>The fixed time step.</value>
         internal double FixedTimeStep
         {
-            get { return _deltaAngle / InputSpeed; }
+            get { return _angleIncrement / InputSpeed; }
         }
 
         //{
@@ -356,7 +363,7 @@ namespace PMKS
         //    set
         //    {
         //        _fixedTimeStep = value;
-        //        _deltaAngle = InputSpeed * _fixedTimeStep;
+        //        _angleIncrement = InputSpeed * _fixedTimeStep;
         //    }
         //}
 
@@ -371,8 +378,8 @@ namespace PMKS
             set
             {
                 _maxSmoothingError = value;
-                _deltaAngle = double.NaN;
-                // _fixedTimeStep = _deltaAngle / InputSpeed;
+                _angleIncrement = double.NaN;
+                // _fixedTimeStep = _angleIncrement / InputSpeed;
             }
         }
 
@@ -400,14 +407,14 @@ namespace PMKS
         ///     Gets the begin time.
         /// </summary>
         /// <value>The begin time.</value>
-        public double StartTime { get; private set; }
+        public double StartTime { get; set; }
 
 
         /// <summary>
         ///     Gets the end time.
         /// </summary>
         /// <value>The end time.</value>
-        public double EndTime { get; private set; }
+        public double EndTime { get; set; }
 
         /// <summary>
         ///     Gets the time span.
@@ -456,7 +463,7 @@ namespace PMKS
         /// </summary>
         /// <value>All links.</value>
         [JsonIgnore]
-        public List<Link> Links { get; private set; }
+        public List<Link> Links { get; set; }
 
         /// <summary>
         ///     Gets all of the links, which includes the additional ones created for the simulation.
@@ -467,7 +474,7 @@ namespace PMKS
         ///     Gets the joints as created in the constructor.
         /// </summary>
         /// <value>All joints.</value>
-        public List<Joint> Joints { get; private set; }
+        public List<Joint> Joints { get; set; }
 
         /// <summary>
         ///     Gets all of the joints, which includes the additional ones created for the simulation.
@@ -480,13 +487,14 @@ namespace PMKS
         /// </summary>
         /// <value>The first index of the input joint.</value>
         internal int firstInputJointIndex { get; private set; }
-
+        internal int firstGroundJointIndex { get; private set; }
+        
         /// <summary>
         ///     Gets the index of the input joint.
         /// </summary>
         /// <value>The index of the input joint.</value>
-        public int DrivingIndex { get; private set; }
-
+        public int DrivingIndex { get; set; }
+        private int simulationDriveIndex;
         /// <summary>
         ///     Gets the input joint.
         /// </summary>
@@ -536,25 +544,13 @@ namespace PMKS
         ///     Gets a value indicating whether this instance is dyadic.
         /// </summary>
         /// <value><c>true</c> if this instance is dyadic; otherwise, <c>false</c>.</value>
-        public Boolean IsDyadic
-        {
-            get
-            {
-                var knownPositions = SimulationJoints.Where(j => j.IsGround || inputLink.Joints.Contains(j)).ToList();
-                var unknownPositions = SimulationJoints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
-                do
-                {
-                    var determined = unknownPositions.FirstOrDefault(j =>
-                        (j.Link1.Joints.Count(knownPositions.Contains)
-                         + j.Link2.Joints.Count(knownPositions.Contains) >= 2));
-                    if (determined == null) return false;
-                    knownPositions.Add(determined);
-                    unknownPositions.Remove(determined);
-                } while (unknownPositions.Count > 0);
-                return true;
-            }
-        }
+        public Boolean IsDyadic = true;
 
+
+
+        // everything else gets stored here
+        [JsonExtensionData]
+        private IDictionary<string, JToken> _additionalData;
         #endregion
 
         #region Constructor - requires the topology of the mechanism to be provided.
@@ -592,7 +588,7 @@ namespace PMKS
                 serializer.Serialize(writer, this);
         }
 
-        public Simulator CreateFromJsonStream(Stream stream)
+        public static Simulator CreateFromJsonStream(Stream stream)
         {
             var serializer = new JsonSerializer();
             var sr = new StreamReader(stream);
@@ -602,6 +598,7 @@ namespace PMKS
         [OnDeserialized]
         internal void OnDeserializedMethod(StreamingContext context)
         {
+            additionalRefjoints = new List<Joint>();
             var linkNames = new List<string>();
             foreach (var joint in Joints)
             {
@@ -622,22 +619,27 @@ namespace PMKS
             /* now that links have been created, need to add these to joints */
             foreach (var j in Joints)
             {
-               j.Link1 = Links.First(a=> j.Links[0].Equals(a.name));
+                j.Link1 = Links.First(a => j.Links[0].Equals(a.name));
                 if (j.Links.Length > 1)
                     j.Link2 = Links.First(a => j.Links[1].Equals(a.name));
             }
             NumLinks = Links.Count; //count the number of links in the system
             NumJoints = Joints.Count; //count the number of pivots in the system
+            maxJointParamLengths = Joints.All(j => j.TypeOfJoint == JointType.R) ? 6 : 9;
             RearrangeLinkAndJointLists();
             setAdditionalReferencePositions();
         }
 
-        public Simulator CreateFromTextStream(Stream stream)
+        public static Simulator CreateFromTextStream(Stream stream)
         {
             var sr = new StreamReader(stream);
             var all = sr.ReadToEnd();
             return new Simulator(all);
         }
+        /// <summary>
+        /// This is the default constructor for serialization.
+        /// </summary>
+        public Simulator() { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Simulator" /> class.
@@ -945,8 +947,9 @@ namespace PMKS
             SimulationJoints.RemoveAll(connectedInputJoints.Contains);
             firstInputJointIndex = SimulationJoints.Count;
             SimulationJoints.AddRange(connectedInputJoints);
-            DrivingIndex = SimulationJoints.Count;
+            simulationDriveIndex = SimulationJoints.Count;
             SimulationJoints.Add(inputJoint);
+            firstGroundJointIndex = SimulationJoints.Count;
             SimulationJoints.AddRange(groundPivots);
             #endregion
 

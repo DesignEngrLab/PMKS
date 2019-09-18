@@ -13,7 +13,9 @@
 // ***********************************************************************
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace PMKS
@@ -94,7 +96,7 @@ namespace PMKS
         private Joint()
         {
         }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Joint"/> class.
         /// This is only used for specifying a second copy of an R-joint that joins more than two links.
@@ -121,31 +123,31 @@ namespace PMKS
         /// </summary>
         /// <value>The type of joint.</value>
         [JsonConverter(typeof(StringEnumConverter))]
-        public JointType TypeOfJoint { get; internal set; }
+        public JointType TypeOfJoint { get; set; }
 
         /// <summary>
         /// The initial x-coordinate
         /// </summary>
         /// <value>The x initial.</value>
         [JsonProperty(PropertyName = "X")]
-        public double XInitial { get; internal set; }
+        public double XInitial { get; set; }
 
         /// <summary>
         /// The initial y-coordinate
         /// </summary>
         /// <value>The y initial.</value>
         [JsonProperty(PropertyName = "Y")]
-        public double YInitial { get; internal set; }
+        public double YInitial { get; set; }
 
         /// <summary>
         /// The initial slide angle
         /// </summary>
         /// <value>The offset slide angle.</value>
-        [JsonIgnore]
+         [JsonProperty(PropertyName = "Angle")]
         public double OffsetSlideAngle
         {
             get { return _offsetSlideAngle; }
-            internal set { _offsetSlideAngle = value; }
+            set { _offsetSlideAngle = value; }
         }
 
         //internal double OffsetSlideAngle = 0.0;
@@ -153,7 +155,7 @@ namespace PMKS
         /// Gets the slide angle initial.
         /// </summary>
         /// <value>The slide angle initial.</value>
-        [JsonProperty(PropertyName = "Angle")]
+        [JsonIgnore]
         public double SlideAngleInitial
         {
             get { return Link1.AngleInitial + OffsetSlideAngle; }
@@ -261,6 +263,7 @@ namespace PMKS
 
         [JsonRequired]
         public string[] Links { get; private set; }
+
         [OnSerializing]
         internal void OnSerializingMethod(StreamingContext context)
         {
@@ -284,6 +287,9 @@ namespace PMKS
         /// <value>The original slide position.</value>
         public double OrigSlidePosition { get; internal set; }
 
+        // everything else gets stored here
+        [JsonExtensionData]
+        private IDictionary<string, JToken> _additionalData;
         /// <summary>
         /// Gets the just a tracer.
         /// </summary>

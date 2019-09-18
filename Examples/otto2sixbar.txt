@@ -1,7 +1,0 @@
-input,ground,r,30,0
-input,coupler,r,30,8,0
-coupler,intermed,r,20,10,0
-intermed,ground,r,20,0
-intermed,coupler2,r,20,18
-coupler2,output,r,0,20
-output,ground,R,0,0
