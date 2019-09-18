@@ -5,11 +5,6 @@ VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorConsoleApplication", "SimulatorConsoleApplication\SimulatorConsoleApplication.csproj", "{C31EA89B-2A3B-4399-8114-D7814CCB2FCF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A1B00454-D63E-4C59-B48F-65C81404290B}"
-	ProjectSection(SolutionItems) = preProject
-		HTMLPage1.html = HTMLPage1.html
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanarMechanismKinematicSimulator", "PlanarMechanismSimulator\PlanarMechanismKinematicSimulator.csproj", "{DC360453-2427-48DD-AB90-18B3FC1621E1}"
 EndProject
 Global

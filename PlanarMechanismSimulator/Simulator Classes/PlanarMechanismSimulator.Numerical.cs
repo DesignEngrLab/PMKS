@@ -282,7 +282,7 @@ namespace PMKS
         /// <param name="queryTime">The query time.</param>
         private void setTimeIndices(double queryTime)
         {
-                while (queryTime < BeginTime) queryTime += Time_Span;
+                while (queryTime < StartTime) queryTime += Time_Span;
                 while (queryTime > EndTime) queryTime -= Time_Span;
 
                 if (queryTime == lastQueryTime)

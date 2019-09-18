@@ -11,7 +11,10 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
+using System.Runtime.Serialization;
 
 namespace PMKS
 {
@@ -64,25 +67,25 @@ namespace PMKS
         /// <param name="currentJointPosition">The current joint position.</param>
         /// <param name="specifiedAs">The specified as.</param>
         /// <exception cref="System.Exception">Values for x and y must be provided for joint.</exception>
-        internal Joint(bool isGround, JointType jointType, double[] currentJointPosition = null, 
-            JointSpecifiedAs specifiedAs=JointSpecifiedAs.Design)
+        internal Joint(bool isGround, JointType jointType, double[] currentJointPosition = null,
+            JointSpecifiedAs specifiedAs = JointSpecifiedAs.Design)
         {
             IsGround = isGround;
-            TypeOfJoint = jointType;                      
+            TypeOfJoint = jointType;
             jointSpecifiedAs = specifiedAs;
 
             if (currentJointPosition == null) return;
             if (currentJointPosition.GetLength(0) < 2)
                 throw new Exception("Values for x and y must be provided for joint.");
-            x = xInitial = xLast = xNumerical = currentJointPosition[0];
-            y = yInitial = yLast = yNumerical = currentJointPosition[1];
+            x = XInitial = xLast = xNumerical = currentJointPosition[0];
+            y = YInitial = yLast = yNumerical = currentJointPosition[1];
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointType.R)
                 OffsetSlideAngle = currentJointPosition[2];
             else if (jointType == JointType.P || jointType == JointType.RP)
                 OffsetSlideAngle = 0.0;
 
             while (OffsetSlideAngle > Constants.QuarterCircle) OffsetSlideAngle -= Math.PI;
-            while (OffsetSlideAngle < -Constants.QuarterCircle) OffsetSlideAngle += Math.PI;          
+            while (OffsetSlideAngle < -Constants.QuarterCircle) OffsetSlideAngle += Math.PI;
         }
 
         /// <summary>
@@ -98,8 +101,8 @@ namespace PMKS
         /// </summary>
         /// <param name="joint">The joint.</param>
         internal Joint(Joint joint)
-            :this(joint.IsGround,joint.TypeOfJoint,new []{joint.xInitial,joint.yInitial},JointSpecifiedAs.TernaryJoint)
-        {                                                                                                              
+            : this(joint.IsGround, joint.TypeOfJoint, new[] { joint.XInitial, joint.YInitial }, JointSpecifiedAs.TernaryJoint)
+        {
             sameJointAs = joint;
         }
 
@@ -107,33 +110,38 @@ namespace PMKS
         /// Is the joint connected to ground
         /// </summary>
         /// <value>The is ground.</value>
+        [JsonIgnore]
         public Boolean IsGround { get; internal set; }
 
         internal JointSpecifiedAs jointSpecifiedAs { get; private set; }
         internal Joint sameJointAs;
- 
+
         /// <summary>
         /// The joint type
         /// </summary>
         /// <value>The type of joint.</value>
+        [JsonConverter(typeof(StringEnumConverter))]
         public JointType TypeOfJoint { get; internal set; }
 
         /// <summary>
         /// The initial x-coordinate
         /// </summary>
         /// <value>The x initial.</value>
-        public double xInitial { get; internal set; }
+        [JsonProperty(PropertyName = "X")]
+        public double XInitial { get; internal set; }
 
         /// <summary>
         /// The initial y-coordinate
         /// </summary>
         /// <value>The y initial.</value>
-        public double yInitial { get; internal set; }
+        [JsonProperty(PropertyName = "Y")]
+        public double YInitial { get; internal set; }
 
         /// <summary>
         /// The initial slide angle
         /// </summary>
         /// <value>The offset slide angle.</value>
+        [JsonIgnore]
         public double OffsetSlideAngle
         {
             get { return _offsetSlideAngle; }
@@ -145,6 +153,7 @@ namespace PMKS
         /// Gets the slide angle initial.
         /// </summary>
         /// <value>The slide angle initial.</value>
+        [JsonProperty(PropertyName = "Angle")]
         public double SlideAngleInitial
         {
             get { return Link1.AngleInitial + OffsetSlideAngle; }
@@ -240,13 +249,24 @@ namespace PMKS
         /// Gets the link1.
         /// </summary>
         /// <value>The link1.</value>
+        [JsonIgnore]
         public Link Link1 { get; internal set; }
 
         /// <summary>
         /// Gets the link2.
         /// </summary>
         /// <value>The link2.</value>
+        [JsonIgnore]
         public Link Link2 { get; set; }
+
+        [JsonRequired]
+        public string[] Links { get; private set; }
+        [OnSerializing]
+        internal void OnSerializingMethod(StreamingContext context)
+        {
+            if (Link2 == null) Links = new[] { Link1.name.Trim().ToLower() };
+            else Links = new[] { Link1.name.Trim().ToLower(), Link2.name.Trim().ToLower() };
+        }
 
         /// <summary>
         /// Gets the minimum slide position.
@@ -336,11 +356,11 @@ namespace PMKS
                 Link2 = Link2,
                 OffsetSlideAngle = OffsetSlideAngle,
                 x = x,
-                xInitial = xInitial,
+                XInitial = XInitial,
                 xLast = xLast,
                 xNumerical = xNumerical,
                 y = y,
-                yInitial = yInitial,
+                YInitial = YInitial,
                 yLast = yLast,
                 yNumerical = yNumerical,
                 IsGround = IsGround,

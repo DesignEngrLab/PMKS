@@ -46,8 +46,8 @@ namespace PMKS.PositionSolving
             this.gearsData = gearsData;
             /* this has been commented out because occasionally a mechanism can be defined in which all joints have the
              * same x or same y value. Imainge a quick return with all joints starting on the x-axis. */
-            var xBounding = joints.Max(j => j.xInitial) - joints.Min(j => j.xInitial);
-            var yBounding = joints.Max(j => j.yInitial) - joints.Min(j => j.yInitial);
+            var xBounding = joints.Max(j => j.XInitial) - joints.Min(j => j.XInitial);
+            var yBounding = joints.Max(j => j.YInitial) - joints.Min(j => j.YInitial);
             /* the maximum leads to some problems - even for our fair little pendulum "starting block"
              * if all the joints lie along a line, then it's no surprise that things will run afowl.
              * Even with the following adjustment may be overly conservative. */
@@ -320,7 +320,7 @@ namespace PMKS.PositionSolving
                 }
             }
             if (posResult == PositionAnalysisResults.InvalidPosition) return false;
-            if (joints.Any(j => Math.Abs(j.x - j.xInitial) > maximumDeltaX || Math.Abs(j.y - j.yInitial) > maximumDeltaY))
+            if (joints.Any(j => Math.Abs(j.x - j.XInitial) > maximumDeltaX || Math.Abs(j.y - j.YInitial) > maximumDeltaY))
                 return false;
             if (joints.All(j => Math.Abs(j.x - j.xLast) < minimumDeltaX && Math.Abs(j.y - j.yLast) < minimumDeltaY
                                 && links.All(c => Math.Abs(c.Angle - c.AngleLast) < Constants.AngleMinimumFactor)))
@@ -353,9 +353,9 @@ namespace PMKS.PositionSolving
 
             /* reset ground link and joints */
             groundLink.AngleIsKnown = KnownState.Fully;
-            foreach (var j in groundLink.joints)
-                assignJointPosition(j, j.xInitial, j.yInitial, groundLink);
-            foreach (var j in groundLink.joints.Where(j => j.TypeOfJoint == JointType.P))
+            foreach (var j in groundLink.Joints)
+                assignJointPosition(j, j.XInitial, j.YInitial, groundLink);
+            foreach (var j in groundLink.Joints.Where(j => j.TypeOfJoint == JointType.P))
                 setLinkPositionFromRotate(j, j.OtherLink(groundLink), 0.0);
 
             /* now, set input link. */
@@ -405,7 +405,7 @@ namespace PMKS.PositionSolving
         private Point solveViaCircleAndLineIntersection(Joint j, Joint circleCenterJoint, Joint lineJoint,
             out double angleChange)
         {
-            var circleLink = (j.Link1.joints.Contains(circleCenterJoint)) ? j.Link1 : j.Link2;
+            var circleLink = (j.Link1.Joints.Contains(circleCenterJoint)) ? j.Link1 : j.Link2;
             var slideLink = (j.Link1 != circleLink) ? j.Link1 : j.Link2;
             var r1 = circleLink.lengthBetween(j, circleCenterJoint);
             angleChange = double.NaN;
@@ -714,15 +714,15 @@ namespace PMKS.PositionSolving
                 if (!knownJoint.FixedWithRespectTo(thisLink))
                 {
                     knownJoint =
-                        thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
+                        thisLink.Joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
                                                             && j.FixedWithRespectTo(thisLink));
                     if (knownJoint == null) return;
                 }
-                var j2 = (thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
+                var j2 = (thisLink.Joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully
                                                               && j.FixedWithRespectTo(thisLink))
-                          ?? thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully))
+                          ?? thisLink.Joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Fully))
                          ??
-                         thisLink.joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Partially
+                         thisLink.Joints.FirstOrDefault(j => j != knownJoint && j.positionKnown == KnownState.Partially
                                                              && !j.FixedWithRespectTo(thisLink));
                 if (j2 == null) return;
                 var new_j2j_Angle = Constants.angle(knownJoint, j2);
@@ -737,9 +737,9 @@ namespace PMKS.PositionSolving
 
             /* now update other joints on this link that might be determined now that the angle is known */
             knownJoint =
-                thisLink.joints.FirstOrDefault(
+                thisLink.Joints.FirstOrDefault(
                     j => j.FixedWithRespectTo(thisLink) && j.positionKnown == KnownState.Fully);
-            foreach (var j in thisLink.joints)
+            foreach (var j in thisLink.Joints)
             {
                 if (j.positionKnown == KnownState.Fully)
                 {
@@ -776,7 +776,7 @@ namespace PMKS.PositionSolving
                         && gearsData[joints.IndexOf(j)].SetGearRotation(thisLink, otherLink, links, joints))
                     {
                         var otherKnownJoint =
-                            otherLink.joints.FirstOrDefault(
+                            otherLink.Joints.FirstOrDefault(
                                 jj => jj.FixedWithRespectTo(otherLink) && jj.positionKnown == KnownState.Fully);
                         if (otherKnownJoint != null) setLinkPositionFromRotate(otherKnownJoint, otherLink);
                     }
@@ -795,7 +795,7 @@ namespace PMKS.PositionSolving
         {
             if (thisLink == null) return;
             // if (thisLink.AngleIsKnown == KnownState.Fully) return;
-            foreach (var j in thisLink.joints.Where(j => j.positionKnown != KnownState.Fully))
+            foreach (var j in thisLink.Joints.Where(j => j.positionKnown != KnownState.Fully))
             {
                 if (knownJoint.FixedWithRespectTo(thisLink))
                     assignJointPosition(j, j.xLast + deltaX, j.yLast + deltaY, thisLink);
@@ -816,14 +816,14 @@ namespace PMKS.PositionSolving
         }
         private static bool FindKnownPositionOnLink(Joint unkJoint, Link link, out Joint knownJoint)
         {
-            knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j.positionKnown == KnownState.Fully && j.FixedWithRespectTo(link));
+            knownJoint = link.Joints.FirstOrDefault(j => j != unkJoint && j.positionKnown == KnownState.Fully && j.FixedWithRespectTo(link));
             return knownJoint != null;
         }
         private static bool FindKnownSlopeOnLink(Joint unkJoint, Link link, out Joint knownJoint, Joint avoidJoint = null)
         {
             knownJoint = null;
             if (link.AngleIsKnown == KnownState.Unknown) return false;
-            knownJoint = link.joints.FirstOrDefault(j => j != unkJoint && j != avoidJoint &&
+            knownJoint = link.Joints.FirstOrDefault(j => j != unkJoint && j != avoidJoint &&
                 (j.positionKnown != KnownState.Unknown && (j.TypeOfJoint == JointType.R || j.TypeOfJoint == JointType.P))
                || (j.positionKnown == KnownState.Fully && j.TypeOfJoint == JointType.RP)
                );

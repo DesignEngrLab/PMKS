@@ -12,11 +12,14 @@
 // <summary></summary>
 // ***********************************************************************
 
+using Newtonsoft.Json;
 using OptimizationToolbox;
 using PMKS.PositionSolving;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace PMKS
 {
@@ -72,7 +75,7 @@ namespace PMKS
                 {
                     if (ReadOnlyJointIndices != null && ReadOnlyJointIndices.Contains(i)) continue;
                     var j = Joints[k];
-                    ChangeJointPosition(InitPositions[k], j,false);
+                    ChangeJointPosition(InitPositions[k], j, false);
                     k++;
                 }
                 setAdditionalReferencePositions();
@@ -89,8 +92,8 @@ namespace PMKS
         /// <param name="updateAdditionalPositions"></param>
         public void ChangeJointPosition(double[] position, Joint j, bool updateAdditionalPositions)
         {
-            j.xInitial = j.xNumerical = j.xLast = j.x = position[0];
-            j.yInitial = j.yNumerical = j.yLast = j.y = position[1];
+            j.XInitial = j.xNumerical = j.xLast = j.x = position[0];
+            j.YInitial = j.yNumerical = j.yLast = j.y = position[1];
             if (j.TypeOfJoint != JointType.R)
                 j.OffsetSlideAngle = position[2];
             if (updateAdditionalPositions)
@@ -141,8 +144,8 @@ namespace PMKS
                 {
                     var p1 = SimulationJoints[(int)Lengths[i][0]];
                     var p2 = SimulationJoints[(int)Lengths[i][1]];
-                    var link0 = SimulationLinks.First(l => l.joints.Contains(p1) && l.joints.Contains(p2));
-                    var pivotIndices = new List<int> { link0.joints.IndexOf(p1), link0.joints.IndexOf(p2) };
+                    var link0 = SimulationLinks.First(l => l.Joints.Contains(p1) && l.Joints.Contains(p2));
+                    var pivotIndices = new List<int> { link0.Joints.IndexOf(p1), link0.Joints.IndexOf(p2) };
                     pivotIndices.Sort();
                     link0.SetLength(p1, p2, Lengths[i][2]);
                 }
@@ -173,14 +176,14 @@ namespace PMKS
             {
                 //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
                 //    throw new Exception("Link lengths for all links need to be set first.");
-                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[drivingIndex + 1]),
+                if (!Constants.sameCloseZero(inputLink.lengthBetween(inputJoint, SimulationJoints[DrivingIndex + 1]),
                     Constants.distance(inputX, inputY, gnd1X, gnd1Y)))
                     throw new Exception("Input and first ground position do not match expected length of " +
-                                        inputLink.lengthBetween(inputJoint, SimulationJoints[drivingIndex + 1]));
-                inputJoint.xInitial = inputX;
-                inputJoint.yInitial = inputY;
-                SimulationJoints[drivingIndex + 1].xInitial = gnd1X;
-                SimulationJoints[drivingIndex + 1].yInitial = gnd1Y;
+                                        inputLink.lengthBetween(inputJoint, SimulationJoints[DrivingIndex + 1]));
+                inputJoint.XInitial = inputX;
+                inputJoint.YInitial = inputY;
+                SimulationJoints[DrivingIndex + 1].XInitial = gnd1X;
+                SimulationJoints[DrivingIndex + 1].YInitial = gnd1Y;
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -205,16 +208,16 @@ namespace PMKS
             {
                 //if (AllLinks.Any(a => a.Lengths.Any(double.IsNaN)))
                 //    throw new Exception("Link lengths for all links need to be set first. Use AssignLengths method.");
-                inputJoint.xInitial = inputX;
-                inputJoint.yInitial = inputY;
-                SimulationJoints[drivingIndex + 1].xInitial = inputX +
+                inputJoint.XInitial = inputX;
+                inputJoint.YInitial = inputY;
+                SimulationJoints[DrivingIndex + 1].XInitial = inputX +
                                                           Math.Cos(AngleToGnd1) *
                                                           inputLink.lengthBetween(inputJoint,
-                                                              SimulationJoints[drivingIndex + 1]);
-                SimulationJoints[drivingIndex + 1].yInitial = inputY +
+                                                              SimulationJoints[DrivingIndex + 1]);
+                SimulationJoints[DrivingIndex + 1].YInitial = inputY +
                                                           Math.Sin(AngleToGnd1) *
                                                           inputLink.lengthBetween(inputJoint,
-                                                              SimulationJoints[drivingIndex + 1]);
+                                                              SimulationJoints[DrivingIndex + 1]);
                 // todo: put values in JointPositions and LinkAngles (like the 4 preceding lines)
                 double[,] JointPositions, LinkAngles;
                 return epsilon > FindInitialPositionMain(out JointPositions, out LinkAngles);
@@ -235,7 +238,7 @@ namespace PMKS
         {
             LinkAngles = new double[NumLinks, 1];
             JointPositions = new double[NumAllJoints, 2];
-            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, drivingIndex));
+            var NDPS = new NonDyadicPositionSolver(new PositionFinder(SimulationJoints, SimulationLinks, gearsData, DrivingIndex));
             return NDPS.Run_PositionsAreUnknown(JointPositions, LinkAngles);
         }
 
@@ -383,6 +386,7 @@ namespace PMKS
         ///     Gets the average length.
         /// </summary>
         /// <value>The average length.</value>
+        [JsonIgnore]
         public double AverageLength { get; private set; }
 
         /// <summary>
@@ -396,7 +400,7 @@ namespace PMKS
         ///     Gets the begin time.
         /// </summary>
         /// <value>The begin time.</value>
-        public double BeginTime { get; private set; }
+        public double StartTime { get; private set; }
 
 
         /// <summary>
@@ -409,9 +413,10 @@ namespace PMKS
         ///     Gets the time span.
         /// </summary>
         /// <value>The time span.</value>
+        [JsonIgnore]
         public double Time_Span
         {
-            get { return EndTime - BeginTime; }
+            get { return EndTime - StartTime; }
         }
 
         private List<Joint> additionalRefjoints;
@@ -424,6 +429,7 @@ namespace PMKS
         ///     Gets the number links.
         /// </summary>
         /// <value>The number links.</value>
+        [JsonIgnore]
         public int NumLinks { get; private set; }
 
         /// <summary>
@@ -442,12 +448,14 @@ namespace PMKS
         /// Gets the number joints.
         /// </summary>
         /// <value>The number joints.</value>
+        [JsonIgnore]
         public int NumJoints { get; private set; }
 
         /// <summary>
         ///     Gets the links as created in the constructor.
         /// </summary>
         /// <value>All links.</value>
+        [JsonIgnore]
         public List<Link> Links { get; private set; }
 
         /// <summary>
@@ -477,7 +485,7 @@ namespace PMKS
         ///     Gets the index of the input joint.
         /// </summary>
         /// <value>The index of the input joint.</value>
-        public int drivingIndex { get; private set; }
+        public int DrivingIndex { get; private set; }
 
         /// <summary>
         ///     Gets the input joint.
@@ -509,6 +517,7 @@ namespace PMKS
         /// <value>
         /// The ground link.
         /// </value>
+        [JsonIgnore]
         public Link GroundLink { get; private set; }
 
         /// <summary>
@@ -531,13 +540,13 @@ namespace PMKS
         {
             get
             {
-                var knownPositions = SimulationJoints.Where(j => j.IsGround || inputLink.joints.Contains(j)).ToList();
+                var knownPositions = SimulationJoints.Where(j => j.IsGround || inputLink.Joints.Contains(j)).ToList();
                 var unknownPositions = SimulationJoints.Where(j => !knownPositions.Contains(j) && j.Link2 != null).ToList();
                 do
                 {
                     var determined = unknownPositions.FirstOrDefault(j =>
-                        (j.Link1.joints.Count(knownPositions.Contains)
-                         + j.Link2.joints.Count(knownPositions.Contains) >= 2));
+                        (j.Link1.Joints.Count(knownPositions.Contains)
+                         + j.Link2.Joints.Count(knownPositions.Contains) >= 2));
                     if (determined == null) return false;
                     knownPositions.Add(determined);
                     unknownPositions.Remove(determined);
@@ -568,6 +577,68 @@ namespace PMKS
             ReadOnlyJointIndices = readOnlyJointIndices;
         }
 
+        public void StoreJson(Stream stream)
+        {
+            JsonSerializer serializer = new JsonSerializer
+            {
+                //NullValueHandling = NullValueHandling.Ignore,
+                //DefaultValueHandling = DefaultValueHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.Auto,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = Formatting.Indented
+            };
+            var sw = new StreamWriter(stream);
+            using (var writer = new JsonTextWriter(sw))
+                serializer.Serialize(writer, this);
+        }
+
+        public Simulator CreateFromJsonStream(Stream stream)
+        {
+            var serializer = new JsonSerializer();
+            var sr = new StreamReader(stream);
+            using (var reader = new JsonTextReader(sr))
+                return serializer.Deserialize<Simulator>(reader);
+        }
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            var linkNames = new List<string>();
+            foreach (var joint in Joints)
+            {
+                linkNames.Add(joint.Links[0]);
+                if (joint.Links.Length > 1) linkNames.Add(joint.Links[1]);
+            }
+            for (var i = 0; i < linkNames.Count; i++)
+                if (IsGroundLinkName(linkNames[i])) linkNames[i] = "ground";
+            linkNames = linkNames.Distinct()
+                .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+
+            Links = new List<Link>(); //create an array of LINKS
+            foreach (var linkName in linkNames)
+            {
+                var joints = Joints.Where(j => j.Links.Contains(linkName));
+                Links.Add(new Link(linkName, joints));
+            }
+            /* now that links have been created, need to add these to joints */
+            foreach (var j in Joints)
+            {
+               j.Link1 = Links.First(a=> j.Links[0].Equals(a.name));
+                if (j.Links.Length > 1)
+                    j.Link2 = Links.First(a => j.Links[1].Equals(a.name));
+            }
+            NumLinks = Links.Count; //count the number of links in the system
+            NumJoints = Joints.Count; //count the number of pivots in the system
+            RearrangeLinkAndJointLists();
+            setAdditionalReferencePositions();
+        }
+
+        public Simulator CreateFromTextStream(Stream stream)
+        {
+            var sr = new StreamReader(stream);
+            var all = sr.ReadToEnd();
+            return new Simulator(all);
+        }
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="Simulator" /> class.
         /// </summary>
@@ -580,13 +651,13 @@ namespace PMKS
             int driverIndex;
             List<double[]> initPositions;
             List<Boolean[]> unusedDisplayBools;
+
             ConvertTextToData(data, out linkIDs, out jointTypes, out driverIndex, out initPositions,
                 out unusedDisplayBools);
             CreateLinkAndPositionDetails(linkIDs, jointTypes, driverIndex, initPositions);
             RearrangeLinkAndJointLists();
             setAdditionalReferencePositions();
         }
-
 
         /// <summary>
         ///     Converts the text to data.
@@ -700,7 +771,7 @@ namespace PMKS
         {
             try
             {
-                this.drivingIndex = drivingIndex;
+                this.DrivingIndex = drivingIndex;
                 if (jointTypes.Count != linkIDs.Count)
                     throw new Exception("The number of PivotTypes (which is " + NumAllJoints + ") must be the"
                                         + "same as the number of LinkID pairs (which is " + linkIDs.Count + ")");
@@ -751,8 +822,8 @@ namespace PMKS
                 {
                     var pivotIndices =
                         newLinkIDs.Where(lid => lid.Contains(linkName)).Select(lid => newLinkIDs.IndexOf(lid));
-                    var pivotsForThisLink = pivotIndices.Select(i => Joints[i]).ToList();
-                    Links.Add(new Link(linkName, pivotsForThisLink, pivotsForThisLink.All(piv => piv.IsGround)));
+                    var pivotsForThisLink = pivotIndices.Select(i => Joints[i]);
+                    Links.Add(new Link(linkName, pivotsForThisLink));
                 }
                 /* now that links have been created, need to add these to pivots */
                 for (var i = 0; i < newLinkIDs.Count; i++)
@@ -788,7 +859,7 @@ namespace PMKS
         private void RearrangeLinkAndJointLists()
         {
             #region Define Input Joint and Link, and Ground Link
-            inputJoint = Joints[drivingIndex];
+            inputJoint = Joints[DrivingIndex];
             if (inputJoint.TypeOfJoint == JointType.G) throw new Exception("Input cannot be gear teeth.");
             if (inputJoint.TypeOfJoint == JointType.RP)
                 throw new Exception("Input cannot be an RP joint (2 DOF inputs are not allowed).");
@@ -804,7 +875,7 @@ namespace PMKS
             {
                 invertedToSolveNonGroundInput = true;
                 GroundLink = groundLinkForSimulation;
-                var numFixedJointsOnLink1 = inputJoint.Link1.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link1));
+                var numFixedJointsOnLink1 = inputJoint.Link1.Joints.Count(j => j.FixedWithRespectTo(inputJoint.Link1));
                 if (numFixedJointsOnLink1 >= 2)
                 {
                     inputLink = inputJoint.Link2;
@@ -813,7 +884,7 @@ namespace PMKS
                 else
                 {
                     var numFixedJointsOnLink2 =
-                        inputJoint.Link2.joints.Count(j => j.FixedWithRespectTo(inputJoint.Link2));
+                        inputJoint.Link2.Joints.Count(j => j.FixedWithRespectTo(inputJoint.Link2));
                     if (numFixedJointsOnLink2 >= 2)
                     {
                         inputLink = inputJoint.Link1;
@@ -824,16 +895,16 @@ namespace PMKS
                         groundLinkForSimulation = numFixedJointsOnLink1 > 0 ? inputJoint.Link1 : inputJoint.Link2;
                         inputLink = numFixedJointsOnLink1 > 0 ? inputJoint.Link2 : inputJoint.Link1;
                         var newJoint = new Joint(true, JointType.R, null, JointSpecifiedAs.FixedPointForLink) { Link1 = groundLinkForSimulation };
-                        groundLinkForSimulation.joints.Add(newJoint);
+                        groundLinkForSimulation.Joints.Add(newJoint);
                         additionalRefjoints.Add(newJoint);
                     }
                 }
                 groundLinkForSimulation.IsGround = true;
                 GroundLink.IsGround = false;
-                if (GroundLink.joints.Count(j => j.FixedWithRespectTo(GroundLink)) < 2)
+                if (GroundLink.Joints.Count(j => j.FixedWithRespectTo(GroundLink)) < 2)
                 {
                     var newJoint = new Joint(false, JointType.R, null, JointSpecifiedAs.FixedPointForLink) { Link1 = GroundLink };
-                    GroundLink.joints.Add(newJoint);
+                    GroundLink.Joints.Add(newJoint);
                     additionalRefjoints.Add(newJoint);
                 }
             }
@@ -864,17 +935,17 @@ namespace PMKS
             #region Set up SimulationJoints by moving Joints around to ease Simulation
             /* reorder links, move input link and ground link to back of list */
             var groundPivots =
-                groundLinkForSimulation.joints.Where(
+                groundLinkForSimulation.Joints.Where(
                     j => j != inputJoint && j.FixedWithRespectTo(groundLinkForSimulation)).ToList();
             SimulationJoints.Remove(inputJoint);
             SimulationJoints.RemoveAll(groundPivots.Contains);
 
             var connectedInputJoints =
-                inputLink.joints.Where(j => j != inputJoint && j.FixedWithRespectTo(inputLink)).ToList();
+                inputLink.Joints.Where(j => j != inputJoint && j.FixedWithRespectTo(inputLink)).ToList();
             SimulationJoints.RemoveAll(connectedInputJoints.Contains);
             firstInputJointIndex = SimulationJoints.Count;
             SimulationJoints.AddRange(connectedInputJoints);
-            drivingIndex = SimulationJoints.Count;
+            DrivingIndex = SimulationJoints.Count;
             SimulationJoints.Add(inputJoint);
             SimulationJoints.AddRange(groundPivots);
             #endregion
@@ -912,10 +983,10 @@ namespace PMKS
         /// <returns>List&lt;joint&gt;.</returns>
         private void addReferenceJoints()
         {
-            foreach (var c in SimulationLinks.Where(c => !c.joints.Any(j => j.FixedWithRespectTo(c))))
+            foreach (var c in SimulationLinks.Where(c => !c.Joints.Any(j => j.FixedWithRespectTo(c))))
             {
                 var newJoint = new Joint(c.IsGround, JointType.R) { Link1 = c };
-                c.joints.Add(newJoint);
+                c.Joints.Add(newJoint);
                 additionalRefjoints.Add(newJoint);
             }
 
@@ -925,19 +996,18 @@ namespace PMKS
             {
                 if (j.TypeOfJoint != JointType.G) continue;
                 // link1Neighbors are the links adjacent to this gear joint's link1
-                var link1Neighbors = j.Link1.joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
+                var link1Neighbors = j.Link1.Joints.Select(jj => jj.OtherLink(j.Link1)).ToList();
                 // if any of the joints on link2 (not including this gear joint) connect to the link1Neighbors,
                 // then it is assumed that a support link and it's two joints are not needed
-                if (j.Link2.joints.Any(
+                if (j.Link2.Joints.Any(
                     jj => jj != j && link1Neighbors.Contains(jj.OtherLink(j.Link2)))) continue;
                 if (double.IsNaN(j.OffsetSlideAngle))
                     throw new Exception("No link connects between gears: " + j.Link1.name + " and " + j.Link2.name);
-                var newJoint1 = new Joint(j.Link1.IsGround, JointType.P, new[] { j.xInitial, j.yInitial, j.OffsetSlideAngle }, JointSpecifiedAs.GearSupport);
-                var gearCenter2 = j.Link2.joints.FirstOrDefault(jj => jj != j && jj.TypeOfJoint == JointType.R);
+                var newJoint1 = new Joint(j.Link1.IsGround, JointType.P, new[] { j.XInitial, j.YInitial, j.OffsetSlideAngle }, JointSpecifiedAs.GearSupport);
+                var gearCenter2 = j.Link2.Joints.FirstOrDefault(jj => jj != j && jj.TypeOfJoint == JointType.R);
                 if (gearCenter2 == null) throw new Exception("No pivot (R joint) for " + j.Link2.name);
-                var newJoint2 = new Joint(j.Link2.IsGround, JointType.R, new[] { gearCenter2.xInitial, gearCenter2.yInitial }, JointSpecifiedAs.GearSupport);
-                var connectLink = new Link(nameBaseForGearConnector + (counter++),
-                    new List<Joint> { newJoint1, newJoint2 }, false);
+                var newJoint2 = new Joint(j.Link2.IsGround, JointType.R, new[] { gearCenter2.XInitial, gearCenter2.YInitial }, JointSpecifiedAs.GearSupport);
+                var connectLink = new Link(nameBaseForGearConnector + (counter++), new List<Joint> { newJoint1, newJoint2 });
                 newJoint1.Link1 = j.Link1;
                 newJoint2.Link1 = j.Link2;
                 newJoint1.Link2 = newJoint2.Link2 = connectLink;
@@ -961,27 +1031,27 @@ namespace PMKS
                         continue;
                     case JointSpecifiedAs.TernaryJoint:
                         joint.x =
-                            joint.xNumerical = joint.xLast = joint.xInitial
-                                = joint.sameJointAs.xInitial;
+                            joint.xNumerical = joint.xLast = joint.XInitial
+                                = joint.sameJointAs.XInitial;
                         joint.y =
-                            joint.yNumerical = joint.yLast = joint.yInitial
-                                = joint.sameJointAs.yInitial;
+                            joint.yNumerical = joint.yLast = joint.YInitial
+                                = joint.sameJointAs.YInitial;
                         break;
                     case JointSpecifiedAs.FixedPointForLink:
                         var xSum = 0.0;
                         var ySum = 0.0;
-                        foreach (var otherJoint in joint.Link1.joints)
+                        foreach (var otherJoint in joint.Link1.Joints)
                         {
                             if (otherJoint == joint) continue;
-                            xSum += otherJoint.xInitial;
-                            ySum += otherJoint.yInitial;
+                            xSum += otherJoint.XInitial;
+                            ySum += otherJoint.YInitial;
                         }
                         joint.x =
-                            joint.xNumerical = joint.xLast = joint.xInitial
-                                = xSum / (joint.Link1.joints.Count - 1);
+                            joint.xNumerical = joint.xLast = joint.XInitial
+                                = xSum / (joint.Link1.Joints.Count - 1);
                         joint.y =
-                            joint.yNumerical = joint.yLast = joint.yInitial
-                                = ySum / (joint.Link1.joints.Count - 1);
+                            joint.yNumerical = joint.yLast = joint.YInitial
+                                = ySum / (joint.Link1.Joints.Count - 1);
                         break;
                     case JointSpecifiedAs.GearSupport:
                         setGearData(); //todo: this function is kind of a mess.Need to revisit auto-created joints for gears
@@ -994,7 +1064,7 @@ namespace PMKS
             {
                 eachLink.DetermineLengthsAndReferences();
                 totalLength += eachLink.TotalLength;
-                numLengths += eachLink.joints.Count * (eachLink.joints.Count - 1) / 2;
+                numLengths += eachLink.Joints.Count * (eachLink.Joints.Count - 1) / 2;
             }
             AverageLength = totalLength / numLengths;
         }
@@ -1014,9 +1084,9 @@ namespace PMKS
                 {
                     var gear1 = gearTeethJoint.Link1;
                     var gear2 = gearTeethJoint.Link2;
-                    var possibleGear1Centers = gear1.joints.Where(j => j.TypeOfJoint != JointType.G && j.Link2 != null);
+                    var possibleGear1Centers = gear1.Joints.Where(j => j.TypeOfJoint != JointType.G && j.Link2 != null);
                     var possibleGear2Centers =
-                        gear2.joints.Where(j => j.TypeOfJoint != JointType.G && j.Link2 != null).ToList();
+                        gear2.Joints.Where(j => j.TypeOfJoint != JointType.G && j.Link2 != null).ToList();
                     var bestCenterOption = new Tuple<Joint, Joint, Link, double>(null, null, null, double.NaN);
                     var bestError = double.PositiveInfinity;
                     foreach (var g1 in possibleGear1Centers)
@@ -1026,7 +1096,7 @@ namespace PMKS
                             if (g1.TypeOfJoint == JointType.RP && g1.Link1 == gear1) continue;
                             if (g2.TypeOfJoint == JointType.RP && g2.Link1 == gear2) continue;
                             var connectLink =
-                                SimulationLinks.FirstOrDefault(c => c.joints.Contains(g1) && c.joints.Contains(g2));
+                                SimulationLinks.FirstOrDefault(c => c.Joints.Contains(g1) && c.Joints.Contains(g2));
                             if (connectLink == null) continue;
                             var angle1 = FindInitialGearAngle(g1, gearTeethJoint);
                             var angle2 = FindInitialGearAngle(g2, gearTeethJoint);
@@ -1061,7 +1131,7 @@ namespace PMKS
         private double FindInitialGearAngle(Joint g1, Joint gearTeeth)
         {
             if (g1.TypeOfJoint != JointType.R) return g1.SlideAngleInitial;
-            var angle = Math.Atan2((gearTeeth.yInitial - g1.yInitial), (gearTeeth.xInitial - g1.xInitial))
+            var angle = Math.Atan2((gearTeeth.YInitial - g1.YInitial), (gearTeeth.XInitial - g1.XInitial))
                         + Constants.QuarterCircle;
             while (angle > Constants.QuarterCircle) angle -= Math.PI;
             while (angle < -Constants.QuarterCircle) angle += Math.PI;

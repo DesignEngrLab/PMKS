@@ -26,10 +26,10 @@ namespace PMKS
             this.gearCenter2Index = gearCenter2Index;
             this.gear2LinkIndex = gear2LinkIndex;
             this.connectingRodIndex = connectingRodIndex;
-            var dx1 = gearCenter1.xInitial - gearTeethJoint.xInitial;
-            var dy1 = gearCenter1.yInitial - gearTeethJoint.yInitial;
-            var dx2 = gearCenter2.xInitial - gearTeethJoint.xInitial;
-            var dy2 = gearCenter2.yInitial - gearTeethJoint.yInitial;
+            var dx1 = gearCenter1.XInitial - gearTeethJoint.XInitial;
+            var dy1 = gearCenter1.YInitial - gearTeethJoint.YInitial;
+            var dx2 = gearCenter2.XInitial - gearTeethJoint.XInitial;
+            var dy2 = gearCenter2.YInitial - gearTeethJoint.YInitial;
             radius1 = Constants.distance(gearTeethJoint, gearCenter1);
             radius2 = Constants.distance(gearTeethJoint, gearCenter2);
             gearCenter1.OffsetSlideAngle = initialGearAngle;

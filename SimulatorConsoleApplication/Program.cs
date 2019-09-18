@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SimulatorConsoleApplication
 {
@@ -34,7 +35,8 @@ namespace SimulatorConsoleApplication
             pms.MaxSmoothingError = 0.01;
             Console.WriteLine("start");
             pms.FindFullMovement();
-
+            using (var stream = File.OpenWrite("test.json"))
+                pms.StoreJson(stream);
             Console.WriteLine("done");
             Console.ReadKey();
         }

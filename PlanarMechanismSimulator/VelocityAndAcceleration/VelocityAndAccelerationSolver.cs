@@ -32,7 +32,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 var xGnd = inputJoint.x;
                 var yGnd = inputJoint.y;
-                foreach (var j in inputLink.joints)
+                foreach (var j in inputLink.Joints)
                 {
                     if (j.FixedWithRespectTo(inputLink))
                     {
@@ -44,7 +44,7 @@ namespace PMKS.VelocityAndAcceleration
             else if (inputJoint.TypeOfJoint == JointType.P)
             {
                 inputJoint.SlideAcceleration = 0.0;
-                foreach (var j in inputLink.joints)
+                foreach (var j in inputLink.Joints)
                 {
                     if (j.FixedWithRespectTo(inputLink))
                         j.ax = j.ay = 0.0;
@@ -153,7 +153,7 @@ namespace PMKS.VelocityAndAcceleration
                 RecursivelySetLinkVelocityThroughPJoints(inputLink, new List<Link>(), inputSpeed, true);
                 var xGnd = inputJoint.x;
                 var yGnd = inputJoint.y;
-                foreach (var j in inputLink.joints)
+                foreach (var j in inputLink.Joints)
                 {
                     if (j.SlidingWithRespectTo(inputLink)) continue;
                     j.vx = inputSpeed * (yGnd - j.y);
@@ -165,7 +165,7 @@ namespace PMKS.VelocityAndAcceleration
                 var vx = inputSpeed * Math.Cos(inputJoint.SlideAngle);
                 var vy = inputSpeed * Math.Sin(inputJoint.SlideAngle);
                 inputJoint.SlideVelocity = inputSpeed;
-                foreach (var j in inputLink.joints)
+                foreach (var j in inputLink.Joints)
                 {
                     if (j.SlidingWithRespectTo(inputLink)) continue;
                     j.vx = vx;
@@ -320,8 +320,8 @@ namespace PMKS.VelocityAndAcceleration
             RecursivelyRemoveKnownLinks(groundLink);
             /**** Set velocity of any links connected to ground by a P joint and remove link from unknowns ****/
             RecursivelyRemoveKnownLinks(inputLink);
-            unknownObjects.RemoveAll(o => groundLink.joints.Contains(o) && ((Joint)o).FixedWithRespectTo(groundLink));
-            unknownObjects.RemoveAll(o => inputLink.joints.Contains(o) && ((Joint)o).FixedWithRespectTo(inputLink));
+            unknownObjects.RemoveAll(o => groundLink.Joints.Contains(o) && ((Joint)o).FixedWithRespectTo(groundLink));
+            unknownObjects.RemoveAll(o => inputLink.Joints.Contains(o) && ((Joint)o).FixedWithRespectTo(inputLink));
             if (inputJoint.TypeOfJoint == JointType.P)
                 unknownObjects.RemoveAll(o => o is Tuple<Link, Joint> && ((Tuple<Link, Joint>)o).Item2 == inputJoint);
             /************ Set up Equations ************/
@@ -332,7 +332,7 @@ namespace PMKS.VelocityAndAcceleration
                 var r = l.ReferenceJoint1;
                 var l_is_unknown = unknownObjects.Contains(l);
                 var r_is_unknown = unknownObjects.Contains(r);
-                foreach (var j in l.joints.Where(j => j != r && j.Link2 != null))
+                foreach (var j in l.Joints.Where(j => j != r && j.Link2 != null))
                 {
                     var j_is_unknown = unknownObjects.Contains(j);
                     if (l_is_unknown || r_is_unknown || j_is_unknown)
@@ -389,7 +389,7 @@ namespace PMKS.VelocityAndAcceleration
         {
             if (!unknownObjects.Contains(l)) return;
             unknownObjects.Remove(l);
-            foreach (var pJoint in l.joints.Where(j => j.TypeOfJoint == JointType.P))
+            foreach (var pJoint in l.Joints.Where(j => j.TypeOfJoint == JointType.P))
                 RecursivelyRemoveKnownLinks(pJoint.OtherLink(l));
         }
 
@@ -400,7 +400,7 @@ namespace PMKS.VelocityAndAcceleration
             LinksAlreadySet.Add(l);
             if (thisIsVelocity) l.Velocity = value;
             else l.Acceleration = value;
-            foreach (var pJoint in l.joints.Where(j => j.TypeOfJoint == JointType.P))
+            foreach (var pJoint in l.Joints.Where(j => j.TypeOfJoint == JointType.P))
                 RecursivelySetLinkVelocityThroughPJoints(pJoint.OtherLink(l), LinksAlreadySet, value, thisIsVelocity);
         }
 

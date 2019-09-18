@@ -41,8 +41,7 @@ namespace PMKS
         {
             if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
             {
-                throw new Exception(
-                     "Either the smoothing error angle delta or the time step must be specified.");
+                throw new ArgumentException("Either the smoothing error angle delta or the time step must be specified.");
                 return false;
             }
             useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
@@ -104,10 +103,10 @@ namespace PMKS
             {
                 var backwardLink = backwardLinks[i];
                 var forwardLink = AllLinks[i];
-                foreach (var j in forwardLink.joints)
+                foreach (var j in forwardLink.Joints)
                 {
                     var jointIndex = AllJoints.IndexOf(j);
-                    backwardLink.joints.Add(backwardJoints[jointIndex]);
+                    backwardLink.Joints.Add(backwardJoints[jointIndex]);
                     if (j == forwardLink.ReferenceJoint1)
                         backwardLink.ReferenceJoint1 = backwardJoints[jointIndex];
                 }
@@ -119,7 +118,7 @@ namespace PMKS
         /// </summary>
         private void DefineMovementCharacteristics()
         {
-            BeginTime = JointParameters.Times[0];
+            StartTime = JointParameters.Times[0];
             EndTime = JointParameters.Times.Last();
             InitializeQueryVars();
             for (var i = 0; i < NumAllJoints; i++)
@@ -140,7 +139,7 @@ namespace PMKS
             var cyclePeriodTime = Constants.FullCircle / Math.Abs(InputSpeed);
             if (DoesMechanismRepeatOnCrankCycle(cyclePeriodTime))
             {
-                BeginTime = 0.0;
+                StartTime = 0.0;
                 EndTime = cyclePeriodTime;
                 CycleType = CycleTypes.OneCycle;
                 while (JointParameters.Times.Last() >= EndTime)
@@ -180,7 +179,7 @@ namespace PMKS
         /// </summary>
         private void TransposeLinkAndJointParameters()
         {
-            var fixedGroundJoints = GroundLink.joints.Where(j => j.FixedWithRespectTo(GroundLink)).ToList();
+            var fixedGroundJoints = GroundLink.Joints.Where(j => j.FixedWithRespectTo(GroundLink)).ToList();
             var gndJointIndex = SimulationJoints.IndexOf(fixedGroundJoints[0]);
             var gndLinkIndex = SimulationLinks.IndexOf(GroundLink);
             for (var i = 0; i <= LinkParameters.LastIndex; i++)
@@ -189,7 +188,7 @@ namespace PMKS
 #if DEBUGSERIAL
             TransposeJointVelocity(gndJointIndex, gndLinkIndex);
             TransposeJointAcceleration(gndJointIndex, gndLinkIndex);
-            
+
             TransposeLinkStateVariables(gndLinkIndex, 0);
             TransposeLinkStateVariables(gndLinkIndex, 1);
             TransposeLinkStateVariables(gndLinkIndex, 2);
@@ -230,8 +229,8 @@ namespace PMKS
         /// <param name="gndLinkIndex">Index of the GND link.</param>
         private void TransposeJointPosition(int gndJointIndex, int gndLinkIndex)
         {
-            var xOffset = SimulationJoints[gndJointIndex].xInitial;
-            var yOffset = SimulationJoints[gndJointIndex].yInitial;
+            var xOffset = SimulationJoints[gndJointIndex].XInitial;
+            var yOffset = SimulationJoints[gndJointIndex].YInitial;
             for (var i = 0; i <= JointParameters.LastIndex; i++)
             {
                 var jParams = JointParameters[i].Value;
@@ -354,11 +353,11 @@ namespace PMKS
         private void SetInitialVelocityAndAcceleration(List<Joint> joints, List<Link> links,
             out double[,] initJointParams, out double[,] initLinkParams)
         {
-            var posFinder = new PositionFinder(joints, links, gearsData, drivingIndex);
+            var posFinder = new PositionFinder(joints, links, gearsData, DrivingIndex);
             posFinder.UpdateSliderPosition();
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, drivingIndex, inputLinkIndex,
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, DrivingIndex, inputLinkIndex,
                 InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, drivingIndex,
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, DrivingIndex,
                 inputLinkIndex, InputSpeed, gearsData, AverageLength);
 
             initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
@@ -368,7 +367,7 @@ namespace PMKS
                 : Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
             {
-                for (var i = 0; i <= drivingIndex; i++)
+                for (var i = 0; i <= DrivingIndex; i++)
                 {
                     initJointParams[oIOSJ[i], 2] = joints[i].vxLast = joints[i].vx;
                     initJointParams[oIOSJ[i], 3] = joints[i].vyLast = joints[i].vy;
@@ -377,7 +376,7 @@ namespace PMKS
                     initLinkParams[oIOSL[i], 1] = links[i].VelocityLast = links[i].Velocity;
                 if (accelSolver.Solve())
                 {
-                    for (var i = 0; i <= drivingIndex; i++)
+                    for (var i = 0; i <= DrivingIndex; i++)
                     {
                         initJointParams[oIOSJ[i], 4] = joints[i].ax;
                         initJointParams[oIOSJ[i], 5] = joints[i].ay;
@@ -392,7 +391,7 @@ namespace PMKS
                         velSolver.Solve())
                     {
                         /* forward difference on velocities to create accelerations. */
-                        for (var i = 0; i <= drivingIndex; i++)
+                        for (var i = 0; i <= DrivingIndex; i++)
                         {
                             initJointParams[oIOSJ[i], 4] = joints[i].ax = (joints[i].vx - joints[i].vxLast) / smallTimeStep;
                             initJointParams[oIOSJ[i], 5] = joints[i].ay = (joints[i].vy - joints[i].vyLast) / smallTimeStep;
@@ -403,8 +402,8 @@ namespace PMKS
                         /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
                         foreach (var joint in SimulationJoints)
                         {
-                            joint.x = joint.xInitial;
-                            joint.y = joint.yInitial;
+                            joint.x = joint.XInitial;
+                            joint.y = joint.YInitial;
                         }
                         foreach (var link in SimulationLinks)
                             link.Angle = link.AngleInitial;
@@ -492,8 +491,8 @@ namespace PMKS
             /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
             foreach (var joint in SimulationJoints)
             {
-                joint.x = joint.xInitial;
-                joint.y = joint.yInitial;
+                joint.x = joint.XInitial;
+                joint.y = joint.YInitial;
             }
             foreach (var link in SimulationLinks)
                 link.Angle = link.AngleInitial;
@@ -515,10 +514,10 @@ namespace PMKS
             var maxLengthError = MaxSmoothingError * AverageLength;
             var currentTime = 0.0;
             Boolean validPosition;
-            var posFinder = new PositionFinder(joints, links, gearsData, drivingIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, drivingIndex, inputLinkIndex,
+            var posFinder = new PositionFinder(joints, links, gearsData, DrivingIndex);
+            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, DrivingIndex, inputLinkIndex,
                 InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, drivingIndex,
+            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, DrivingIndex,
                 inputLinkIndex, InputSpeed, gearsData, AverageLength);
             do
             {
