@@ -13,6 +13,9 @@
 // ***********************************************************************
 using System;
 
+/// <summary>
+/// The PMKS namespace.
+/// </summary>
 namespace PMKS
 {
     /// <summary>
@@ -29,6 +32,8 @@ namespace PMKS
         /// The y coordinate.
         /// </summary>
         public double Y;
+
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Point" /> struct.
@@ -82,7 +87,7 @@ namespace PMKS
                 OffsetSlideAngle = 0.0;
 
             while (OffsetSlideAngle > Constants.QuarterCircle) OffsetSlideAngle -= Math.PI;
-            while (OffsetSlideAngle < -Constants.QuarterCircle) OffsetSlideAngle += Math.PI;          
+            while (OffsetSlideAngle < -Constants.QuarterCircle) OffsetSlideAngle += Math.PI;
         }
 
         /// <summary>

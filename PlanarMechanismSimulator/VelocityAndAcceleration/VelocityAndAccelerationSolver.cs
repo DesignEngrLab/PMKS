@@ -1,11 +1,10 @@
 ﻿#region
 
+using StarMathLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using StarMathLib;
-
 #endregion
 
 namespace PMKS.VelocityAndAcceleration

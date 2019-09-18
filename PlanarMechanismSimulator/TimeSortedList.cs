@@ -56,6 +56,15 @@ namespace PMKS
         {
             get { return parameterValues; }
         }
+        public List<double[,]> ICLoc = new List<double[,]>();
+        public List<double[,]> SecICLoc = new List<double[,]>();
+        public List<string[,]> SecICname = new List<string[,]>();
+
+       
+        public List<double[]> ICVel = new List<double[]>();
+
+          
+
 
         //rkprad: possibly there is a better and simpler way to write the series of add /addnearend /addnearbegin functions
 

@@ -43,6 +43,8 @@ namespace PMKS
                     return 2;
                 if (NumLinks == 4 && numPJoints == 3 && numRJoints == 1 && numRPJoints == 0 && numGJoints == 0)
                     return 0;
+                if (NumLinks == 5 && numPJoints == 0 && numRJoints == 6 && numRPJoints == 0 && numGJoints == 0)
+                    return 1;
                 return 3 * (SimulationLinks.Count - 1) - 2 * (numRJoints + numPJoints) - (numRPJoints + numGJoints);
             }
         }
@@ -279,6 +281,11 @@ namespace PMKS
         public TimeSortedList LinkParameters { get; internal set; }
 
         /// <summary>
+        ///     Gets the force parameters.
+        /// </summary>
+        public TimeSortedList ForceParameters { get; internal set; }
+
+        /// <summary>
         ///     Gets the status.
         /// </summary>
         /// <value>The status.</value>
@@ -416,6 +423,34 @@ namespace PMKS
 
         private List<Joint> additionalRefjoints;
 
+        public string LinkMaterialName { get; set; }
+        public double LinkYieldStrength { get; set; }
+        public double LinkDensity { get; set; }
+
+        public string PinMaterialName { get; set; }
+        public double PinYieldStrength { get; set; }
+        public double PinDensity { get; set; }
+
+        public int lenIndex { get; set; }
+        public int masIndex { get; set; }
+        public int denIndex { get; set; }
+        public int preIndex { get; set; }
+        public int angIndex { get; set; }
+
+        public int uniIndex { get; set; }
+
+        public int linkMatIndex { get; set; }
+        public int pinMatIndex { get; set; }
+
+        public double width { get; set; }
+        public double depth { get; set; }
+        public double pinDiam { get; set; }
+        public double possibleWidth { get; set; }
+        public double possibleDepth { get; set; }
+        public double possiblePinDiam { get; set; }
+        public double fos { get; set; }
+        public double run { get; set; }
+        public double mad { get; set; }
         #endregion
 
         #region Set by the Topology (from the Constructor)
@@ -437,6 +472,12 @@ namespace PMKS
         /// </summary>
         /// <value>The number joints.</value>
         internal int NumAllJoints { get; private set; }
+
+        /// <summary>
+        ///     Gets the number of all forces - including ones created to ease the analysis.
+        /// </summary>
+        /// <value>The number forces.</value>
+        internal int NumAllForces { get; private set; }
 
         /// <summary>
         /// Gets the number joints.
@@ -466,6 +507,22 @@ namespace PMKS
         /// </summary>
         /// <value>All joints.</value>
         private List<Joint> SimulationJoints { get; set; }
+
+        /// <summary>
+        ///     Gets the forces as created in the constructor.
+        /// </summary>
+        /// <value>All forces.</value>
+        public List<Force> Forces { get; private set; }
+
+        private List<Force> SimulationForces { get; set; }
+
+        /// <summary>
+        /// Gets the number forces.
+        /// </summary>
+        /// <value>The number forces.</value>
+        public int NumForces { get; private set; }
+
+        public double forceScaler;
 
         /// <summary>
         ///     Gets the first index of the input joint.
@@ -558,7 +615,7 @@ namespace PMKS
         /// <param name="driverIndex">Index of the driver.</param>
         /// <param name="initPositions">The init positions.</param>
         /// <param name="readOnlyJointIndices">The fixed or unassignable joint indices.</param>
-        public Simulator(IList<string[]> linkIDs, IList<JointType> jointTypes, int driverIndex = 0,
+        public Simulator(IList<string[]> linkIDs, IList<JointType> jointTypes, IList<double[]> forceInfo, int driverIndex = 0,
             IList<double[]> initPositions = null,
             int[] readOnlyJointIndices = null)
         {
@@ -566,6 +623,10 @@ namespace PMKS
             RearrangeLinkAndJointLists();
             setAdditionalReferencePositions();
             ReadOnlyJointIndices = readOnlyJointIndices;
+            CreateForceDetails(forceInfo);
+            System.Diagnostics.Debug.WriteLine("calculate scaler");
+            CalculateForceScaler();
+            System.Diagnostics.Debug.WriteLine("done calculating scaler");
         }
 
         /// <summary>
@@ -745,6 +806,7 @@ namespace PMKS
                         }
                 }
                 maxJointParamLengths = Joints.All(j => j.TypeOfJoint == JointType.R) ? 6 : 9;
+                maxJointParamLengths += 3; //making room for solutions at any given joint (2 for every force (x + y) and 1 for the input torque (at joint-0)
                 /* now onto the links */
                 Links = new List<Link>(); //create an array of LINKS
                 foreach (var linkName in linkNames)
@@ -898,12 +960,54 @@ namespace PMKS
             }
         }
 
+        private void CreateForceDetails(IList<double[]> forceInfos)
+        {
+            NumForces = 0;
+            Forces = new List<Force>();
+            for (int i = 0; i < forceInfos.Count; i++)
+            {
+                double[] forceInfo = forceInfos[i];
+                int linknumber = Determine_Link_With_Force(forceInfo[0], forceInfo[1]);
+                if (linknumber != 999)
+                {
+                    Force tempForce = new Force(forceInfo[0], forceInfo[1], forceInfo[2], forceInfo[3], System.Convert.ToBoolean(forceInfo[4]));
+                    tempForce.xInitial = forceInfo[0];
+                    tempForce.yInitial = forceInfo[1];
+                    Forces.Add(tempForce);
+                    NumForces++;
+                }
+            }
+            SimulationForces = new List<Force>(Forces);
+            NumAllForces = SimulationForces.Count;
+        }
+
         /// <summary>
         /// Gets or sets the O.I.O.S.J., the original indices of Simulated Joints.
         /// </summary>
         /// <value>The o iosj.</value>
         private int[] oIOSJ { get; set; }
         private int[] oIOSL { get; set; }
+  /*      public double Mass {
+            get
+            {
+                return this.mass;
+            }
+            set {
+                this.mass = value;
+            }
+        }
+        public double Volume
+        {
+            get
+            {
+                return this.volume;
+            }
+            set
+            {
+                this.volume = value;
+            }
+        }*/
+
 
 
         /// <summary>

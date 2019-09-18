@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using PMKS.VelocityAndAcceleration;
+using PMKS;
+using StarMathLib;
 
 namespace PMKS
 {
@@ -31,7 +36,7 @@ namespace PMKS
         internal const long MaxItersInNonDyadicSolver = 300;
         internal const double DefaultInputSpeed = 1.0;
 
-        internal static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan(2000000);
+        internal static TimeSpan MaxTimeToFindMatrixOrders = new TimeSpan((long)2000000);
 
         internal const double XRangeLimitFactor = 5.0;
         internal const double YRangeLimitFactor = 5.0;      
@@ -161,7 +166,7 @@ namespace PMKS
         private static Boolean verticalSlope(double slope)
         {
             return (Double.IsNaN(slope) || Double.IsInfinity(slope)
-                    || Math.Abs(slope) > MaxSlope);
+                    || Math.Abs(slope) > Constants.MaxSlope);
         }
     }
 }

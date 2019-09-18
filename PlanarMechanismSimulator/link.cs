@@ -11,7 +11,6 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +41,7 @@ namespace PMKS
         /// <summary>
         /// The lengths between joints that are fixed with respect to this link
         /// </summary>
-        private Dictionary<int, double> lengths;
+        public Dictionary<int, double> lengths;
 
         /// <summary>
         /// The number joints
@@ -116,6 +115,16 @@ namespace PMKS
         /// </summary>
         /// <value>The angle initial.</value>
         public double AngleInitial { get; internal set; }
+
+        public double Width { get; set; }
+        public double Depth { get; set; }
+        public double Mass { get; set; }
+        public double Volume { get; set; }
+        public double CoMx { get; set; }
+        public double CoMy { get; set; }
+        public double MoI { get; set; }
+        public int Layer { get; set; } 
+        public double PinDiameter { get; set; }
         /// <summary>
         /// Gets or sets the angle.
         /// </summary>
@@ -375,3 +384,4 @@ namespace PMKS
         #endregion
     }
 }
+

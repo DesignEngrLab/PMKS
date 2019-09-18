@@ -81,6 +81,36 @@ namespace PMKS
                 links[i].Acceleration = (links[i].Velocity - links[i].VelocityLast) / deltaTime;
         }
 
+        /// <summary>
+        /// Calculates a scaler for forces.
+        /// </summary>
+        private void CalculateForceScaler()
+        {
+            double maxLinkLength = 0;
+            for (int l = 0; l < NumLinks; l++)
+            {
+
+                if (this.Links[l].lengths.Count == 0 ? false : this.Links[l].MaxLength > maxLinkLength && !this.Links[l].IsGround)
+                {
+                    maxLinkLength = Links[l].MaxLength;
+                }
+            }
+            double maxForceMag = 0;
+            double curForceMag = 0;
+            for (int f = 0; f < NumForces; f++)
+            {
+                curForceMag = Math.Sqrt(Math.Pow(Forces[f].xmag, 2) + Math.Pow(Forces[f].ymag, 2));
+                if (curForceMag > maxForceMag)
+                {
+                    maxForceMag = curForceMag;
+                }
+            }
+            forceScaler = maxLinkLength / maxForceMag;
+            if (forceScaler > 1.0)
+            {
+                forceScaler = 1.0;
+            }
+        }
 
 
         #region Retrieve State Variable Methods at a particular time
@@ -132,6 +162,33 @@ namespace PMKS
                         };
         }
 
+        /// <summary>
+        /// Finds the position of the given force at a specific time relative to the given time.
+        /// </summary>
+        /// <param name="queryTime"> The query time. </param>
+        /// <param name="ForceIndex"> Index of the force. </param>
+        public double[] FindForcePositionAtTime(double queryTime, int ForceIndex)
+        {
+            int joint = oIOSJ[(int)ForceParameters.Parameters[prevQueryIndex][ForceIndex, 5]];
+            int link = (int)ForceParameters.Parameters[prevQueryIndex][ForceIndex, 8];
+            double forceAngle = ForceParameters.Parameters[prevQueryIndex][ForceIndex, 9];
+            setTimeIndices(queryTime);
+            double[] jointPos = FindJointPositionAtTime(queryTime, joint);
+            if (Math.Abs(tau) < Constants.epsilonSame)
+            {
+                return new[] { ForceParameters.Parameters[prevQueryIndex][ForceIndex,0],
+                              ForceParameters.Parameters[prevQueryIndex][ForceIndex,1]};
+            }
+            return new[] { jointPos[0] + ForceParameters.Parameters[prevQueryIndex][ForceIndex,6] * Math.Cos(FindLinkAngleAtTime(queryTime, link) + forceAngle),
+                           jointPos[1] + ForceParameters.Parameters[prevQueryIndex][ForceIndex,6] * Math.Sin(FindLinkAngleAtTime(queryTime, link) + forceAngle)};
+        }
+
+        public double[] FindICPositionAtTime(double queryTime, int ICIndex)
+        {
+            setTimeIndices(queryTime);
+            return new[] {JointParameters.SecICLoc[prevQueryIndex][ICIndex, 2],
+                          JointParameters.SecICLoc[prevQueryIndex][ICIndex, 3]};
+        }
 
         /// <summary>
         /// Finds the joint velocity at time.
@@ -261,6 +318,88 @@ namespace PMKS
             return FindAccelerationatTime(tau, nextToPrevTime,
                 LinkParameters.Parameters[prevQueryIndex][LinkIndex, 2],
                 LinkParameters.Parameters[nextQueryIndex][LinkIndex, 2]);
+
+        }
+
+        /// <summary>
+        /// Finds the force magnitude at a certain time.
+        /// </summary>
+        /// <param name="queryTime"> The query time. </param>
+        /// <param name="ForceIndex"> Index of the force. </param>
+        public double[] FindForceMagnitudeAtTime(double queryTime, int ForceIndex)
+        {
+            setTimeIndices(queryTime);
+            int link = (int)ForceParameters.Parameters[prevQueryIndex][ForceIndex, 8];
+            if (System.Convert.ToBoolean(ForceParameters.Parameters[prevQueryIndex][ForceIndex, 4]))
+            {
+                double mag = Math.Sqrt(Math.Pow(Forces[ForceIndex].xmag, 2) + Math.Pow(Forces[ForceIndex].ymag, 2));
+                return new[] { forceScaler * mag * Math.Cos(FindLinkAngleAtTime(queryTime, link) + ForceParameters.Parameters[prevQueryIndex][ForceIndex, 7]),
+                               forceScaler * mag * Math.Sin(FindLinkAngleAtTime(queryTime, link) + ForceParameters.Parameters[prevQueryIndex][ForceIndex, 7])};
+            }
+            else
+            {
+
+                return new[] { forceScaler * ForceParameters.Parameters[prevQueryIndex][ForceIndex,2],
+                               forceScaler * ForceParameters.Parameters[prevQueryIndex][ForceIndex,3]};
+            }
+        }
+
+        /// <summary>
+        /// Finds the position of the end of the force arrow at a time to help draw the arrows.
+        /// </summary>
+        /// <param name="queryTime"> The query time. </param>
+        /// <param name="ForceIndex"> Index of the force. </param>
+        public double[] FindForceArrowBaseAtTime(double queryTime, int ForceIndex)
+        {
+            double[] forcePos = FindForcePositionAtTime(queryTime, ForceIndex);
+            double[] forceMag = FindForceMagnitudeAtTime(queryTime, ForceIndex);
+            setTimeIndices(queryTime);
+            return new[] {forcePos[0] + forceMag[0],
+                          forcePos[1] + forceMag[1]};
+        }
+
+        /// <summary>
+        /// Finds the position of the left arrow at a time.
+        /// </summary>
+        /// <param name="queryTime"> The query time. </param>
+        /// <param name="ForceIndex"> Index of the force. </param>
+        public double[] FindArrowLeftAtTime(double queryTime, int ForceIndex)
+        {
+            int link = (int)ForceParameters.Parameters[prevQueryIndex][ForceIndex, 8];
+            setTimeIndices(queryTime);
+            if (System.Convert.ToBoolean(ForceParameters.Parameters[prevQueryIndex][ForceIndex, 4]))
+            {
+                return new[] {(2.0 * Math.Cos(FindLinkAngleAtTime(queryTime, link) + ForceParameters.Parameters[prevQueryIndex][ForceIndex, 7] + (3 * Math.PI / 4))),
+                              (2.0 * Math.Sin(FindLinkAngleAtTime(queryTime, link) + ForceParameters.Parameters[prevQueryIndex][ForceIndex, 7] + (3 * Math.PI / 4)))};
+            }
+            else
+            {
+                double angle = Math.Atan2(ForceParameters.Parameters[prevQueryIndex][ForceIndex, 3], ForceParameters.Parameters[prevQueryIndex][ForceIndex, 2]);
+                return new[] {(2.0 * Math.Cos(angle + (3 * Math.PI / 4))),
+                              (2.0 * Math.Sin(angle + (3 * Math.PI / 4)))};
+            }
+        }
+
+        /// <summary>
+        /// Finds the position of the right arrow at a time.
+        /// </summary>
+        /// <param name="queryTime"> The query time. </param>
+        /// <param name="ForceIndex"> Index of the force. </param>    
+        public double[] FindArrowRightAtTime(double queryTime, int ForceIndex)
+        {
+            int link = (int)ForceParameters.Parameters[prevQueryIndex][ForceIndex, 8];
+            setTimeIndices(queryTime);
+            if (System.Convert.ToBoolean(ForceParameters.Parameters[prevQueryIndex][ForceIndex, 4]))
+            {
+                return new[] {(2.0 * Math.Cos(FindLinkAngleAtTime(queryTime, link) + ForceParameters.Parameters[prevQueryIndex][ForceIndex, 7] - (3 * Math.PI / 4))),
+                              (2.0 * Math.Sin(FindLinkAngleAtTime(queryTime, link) + ForceParameters.Parameters[prevQueryIndex][ForceIndex, 7] - (3 * Math.PI / 4)))};
+            }
+            else
+            {
+                double angle = Math.Atan2(ForceParameters.Parameters[prevQueryIndex][ForceIndex, 3], ForceParameters.Parameters[prevQueryIndex][ForceIndex, 2]);
+                return new[] {(2.0 * Math.Cos(angle - (3 * Math.PI / 4))),
+                              (2.0 * Math.Sin(angle - (3 * Math.PI / 4)))};
+            }
 
         }
 

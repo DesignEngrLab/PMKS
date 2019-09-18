@@ -22,7 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DEBUGSERIAL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>2</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,6 +37,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Force.cs" />
     <Compile Include="OOOT_Functions\LineSearch\Objective Function Constraint Classes\Interfaces.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -87,6 +88,10 @@
     <Compile Include="VelocityAndAcceleration\VelocityEquationForDoubleSlide.cs" />
     <Compile Include="VelocityAndAcceleration\VelocityEquationForFixedJoints.cs" />
     <Compile Include="VelocityAndAcceleration\VelocityEquationForFixedToSlide.cs" />
+    <Compile Include="Simulator Classes\MatrixGJ.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Understand_Parameters.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

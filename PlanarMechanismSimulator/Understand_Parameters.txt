@@ -1,0 +1,97 @@
+﻿This file is for the purposes of understanding the new layout of both 
+LinkParameters.Parameters and JointParameters.Parameters.
+
+To return a specific number, there are three specifications to be made.
+  1.  time stamp
+  2.  link or joint index
+  3.  element index
+
+Time Stamps
+ - Time stamps are an indicator about how many positions the program has checked
+ - The first (initial) position is the 0th time stamp, the next degree angle
+   change is represented by the <<1>> time stamp, and so on
+
+Link or Joint Index
+ - Link and joint indices refer to a specific link or joint
+ - The order of links and joints in LinkParameters.Parameters and 
+   JointParameters.Parameters does not necessary match the order of PMKS.Links
+   or PMKS.Joints
+ - The range of a given index is 0 to the number of objects minus 1
+
+Element Index
+ - The element index refers to specific value of a given link or joint at a
+   given time stamp
+ - From one joint to another or one link to another, changing the element index 
+   only changes the value of the same type returned
+ - Likewise, changing the time stamp and/or link or joint index while 
+   maintaining the element index will return the equivalent value at a different 
+   time or object
+
+How to call the values
+ - Inside the PlanarMechanismSimulator.FindFullMovement Class, you can say
+   this.LinkParameters.Parameters[time stamp][link index, element index] and 
+   this.JointParameters.Parameters[time stamp][joint index, element index]
+ - Outside of this class (such as in Program.cs), use what the object name is
+    - In the current Program.cs class, use "pms." in place of "this."
+	- In the web app, use "App.main.pmks."
+
+Specific Element Indices
+ - LinkParameters.Parameters
+    0 - angular position
+    1 - angular velocity (omega)
+    2 - angular acceleration (alpha)
+    3 - CoM x value (in WCS)
+    4 - CoM y value (in WCS)
+    5 - CoM acceleration x value
+    6 - CoM acceleration y value
+
+    7 - Axial Tension
+    8 - Axial Stress
+
+ - JointParameters.Parameters (for all joints being rotational)
+    0 - position x 
+    1 - position y 
+    2 - velocity x 
+    3 - velocity y 
+    4 - acceleration x 
+    5 - acceleration y 
+    6 - reaction force x
+    7 - reaction force y
+
+ - JointParameters.Parameters (for --NOT-- all joints being rotational)
+    0 - position x 
+    1 - position y 
+    2 - velocity x 
+    3 - velocity y 
+    4 - acceleration x 
+    5 - acceleration y 
+    6 - slide position
+    7 - slide velocity
+    8 - slide acceleration
+    9 - reaction force x
+   10 - reaction force y
+
+ - ForceParameters.Parameters
+    0 - x location of force
+	1 - y location of force
+	2 - x component magnitude
+	3 - y component magnitude
+	4 - isFixedForce (0.0 if no, 1.0 if yes) 
+	  --> fixed means the angle it makes with a link never changes
+	5 - joint index reference
+	6 - distance from joint index ref to force
+	7 - angle between link and force (for use with fixed forces)
+	8 - link that force is on
+
+Special Note on the location of input torque required:
+ * located as an additional element index in a given joint parameter
+ * If all rotational joints <<8>> otherwise <<11>>
+
+ Additional Info:
+  - If refering to a specific time over and over again, you can set a variable 
+    (data type: var) to represent the object for a given time stamp
+  ex: var currentJoints = this.JointParameters.Parameters[SOME TIME STAMP];
+  - Then you can keep using this reference to get mechanism info at this time
+  ex: currentJoints[0, 4] returns the current x-acceleration at the 0th joint
+  ex: currentJoints[3, 7] returns the reaction force in the y-direction at the 
+                          3rd indexed joint 
