@@ -19,7 +19,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 if (i == joint1XIndex) coefficients[i] = -1;
                 else if (i == joint2XIndex) coefficients[i] = 1;
-                else if (i == linkIndex) coefficients[i] = (joint2.y - joint1.y);
+                else if (i == linkIndex) coefficients[i] = (joint2.Y - joint1.Y);
                 else if (i == slide1SpeedIndex) coefficients[i] = Math.Cos(joint1.SlideAngle);
                 else if (i == slide2SpeedIndex) coefficients[i] = -Math.Cos(joint2.SlideAngle);
                 else coefficients[i] = 0;
@@ -33,7 +33,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 if (i == joint1YIndex) coefficients[i] = -1;
                 else if (i == joint2YIndex) coefficients[i] = 1;
-                else if (i == linkIndex) coefficients[i] = (joint1.x - joint2.x);
+                else if (i == linkIndex) coefficients[i] = (joint1.X - joint2.X);
                 else if (i == slide1SpeedIndex) coefficients[i] = Math.Sin(joint1.SlideAngle);
                 else if (i == slide2SpeedIndex) coefficients[i] = -Math.Sin(joint2.SlideAngle);
                 else coefficients[i] = 0;

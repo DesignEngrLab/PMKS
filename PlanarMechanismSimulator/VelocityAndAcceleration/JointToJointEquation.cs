@@ -80,17 +80,17 @@ namespace PMKS.VelocityAndAcceleration
         internal override double GetRow1Constant()
         {
             var value = 0.0;
-            if (joint1IsKnown) value += joint1.vx;
-            if (joint2IsKnown) value -= joint2.vx;
-            if (linkIsKnown) value -= link.Velocity * (joint2.y - joint1.y);
+            if (joint1IsKnown) value += joint1.Vx;
+            if (joint2IsKnown) value -= joint2.Vx;
+            if (linkIsKnown) value -= link.Velocity * (joint2.Y - joint1.Y);
             return value;
         }
         internal override double GetRow2Constant()
         {
             var value = 0.0;
-            if (joint1IsKnown) value += joint1.vy;
-            if (joint2IsKnown) value -= joint2.vy;      
-            if (linkIsKnown) value -= link.Velocity * (joint1.x - joint2.x);
+            if (joint1IsKnown) value += joint1.Vy;
+            if (joint2IsKnown) value -= joint2.Vy;      
+            if (linkIsKnown) value -= link.Velocity * (joint1.X - joint2.X);
             return value;
         }
     }
@@ -101,16 +101,16 @@ namespace PMKS.VelocityAndAcceleration
 
         internal override double GetRow1Constant()
         {
-            var value = link.Velocity * link.Velocity * (joint1.x - joint2.x);
-            if (joint1IsKnown) value += joint1.ax;
-            if (joint2IsKnown) value -= joint2.ax;
+            var value = link.Velocity * link.Velocity * (joint1.X - joint2.X);
+            if (joint1IsKnown) value += joint1.Ax;
+            if (joint2IsKnown) value -= joint2.Ax;
             return value;
         }
         internal override double GetRow2Constant()
         {
-            var value = link.Velocity * link.Velocity * (joint1.y - joint2.y);
-            if (joint1IsKnown) value += joint1.ay;
-            if (joint2IsKnown) value -= joint2.ay;
+            var value = link.Velocity * link.Velocity * (joint1.Y - joint2.Y);
+            if (joint1IsKnown) value += joint1.Ay;
+            if (joint2IsKnown) value -= joint2.Ay;
             return value;
         }
     }

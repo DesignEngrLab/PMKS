@@ -57,7 +57,7 @@ namespace PMKS.PositionSolving
                         linkFunctions.Add(new SameSlideAcrossPJointLinks(unkJoints.IndexOf(j), joints.IndexOf(j),
                             unkJoints.IndexOf(slideJoint), joints.IndexOf(slideJoint),
                             unkJoints.IndexOf(refJoint), joints.IndexOf(refJoint),
-                            blockLink.angleOfBlockToJoint(j, refJoint), slideLink.DistanceBetweenSlides(j, slideJoint)));
+                            blockLink.AngleOfBlockToJoint(j, refJoint), slideLink.DistanceBetweenSlides(j, slideJoint)));
 
                     //var sJ2 = slideLink.joints.FirstOrDefault(jt => jt != slideJoint
                     //                                               && jt.Link2 != null &&
@@ -119,11 +119,11 @@ namespace PMKS.PositionSolving
                 var j = joints[i];
                 if (j.positionKnown == KnownState.Fully)
                     foreach (var llf in linkFunctions)
-                        llf.SetInitialJointPosition(i, j.x, j.y);
+                        llf.SetInitialJointPosition(i, j.X, j.Y);
                 else if (j.Link2 != null) //once, again tracer points are done at the end
                 {
-                    var xPosStart = j.xNumerical;
-                    var yPosStart = j.yNumerical;
+                    var xPosStart = j.XNumerical;
+                    var yPosStart = j.YNumerical;
                     foreach (var llf in linkFunctions)
                         llf.SetInitialJointPosition(i, xPosStart, yPosStart);
                     var index = unkJoints.IndexOf(j);
@@ -143,8 +143,8 @@ namespace PMKS.PositionSolving
             for (int i = 0; i < numUnknownJoints; i++)
             {
                 var j = unkJoints[i];
-                j.x = xStar[2 * i];
-                j.y = xStar[2 * i + 1];
+                j.X = xStar[2 * i];
+                j.Y = xStar[2 * i + 1];
                 j.positionKnown = KnownState.Fully;
 
                 var tempError = (xStar[2 * i] - xInit[2 * i]) * (xStar[2 * i] - xInit[2 * i]) +

@@ -4,8 +4,6 @@
     <Copyright>2011</Copyright>
     <RepositoryUrl>https://github.com/DesignEngrLab/PMKS</RepositoryUrl>
     <PackageProjectUrl>https://designengrlab.github.io/PMKS/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/DesignEngrLab/PMKS/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageIconUrl>http://designengrlab.github.io/PMKS/images/PMKSLogo.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>simulation, simulator, kinematics, dynamics, mechanical engineering</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

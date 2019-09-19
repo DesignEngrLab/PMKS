@@ -34,10 +34,10 @@ namespace PMKS
         {
             for (int i = 0; i < NumAllJoints; i++)
             {
-                joints[i].xNumerical = joints[i].xLast + joints[i].vx * deltaTime + 0.5 * joints[i].ax * deltaTime * deltaTime;
-                joints[i].yNumerical = joints[i].yLast + joints[i].vy * deltaTime + 0.5 * joints[i].ay * deltaTime * deltaTime;
+                joints[i].XNumerical = joints[i].XLast + joints[i].Vx * deltaTime + 0.5 * joints[i].Ax * deltaTime * deltaTime;
+                joints[i].YNumerical = joints[i].YLast + joints[i].Vy * deltaTime + 0.5 * joints[i].Ay * deltaTime * deltaTime;
             }
-            for (int i = 0; i < inputLinkIndex; i++)
+            for (int i = 0; i < InputLinkIndex; i++)
             {
                 links[i].AngleNumerical = links[i].AngleLast + links[i].Velocity * deltaTime + 0.5 * links[i].Acceleration * deltaTime * deltaTime;
 
@@ -54,13 +54,13 @@ namespace PMKS
         /// <param name="links">The links.</param>
         private void NumericalVelocity(double deltaTime, List<Joint> joints, List<Link> links)
         {
-            for (int i = 0; i < firstInputJointIndex; i++)
+            for (int i = 0; i < FirstInputJointIndex; i++)
             {
-                joints[i].vx = (joints[i].x - joints[i].xLast) / deltaTime;
-                joints[i].vy = (joints[i].y - joints[i].yLast) / deltaTime;
-                var magnitude = Math.Sqrt(joints[i].vx * joints[i].vx + joints[i].vy * joints[i].vy);
+                joints[i].Vx = (joints[i].X - joints[i].XLast) / deltaTime;
+                joints[i].Vy = (joints[i].Y - joints[i].YLast) / deltaTime;
+                var magnitude = Math.Sqrt(joints[i].Vx * joints[i].Vx + joints[i].Vy * joints[i].Vy);
             }
-            for (int i = 0; i < inputLinkIndex; i++)
+            for (int i = 0; i < InputLinkIndex; i++)
                 links[i].Velocity = (links[i].Angle - links[i].AngleLast) / deltaTime;
         }
 
@@ -72,12 +72,12 @@ namespace PMKS
         /// <param name="links">The links.</param>
         private void NumericalAcceleration(double deltaTime, List<Joint> joints, List<Link> links)
         {
-            for (int i = 0; i < firstInputJointIndex; i++)
+            for (int i = 0; i < FirstInputJointIndex; i++)
             {
-                joints[i].ax = (joints[i].vx - joints[i].vxLast) / deltaTime;
-                joints[i].ay = (joints[i].vy - joints[i].vyLast) / deltaTime;
+                joints[i].Ax = (joints[i].Vx - joints[i].VxLast) / deltaTime;
+                joints[i].Ay = (joints[i].Vy - joints[i].VyLast) / deltaTime;
             }
-            for (int i = 0; i < inputLinkIndex; i++)
+            for (int i = 0; i < InputLinkIndex; i++)
                 links[i].Acceleration = (links[i].Velocity - links[i].VelocityLast) / deltaTime;
         }
 

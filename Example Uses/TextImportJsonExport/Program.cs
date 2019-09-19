@@ -14,9 +14,9 @@ namespace JsonImportExport
             var dirInfo = new DirectoryInfo(Assembly.GetExecutingAssembly().Location);
             var dir = dirInfo.Parent.Parent.Parent.Parent.FullName + Path.DirectorySeparatorChar;
 
-            using (var stream = File.OpenRead(dir + "4bar1.pmks"))
+            using (var stream = File.OpenRead(dir + "4bar1.txt"))
             {
-                pms = PMKS.Simulator.CreateFromJsonStream(stream);
+                pms = PMKS.Simulator.CreateFromTextStream(stream);
                 pms.FindFullMovement();
             }
             using (var stream = File.OpenWrite(dir + "4bar1.output.pmks"))

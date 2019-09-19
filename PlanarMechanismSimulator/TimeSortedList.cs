@@ -141,6 +141,8 @@ namespace PMKS
 
         /// <summary>
         /// Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1" />.
+        /// This exists since TimeSorted list inherits from IList, but it is not implemented. 
+        /// Do not use.
         /// </summary>
         /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
         /// <exception cref="System.NotImplementedException"></exception>
@@ -151,6 +153,8 @@ namespace PMKS
 
         /// <summary>
         /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1" />.
+        /// This exists since TimeSorted list inherits from IList<>, but it is not implemented. 
+        /// Do not use.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
         public void Clear()
@@ -160,6 +164,8 @@ namespace PMKS
 
         /// <summary>
         /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1" /> contains a specific value.
+        /// This exists since TimeSorted list inherits from IList<>, but it is not implemented. 
+        /// Do not use.
         /// </summary>
         /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
         /// <returns>
@@ -173,6 +179,8 @@ namespace PMKS
 
         /// <summary>
         /// Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1" /> to an <see cref="T:System.Array" />, starting at a particular <see cref="T:System.Array" /> index.
+        /// This exists since TimeSorted list inherits from IList<>, but it is not implemented. 
+        /// Do not use.
         /// </summary>
         /// <param name="array">The one-dimensional <see cref="T:System.Array" /> that is the destination of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1" />. The <see cref="T:System.Array" /> must have zero-based indexing.</param>
         /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
@@ -184,6 +192,8 @@ namespace PMKS
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.
+        /// This exists since TimeSorted list inherits from IList<>, but it is not implemented. 
+        /// Do not use.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
         public bool IsReadOnly
@@ -193,6 +203,8 @@ namespace PMKS
 
         /// <summary>
         /// Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1" />.
+        /// This exists since TimeSorted list inherits from IList<>, but it is not implemented. 
+        /// Do not use.
         /// </summary>
         /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
         /// <returns>
@@ -324,10 +336,10 @@ namespace PMKS
 
         #region Implementation of IDisposable
 
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        /// <filterpriority>2</filterpriority>
         public void Dispose()
         {
             // throw new NotImplementedException();

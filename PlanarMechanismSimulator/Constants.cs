@@ -5,7 +5,7 @@ namespace PMKS
     /// <summary>
     /// Class of Constants and simple static functions used in PMKS.
     /// </summary>
-    public static class Constants
+    internal static class Constants
     {
 
         /// <summary>
@@ -47,11 +47,11 @@ namespace PMKS
         /// <summary>
         /// The full circle or rather 2pi
         /// </summary>
-        public const double FullCircle = 2 * Math.PI;
+        internal const double FullCircle = 2 * Math.PI;
         /// <summary>
         /// A quarter of a circle, or Pi divided by 2
         /// </summary>
-        public const double QuarterCircle = Math.PI / 2.0;
+        internal const double QuarterCircle = Math.PI / 2.0;
         internal const double MaxSlope = 10e9;
         internal const double SmoothingErrorRepeatFactor = 10.0;
 
@@ -60,7 +60,7 @@ namespace PMKS
         /// </summary>
         /// <param name="x1">The x1.</param>
         /// <returns>Boolean.</returns>
-        public static Boolean sameCloseZero(double x1)
+        internal static Boolean SameCloseZero(double x1)
         {
             return Math.Abs(x1) < epsilonSame;
         }
@@ -71,36 +71,36 @@ namespace PMKS
         /// <param name="x1">The x1.</param>
         /// <param name="x2">The x2.</param>
         /// <returns>Boolean.</returns>
-        public static Boolean sameCloseZero(double x1, double x2)
+        internal static Boolean SameCloseZero(double x1, double x2)
         {
-            return sameCloseZero(x1 - x2);
+            return SameCloseZero(x1 - x2);
         }
 
 
         #region DistanceSquared
 
-        internal static double distanceSqared(double x1, double y1, double x2 = 0, double y2 = 0)
+        internal static double DistanceSqared(double x1, double y1, double x2 = 0, double y2 = 0)
         {
             return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
         }
 
-        internal static double distanceSqared(Point point1, Point point2)
+        internal static double DistanceSqared(Point point1, Point point2)
         {
-            return distanceSqared(point1.X, point1.Y, point2.X, point2.Y);
+            return DistanceSqared(point1.X, point1.Y, point2.X, point2.Y);
         }
 
         #endregion
 
         #region Distance
 
-        internal static double distance(double x1, double y1, double x2 = 0, double y2 = 0)
+        internal static double Distance(double x1, double y1, double x2 = 0, double y2 = 0)
         {
-            return Math.Sqrt(distanceSqared(x1, y1, x2, y2));
+            return Math.Sqrt(DistanceSqared(x1, y1, x2, y2));
         }
 
-        internal static double distance(Point point1, Point point2)
+        internal static double Distance(Point point1, Point point2)
         {
-            return distance(point1.X, point1.Y, point2.X, point2.Y);
+            return Distance(point1.X, point1.Y, point2.X, point2.Y);
         }
 
         #endregion
@@ -113,9 +113,9 @@ namespace PMKS
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns>System.Double.</returns>
-        public static double angle(Point start, Point end)
+        internal static double Angle(Point start, Point end)
         {
-            return angle(start.X, start.Y, end.X, end.Y);
+            return Angle(start.X, start.Y, end.X, end.Y);
         }
 
 
@@ -127,7 +127,7 @@ namespace PMKS
         /// <param name="endX">The end x.</param>
         /// <param name="endY">The end y.</param>
         /// <returns>System.Double.</returns>
-        public static double angle(double startX, double startY, double endX, double endY)
+        internal static double Angle(double startX, double startY, double endX, double endY)
         {
             return Math.Atan2(endY - startY, endX - startX);
         }
@@ -142,15 +142,15 @@ namespace PMKS
         /// <param name="slopeB">The slope b.</param>
         /// <param name="ptB">The pt b.</param>
         /// <returns></returns>
-        public static Point solveViaIntersectingLines(double slopeA, Point ptA, double slopeB, Point ptB)
+        internal static Point SolveViaIntersectingLines(double slopeA, Point ptA, double slopeB, Point ptB)
         {
-            if (sameCloseZero(ptA.X, ptB.X) && sameCloseZero(ptA.Y, ptB.Y)) return ptA;
-            if (sameCloseZero(slopeA, slopeB)) return new Point(Double.NaN, Double.NaN);
+            if (SameCloseZero(ptA.X, ptB.X) && SameCloseZero(ptA.Y, ptB.Y)) return ptA;
+            if (SameCloseZero(slopeA, slopeB)) return new Point(Double.NaN, Double.NaN);
             var offsetA = ptA.Y - slopeA * ptA.X;
             var offsetB = ptB.Y - slopeB * ptB.X;
-            if (verticalSlope(slopeA))
+            if (VerticalSlope(slopeA))
                 return new Point(ptA.X, slopeB * ptA.X + offsetB);
-            if (verticalSlope(slopeB))
+            if (VerticalSlope(slopeB))
                 return new Point(ptB.X, slopeA * ptB.X + offsetA);
 
             var x = (offsetB - offsetA) / (slopeA - slopeB);
@@ -158,7 +158,7 @@ namespace PMKS
             return new Point(x, y);
         }
 
-        private static Boolean verticalSlope(double slope)
+        private static Boolean VerticalSlope(double slope)
         {
             return (Double.IsNaN(slope) || Double.IsInfinity(slope)
                     || Math.Abs(slope) > MaxSlope);
