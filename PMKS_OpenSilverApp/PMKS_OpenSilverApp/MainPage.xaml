@@ -1,0 +1,94 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:src="clr-namespace:PMKS_Silverlight_App"
+    x:Class="PMKS_Silverlight_App.MainPage"
+    mc:Ignorable="d" Loaded="MainPage_Loaded_1" MouseLeftButtonUp="MouseUpStopPanning"
+    MouseWheel="OnMouseWheel" MouseMove="OnMouseMove" MouseLeave="MouseUpStopPanning" LostMouseCapture="MouseUpStopPanning"
+    MouseLeftButtonDown="MouseDownStartPan" 
+    d:DesignHeight="800" d:DesignWidth="1000"
+    >
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <src:MainViewer x:Name="mainViewer" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.RowSpan="2" 
+                        RenderTransformOrigin="0.0,0.5" >
+            <src:MainViewer.RenderTransform>
+                <CompositeTransform ScaleY="-1"/>
+            </src:MainViewer.RenderTransform>
+        </src:MainViewer>
+
+        <StackPanel HorizontalAlignment="Left" Grid.RowSpan="2">
+            <HyperlinkButton NavigateUri="http://purl.org/pmks/" >
+                <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch"   >
+                    <TextBlock Text="PMKS: Planar Mechanism Kinematic Simulator" Foreground="#FF3E4E85"  VerticalAlignment="Bottom" FontSize="18" />
+                    <TextBlock Text="introduction + instructions" Foreground="#FF3E4E85" TextAlignment="Right" TextWrapping="Wrap" FontSize="11" Width="83" TextDecorations="Underline"/>     
+                </StackPanel>
+            </HyperlinkButton>
+            <src:FileAndEditPanel  x:Name="fileAndEditPanel" />
+        </StackPanel>
+
+        <src:GlobalSettings HorizontalAlignment="Right" VerticalAlignment="Top"  x:Name="globalSettings" />
+        <Border Grid.Row="1" MouseWheel="timeSlider_MouseWheel"  HorizontalAlignment="Right" CornerRadius="4" BorderThickness="1.5"
+                Background="#60D9EDF7" BorderBrush="Black" >
+            <Grid Name="Time_Slider_Grid" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="48" />
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="48" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="24"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.ColumnSpan="2" Text="Time" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <ToggleButton Grid.Row="1" x:Name="PlayButton" Checked="PlayButton_Checked" Unchecked="PlayButton_Unchecked"  Grid.ColumnSpan="2" Height="24" >
+                    <Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Width="48" Height="24" >
+                        <Path x:Name="PlayForwardShape" Opacity="0" Width="23.4707" Height="15.1179" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" 
+                            Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 35.1985,11.8L 12.7278,4.74112L 12.7278,18.859L 35.1985,11.8 Z "/>
+
+                        <Path  x:Name="PlayFowardBackShape1" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="30.1645" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 29.7971,7.72192L 18.4367,0.5L 18.4367,14.9438L 29.7971,7.72192 Z "/>
+                        <Path x:Name="PlayFowardBackShape2" Opacity="0" Width="12.3604" Height="15.4438" Canvas.Left="12.2278" Canvas.Top="4.24112" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF44AD00" Fill="#FF64FF00" Data="F1 M 0.5,7.72192L 11.8604,14.9438L 11.8604,0.5L 0.5,7.72192 Z "/>
+                        <Path x:Name="SlideShape1" Width="32.9354" Height="19.875" Canvas.Left="7.532" Canvas.Top="1.984" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Fill="#FF00FFCB" Data="F1 M 24,21.5489L 39.9677,17.4818L 8.03229,17.4818L 24,21.5489 M 24,2.45078L 8.03228,6.51782L 39.9677,6.51782L 24,2.45078 Z " UseLayoutRounding="False"/>
+                        <Path x:Name="SlideShape2" Width="32.9004" Height="7.7804" Canvas.Left="7.54978" Canvas.Top="7.98105" Stretch="Fill" StrokeLineJoin="Round" Stroke="#FF1D6081" Data="F1 M 37.9502,8.48105L 10.0498,8.48105C 8.94521,8.48105 8.04978,9.37646 8.04978,10.481L 8.04978,13.2615C 8.04978,14.3661 8.94521,15.2614 10.0498,15.2614L 37.9502,15.2614C 39.0548,15.2614 39.9502,14.3661 39.9502,13.2615L 39.9502,10.481C 39.9502,9.37646 39.0548,8.48105 37.9502,8.48105 Z "/>
+
+
+                    </Canvas>
+
+                </ToggleButton>
+                <Slider Grid.Row="2" Grid.Column="1" Grid.RowSpan="5" Orientation="Vertical" x:Name="timeSlider" 
+                    MouseLeftButtonDown="timeSlider_MouseLeftButtonDown"  />
+                <Button x:Name="morePositiveTimeButton" Grid.Row="2" Content="+" IsEnabled="False"/>
+                <Button x:Name="moreNegativeTimeButton" Grid.Row="6" Content="+" IsEnabled="False"/>
+                <TextBox x:Name="maxTimeText" Grid.Row="3" Text="99.99"  Foreground="White" Background="#FF7E7E7E" Height="24" Width="48" Grid.ColumnSpan="2" Margin="0,0,0,24" UseLayoutRounding="False" d:LayoutRounding="Auto" >
+                    <TextBox.RenderTransform>
+                        <CompositeTransform Rotation="-90" CenterX="24" CenterY="24" />
+                    </TextBox.RenderTransform>
+                </TextBox>
+                <TextBox x:Name="minTimeText" Grid.Row="6" Text="0.00" Foreground="White" Height="24" Width="48" Background="#FF7E7E7E" UseLayoutRounding="False" d:LayoutRounding="Auto" Grid.ColumnSpan="2" Margin="0" >
+                    <TextBox.RenderTransform>
+                        <CompositeTransform Rotation="-90"  />
+                    </TextBox.RenderTransform>
+                </TextBox>
+            </Grid>
+        </Border>
+
+        <src:LinkInputTable Visibility="Collapsed" Grid.Row="1" x:Name="linkInputTable" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+        <src:OutputStatus Grid.Row="1" Visibility="Visible"  x:Name="outputStatus" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+                         <StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Orientation="Horizontal" >
+        <Button Name="RefreshButton" Content="Redraw" Click="RefreshButton_OnClick" Background="DodgerBlue" FontSize="8" />
+            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch">
+                <Button Name="ZoomInButton" Click="ZoomInButton_OnClick" Content="zoom in" FontSize="9" />
+                <Button Name="ZoomOutButton" Click="ZoomOutButton_OnClick"  Content="zoom out" FontSize="9" />
+            </StackPanel>
+   </StackPanel>
+    </Grid>                           
+</UserControl>

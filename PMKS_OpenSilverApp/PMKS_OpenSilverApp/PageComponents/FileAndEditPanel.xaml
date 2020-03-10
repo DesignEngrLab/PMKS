@@ -1,0 +1,131 @@
+﻿<UserControl x:Class="PMKS_Silverlight_App.FileAndEditPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:s="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Data"
+             xmlns:src="clr-namespace:PMKS_Silverlight_App">
+    <UserControl.Resources>
+        <src:JointTypeProvider x:Name="jointTypeProvider" />
+    </UserControl.Resources>
+    <Border CornerRadius="4" BorderThickness="1.5" BorderBrush="Black" Background="#60D9EDF7" >
+        <Grid>
+            <StackPanel>
+                <Grid MinWidth="450">
+                    <StackPanel Margin="4,0" Orientation="Horizontal" HorizontalAlignment="Left">
+                        <Button Content="Open File" Name="OpenButton" Click="OpenButton_Click" Width="68"/>
+                        <Button Content="Save Configuration" Name="SaveButton" Click="SaveButton_Click" />
+                        <Button Content="Export Kinematic Data" Name="ExportDataButton" Click="ExportDataButton_Click"/>
+                        <Button Content="Get as URL" Name="MakeURLButton" Click="MakeURLButton_Click"/>
+
+                    </StackPanel>
+                    <StackPanel Margin="4,0" Orientation="Horizontal" HorizontalAlignment="Right">
+
+                        <TextBlock Text="Edit Commands" VerticalAlignment="Center" Margin="20,0,0,0" />
+                        <ToggleButton x:Name="CollapseExpandButton" Checked="ToggleButton_Checked" 
+                              Unchecked="ToggleButton_Unchecked">
+                            <ToggleButton.Content>
+                                <Canvas Height="6" Width="12">
+                                    <Path x:Name="CollapseExpandArrow" StrokeLineJoin="Round" Stroke="Black" Data="F1 M 0.5,0.5L 6,6L 11.5,0.5" StrokeThickness="2" RenderTransformOrigin="0.5,0.5"/>
+                                </Canvas>
+
+                            </ToggleButton.Content>
+                        </ToggleButton>
+
+                    </StackPanel>
+                </Grid>
+                <Grid x:Name="LayoutRoot" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock Text="Target Shape = " VerticalAlignment="Center" FontWeight="Bold" />
+                            <TextBox x:Name="TargetShapeStream" Width="400" FontStyle="Italic" 
+                     FontSize="10" Foreground="#FF858585" TextChanged="TargetShapeStream_OnTextChanged" 
+                    GotFocus="TargetShapeStream_GotFocus"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <s:DataGrid Name="JointDataGrid" Margin="-20,0,0,0" Background="Transparent" Grid.Row="1"  
+                                AutoGenerateColumns="False" CanUserResizeColumns="True" CanUserReorderColumns="True" 
+                                CanUserSortColumns="False" HeadersVisibility="All" CellEditEnded="dataGrid_CellEditEnded"
+                                MaxHeight="500" BeginningEdit="dataGrid_AddNewRow" >
+                        <s:DataGrid.Columns>
+                            <s:DataGridTemplateColumn Header="Input" >
+                                <s:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <RadioButton  Tag="{Binding}" x:Name="radioSelectInput" GroupName="InputSelection" IsChecked="{Binding DrivingInput}" 
+                                      Checked="RadioSelectInput_OnChecked"
+                                     VerticalAlignment="Center"  HorizontalAlignment="Center" IsEnabled="{Binding CanBeDriver}" Unchecked="radioSelectInput_Unchecked"/>
+                                    </DataTemplate>
+                                </s:DataGridTemplateColumn.CellTemplate>
+                            </s:DataGridTemplateColumn>
+
+                            <s:DataGridTextColumn Header="Links" x:Name="LinksColumn" Binding="{Binding LinkNames}" Width="110" />
+                            <s:DataGridTemplateColumn Header="Type of Joint">
+                                <s:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding JointTypeString}" />
+                                    </DataTemplate>
+                                </s:DataGridTemplateColumn.CellTemplate>
+                                <s:DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox LostFocus="JointDropDown_OnLostFocus"  ItemsSource="{Binding jointTypeList, Source={StaticResource jointTypeProvider}}" 
+                                       SelectedItem="{Binding JointTypeString, Mode=TwoWay}" FontFamily="Portable User Interface"/>
+                                    </DataTemplate>
+                                </s:DataGridTemplateColumn.CellEditingTemplate>
+                            </s:DataGridTemplateColumn>
+                            <s:DataGridTextColumn Header="X Pos."  Binding="{Binding XPos}"  />
+                            <s:DataGridTextColumn Header="Y Pos." Binding="{Binding YPos}"/>
+                            <s:DataGridTextColumn Header="Angle" Binding="{Binding Angle}"/>
+                            <s:DataGridTemplateColumn Header="P">
+                                <s:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Tag="{Binding}" Click="PositionVisible_Click" IsChecked="{Binding PosVisible}"   Opacity="{Binding CanPlotStateVars}"
+                                  VerticalAlignment="Center"  HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </s:DataGridTemplateColumn.CellTemplate>
+                            </s:DataGridTemplateColumn>
+                            <s:DataGridTemplateColumn Header="V">
+                                <s:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Tag="{Binding}" Click="VelocityVisible_Click" IsChecked="{Binding VelocityVisible}"  Opacity="{Binding CanPlotStateVars}"
+                                  VerticalAlignment="Center"  HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </s:DataGridTemplateColumn.CellTemplate>
+                            </s:DataGridTemplateColumn>
+                            <s:DataGridTemplateColumn Header="A">
+                                <s:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Tag="{Binding}" Click="AccelerationVisible_Click" IsChecked="{Binding AccelerationVisible}"  Opacity="{Binding CanPlotStateVars}"
+                                  VerticalAlignment="Center"  HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </s:DataGridTemplateColumn.CellTemplate>
+                            </s:DataGridTemplateColumn>
+
+                        </s:DataGrid.Columns>
+                    </s:DataGrid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left">
+                        <Button Content="Remove Row" Name="RemoveButton" Click="RemoveButton_Click" Width="105"/>
+                        <Button Content="Clear All Rows" Name="ClearButton" Click="ClearButton_Click" Width="103"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" >
+                        <TextBlock VerticalAlignment="Center" Text="DOF =" FontSize="14"/>
+                        <Border x:Name="DOFBorder" Background="#FF9C2E2E" Margin="1" BorderThickness="2" BorderBrush="Black" CornerRadius="3">
+                            <TextBlock x:Name="DOFTextBox" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" 
+                                   Width="30" FontSize="14" Foreground="White" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+            <StackPanel Name="UrlPopUpStackPanel" Background="White" Opacity="0.93" Visibility="Collapsed">
+                <TextBlock Width="425" Text="Here is the URL for the current page. Copy and paste the text into a new location before exiting." 
+                           FontSize="14" TextWrapping="Wrap" />
+                <TextBox Width="425" Name="UrlTextBox" TextWrapping="Wrap" Background="#FFCDCDCD" BorderThickness="3"  />
+                <Button Content="Exit" Width="60" Name="ExitUrlPopupButton" Click="ExitUrlPopupButton_OnClick" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
