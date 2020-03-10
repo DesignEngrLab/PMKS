@@ -450,7 +450,7 @@ namespace PMKS
         ///     Gets the links as created in the constructor.
         /// </summary>
         /// <value>All links.</value>
-        internal List<Link> Links { get; set; }
+        public List<Link> Links { get; set; }
 
         /// <summary>
         ///     Gets all of the links, which includes the additional ones created for the simulation.
@@ -513,7 +513,7 @@ namespace PMKS
         /// The ground link.
         /// </value>
         [JsonIgnore]
-        internal Link GroundLink { get; private set; }
+        public Link GroundLink { get; private set; }
 
         /// <summary>
         ///     Gets the indices of joints (in the new PMKS order, not the order originially given)
@@ -642,7 +642,8 @@ namespace PMKS
         public Simulator(string data)
         {
             ConvertTextToData(data, out List<string[]> linkIDs, out List<JointType> jointTypes,
-                out int driverIndex, out List<double[]> initPositions, out _);
+                out int driverIndex, out List<double[]> initPositions,out var displayBools, out var name,
+                out var inputSpeed, out var maxSmoothingError, out var angleIncrement);
             CreateLinkAndPositionDetails(linkIDs, jointTypes, driverIndex, initPositions);
             RearrangeLinkAndJointLists();
             SetAdditionalReferencePositions();
@@ -658,14 +659,19 @@ namespace PMKS
         /// <param name="initPositions">The initialize positions.</param>
         /// <param name="displayBools">The display bools.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public bool ConvertTextToData(string text, out List<string[]> linkIDs, out List<JointType> jointTypes,
-            out int driverIndex, out List<double[]> initPositions, out List<Boolean[]> displayBools)
+        public static bool ConvertTextToData(string text, out List<string[]> linkIDs, out List<JointType> jointTypes,
+            out int driverIndex, out List<double[]> initPositions, out List<Boolean[]> displayBools,
+            out string name, out double inputSpeed, out double maxSmoothingError, out double angleIncrement)
         {
             linkIDs = new List<string[]>();
             jointTypes = new List<JointType>();
             initPositions = new List<double[]>();
             displayBools = new List<Boolean[]>();
             driverIndex = -1;
+            name = "";
+            inputSpeed = Constants.DefaultInputSpeed;
+            maxSmoothingError = Constants.DefaultStepSize;
+            angleIncrement = Constants.DefaultStepSize;
             var pivotSentences = text.Split('\n', '|').ToList();
             pivotSentences.RemoveAll(string.IsNullOrWhiteSpace);
             if (pivotSentences.Count == 0) return false;
@@ -683,15 +689,15 @@ namespace PMKS
                     else
                     {
                         if (keyAndArgs[0].Equals("name", StringComparison.OrdinalIgnoreCase))
-                            Name = keyAndArgs[1];
+                            name = keyAndArgs[1];
                         else if (keyAndArgs[0].Equals("s", StringComparison.OrdinalIgnoreCase))
-                            InputSpeed = double.Parse(keyAndArgs[1]);
+                            inputSpeed = double.Parse(keyAndArgs[1]);
                         else if (keyAndArgs[0].Equals("d", StringComparison.OrdinalIgnoreCase))
                             driverIndex = int.Parse(keyAndArgs[1]);
                         else if (keyAndArgs[0].Equals("e", StringComparison.OrdinalIgnoreCase))
-                            MaxSmoothingError = double.Parse(keyAndArgs[1]);
+                            maxSmoothingError = double.Parse(keyAndArgs[1]);
                         else if (keyAndArgs[0].Equals("f", StringComparison.OrdinalIgnoreCase))
-                            AngleIncrement = double.Parse(keyAndArgs[1]);
+                            angleIncrement = double.Parse(keyAndArgs[1]);
                         continue;
                     }
                 }

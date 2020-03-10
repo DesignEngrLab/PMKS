@@ -5,7 +5,7 @@ namespace PMKS
     /// <summary>
     /// Class of Constants and simple static functions used in PMKS.
     /// </summary>
-    internal static class Constants
+    public static class Constants
     {
 
         /// <summary>
@@ -47,13 +47,16 @@ namespace PMKS
         /// <summary>
         /// The full circle or rather 2pi
         /// </summary>
-        internal const double FullCircle = 2 * Math.PI;
+        public const double FullCircle = 2 * Math.PI;
         /// <summary>
         /// A quarter of a circle, or Pi divided by 2
         /// </summary>
-        internal const double QuarterCircle = Math.PI / 2.0;
+        public const double QuarterCircle = Math.PI / 2.0;
         internal const double MaxSlope = 10e9;
         internal const double SmoothingErrorRepeatFactor = 10.0;
+        public const double DefaultSpeed = 10.0;
+        public const double DefaultError = 0.001;
+        public const double DefaultAngleInc = 5.0;
 
         /// <summary>
         /// Is x1s the close zero?
@@ -127,7 +130,7 @@ namespace PMKS
         /// <param name="endX">The end x.</param>
         /// <param name="endY">The end y.</param>
         /// <returns>System.Double.</returns>
-        internal static double Angle(double startX, double startY, double endX, double endY)
+        public static double Angle(double startX, double startY, double endX, double endY)
         {
             return Math.Atan2(endY - startY, endX - startX);
         }
@@ -142,7 +145,7 @@ namespace PMKS
         /// <param name="slopeB">The slope b.</param>
         /// <param name="ptB">The pt b.</param>
         /// <returns></returns>
-        internal static Point SolveViaIntersectingLines(double slopeA, Point ptA, double slopeB, Point ptB)
+        public static Point SolveViaIntersectingLines(double slopeA, Point ptA, double slopeB, Point ptB)
         {
             if (SameCloseZero(ptA.X, ptB.X) && SameCloseZero(ptA.Y, ptB.Y)) return ptA;
             if (SameCloseZero(slopeA, slopeB)) return new Point(Double.NaN, Double.NaN);

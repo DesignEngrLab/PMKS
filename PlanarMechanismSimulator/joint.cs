@@ -252,14 +252,14 @@ namespace PMKS
         /// </summary>
         /// <value>The link1.</value>
         [JsonIgnore]
-        internal Link Link1 { get;  set; }
+        public Link Link1 { get;  set; }
 
         /// <summary>
         /// Gets the link2.
         /// </summary>
         /// <value>The link2.</value>
         [JsonIgnore]
-        internal Link Link2 { get; set; }
+        public Link Link2 { get; set; }
 
         [JsonRequired]
         public string[] Links { get; private set; }
@@ -317,7 +317,7 @@ namespace PMKS
         /// </summary>
         /// <param name="link0">The link0.</param>
         /// <returns>Boolean.</returns>
-        internal Boolean FixedWithRespectTo(Link link0)
+        public Boolean FixedWithRespectTo(Link link0)
         {
             if (link0 != Link1 && link0 != Link2) return false;
             //throw new Exception("link0 is not connected to joint (in joint.FixedWithRespectTo).");

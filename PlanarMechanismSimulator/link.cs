@@ -22,7 +22,7 @@ namespace PMKS
     /// <summary>
     /// Class link.
     /// </summary>
-    internal class Link
+    public class Link
     {
         /// <summary>
         /// The shortest distance between a joint and the line of a sliding joint
@@ -78,7 +78,7 @@ namespace PMKS
         /// Gets the joints.
         /// </summary>
         /// <value>The joints.</value>
-        internal List<Joint> Joints { get; private set; }
+        public List<Joint> Joints { get; private set; }
 
         /// <summary>
         /// Is the link the ground-link?
@@ -114,12 +114,12 @@ namespace PMKS
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        internal string Name { get; private set; }
+        public string Name { get; private set; }
         /// <summary>
         /// Gets the angle initial.
         /// </summary>
         /// <value>The angle initial.</value>
-        internal double AngleInitial { get; set; }
+        public double AngleInitial { get; set; }
         /// <summary>
         /// Gets or sets the angle.
         /// </summary>
