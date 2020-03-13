@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using OptimizationToolbox;
 
 namespace PMKS.PositionSolving
 {
@@ -13,7 +10,7 @@ namespace PMKS.PositionSolving
             int varIndexSlide, int jointIndexSlide,
             int varIndexRef, int jointIndexRef,
             double angleOffset, double distToSlide)
-            /** Note that the block and slide are switched s.t. the angle works out correctly. **/
+            /* Note that the block and slide are switched s.t. the angle works out correctly. */
             : base(varIndexSlide, jointIndexSlide,
             varIndexBlock, jointIndexBlock,
             varIndexRef, jointIndexRef,
@@ -80,22 +77,22 @@ namespace PMKS.PositionSolving
             int varIndexRef, int jointIndexRef,
             double angleOffset, double distToSlide)
         {
-            this.varIndex_Xb = 2 * varIndexBlock;
-            this.varIndex_Yb = 2 * varIndexBlock + 1;
+            varIndex_Xb = 2 * varIndexBlock;
+            varIndex_Yb = 2 * varIndexBlock + 1;
             this.jointIndexBlock = jointIndexBlock;
 
-            this.varIndex_Xs = 2 * varIndexSlide;
-            this.varIndex_Ys = 2 * varIndexSlide + 1;
+            varIndex_Xs = 2 * varIndexSlide;
+            varIndex_Ys = 2 * varIndexSlide + 1;
             this.jointIndexSlide = jointIndexSlide;
 
-            this.varIndex_Xr = 2 * varIndexRef;
-            this.varIndex_Yr = 2 * varIndexRef + 1;
+            varIndex_Xr = 2 * varIndexRef;
+            varIndex_Yr = 2 * varIndexRef + 1;
             this.jointIndexRef = jointIndexRef;
 
             this.angleOffset = angleOffset;
             this.distToSlide = distToSlide;
 
-            this.InnerDerivatives = new Dictionary<int, double>();
+            InnerDerivatives = new Dictionary<int, double>();
         }
 
 

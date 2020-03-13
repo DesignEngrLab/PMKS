@@ -19,9 +19,9 @@
  *     Please find further details and contact information on OOOT
  *     at http://ooot.codeplex.com/.
  *************************************************************************/
+
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 
 namespace OptimizationToolbox
 {

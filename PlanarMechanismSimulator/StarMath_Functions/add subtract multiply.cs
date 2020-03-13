@@ -18,6 +18,7 @@
  *     Please find further details and contact information on StarMath
  *     at http://starmath.codeplex.com/.
  *************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

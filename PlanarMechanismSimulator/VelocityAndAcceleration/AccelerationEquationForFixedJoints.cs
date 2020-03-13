@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using PMKS;
-
-namespace PMKS.VelocityAndAcceleration
+﻿namespace PMKS.VelocityAndAcceleration
 {
     internal class AccelerationEquationForFixedJoints : AccelerationJointToJoint
     {
@@ -19,7 +13,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 if (i == joint1XIndex) coefficients[i] = -1;
                 else if (i == joint2XIndex) coefficients[i] = 1;
-                else if (i == linkIndex) coefficients[i] = (joint2.y - joint1.y);
+                else if (i == linkIndex) coefficients[i] = (joint2.Y - joint1.Y);
                 else coefficients[i] = 0;
             }
             return coefficients;
@@ -31,7 +25,7 @@ namespace PMKS.VelocityAndAcceleration
             {
                 if (i == joint1YIndex) coefficients[i] = -1;
                 else if (i == joint2YIndex) coefficients[i] = 1;
-                else if (i == linkIndex) coefficients[i] = (joint1.x - joint2.x);
+                else if (i == linkIndex) coefficients[i] = (joint1.X - joint2.X);
                 else coefficients[i] = 0;
             }
             return coefficients;

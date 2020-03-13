@@ -546,7 +546,7 @@ namespace PMKS_Silverlight_App
             else if (mainViewer.MainCanvas.RenderTransform is MatrixTransform)
             {
                 oldTx = ((MatrixTransform)mainViewer.MainCanvas.RenderTransform).Matrix.OffsetX;
-                oldTy = ((MatrixTransform)mainViewer.MainCanvas.RenderTransform).Matrix.OffsetY;
+                oldTy = ((MatrixTransform)mainViewer. MainCanvas.RenderTransform).Matrix.OffsetY;
             }
             panStartReference.X -= oldTx;
             panStartReference.Y += oldTy;

@@ -10,31 +10,22 @@
 // 
 //---------------------------------------------------------------------------
 
-using System;
-using MS.Internal;
-using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
-using System.Diagnostics;
-using System.Reflection;
-using System.Collections;
-using System.Text;
-using System.Globalization;
-using System.Windows.Media;
-using System.Windows;
-using System.Windows.Media.Composition;
-using System.Text.RegularExpressions;
-using System.Windows.Media.Animation;
-using System.Windows.Markup;
-using System.Runtime.InteropServices;
 
-using SR = MS.Internal.PresentationCore.SR;
-using SRID = MS.Internal.PresentationCore.SRID;
+
+using System;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace PMKS_Silverlight_App
 {
     internal enum GeometryCombineMode
     {
-                      Union, Intersect, Exclude , Xor
+        Union, Intersect, Exclude, Xor
+    }
+    internal enum ToleranceType
+    {
+        Relative, Absolute
     }
     /// <summary> 
     /// CombinedGeometry
@@ -136,6 +127,10 @@ namespace PMKS_Silverlight_App
                 return GetAsPathGeometry().Bounds;
             }
         }
+
+        public GeometryCombineMode GeometryCombineMode { get; private set; }
+        public Geometry Geometry1 { get; }
+        public Geometry Geometry2 { get; }
         #endregion
 
         #region GetBoundsInternal
@@ -239,6 +234,11 @@ namespace PMKS_Silverlight_App
             // without the heavy machinary of CArea.  This will require writing an internal 
             // CShapeBase::GetRawArea method, and a utility to invoke it.  For now:
             return GetAsPathGeometry().GetArea(tolerance, type);
+        }
+
+        private void ReadPreamble()
+        {
+           // throw new NotImplementedException();
         }
 
         #region Internal
@@ -414,6 +414,16 @@ namespace PMKS_Silverlight_App
             return ((geometry1 != null) && geometry1.MayHaveCurves())
                 ||
                    ((geometry2 != null) && geometry2.MayHaveCurves());
+        }
+
+        protected override void DefineInCanvas(Path path, object canvasDomElement, double horizontalMultiplicator, double verticalMultiplicator, double xOffsetToApplyBeforeMultiplication, double yOffsetToApplyBeforeMultiplication, double xOffsetToApplyAfterMultiplication, double yOffsetToApplyAfterMultiplication, Size shapeActualSize)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override void GetMinMaxXY(ref double minX, ref double maxX, ref double minY, ref double maxY)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

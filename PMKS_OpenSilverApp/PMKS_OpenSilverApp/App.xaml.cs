@@ -27,6 +27,9 @@ namespace Silverlight_PMKS
         }
 
         public static MainPage main;
+
+        public Action<object, UnhandledExceptionEventArgs> UnhandledException { get; private set; }
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             RootVisual = main = new MainPage();
@@ -40,7 +43,7 @@ namespace Silverlight_PMKS
 
         }
 
-        private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
+        private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             // If the app is running outside of the debugger then report the exception using
             // the browser's exception mechanism. On IE this will display it a yellow alert 
@@ -57,11 +60,11 @@ namespace Silverlight_PMKS
             }
         }
 
-        private void ReportErrorToDOM(ApplicationUnhandledExceptionEventArgs e)
+        private void ReportErrorToDOM(UnhandledExceptionEventArgs e)
         {
             try
             {
-                string errorMsg = e.ExceptionObject.Message + e.ExceptionObject.StackTrace;
+                string errorMsg = e.ExceptionObject.ToString(); //.Message + e.ExceptionObject.StackTrace;
                 errorMsg = errorMsg.Replace('"', '\'').Replace("\r\n", @"\n");
 
                 System.Windows.Browser.HtmlPage.Window.Eval("throw new Error(\"Unhandled Error in Silverlight Application " + errorMsg + "\");");

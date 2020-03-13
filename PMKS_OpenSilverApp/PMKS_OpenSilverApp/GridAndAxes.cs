@@ -1,6 +1,9 @@
-﻿using System.Windows;
+﻿using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Windows;
 using System.Windows.Media;
-     
+using Brush = System.Windows.Media.Brush;
+using Point = System.Windows.Point;
 
 namespace Silverlight_PMKS
 {
@@ -124,7 +127,7 @@ namespace Silverlight_PMKS
         }
 
 
-        public Point Origin
+        public System.Windows.Point Origin
         {
             get { return new Point(_originX, _originY); }
             set

@@ -19,6 +19,7 @@
  *     Please find further details and contact information on OOOT
  *     at http://ooot.codeplex.com/.
  *************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -329,7 +330,7 @@ namespace OptimizationToolbox
                     SearchIO.output("No merit function specified.", 0);
                     return fStar;
                 }
-                else SearchIO.output("Constraints will be solved with penalty function.", 4);
+                SearchIO.output("Constraints will be solved with penalty function.", 4);
             }
             if (g.Count == 0) SearchIO.output("No inequalities specified.", 4);
             if (h.Count == 0) SearchIO.output("No equalities specified.", 4);

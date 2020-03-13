@@ -1,5 +1,4 @@
 ﻿using System;
-using OptimizationToolbox;
 
 namespace PMKS.PositionSolving
 {
@@ -105,7 +104,7 @@ namespace PMKS.PositionSolving
         private void assignPositions(double[] x)
         {
             if (varListIndex1 >= 0) // && x.GetLength(0) > 2 * varListIndex1 + 1)  
-            /** the commented condition seems like good form, but if it crashes (index out of range), we want to know about it! **/
+            /* the commented condition seems like good form, but if it crashes (index out of range), we want to know about it! */
             {
                 x1 = x[2 * varListIndex1];
                 y1 = x[2 * varListIndex1 + 1];

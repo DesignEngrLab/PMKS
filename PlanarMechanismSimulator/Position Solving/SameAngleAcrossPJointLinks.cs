@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace PMKS.PositionSolving
 {
@@ -44,24 +43,24 @@ namespace PMKS.PositionSolving
             int varIndexSlide2, int jointIndexSlide2, double xSlide2, double ySlide2,
             double initSlideAngle, double blockAngle)
         {
-            this.varIndex_Xb1 = 2 * varIndexBlock1;
-            this.varIndex_Yb1 = 2 * varIndexBlock1 + 1;
-            this.jointIndex_Block1 = jointIndexBlock1;
+            varIndex_Xb1 = 2 * varIndexBlock1;
+            varIndex_Yb1 = 2 * varIndexBlock1 + 1;
+            jointIndex_Block1 = jointIndexBlock1;
             this.xBlock1 = xBlock1;
             this.yBlock1 = yBlock1;
-            this.varIndex_Xb2 = 2 * varIndexBlock2;
-            this.varIndex_Yb2 = 2 * varIndexBlock2 + 1;
-            this.jointIndex_Block2 = jointIndexBlock2;
+            varIndex_Xb2 = 2 * varIndexBlock2;
+            varIndex_Yb2 = 2 * varIndexBlock2 + 1;
+            jointIndex_Block2 = jointIndexBlock2;
             this.xBlock2 = xBlock2;
             this.yBlock2 = yBlock2;
-            this.varIndex_Xs1 = 2 * varIndexSlide1;
-            this.varIndex_Ys1 = 2 * varIndexSlide1 + 1;
-            this.jointIndex_Slide1 = jointIndexSlide1;
+            varIndex_Xs1 = 2 * varIndexSlide1;
+            varIndex_Ys1 = 2 * varIndexSlide1 + 1;
+            jointIndex_Slide1 = jointIndexSlide1;
             this.xSlide1 = xSlide1;
             this.ySlide1 = ySlide1;
-            this.varIndex_Xs2 = 2 * varIndexSlide2;
-            this.varIndex_Ys2 = 2 * varIndexSlide2 + 1;
-            this.jointIndex_Slide2 = jointIndexSlide2;
+            varIndex_Xs2 = 2 * varIndexSlide2;
+            varIndex_Ys2 = 2 * varIndexSlide2 + 1;
+            jointIndex_Slide2 = jointIndexSlide2;
             this.xSlide2 = xSlide2;
             this.ySlide2 = ySlide2;
             this.initSlideAngle = initSlideAngle;

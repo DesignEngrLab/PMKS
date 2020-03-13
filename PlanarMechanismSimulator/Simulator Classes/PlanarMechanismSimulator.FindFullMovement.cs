@@ -11,13 +11,14 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
+using OptimizationToolbox;
+using PMKS.PositionSolving;
+using PMKS.VelocityAndAcceleration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using OptimizationToolbox;
-using PMKS.PositionSolving;
-using PMKS.VelocityAndAcceleration;
 
 namespace PMKS
 {
@@ -29,17 +30,20 @@ namespace PMKS
         /// <summary>
         /// The use error method
         /// </summary>
-        private Boolean useErrorMethod;
+        private bool useErrorMethod;
 
-        /// <summary>
-        /// Finds the full movement.
-        /// </summary>
+        /// <summary>Finds the full movement.</summary>
+        /// <returns>
+        ///   <c>true</c> if simulation was successful, <c>false</c> otherwise.</returns>
+        /// <exception cref="Exception">Either the smoothing error angle delta or the time step must be specified.</exception>
         /// <exception cref="System.Exception">Either the smoothing error angle delta or the time step must be specified.</exception>
-        public void FindFullMovement()
+        public bool FindFullMovement()
         {
-            if (double.IsNaN(DeltaAngle) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
-                throw new Exception(
-                    "Either the smoothing error angle delta or the time step must be specified.");
+            if (double.IsNaN(AngleIncrement) && double.IsNaN(FixedTimeStep) && double.IsNaN(MaxSmoothingError))
+            {
+                throw new ArgumentException("Either the smoothing error angle delta or the time step must be specified.");
+                //return false;
+            }
             useErrorMethod = (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0);
 
             #region Set up initial point parameters (x, x-dot, x-double-dot, etc.)
@@ -48,10 +52,10 @@ namespace PMKS
 
             SetInitialVelocityAndAcceleration(SimulationJoints, SimulationLinks, out initJointParams, out initLinkParams);
 
-            JointParameters = new TimeSortedList {{0.0, initJointParams}};
-            LinkParameters = new TimeSortedList {{0.0, initLinkParams}};
+            JointParameters = new TimeSortedList { { 0.0, initJointParams } };
+            LinkParameters = new TimeSortedList { { 0.0, initLinkParams } };
 
-            InputRange = new[] {inputLink.AngleInitial, inputLink.AngleInitial};
+            InputRange = new[] { InputLink.AngleInitial, InputLink.AngleInitial };
             if (double.IsNaN(InputSpeed) || InputSpeed == 0.0) InputSpeed = Constants.DefaultInputSpeed;
 
             #endregion
@@ -70,9 +74,11 @@ namespace PMKS
             var backwardTask = Task.Factory.StartNew(() => Simulate(backwardJoints, backwardLinks, false));
             Task.WaitAll(forwardTask, backwardTask);
 #endif
+            if (this.JointParameters.Count < 2) return false;
             DefineMovementCharacteristics();
             if (invertedToSolveNonGroundInput)
                 TransposeLinkAndJointParameters();
+            return true;
         }
 
         /// <summary>
@@ -85,7 +91,7 @@ namespace PMKS
         private static void CopyJointsAndLinksForBackwards(List<Joint> AllJoints, List<Link> AllLinks,
             out List<Joint> backwardJoints, out List<Link> backwardLinks)
         {
-            backwardJoints = AllJoints.Select(j => j.copy()).ToList();
+            backwardJoints = AllJoints.Select(j => j.Copy()).ToList();
             backwardLinks = AllLinks.Select(c => c.Copy()).ToList();
             foreach (var j in backwardJoints)
             {
@@ -97,10 +103,10 @@ namespace PMKS
             {
                 var backwardLink = backwardLinks[i];
                 var forwardLink = AllLinks[i];
-                foreach (var j in forwardLink.joints)
+                foreach (var j in forwardLink.Joints)
                 {
                     var jointIndex = AllJoints.IndexOf(j);
-                    backwardLink.joints.Add(backwardJoints[jointIndex]);
+                    backwardLink.Joints.Add(backwardJoints[jointIndex]);
                     if (j == forwardLink.ReferenceJoint1)
                         backwardLink.ReferenceJoint1 = backwardJoints[jointIndex];
                 }
@@ -112,7 +118,7 @@ namespace PMKS
         /// </summary>
         private void DefineMovementCharacteristics()
         {
-            BeginTime = JointParameters.Times[0];
+            StartTime = JointParameters.Times[0];
             EndTime = JointParameters.Times.Last();
             InitializeQueryVars();
             for (var i = 0; i < NumAllJoints; i++)
@@ -123,17 +129,17 @@ namespace PMKS
                 j.MinSlidePosition = JointParameters.Parameters.Min(jp => jp[oIOSJ[i], 6]);
                 j.MaxSlidePosition = JointParameters.Parameters.Max(jp => jp[oIOSJ[i], 6]);
             }
-            if (lessThanFullRotation())
+            if (LessThanFullRotation())
             {
                 //if the crank input couldn't rotate all the way around,then this is easy... 
                 CycleType = CycleTypes.LessThanFullCycle;
                 return;
             }
             // if the simulation did go all the way around then, we should be careful to ensure is connects correctly.
-            var cyclePeriodTime = Constants.FullCircle/Math.Abs(InputSpeed);
+            var cyclePeriodTime = Constants.FullCircle / Math.Abs(InputSpeed);
             if (DoesMechanismRepeatOnCrankCycle(cyclePeriodTime))
             {
-                BeginTime = 0.0;
+                StartTime = 0.0;
                 EndTime = cyclePeriodTime;
                 CycleType = CycleTypes.OneCycle;
                 while (JointParameters.Times.Last() >= EndTime)
@@ -173,7 +179,7 @@ namespace PMKS
         /// </summary>
         private void TransposeLinkAndJointParameters()
         {
-            var fixedGroundJoints = GroundLink.joints.Where(j => j.FixedWithRespectTo(GroundLink)).ToList();
+            var fixedGroundJoints = GroundLink.Joints.Where(j => j.FixedWithRespectTo(GroundLink)).ToList();
             var gndJointIndex = SimulationJoints.IndexOf(fixedGroundJoints[0]);
             var gndLinkIndex = SimulationLinks.IndexOf(GroundLink);
             for (var i = 0; i <= LinkParameters.LastIndex; i++)
@@ -182,7 +188,7 @@ namespace PMKS
 #if DEBUGSERIAL
             TransposeJointVelocity(gndJointIndex, gndLinkIndex);
             TransposeJointAcceleration(gndJointIndex, gndLinkIndex);
-            
+
             TransposeLinkStateVariables(gndLinkIndex, 0);
             TransposeLinkStateVariables(gndLinkIndex, 1);
             TransposeLinkStateVariables(gndLinkIndex, 2);
@@ -223,8 +229,8 @@ namespace PMKS
         /// <param name="gndLinkIndex">Index of the GND link.</param>
         private void TransposeJointPosition(int gndJointIndex, int gndLinkIndex)
         {
-            var xOffset = SimulationJoints[gndJointIndex].xInitial;
-            var yOffset = SimulationJoints[gndJointIndex].yInitial;
+            var xOffset = SimulationJoints[gndJointIndex].XInitial;
+            var yOffset = SimulationJoints[gndJointIndex].YInitial;
             for (var i = 0; i <= JointParameters.LastIndex; i++)
             {
                 var jParams = JointParameters[i].Value;
@@ -235,7 +241,7 @@ namespace PMKS
                 var sinAngle = Math.Sin(newAngle);
                 for (var j = 0; j < NumAllJoints; j++)
                 {
-                    var xNew = (jParams[oIOSJ[j], 0] - tx)*cosAngle - (jParams[oIOSJ[j], 1] - ty)*sinAngle + xOffset;
+                    var xNew = (jParams[oIOSJ[j], 0] - tx) * cosAngle - (jParams[oIOSJ[j], 1] - ty) * sinAngle + xOffset;
                     jParams[oIOSJ[j], 1] = (jParams[oIOSJ[j], 0] - tx) * sinAngle + (jParams[oIOSJ[j], 1] - ty) * cosAngle + yOffset;
                     jParams[oIOSJ[j], 0] = xNew;
                 }
@@ -249,12 +255,12 @@ namespace PMKS
         /// <param name="gndLinkIndex">Index of the GND link.</param>
         private void TransposeJointVelocity(int gndJointIndex1, int gndLinkIndex)
         {
-            for (var i = 0; i <= JointParameters.LastIndex; i++)                    
+            for (var i = 0; i <= JointParameters.LastIndex; i++)
             {
                 var jParams = JointParameters[i].Value;
                 var VxGnd = jParams[oIOSJ[gndJointIndex1], 2];
                 var VyGnd = jParams[oIOSJ[gndJointIndex1], 3];
-                var newAngle = -LinkParameters[ i].Value[oIOSL[gndLinkIndex], 0];
+                var newAngle = -LinkParameters[i].Value[oIOSL[gndLinkIndex], 0];
                 var cosAngle = Math.Cos(newAngle);
                 var sinAngle = Math.Sin(newAngle);
                 var angularVelocity = LinkParameters[i].Value[oIOSL[gndLinkIndex], 1];
@@ -262,8 +268,8 @@ namespace PMKS
                 {
                     var xNew = (jParams[oIOSJ[j], 2] - VxGnd) * cosAngle - (jParams[oIOSJ[j], 3] - VyGnd) * sinAngle
                                + angularVelocity * (jParams[oIOSJ[j], 1] - jParams[oIOSJ[gndJointIndex1], 1]);
-                    jParams[oIOSJ[j], 3] = (jParams[oIOSJ[j], 2] - VxGnd)*sinAngle + (jParams[oIOSJ[j], 3] - VyGnd)*cosAngle
-                                    - angularVelocity*(jParams[oIOSJ[j], 0] - jParams[oIOSJ[gndJointIndex1], 0]);
+                    jParams[oIOSJ[j], 3] = (jParams[oIOSJ[j], 2] - VxGnd) * sinAngle + (jParams[oIOSJ[j], 3] - VyGnd) * cosAngle
+                                    - angularVelocity * (jParams[oIOSJ[j], 0] - jParams[oIOSJ[gndJointIndex1], 0]);
                     jParams[oIOSJ[j], 2] = xNew;
                 }
             }
@@ -290,10 +296,10 @@ namespace PMKS
                 {
                     var rx = (jParams[oIOSJ[j], 0] - jParams[oIOSJ[gndJointIndex1], 0]);
                     var ry = (jParams[oIOSJ[j], 1] - jParams[oIOSJ[gndJointIndex1], 1]);
-                    var xNew = (jParams[oIOSJ[j], 4] - ax)*cosAngle - (jParams[oIOSJ[j], 5] - ay)*sinAngle
-                               + angularVelocity*angularVelocity*rx + angularAcceleration*ry;
-                    jParams[oIOSJ[j], 5] = (jParams[oIOSJ[j], 4] - ax)*sinAngle + (jParams[oIOSJ[j], 5] - ay)*cosAngle
-                                    + angularVelocity*angularVelocity*ry - angularAcceleration*rx;
+                    var xNew = (jParams[oIOSJ[j], 4] - ax) * cosAngle - (jParams[oIOSJ[j], 5] - ay) * sinAngle
+                               + angularVelocity * angularVelocity * rx + angularAcceleration * ry;
+                    jParams[oIOSJ[j], 5] = (jParams[oIOSJ[j], 4] - ax) * sinAngle + (jParams[oIOSJ[j], 5] - ay) * cosAngle
+                                    + angularVelocity * angularVelocity * ry - angularAcceleration * rx;
                     jParams[oIOSJ[j], 4] = xNew;
                 }
             }
@@ -312,17 +318,17 @@ namespace PMKS
             var initLinkState = LinkParameters.Parameters[0];
             var topTime = JointParameters.Times[0] + cyclePeriodTime;
             var maxAngleError = Constants.ErrorInDeterminingCompleteCycle;
-            var maxLengthError = Constants.ErrorInDeterminingCompleteCycle*AverageLength;
+            var maxLengthError = Constants.ErrorInDeterminingCompleteCycle * AverageLength;
             if (!double.IsNaN(MaxSmoothingError) && MaxSmoothingError > 0)
             {
-                maxAngleError *= Constants.SmoothingErrorRepeatFactor*Math.Sqrt(MaxSmoothingError);
-                maxLengthError *= Constants.SmoothingErrorRepeatFactor*Math.Sqrt(MaxSmoothingError)*AverageLength;
+                maxAngleError *= Constants.SmoothingErrorRepeatFactor * Math.Sqrt(MaxSmoothingError);
+                maxLengthError *= Constants.SmoothingErrorRepeatFactor * Math.Sqrt(MaxSmoothingError) * AverageLength;
             }
             for (var i = 0; i < NumLinks; i++)
             {
-                var deltaLinkAngle = FindLinkAngleAtTime(topTime,oIOSL[ i]) - initLinkState[oIOSL[i], 0];
-                while (deltaLinkAngle > Math.PI) deltaLinkAngle -= 2*Math.PI;
-                while (deltaLinkAngle < -Math.PI) deltaLinkAngle += 2*Math.PI;
+                var deltaLinkAngle = FindLinkAngleAtTime(topTime, oIOSL[i]) - initLinkState[oIOSL[i], 0];
+                while (deltaLinkAngle > Math.PI) deltaLinkAngle -= Constants.FullCircle;
+                while (deltaLinkAngle < -Math.PI) deltaLinkAngle += Constants.FullCircle;
                 if (deltaLinkAngle > maxAngleError) return false;
             }
             for (var i = 0; i < NumAllJoints; i++)
@@ -347,57 +353,57 @@ namespace PMKS
         private void SetInitialVelocityAndAcceleration(List<Joint> joints, List<Link> links,
             out double[,] initJointParams, out double[,] initLinkParams)
         {
-            var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
+            var posFinder = new PositionFinder(joints, links, gearsData, simulationDriveIndex);
             posFinder.UpdateSliderPosition();
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex,
+            var velSolver = new VelocitySolver(joints, links, FirstInputJointIndex, simulationDriveIndex, InputLinkIndex,
                 InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex,
-                inputLinkIndex, InputSpeed, gearsData, AverageLength);
+            var accelSolver = new AccelerationSolver(joints, links, FirstInputJointIndex, simulationDriveIndex,
+                InputLinkIndex, InputSpeed, gearsData, AverageLength);
 
             initJointParams = WriteJointStatesVariablesToMatrixAndToLast(joints);
             initLinkParams = WriteLinkStatesVariablesToMatrixAndToLast(links);
             var smallTimeStep = (double.IsNaN(FixedTimeStep))
                 ? Constants.SmallPerturbationFraction
-                : Constants.SmallPerturbationFraction*FixedTimeStep;
+                : Constants.SmallPerturbationFraction * FixedTimeStep;
             if (velSolver.Solve())
             {
-                for (var i = 0; i <= inputJointIndex; i++)
+                for (var i = 0; i <= simulationDriveIndex; i++)
                 {
-                    initJointParams[oIOSJ[i], 2] = joints[i].vxLast = joints[i].vx;
-                    initJointParams[oIOSJ[i], 3] = joints[i].vyLast = joints[i].vy;
+                    initJointParams[oIOSJ[i], 2] = joints[i].VxLast = joints[i].Vx;
+                    initJointParams[oIOSJ[i], 3] = joints[i].VyLast = joints[i].Vy;
                 }
-                for (var i = 0; i <= inputLinkIndex; i++)
+                for (var i = 0; i <= InputLinkIndex; i++)
                     initLinkParams[oIOSL[i], 1] = links[i].VelocityLast = links[i].Velocity;
                 if (accelSolver.Solve())
                 {
-                    for (var i = 0; i <= inputJointIndex; i++)
+                    for (var i = 0; i <= simulationDriveIndex; i++)
                     {
-                        initJointParams[oIOSJ[i], 4] = joints[i].ax;
-                        initJointParams[oIOSJ[i], 5] =  joints[i].ay;
+                        initJointParams[oIOSJ[i], 4] = joints[i].Ax;
+                        initJointParams[oIOSJ[i], 5] = joints[i].Ay;
                     }
-                    for (var i = 0; i <= inputLinkIndex; i++)
+                    for (var i = 0; i <= InputLinkIndex; i++)
                         initLinkParams[oIOSL[i], 2] = links[i].Acceleration;
                 }
                 else
                 {
                     /* velocity was successfully found, but not acceleration. */
-                    if (posFinder.DefineNewPositions(smallTimeStep*InputSpeed) &&
+                    if (posFinder.DefineNewPositions(smallTimeStep * InputSpeed, ref IsDyadic) &&
                         velSolver.Solve())
                     {
                         /* forward difference on velocities to create accelerations. */
-                        for (var i = 0; i <= inputJointIndex; i++)
+                        for (var i = 0; i <= simulationDriveIndex; i++)
                         {
-                            initJointParams[oIOSJ[i], 4] =joints[i].ax = (joints[i].vx - joints[i].vxLast)/smallTimeStep;
-                            initJointParams[oIOSJ[i], 5] =joints[i].ay = (joints[i].vy - joints[i].vyLast)/smallTimeStep;
+                            initJointParams[oIOSJ[i], 4] = joints[i].Ax = (joints[i].Vx - joints[i].VxLast) / smallTimeStep;
+                            initJointParams[oIOSJ[i], 5] = joints[i].Ay = (joints[i].Vy - joints[i].VyLast) / smallTimeStep;
                         }
-                        for (var i = 0; i <= inputLinkIndex; i++)
+                        for (var i = 0; i <= InputLinkIndex; i++)
                             initLinkParams[oIOSL[i], 2] = links[i].Acceleration = (links[i].Velocity - links[i].VelocityLast) / smallTimeStep;
 
                         /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
                         foreach (var joint in SimulationJoints)
                         {
-                            joint.x = joint.xInitial;
-                            joint.y = joint.yInitial;
+                            joint.X = joint.XInitial;
+                            joint.Y = joint.YInitial;
                         }
                         foreach (var link in SimulationLinks)
                             link.Angle = link.AngleInitial;
@@ -408,13 +414,13 @@ namespace PMKS
             var ForwardJointParams = new double[NumAllJoints, 2];
             var ForwardLinkParams = new double[NumLinks];
             /*** Stepping Forward in Time ***/
-            var forwardSuccess = posFinder.DefineNewPositions(smallTimeStep*InputSpeed);
+            var forwardSuccess = posFinder.DefineNewPositions(smallTimeStep * InputSpeed, ref IsDyadic);
             if (forwardSuccess)
             {
                 for (var i = 0; i < NumAllJoints; i++)
                 {
-                    ForwardJointParams[oIOSJ[i], 0] = joints[i].x;
-                    ForwardJointParams[oIOSJ[i], 1] = joints[i].y;
+                    ForwardJointParams[oIOSJ[i], 0] = joints[i].X;
+                    ForwardJointParams[oIOSJ[i], 1] = joints[i].Y;
                 }
                 for (var i = 0; i < NumLinks; i++)
                     ForwardLinkParams[oIOSL[i]] = links[i].Angle;
@@ -422,13 +428,13 @@ namespace PMKS
             /*** Stepping Backward in Time ***/
             var BackwardJointParams = new double[NumAllJoints, 2];
             var BackwardLinkParams = new double[NumLinks];
-            var backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep*InputSpeed);
+            var backwardSuccess = posFinder.DefineNewPositions(-smallTimeStep * InputSpeed, ref IsDyadic);
             if (backwardSuccess)
             {
                 for (var i = 0; i < NumAllJoints; i++)
                 {
-                    BackwardJointParams[oIOSJ[i], 0] = joints[i].x;
-                    BackwardJointParams[oIOSJ[i], 1] = joints[i].y;
+                    BackwardJointParams[oIOSJ[i], 0] = joints[i].X;
+                    BackwardJointParams[oIOSJ[i], 1] = joints[i].Y;
                 }
                 for (var i = 0; i < NumLinks; i++)
                     BackwardLinkParams[oIOSL[i]] = links[i].Angle;
@@ -439,13 +445,13 @@ namespace PMKS
                 for (var i = 0; i < NumAllJoints; i++)
                 {
                     /* first-order central finite difference */
-                    initJointParams[i, 2] = (ForwardJointParams[i, 0] - BackwardJointParams[i, 0])/(2*smallTimeStep);
-                    initJointParams[i, 3] = (ForwardJointParams[i, 1] - BackwardJointParams[i, 1])/(2*smallTimeStep);
+                    initJointParams[i, 2] = (ForwardJointParams[i, 0] - BackwardJointParams[i, 0]) / (2 * smallTimeStep);
+                    initJointParams[i, 3] = (ForwardJointParams[i, 1] - BackwardJointParams[i, 1]) / (2 * smallTimeStep);
                     /* second-order central finite difference */
-                    initJointParams[i, 4] = (ForwardJointParams[i, 0] - 2*initJointParams[i, 0] +
-                                             BackwardJointParams[i, 0])/(smallTimeStep*smallTimeStep);
-                    initJointParams[i, 5] = (ForwardJointParams[i, 1] - 2*initJointParams[i, 1] +
-                                             BackwardJointParams[i, 1])/(smallTimeStep*smallTimeStep);
+                    initJointParams[i, 4] = (ForwardJointParams[i, 0] - 2 * initJointParams[i, 0] +
+                                             BackwardJointParams[i, 0]) / (smallTimeStep * smallTimeStep);
+                    initJointParams[i, 5] = (ForwardJointParams[i, 1] - 2 * initJointParams[i, 1] +
+                                             BackwardJointParams[i, 1]) / (smallTimeStep * smallTimeStep);
                 }
                 for (var i = 0; i < NumAllLinks; i++)
                 {
@@ -453,7 +459,7 @@ namespace PMKS
                     initLinkParams[i, 1] = (ForwardLinkParams[i] - BackwardLinkParams[i]) / (2 * smallTimeStep);
                     /* second-order central finite difference */
                     initLinkParams[i, 2] = (ForwardLinkParams[i] - 2 * initLinkParams[i, 0] + BackwardLinkParams[i])
-                                           /(smallTimeStep*smallTimeStep);
+                                           / (smallTimeStep * smallTimeStep);
                 }
             }
             else if (forwardSuccess)
@@ -485,8 +491,8 @@ namespace PMKS
             /* since the position solving wrote values to joints[i].x and .y, we need to reset them, for further work. */
             foreach (var joint in SimulationJoints)
             {
-                joint.x = joint.xInitial;
-                joint.y = joint.yInitial;
+                joint.X = joint.XInitial;
+                joint.Y = joint.YInitial;
             }
             foreach (var link in SimulationLinks)
                 link.Angle = link.AngleInitial;
@@ -504,15 +510,15 @@ namespace PMKS
             var startingPosChange = (Forward == (InputSpeed > 0))
                 ? Constants.DefaultStepSize
                 : -Constants.DefaultStepSize;
-            if (inputJoint.TypeOfJoint == JointType.P) startingPosChange *= AverageLength;
-            var maxLengthError = MaxSmoothingError*AverageLength;
+            if (InputJoint.TypeOfJoint == JointType.P) startingPosChange *= AverageLength;
+            var maxLengthError = MaxSmoothingError * AverageLength;
             var currentTime = 0.0;
             Boolean validPosition;
-            var posFinder = new PositionFinder(joints, links, gearsData, inputJointIndex);
-            var velSolver = new VelocitySolver(joints, links, firstInputJointIndex, inputJointIndex, inputLinkIndex,
+            var posFinder = new PositionFinder(joints, links, gearsData, simulationDriveIndex);
+            var velSolver = new VelocitySolver(joints, links, FirstInputJointIndex, simulationDriveIndex, InputLinkIndex,
                 InputSpeed, gearsData, AverageLength);
-            var accelSolver = new AccelerationSolver(joints, links, firstInputJointIndex, inputJointIndex,
-                inputLinkIndex, InputSpeed, gearsData, AverageLength);
+            var accelSolver = new AccelerationSolver(joints, links, FirstInputJointIndex, simulationDriveIndex,
+                InputLinkIndex, InputSpeed, gearsData, AverageLength);
             do
             {
                 #region Find Next Positions
@@ -523,9 +529,9 @@ namespace PMKS
                     double upperError;
                     do
                     {
-                        timeStep = startingPosChange/InputSpeed;
+                        timeStep = startingPosChange / InputSpeed;
                         NumericalPosition(timeStep, joints, links);
-                        validPosition = posFinder.DefineNewPositions(startingPosChange);
+                        validPosition = posFinder.DefineNewPositions(startingPosChange, ref IsDyadic);
                         upperError = posFinder.PositionError - maxLengthError;
                         if (validPosition && upperError < 0)
                         {
@@ -534,14 +540,14 @@ namespace PMKS
                         }
                         else
                         {
-                            if (Math.Abs(startingPosChange*Constants.ConservativeErrorEstimation*0.5) <
+                            if (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) <
                                 Constants.MinimumStepSize)
                                 validPosition = false;
-                            else startingPosChange *= Constants.ConservativeErrorEstimation*0.5;
+                            else startingPosChange *= Constants.ConservativeErrorEstimation * 0.5;
                         }
                     } while ((!validPosition || upperError > 0) && k++ < Constants.MaxItersInPositionError
                              &&
-                             (Math.Abs(startingPosChange*Constants.ConservativeErrorEstimation*0.5) >=
+                             (Math.Abs(startingPosChange * Constants.ConservativeErrorEstimation * 0.5) >=
                               Constants.MinimumStepSize));
                     //var tempStep = startingPosChange;
                     //startingPosChange = (Constants.ErrorEstimateInertia * prevStep + startingPosChange) / (1 + Constants.ErrorEstimateInertia);
@@ -551,9 +557,9 @@ namespace PMKS
                 {
                     // this next function puts the xNumerical and yNumerical values in the joints
                     NumericalPosition(timeStep, joints, links);
-                    var delta = InputSpeed*timeStep;
+                    var delta = InputSpeed * timeStep;
                     // this next function puts the x and y values in the joints
-                    validPosition = posFinder.DefineNewPositions(delta);
+                    validPosition = posFinder.DefineNewPositions(delta, ref IsDyadic);
                 }
 
                 #endregion
@@ -563,12 +569,12 @@ namespace PMKS
                     if (Forward == (InputSpeed > 0))
                         lock (InputRange)
                         {
-                            InputRange[1] = links[inputLinkIndex].Angle;
+                            InputRange[1] = links[InputLinkIndex].Angle;
                         }
                     else
                         lock (InputRange)
                         {
-                            InputRange[0] = links[inputLinkIndex].Angle;
+                            InputRange[0] = links[InputLinkIndex].Angle;
                         }
 
                     #region Find Velocities for Current Position
@@ -611,7 +617,7 @@ namespace PMKS
                             LinkParameters.AddNearBegin(currentTime, linkParams);
                     }
                 }
-            } while (validPosition && lessThanFullRotation());
+            } while (validPosition && LessThanFullRotation());
         }
 
         /// <summary>
@@ -625,22 +631,22 @@ namespace PMKS
             for (var i = 0; i < NumAllJoints; i++)
             {
                 var j = joints[i];
-                jointParams[oIOSJ[i], 0] = j.x;
-                jointParams[oIOSJ[i], 1] = j.y;
-                jointParams[oIOSJ[i], 2] = j.vx;
-                jointParams[oIOSJ[i], 3] = j.vy;
-                jointParams[oIOSJ[i], 4] = j.ax;
-                jointParams[oIOSJ[i], 5] = j.ay;
+                jointParams[oIOSJ[i], 0] = j.X;
+                jointParams[oIOSJ[i], 1] = j.Y;
+                jointParams[oIOSJ[i], 2] = j.Vx;
+                jointParams[oIOSJ[i], 3] = j.Vy;
+                jointParams[oIOSJ[i], 4] = j.Ax;
+                jointParams[oIOSJ[i], 5] = j.Ay;
                 if (j.TypeOfJoint != JointType.R)
                 {
                     jointParams[oIOSJ[i], 6] = j.SlidePosition;
                     jointParams[oIOSJ[i], 7] = j.SlideVelocity;
                     jointParams[oIOSJ[i], 8] = j.SlideAcceleration;
                 }
-                j.xLast = j.x;
-                j.yLast = j.y;
-                j.vxLast = j.vx;
-                j.vyLast = j.vy;
+                j.XLast = j.X;
+                j.YLast = j.Y;
+                j.VxLast = j.Vx;
+                j.VyLast = j.Vy;
             }
             return jointParams;
         }

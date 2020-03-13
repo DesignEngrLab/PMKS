@@ -11,6 +11,7 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,13 +53,17 @@ namespace PMKS
         /// Initializes a new instance of the <see cref="Link"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="Joints">The joints.</param>
+        /// <param name="joints">The joints.</param>
         /// <param name="IsGround">The is ground.</param>
-        internal Link(string name, List<Joint> Joints, Boolean IsGround)
+        internal Link(string name, IEnumerable<Joint> joints) : this()
         {
-            this.name = name;
-            joints = Joints;
-            this.IsGround = IsGround;
+            this.Joints.AddRange(joints);
+            if (Simulator.IsGroundLinkName(name))
+            {
+                this.Name = "ground";
+                IsGround = true;
+            }
+            else this.Name = name;
         }
 
         /// <summary>
@@ -66,20 +71,20 @@ namespace PMKS
         /// </summary>
         private Link()
         {
-            joints = new List<Joint>();
+            Joints = new List<Joint>();
         }
 
         /// <summary>
         /// Gets the joints.
         /// </summary>
         /// <value>The joints.</value>
-        public List<Joint> joints { get; private set; }
+        public List<Joint> Joints { get; private set; }
 
         /// <summary>
         /// Is the link the ground-link?
         /// </summary>
         /// <value>The is ground.</value>
-        public Boolean IsGround { get; set; }
+        internal Boolean IsGround { get; set; }
 
         /// <summary>
         /// Gets or sets the reference joint1.
@@ -100,7 +105,7 @@ namespace PMKS
         /// Gets the sum of all the lengths between the pivots.
         /// </summary>
         /// <value>The total length.</value>
-        public double TotalLength
+        internal double TotalLength
         {
             get { return lengths.Values.Sum(v => Math.Abs(v)); }
         }
@@ -109,12 +114,12 @@ namespace PMKS
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string name { get; private set; }
+        public string Name { get; private set; }
         /// <summary>
         /// Gets the angle initial.
         /// </summary>
         /// <value>The angle initial.</value>
-        public double AngleInitial { get; internal set; }
+        public double AngleInitial { get; set; }
         /// <summary>
         /// Gets or sets the angle.
         /// </summary>
@@ -161,10 +166,10 @@ namespace PMKS
             if (joint1 == joint2)
                 throw new Exception(
                     "link.setLength: cannot set the distance between joints because same joint provided as both joint1 and joint2.");
-            var i = joints.IndexOf(joint1);
-            var j = joints.IndexOf(joint2);
-            if (i > j) lengths[numJoints*j + i] = length;
-            else lengths[numJoints*i + j] = length;
+            var i = Joints.IndexOf(joint1);
+            var j = Joints.IndexOf(joint2);
+            if (i > j) lengths[numJoints * j + i] = length;
+            else lengths[numJoints * i + j] = length;
         }
 
         /// <summary>
@@ -183,7 +188,7 @@ namespace PMKS
                 numJoints = numJoints,
                 lengths = new Dictionary<int, double>(lengths),
                 distanceToSlideLine = new Dictionary<int, double>(distanceToSlideLine),
-                name = name,
+                Name = Name,
                 angleFromBlockToJoint = new Dictionary<int, double>(angleFromBlockToJoint)
             };
         }
@@ -195,13 +200,13 @@ namespace PMKS
         /// </summary>
         internal void DetermineLengthsAndReferences()
         {
-            numJoints = joints.Count;
+            numJoints = Joints.Count;
 
             #region Define Initial Link Angle
 
-            var fixedJoints = joints.Where(j => j.FixedWithRespectTo(this)).
+            var fixedJoints = Joints.Where(j => j.FixedWithRespectTo(this)).
                 OrderBy(j => (j.IsGround) ? 0 : 1).
-                ThenBy(j => (j.Link2 != null) ? 0 : 1).ThenBy(j => j.xInitial).ToList();
+                ThenBy(j => (j.Link2 != null) ? 0 : 1).ThenBy(j => j.XInitial).ToList();
             ReferenceJoint1 = fixedJoints[0];
             /* the linkAngle is defined from "the joint with the lowest initial x value
              * that is fixed to this link" to "the joint with the highest initial x value
@@ -210,10 +215,10 @@ namespace PMKS
              * Simulator.addReferencePivotsToSlideOnlyLinks()) or is ground, then the 
              * initial angle is zero. */
             if (fixedJoints.Count == 2 && !IsGround)
-                AngleInitial = Constants.angle(ReferenceJoint1, fixedJoints[1]);
+                AngleInitial = Constants.Angle(ReferenceJoint1, fixedJoints[1]);
             else AngleInitial = 0.0;
             Angle = AngleNumerical = AngleLast = AngleInitial;
-            foreach (var j in joints.Where(j => j.SlidingWithRespectTo(this)))
+            foreach (var j in Joints.Where(j => j.SlidingWithRespectTo(this)))
                 j.OffsetSlideAngle -= AngleInitial;
 
             #endregion
@@ -224,53 +229,53 @@ namespace PMKS
             distanceToSlideLine = new Dictionary<int, double>();
             angleFromBlockToJoint = new Dictionary<int, double>();
 
-            for (var i = 0; i < joints.Count - 1; i++)
-                for (var j = i + 1; j < joints.Count; j++)
+            for (var i = 0; i < Joints.Count - 1; i++)
+                for (var j = i + 1; j < Joints.Count; j++)
                 {
-                    var iJoint = joints[i];
-                    var jJoint = joints[j];
+                    var iJoint = Joints[i];
+                    var jJoint = Joints[j];
                     if (iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
                     {
-                        var key = numJoints*i + j;
+                        var key = numJoints * i + j;
                         angleFromBlockToJoint.Add(key, 0.0);
                         distanceToSlideLine.Add(key, 0.0);
-                        key = numJoints*j + i;
+                        key = numJoints * j + i;
                         angleFromBlockToJoint.Add(key, 0.0);
                         distanceToSlideLine.Add(key, 0.0);
                     }
                     else if (iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
-                        addSlideDictionaryEntry(iJoint, jJoint, i, j);
-                        addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                        AddSlideDictionaryEntry(iJoint, jJoint, i, j);
+                        AddBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
                         if (jJoint.TypeOfJoint == JointType.P)
                         {
-                            addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
-                            addSlideDictionaryEntry(jJoint, iJoint, j, i);
+                            AddBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                            AddSlideDictionaryEntry(jJoint, iJoint, j, i);
                         }
                     }
                     else if (!iJoint.SlidingWithRespectTo(this) && jJoint.SlidingWithRespectTo(this))
                     {
-                        addSlideDictionaryEntry(jJoint, iJoint, j, i);
-                        addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                        AddSlideDictionaryEntry(jJoint, iJoint, j, i);
+                        AddBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
                         if (iJoint.TypeOfJoint == JointType.P)
                         {
-                            addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
-                            addSlideDictionaryEntry(iJoint, jJoint, i, j);
+                            AddBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                            AddSlideDictionaryEntry(iJoint, jJoint, i, j);
                         }
                     }
                     else //    if (!iJoint.SlidingWithRespectTo(this) && !jJoint.SlidingWithRespectTo(this))
                     {
-                        lengths.Add(numJoints*i + j,
-                            Constants.distance(iJoint.xInitial, iJoint.yInitial, jJoint.xInitial, jJoint.yInitial));
+                        lengths.Add(numJoints * i + j,
+                            Constants.Distance(iJoint.XInitial, iJoint.YInitial, jJoint.XInitial, jJoint.YInitial));
                         if (iJoint.TypeOfJoint == JointType.P)
                         {
-                            addBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
-                            addSlideDictionaryEntry(iJoint, jJoint, i, j);
+                            AddBlockAngleDictionaryEntry(iJoint, jJoint, i, j);
+                            AddSlideDictionaryEntry(iJoint, jJoint, i, j);
                         }
                         if (jJoint.TypeOfJoint == JointType.P)
                         {
-                            addBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
-                            addSlideDictionaryEntry(jJoint, iJoint, j, i);
+                            AddBlockAngleDictionaryEntry(jJoint, iJoint, j, i);
+                            AddSlideDictionaryEntry(jJoint, iJoint, j, i);
                         }
                     }
                 }
@@ -290,11 +295,11 @@ namespace PMKS
         /// <param name="refJoint">The fixed joint.</param>
         /// <param name="slideIndex">Index of the slide.</param>
         /// <param name="fixedIndex">Index of the fixed.</param>
-        private void addSlideDictionaryEntry(Joint slideJoint, Joint refJoint, int slideIndex, int fixedIndex)
+        private void AddSlideDictionaryEntry(Joint slideJoint, Joint refJoint, int slideIndex, int fixedIndex)
         {
-            var key = numJoints*slideIndex + fixedIndex;
-            var slideUnitVector = new[] {Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle)};
-            var refVector = new[] {refJoint.xInitial - slideJoint.xInitial, refJoint.yInitial - slideJoint.yInitial};
+            var key = numJoints * slideIndex + fixedIndex;
+            var slideUnitVector = new[] { Math.Cos(slideJoint.SlideAngle), Math.Sin(slideJoint.SlideAngle) };
+            var refVector = new[] { refJoint.XInitial - slideJoint.XInitial, refJoint.YInitial - slideJoint.YInitial };
             var distance = (double.IsNaN(slideJoint.SlideAngle))
                 ? StarMath.norm2(refVector)
                 : StarMath.crossProduct2(slideUnitVector, refVector);
@@ -308,13 +313,13 @@ namespace PMKS
         /// <param name="refJoint">The reference joint.</param>
         /// <param name="pIndex">Index of the p.</param>
         /// <param name="refIndex">Index of the reference.</param>
-        private void addBlockAngleDictionaryEntry(Joint pJoint, Joint refJoint, int pIndex, int refIndex)
+        private void AddBlockAngleDictionaryEntry(Joint pJoint, Joint refJoint, int pIndex, int refIndex)
         {
-            var key = numJoints*pIndex + refIndex;
+            var key = numJoints * pIndex + refIndex;
             var result = (pJoint.TypeOfJoint == JointType.G)
-                ? Math.PI/2
+                ? Constants.QuarterCircle
                 : pJoint.SlideAngleInitial -
-                  Constants.angle(pJoint.xInitial, pJoint.yInitial, refJoint.xInitial, refJoint.yInitial);
+                  Constants.Angle(pJoint.XInitial, pJoint.YInitial, refJoint.XInitial, refJoint.YInitial);
             angleFromBlockToJoint.Add(key, result);
         }
 
@@ -328,13 +333,13 @@ namespace PMKS
         /// <param name="joint1">joint1.</param>
         /// <param name="joint2">joint2.</param>
         /// <returns>System.Double.</returns>
-        internal double lengthBetween(Joint joint1, Joint joint2)
+        internal double LengthBetween(Joint joint1, Joint joint2)
         {
             if (joint1 == joint2) return 0.0;
-            var i = joints.IndexOf(joint1);
-            var j = joints.IndexOf(joint2);
-            if (i > j) return lengths[numJoints*j + i];
-            return lengths[numJoints*i + j];
+            var i = Joints.IndexOf(joint1);
+            var j = Joints.IndexOf(joint2);
+            if (i > j) return lengths[numJoints * j + i];
+            return lengths[numJoints * i + j];
         }
 
         /// <summary>
@@ -349,12 +354,12 @@ namespace PMKS
         internal double DistanceBetweenSlides(Joint slidingJoint, Joint referenceJoint)
         {
             if (slidingJoint == referenceJoint) return 0.0;
-            var slideIndex = joints.IndexOf(slidingJoint);
-            var fixedIndex = joints.IndexOf(referenceJoint);
-            var index = numJoints*slideIndex + fixedIndex;
+            var slideIndex = Joints.IndexOf(slidingJoint);
+            var fixedIndex = Joints.IndexOf(referenceJoint);
+            var index = numJoints * slideIndex + fixedIndex;
             if (distanceToSlideLine.ContainsKey(index))
                 return distanceToSlideLine[index];
-            return distanceToSlideLine[numJoints*fixedIndex + slideIndex];
+            return distanceToSlideLine[numJoints * fixedIndex + slideIndex];
         }
 
         /// <summary>
@@ -363,12 +368,12 @@ namespace PMKS
         /// <param name="blockJoint">The block joint.</param>
         /// <param name="referenceJoint">The reference joint.</param>
         /// <returns>System.Double.</returns>
-        internal double angleOfBlockToJoint(Joint blockJoint, Joint referenceJoint)
+        internal double AngleOfBlockToJoint(Joint blockJoint, Joint referenceJoint)
         {
             if (blockJoint == referenceJoint) return 0.0;
-            var i = joints.IndexOf(blockJoint);
-            var j = joints.IndexOf(referenceJoint);
-            return angleFromBlockToJoint[numJoints*i + j];
+            var i = Joints.IndexOf(blockJoint);
+            var j = Joints.IndexOf(referenceJoint);
+            return angleFromBlockToJoint[numJoints * i + j];
         }
 
         #endregion

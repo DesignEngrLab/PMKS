@@ -11,11 +11,13 @@
 // </copyright>
 // <summary></summary>
 // ***********************************************************************
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
-/// <summary>
-/// The PMKS namespace.
-/// </summary>
 namespace PMKS
 {
     /// <summary>
@@ -40,8 +42,8 @@ namespace PMKS
         /// <param name="y">The y.</param>
         public Point(double x, double y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
     }
 
@@ -67,25 +69,25 @@ namespace PMKS
         /// <param name="currentJointPosition">The current joint position.</param>
         /// <param name="specifiedAs">The specified as.</param>
         /// <exception cref="System.Exception">Values for x and y must be provided for joint.</exception>
-        internal Joint(bool isGround, JointType jointType, double[] currentJointPosition = null, 
-            JointSpecifiedAs specifiedAs=JointSpecifiedAs.Design)
+        internal Joint(bool isGround, JointType jointType, double[] currentJointPosition = null,
+            JointSpecifiedAs specifiedAs = JointSpecifiedAs.Design)
         {
             IsGround = isGround;
-            TypeOfJoint = jointType;                      
-            jointSpecifiedAs = specifiedAs;
+            TypeOfJoint = jointType;
+            JointSpecifiedAs = specifiedAs;
 
             if (currentJointPosition == null) return;
             if (currentJointPosition.GetLength(0) < 2)
                 throw new Exception("Values for x and y must be provided for joint.");
-            x = xInitial = xLast = xNumerical = currentJointPosition[0];
-            y = yInitial = yLast = yNumerical = currentJointPosition[1];
+            X = XInitial = XLast = XNumerical = currentJointPosition[0];
+            Y = YInitial = YLast = YNumerical = currentJointPosition[1];
             if (currentJointPosition.GetLength(0) >= 3 && jointType != JointType.R)
                 OffsetSlideAngle = currentJointPosition[2];
             else if (jointType == JointType.P || jointType == JointType.RP)
                 OffsetSlideAngle = 0.0;
 
-            while (OffsetSlideAngle > Math.PI / 2) OffsetSlideAngle -= Math.PI;
-            while (OffsetSlideAngle < -Math.PI / 2) OffsetSlideAngle += Math.PI;          
+            while (OffsetSlideAngle > Constants.QuarterCircle) OffsetSlideAngle -= Math.PI;
+            while (OffsetSlideAngle < -Constants.QuarterCircle) OffsetSlideAngle += Math.PI;
         }
 
         /// <summary>
@@ -94,15 +96,15 @@ namespace PMKS
         private Joint()
         {
         }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Joint"/> class.
         /// This is only used for specifying a second copy of an R-joint that joins more than two links.
         /// </summary>
         /// <param name="joint">The joint.</param>
         internal Joint(Joint joint)
-            :this(joint.IsGround,joint.TypeOfJoint,new []{joint.xInitial,joint.yInitial},JointSpecifiedAs.TernaryJoint)
-        {                                                                                                              
+            : this(joint.IsGround, joint.TypeOfJoint, new[] { joint.XInitial, joint.YInitial }, JointSpecifiedAs.TernaryJoint)
+        {
             sameJointAs = joint;
         }
 
@@ -110,37 +112,42 @@ namespace PMKS
         /// Is the joint connected to ground
         /// </summary>
         /// <value>The is ground.</value>
+        [JsonIgnore]
         public Boolean IsGround { get; internal set; }
 
-        internal JointSpecifiedAs jointSpecifiedAs { get; private set; }
+        internal JointSpecifiedAs JointSpecifiedAs { get; private set; }
         internal Joint sameJointAs;
- 
+
         /// <summary>
         /// The joint type
         /// </summary>
         /// <value>The type of joint.</value>
-        public JointType TypeOfJoint { get; internal set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public JointType TypeOfJoint { get; set; }
 
         /// <summary>
         /// The initial x-coordinate
         /// </summary>
         /// <value>The x initial.</value>
-        public double xInitial { get; internal set; }
+        [JsonProperty(PropertyName = "X")]
+        public double XInitial { get; set; }
 
         /// <summary>
         /// The initial y-coordinate
         /// </summary>
         /// <value>The y initial.</value>
-        public double yInitial { get; internal set; }
+        [JsonProperty(PropertyName = "Y")]
+        public double YInitial { get; set; }
 
         /// <summary>
         /// The initial slide angle
         /// </summary>
         /// <value>The offset slide angle.</value>
+         [JsonProperty(PropertyName = "Angle")]
         public double OffsetSlideAngle
         {
             get { return _offsetSlideAngle; }
-            internal set { _offsetSlideAngle = value; }
+            set { _offsetSlideAngle = value; }
         }
 
         //internal double OffsetSlideAngle = 0.0;
@@ -148,6 +155,7 @@ namespace PMKS
         /// Gets the slide angle initial.
         /// </summary>
         /// <value>The slide angle initial.</value>
+        [JsonIgnore]
         public double SlideAngleInitial
         {
             get { return Link1.AngleInitial + OffsetSlideAngle; }
@@ -182,74 +190,86 @@ namespace PMKS
         /// Gets or sets the x.
         /// </summary>
         /// <value>The x.</value>
-        internal double x { get; set; }
+        internal double X { get; set; }
         /// <summary>
         /// Gets or sets the y.
         /// </summary>
         /// <value>The y.</value>
-        internal double y { get; set; }
+        internal double Y { get; set; }
         /// <summary>
         /// Gets or sets the x numerical.
         /// </summary>
         /// <value>The x numerical.</value>
-        internal double xNumerical { get; set; }
+        internal double XNumerical { get; set; }
         /// <summary>
         /// Gets or sets the y numerical.
         /// </summary>
         /// <value>The y numerical.</value>
-        internal double yNumerical { get; set; }
+        internal double YNumerical { get; set; }
         /// <summary>
         /// Gets or sets the x last.
         /// </summary>
         /// <value>The x last.</value>
-        internal double xLast { get; set; }
+        internal double XLast { get; set; }
         /// <summary>
         /// Gets or sets the y last.
         /// </summary>
         /// <value>The y last.</value>
-        internal double yLast { get; set; }
+        internal double YLast { get; set; }
         /// <summary>
         /// Gets or sets the vx.
         /// </summary>
         /// <value>The vx.</value>
-        internal double vx { get; set; }
+        internal double Vx { get; set; }
         /// <summary>
         /// Gets or sets the vy.
         /// </summary>
         /// <value>The vy.</value>
-        internal double vy { get; set; }
+        internal double Vy { get; set; }
         /// <summary>
         /// Gets or sets the vx last.
         /// </summary>
         /// <value>The vx last.</value>
-        internal double vxLast { get; set; }
+        internal double VxLast { get; set; }
         /// <summary>
         /// Gets or sets the vy last.
         /// </summary>
         /// <value>The vy last.</value>
-        internal double vyLast { get; set; }
+        internal double VyLast { get; set; }
         /// <summary>
         /// Gets or sets the ax.
         /// </summary>
         /// <value>The ax.</value>
-        internal double ax { get; set; }
+        internal double Ax { get; set; }
         /// <summary>
         /// Gets or sets the ay.
         /// </summary>
         /// <value>The ay.</value>
-        internal double ay { get; set; }
+        internal double Ay { get; set; }
 
         /// <summary>
         /// Gets the link1.
         /// </summary>
         /// <value>The link1.</value>
-        public Link Link1 { get; internal set; }
+        [JsonIgnore]
+        public Link Link1 { get;  set; }
 
         /// <summary>
         /// Gets the link2.
         /// </summary>
         /// <value>The link2.</value>
+        [JsonIgnore]
         public Link Link2 { get; set; }
+
+        [JsonRequired]
+        public string[] Links { get; private set; }
+
+        [OnSerializing]
+        internal void OnSerializingMethod(StreamingContext context)
+        {
+            if (Link2 == null) Links = new[] { Link1.Name.Trim().ToLower() };
+            else Links = new[] { Link1.Name.Trim().ToLower(), Link2.Name.Trim().ToLower() };
+        }
 
         /// <summary>
         /// Gets the minimum slide position.
@@ -267,6 +287,9 @@ namespace PMKS
         /// <value>The original slide position.</value>
         public double OrigSlidePosition { get; internal set; }
 
+        // everything else gets stored here
+        [JsonExtensionData]
+        private IDictionary<string, JToken> _additionalData;
         /// <summary>
         /// Gets the just a tracer.
         /// </summary>
@@ -281,7 +304,7 @@ namespace PMKS
         /// </summary>
         /// <param name="link0">The link0.</param>
         /// <returns>Boolean.</returns>
-        public Boolean SlidingWithRespectTo(Link link0)
+        internal Boolean SlidingWithRespectTo(Link link0)
         {
             return !FixedWithRespectTo(link0);
             //return (Link1 == link0
@@ -324,38 +347,38 @@ namespace PMKS
         /// <returns>The result of the conversion.</returns>
         public static implicit operator Point(Joint j)
         {
-            return new Point(j.x, j.y);
+            return new Point(j.X, j.Y);
         }
 
         /// <summary>
         /// Copies this instance.
         /// </summary>
         /// <returns>joint.</returns>
-        internal Joint copy()
+        internal Joint Copy()
         {
             return new Joint
             {
                 Link1 = Link1,
                 Link2 = Link2,
                 OffsetSlideAngle = OffsetSlideAngle,
-                x = x,
-                xInitial = xInitial,
-                xLast = xLast,
-                xNumerical = xNumerical,
-                y = y,
-                yInitial = yInitial,
-                yLast = yLast,
-                yNumerical = yNumerical,
+                X = X,
+                XInitial = XInitial,
+                XLast = XLast,
+                XNumerical = XNumerical,
+                Y = Y,
+                YInitial = YInitial,
+                YLast = YLast,
+                YNumerical = YNumerical,
                 IsGround = IsGround,
                 TypeOfJoint = TypeOfJoint,
-                ax = ax,
-                ay = ay,
+                Ax = Ax,
+                Ay = Ay,
                 SlideAcceleration = SlideAcceleration,
                 positionKnown = positionKnown,
-                vx = vx,
-                vy = vy,
-                vxLast = vxLast,
-                vyLast = vyLast,
+                Vx = Vx,
+                Vy = Vy,
+                VxLast = VxLast,
+                VyLast = VyLast,
                 SlideVelocity = SlideVelocity
             };
         }
