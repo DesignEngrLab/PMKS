@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Copyright>2011</Copyright>
     <RepositoryUrl>https://github.com/DesignEngrLab/PMKS</RepositoryUrl>
     <PackageProjectUrl>https://designengrlab.github.io/PMKS/</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>simulation, simulator, kinematics, dynamics, mechanical engineering</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-     <RootNamespace>PMKS</RootNamespace>
+    <RootNamespace>PMKS</RootNamespace>
     <AssemblyName>PlanarMechanismKinematicSimulator</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>PMKS</PackageId>
@@ -17,25 +17,18 @@
     <Product>Planar Mechanism Kinematic Simulator</Product>
     <Description>PMKS returns quick and accurate results for the position, velocity, and acceleration of rigid bodies connected as planar mechanisms. This project is typically used with the aid of the web tool (PMKS_Web project which is a Silverlight project), or the forthcoming UWP application. It may also be executed from Excel, the Console or other .NET code.</Description>
   </PropertyGroup>
-
-  <ItemGroup><!--<PackageReference Include="" Version=""/>-->
-  
+  <ItemGroup>
+    <!--<PackageReference Include="" Version=""/>-->
     <None Include="..\LICENSE">
       <Pack>True</Pack>
-      <PackagePath></PackagePath>
+      <PackagePath>
+      </PackagePath>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
-
 </Project>
